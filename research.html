@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #canvas { position: fixed; top: 0; left: 0; z-index: 0; }
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .back {
+            display: inline-block;
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            letter-spacing: 4px;
+            margin-bottom: 60px;
+            transition: color 0.3s;
+        }
+        .back:hover { color: #fff; }
+        .back::before { content: '← '; }
+        .section-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            margin-bottom: 60px;
+        }
+        .papers {
+            margin-bottom: 80px;
+        }
+        .papers h2 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        .paper-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .paper-item {
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .paper-item:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.02);
+        }
+        .paper-title {
+            font-size: 18px;
+            font-weight: 400;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .paper-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 15px;
+        }
+        .paper-abstract {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.8;
+        }
+        .research-areas {
+            margin-top: 80px;
+        }
+        .research-areas h2 {
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            color: rgba(255,255,255,0.6);
+        }
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .area-item {
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .area-item:hover {
+            border-color: rgba(255,255,255,0.3);
+        }
+        .area-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+        .area-item h4 {
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .area-item p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="content">
+        <a href="index.html" class="back">BACK</a>
+        <div class="section-title">RESEARCH</div>
+        <h1>研究</h1>
+        <div class="papers">
+            <h2>最新论文</h2>
+            <div class="paper-list">
+                <div class="paper-item">
+                    <div class="paper-title">元初大模型：面向通用智能的千亿参数模型</div>
+                    <div class="paper-meta">2026 · arXiv · 技术报告</div>
+                    <div class="paper-abstract">本文介绍元初大模型的设计与训练方法，通过创新的架构设计和训练策略，在多项基准测试中达到领先水平。</div>
+                </div>
+                <div class="paper-item">
+                    <div class="paper-title">多模态预训练与跨模态对齐</div>
+                    <div class="paper-meta">2025 · NeurIPS · 顶会论文</div>
+                    <div class="paper-abstract">提出一种新的多模态对齐方法，实现图像、文本、音频的联合表示学习，显著提升跨模态理解能力。</div>
+                </div>
+                <div class="paper-item">
+                    <div class="paper-title">Agent 自主规划与工具调用</div>
+                    <div class="paper-meta">2025 · ICLR · 顶会论文</div>
+                    <div class="paper-abstract">研究大型语言模型作为智能体时的规划与工具使用能力，为构建通用AI智能体提供理论基础。</div>
+                </div>
+            </div>
+        </div>
+        <div class="research-areas">
+            <h2>研究方向</h2>
+            <div class="areas-grid">
+                <div class="area-item">
+                    <div class="area-icon">🧠</div>
+                    <h4>认知智能</h4>
+                    <p>推理、规划、常识理解</p>
+                </div>
+                <div class="area-item">
+                    <div class="area-icon">👁️</div>
+                    <h4>多模态</h4>
+                    <p>视觉、语音、多模态融合</p>
+                </div>
+                <div class="area-item">
+                    <div class="area-icon">🎯</div>
+                    <h4>具身智能</h4>
+                    <p>机器人、交互、感知</p>
+                </div>
+                <div class="area-item">
+                    <div class="area-icon">🔒</div>
+                    <h4>AI 安全</h4>
+                    <p>对齐、可解释、伦理</p>
+                </div>
+            </div>
+        </div>
+        <footer>
+            <p>© 2026 元初AI · ORIGIN OF INTELLIGENCE</p>
+        </footer>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [], mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+        const particleCount = 80;
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+        class Particle {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random() * width; this.y = Math.random() * height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.alpha = Math.random() * 0.5 + 0.2; }
+            update() { this.x += this.speedX + (targetX - width/2) * 0.0001; this.y += this.speedY + (targetY - height/2) * 0.0001; if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset(); }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${this.alpha})`; ctx.fill(); }
+        }
+        for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        function animate() { ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0, 0, width, height); targetX += (mouseX - targetX) * 0.05; targetY += (mouseY - targetY) * 0.05; particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+        animate();
+    </script>
+</body>
+</html>
