@@ -11,137 +11,224 @@
             box-sizing: border-box;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
             color: #fff;
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
+            min-height: 100vh;
+            padding: 40px 20px;
         }
         .logo {
-            font-size: 80px;
+            font-size: 20px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 60px;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+        .title {
+            text-align: center;
             margin-bottom: 20px;
-            animation: float 3s ease-in-out infinite;
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        h1 {
-            font-size: 48px;
+        .title-cn {
+            font-size: 64px;
+            font-weight: 300;
+            letter-spacing: 20px;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        .title-en {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 12px;
+            text-transform: uppercase;
+        }
         .tagline {
-            font-size: 24px;
-            color: #aaa;
-            margin-bottom: 40px;
-        }
-        .description {
-            font-size: 18px;
+            font-size: 16px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 80px;
+            max-width: 500px;
+            text-align: center;
             line-height: 1.8;
-            color: #ddd;
-            margin-bottom: 40px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
         }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+        .menu {
+            display: flex;
+            gap: 60px;
+            margin-bottom: 100px;
         }
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-        .feature-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-        .feature h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #00d2ff;
-        }
-        .feature p {
+        .menu-item {
             font-size: 14px;
-            color: #aaa;
-        }
-        .cta {
-            display: inline-block;
-            padding: 15px 40px;
-            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
-            color: #fff;
+            color: rgba(255,255,255,0.6);
             text-decoration: none;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            transition: transform 0.3s;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
         }
-        .cta:hover {
-            transform: scale(1.05);
+        .menu-item:hover {
+            color: #fff;
         }
-        footer {
-            margin-top: 60px;
-            color: #666;
-            font-size: 14px;
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 1px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+        .menu-item:hover::after {
+            width: 100%;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00ff88;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 4px;
+            animation: scroll 2s infinite;
+        }
+        @keyframes scroll {
+            0%, 100% { transform: translateY(0); opacity: 0.3; }
+            50% { transform: translateY(10px); opacity: 0.1; }
+        }
+        @media (max-width: 768px) {
+            .title-cn {
+                font-size: 36px;
+                letter-spacing: 10px;
+            }
+            .menu {
+                flex-direction: column;
+                gap: 30px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🤖</div>
-        <h1>元初AI</h1>
-        <p class="tagline">YuanChu AI - 您的智能助手</p>
-        
-        <p class="description">
-            元初AI是一个致力于人工智能研究与应用的创新平台。
-            我们相信AI应该服务于人类，让生活更美好、更高效。
-        </p>
-        
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">🧠</div>
-                <h3>智能对话</h3>
-                <p>自然语言理解与生成</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">⚡</div>
-                <h3>高效协作</h3>
-                <p>多Agent协同工作</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h3>安全可靠</h3>
-                <p>隐私保护优先</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🌐</div>
-                <h3>开放生态</h3>
-                <p>开源共建未来</p>
-            </div>
+    <canvas id="canvas"></canvas>
+    <div class="content">
+        <div class="logo">YuanChu AI</div>
+        <div class="title">
+            <div class="title-cn">元初</div>
+            <div class="title-en">ORIGIN OF INTELLIGENCE</div>
         </div>
-        
-        <a href="mailto:contact@yuanchu.ai" class="cta">联系我们</a>
-        
-        <footer>
-            <p>© 2026 元初AI. All rights reserved.</p>
-            <p>Powered by OpenClaw</p>
-        </footer>
+        <p class="tagline">
+            宇宙、文明与万物的初始 · 一切智能的本源与开端<br>
+            <span style="color: rgba(255,255,255,0.3)">The origin of all intelligence</span>
+        </p>
+        <nav class="menu">
+            <a class="menu-item">产品</a>
+            <a class="menu-item">技术</a>
+            <a class="menu-item">研究</a>
+            <a class="menu-item">关于</a>
+        </nav>
+        <div class="status">
+            <div class="status-dot"></div>
+            <span>System Active</span>
+        </div>
     </div>
+    <div class="scroll-hint">SCROLL</div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        const particleCount = 100;
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+        
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = (Math.random() - 0.5) * 0.3;
+                this.alpha = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX + (targetX - width/2) * 0.0001;
+                this.y += this.speedY + (targetY - height/2) * 0.0001;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                    this.x = Math.random() < 0.5 ? 0 : width;
+                    this.y = Math.random() * height;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, width, height);
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
 </body>
 </html>
