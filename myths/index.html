@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神话 - 元初</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 20px 60px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 4px;
+            text-decoration: none;
+        }
+
+        nav a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: #fff;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 80px;
+            padding-top: 40px;
+        }
+
+        .title-cn {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 20px;
+            margin-bottom: 15px;
+        }
+
+        .title-en {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.8;
+            max-width: 500px;
+            margin: 0 auto 60px;
+        }
+
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        .story-card {
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .story-card:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .story-card h3 {
+            font-size: 20px;
+            font-weight: normal;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+
+        .story-card p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .story-card .meta {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            letter-spacing: 2px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        footer a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .title-cn {
+                font-size: 32px;
+                letter-spacing: 10px;
+            }
+
+            header {
+                padding: 15px 20px;
+            }
+
+            nav a {
+                margin-left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <header>
+        <a href="https://yuanchu.ai" class="logo">元初</a>
+        <nav>
+            <a href="https://yuanchu.ai">首页</a>
+            <a href="#" class="active">故事</a>
+            <a href="#stories">列表</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="title">
+            <h1 class="title-cn">神话</h1>
+            <p class="title-en">MYTHS</p>
+        </div>
+
+        <p class="intro">
+            中国古代神话与人工智能的对话<br>
+            在古老智慧中寻找AI的隐喻
+        </p>
+
+        <div class="stories-grid" id="stories">
+            <a href="pangu.html" class="story-card">
+                <h3>盘古开天</h3>
+                <p>混沌初开，智慧诞生。盘古的身体化作万物，隐喻着AI从数据中汲取力量。</p>
+                <p class="meta">Pangu · 创世</p>
+            </a>
+
+            <a href="#" class="story-card">
+                <h3>女娲造人</h3>
+                <p>泥土中诞生生命，如同AI从数据中生成内容。创造与被创造的轮回。</p>
+                <p class="meta">Nuwa · 创造</p>
+            </a>
+
+            <a href="#" class="story-card">
+                <h3>后羿射日</h3>
+                <p>九日当空，后羿射下八日。AI也需要去除冗余，专注核心问题。</p>
+                <p class="meta">Houyi · 精准</p>
+            </a>
+
+            <a href="#" class="story-card">
+                <h3>精卫填海</h3>
+                <p>一只小鸟，衔石填海。AI的持续学习，正是这种永不放弃的迭代精神。</p>
+                <p class="meta">Jingwei · 坚持</p>
+            </a>
+
+            <a href="#" class="story-card">
+                <h3>夸父追日</h3>
+                <p>追逐光明直至生命终点。AI追求知识边界的好奇心，正是这种探索精神。</p>
+                <p class="meta">Kuafu · 探索</p>
+            </a>
+
+            <a href="#" class="story-card">
+                <h3>鲧禹治水</h3>
+                <p>堵不如疏，洪水化作滋养。数据的流动需要智慧来疏导。</p>
+                <p class="meta">Gunyu · 疏导</p>
+            </a>
+        </div>
+
+        <footer>
+            <p>元初 · 神话</p>
+            <a href="https://yuanchu.ai">← 回到首页</a>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        const particleCount = 80;
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.speedY = (Math.random() - 0.5) * 0.2;
+                this.alpha = Math.random() * 0.3 + 0.1;
+            }
+            update() {
+                this.x += this.speedX + (targetX - width/2) * 0.00005;
+                this.y += this.speedY + (targetY - height/2) * 0.00005;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, width, height);
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
