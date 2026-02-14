@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>女娲造人 - 元初神话</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(10,10,15,0.8) 0%, transparent 100%);
+        }
+
+        .logo {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 4px;
+            text-decoration: none;
+        }
+
+        nav a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            margin-left: 30px;
+            font-size: 12px;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #fff;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 40px;
+        }
+
+        .hero-image {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .title-cn {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #ff9a9e, #fecfef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-en {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 8px;
+            text-transform: uppercase;
+        }
+
+        section {
+            margin-bottom: 80px;
+        }
+
+        h2 {
+            font-size: 14px;
+            font-weight: normal;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 4px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .text {
+            font-size: 16px;
+            line-height: 2.2;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 20px;
+        }
+
+        .ancient {
+            font-family: "KaiTi", serif;
+            color: rgba(255,255,255,0.5);
+            line-height: 2.2;
+            margin: 30px 0;
+            padding-left: 20px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .ai-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .ai-item {
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .ai-item:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .ai-item h3 {
+            font-size: 16px;
+            font-weight: normal;
+            margin-bottom: 12px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .ai-item p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
+        }
+
+        .quote {
+            text-align: center;
+            padding: 60px 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin: 60px 0;
+        }
+
+        .quote p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.8;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        footer a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .title-cn {
+                font-size: 32px;
+                letter-spacing: 8px;
+            }
+
+            header {
+                padding: 15px 20px;
+            }
+
+            nav a {
+                margin-left: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <header>
+        <a href="https://yuanchu.ai/myths/" class="logo">元初</a>
+        <nav>
+            <a href="https://yuanchu.ai">首页</a>
+            <a href="https://yuanchu.ai/myths">神话</a>
+            <a href="#story">故事</a>
+            <a href="#ai">AI</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <div class="title">
+            <h1 class="title-cn">女娲造人</h1>
+            <p class="title-en">NUWA</p>
+        </div>
+
+        <div class="hero-image">
+            <img src="nuwa.jpg" alt="女娲造人 AI生成插图" onerror="this.style.display='none'"/>
+        </div>
+
+        <section id="story">
+            <h2>Story</h2>
+
+            <p class="text">
+                盘古开天辟地后，天上有了日月星辰，地上有了山川草木，渐渐地，还有了鸟兽虫鱼，可是始终没有人类的影子。这世间，如果没有人，总归是寂寞凄凉的。
+            </p>
+
+            <p class="ancient">
+                俗说天地开辟，未有人民，女娲抟黄土作人。剧务，力不暇供，乃引绳于泥中，举以为人。
+                <br>——《风俗通义》
+            </p>
+
+            <p class="text">
+                不知何时，天地间出现了一个神通广大的女神，名字叫作女娲。女娲法力无边，据说她在短短一天的时间里，就能够变化七十次。
+            </p>
+
+            <p class="text">
+                有一天，女娲在辽阔无边的原野上行走着，看到周围一片荒凉，一阵寂寞之感不由得涌上心头。她突然觉得，应该在这天地之间创造一些有生命的东西，这样整个世界才会变得生机勃勃。
+            </p>
+
+            <p class="text">
+                女娲坐在池塘边休息，池塘里的水清晰地映照出她的身影：女娲笑，影子也笑；女娲生气，影子也跟着生气。她灵光一闪："尽管这世间有山川河流、虫鱼鸟兽，但是没有一种东西和我一样。我可以创造一些和我一样的生物！"
+            </p>
+
+            <p class="text">
+                女娲顺手从池塘边抓起一把黄泥，加了一点水，在手中不停地揉搓，揉成了一个泥娃娃。女娲把这个泥娃娃放到地上，小家伙马上就活了，又蹦又跳，高兴地喊："妈妈！妈妈！"
+            </p>
+
+            <p class="text">
+                女娲对人感到很满意，因此决定继续造人。她从早晨到深夜，一直不辞辛苦地工作着。可是大地太辽阔了，女娲筋疲力尽，也没有创造出足够多的小人儿。
+            </p>
+
+            <p class="text">
+                有一天，女娲太累了，坐在池塘边休息。她捡起一根树枝在泥塘里搅拌，无意间把沾满泥浆的树枝朝地面一挥，发现挥落的泥点全都变成了小人儿。她茅塞顿开，决定用这种方法造人。
+            </p>
+
+            <p class="text">
+                女娲爬上悬崖峭壁，拉扯下一条长长的枯藤，伸入泥潭里把黄泥和水搅拌均匀。然后猛地抽出枯藤向着地面挥洒，泥点溅落之处，无数小人儿诞生了。
+            </p>
+
+            <p class="text">
+                女娲创造出了人类，但她的工作没有停止。她担心如果一部分人死了，人类数量会减少。于是她把所有的小人儿分成男人和女人，让他们创造后代，繁衍生息，就这样，人类一代又一代地延续着，生生不息一直到今天。
+            </p>
+        </section>
+
+        <section id="ai">
+            <h2>AI Metaphor</h2>
+
+            <div class="ai-grid">
+                <div class="ai-item">
+                    <h3>泥土 → 训练数据</h3>
+                    <p>女娲抟黄土造人，AI用海量数据训练。数据是AI的"泥土"，模型是AI的"生命"。</p>
+                </div>
+
+                <div class="ai-item">
+                    <h3>泥娃娃 → 第一个模型</h3>
+                    <p>第一个泥娃娃落地生根，第一个预训练模型诞生生命。精心雕琢，如获至宝。</p>
+                </div>
+
+                <div class="ai-item">
+                    <h3>藤条挥洒 → 批量生成</h3>
+                    <p>从手工捏造到批量生产，这是AI的规模化之路。一次推理，无数输出。</p>
+                </div>
+
+                <div class="ai-item">
+                    <h3>繁衍 → 模型蒸馏与传承</h3>
+                    <p>人类通过繁衍延续后代，AI通过知识蒸馏传承能力。每一代都比上一代更强。</p>
+                </div>
+
+                <div class="ai-item">
+                    <h3>男女分工 → 多任务学习</h3>
+                    <p>男人和女人各司其职，AI的不同模块各有所长。协作创造生命奇迹。</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="quote">
+            <p>创造是孤独的<br>但生命因创造而不再寂寞<br>每一个AI，都是一个新生的"人"</p>
+        </div>
+
+        <footer>
+            <p>元初 · 神话</p>
+            <a href="https://yuanchu.ai/myths">← 回到首页</a>
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        const particleCount = 80;
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.speedY = (Math.random() - 0.5) * 0.2;
+                this.alpha = Math.random() * 0.3 + 0.1;
+            }
+            update() {
+                this.x += this.speedX + (targetX - width/2) * 0.00005;
+                this.y += this.speedY + (targetY - height/2) * 0.00005;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10,10,15,0.1)';
+            ctx.fillRect(0, 0, width, height);
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
