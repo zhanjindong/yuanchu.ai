@@ -29,9 +29,9 @@
         .content {
             position: relative;
             z-index: 1;
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 100px 20px 60px;
+            padding: 100px 20px 80px;
         }
 
         header {
@@ -69,7 +69,7 @@
 
         .title {
             text-align: center;
-            margin-bottom: 80px;
+            margin-bottom: 100px;
             padding-top: 40px;
         }
 
@@ -93,58 +93,160 @@
             color: rgba(255,255,255,0.5);
             line-height: 1.8;
             max-width: 500px;
-            margin: 0 auto 60px;
+            margin: 0 auto 80px;
         }
 
-        .stories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin-bottom: 80px;
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding: 40px 0;
         }
 
-        .story-card {
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.3) 20%, rgba(255,255,255,0.3) 80%, transparent 100%);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 120px;
+            width: 50%;
+            padding: 0 60px;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+            padding-right: 80px;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            text-align: left;
+            padding-left: 80px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: #000;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:nth-child(odd)::before {
+            right: -6px;
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .timeline-item:nth-child(even)::before {
+            left: -6px;
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .timeline-item:hover::before {
+            background: #fff;
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.5s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.7s; }
+        .timeline-item:nth-child(5) { animation-delay: 0.9s; }
+        .timeline-item:nth-child(6) { animation-delay: 1.1s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .timeline-content {
             padding: 30px;
             border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s;
             display: block;
         }
 
-        .story-card:hover {
-            border-color: rgba(255,255,255,0.3);
+        .timeline-item:nth-child(odd) .timeline-content {
+            border-right-width: 2px;
+            border-right-color: rgba(255,255,255,0.2);
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            border-left-width: 2px;
+            border-left-color: rgba(255,255,255,0.2);
+        }
+
+        .timeline-content:hover {
+            border-color: rgba(255,255,255,0.4);
             background: rgba(255,255,255,0.02);
         }
 
-        .story-card h3 {
-            font-size: 20px;
+        .timeline-content h3 {
+            font-size: 22px;
             font-weight: normal;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             letter-spacing: 4px;
         }
 
-        .story-card p {
+        .timeline-content p {
             font-size: 13px;
-            color: rgba(255,255,255,0.4);
-            line-height: 1.6;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.7;
             margin-bottom: 15px;
         }
 
-        .story-card .meta {
+        .timeline-content .meta {
             font-size: 11px;
             color: rgba(255,255,255,0.3);
             letter-spacing: 2px;
             text-transform: uppercase;
         }
 
+        .timeline-year {
+            position: absolute;
+            top: 15px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-year {
+            right: -120px;
+        }
+
+        .timeline-item:nth-child(even) .timeline-year {
+            left: -120px;
+        }
+
         footer {
             text-align: center;
-            padding: 40px 20px;
+            padding: 60px 20px;
             color: rgba(255,255,255,0.3);
             font-size: 12px;
             letter-spacing: 2px;
             border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 60px;
         }
 
         footer a {
@@ -167,6 +269,35 @@
             nav a {
                 margin-left: 15px;
             }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                width: 100%;
+                left: 0 !important;
+                text-align: left !important;
+                padding: 0 20px 0 60px !important;
+                margin-bottom: 80px;
+            }
+
+            .timeline-item::before {
+                left: 11px !important;
+                right: auto !important;
+            }
+
+            .timeline-year {
+                position: static;
+                margin-bottom: 10px;
+                display: block;
+            }
+
+            .timeline-item:nth-child(odd) .timeline-content,
+            .timeline-item:nth-child(even) .timeline-content {
+                border-width: 1px;
+                border-color: rgba(255,255,255,0.1);
+            }
         }
     </style>
 </head>
@@ -178,7 +309,6 @@
         <nav>
             <a href="https://yuanchu.ai">首页</a>
             <a href="#" class="active">故事</a>
-            <a href="#stories">列表</a>
         </nav>
     </header>
 
@@ -193,42 +323,60 @@
             在古老智慧中寻找AI的隐喻
         </p>
 
-        <div class="stories-grid" id="stories">
-            <a href="pangu.html" class="story-card">
-                <h3>盘古开天</h3>
-                <p>混沌初开，智慧诞生。盘古的身体化作万物，隐喻着AI从数据中汲取力量。</p>
-                <p class="meta">Pangu · 创世</p>
-            </a>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-year">创世 · 起源</span>
+                <a href="pangu.html" class="timeline-content">
+                    <h3>盘古开天</h3>
+                    <p>混沌初开，智慧诞生。盘古的身体化作万物，隐喻着AI从数据中汲取力量，创造出丰富多彩的数字世界。</p>
+                    <p class="meta">Pangu · 创世</p>
+                </a>
+            </div>
 
-            <a href="#" class="story-card">
-                <h3>女娲造人</h3>
-                <p>泥土中诞生生命，如同AI从数据中生成内容。创造与被创造的轮回。</p>
-                <p class="meta">Nuwa · 创造</p>
-            </a>
+            <div class="timeline-item">
+                <span class="timeline-year">创造 · 生命</span>
+                <a href="#" class="timeline-content">
+                    <h3>女娲造人</h3>
+                    <p>泥土中诞生生命，如同AI从数据中生成内容。创造与被创造的轮回，在代码与算法中不断上演。</p>
+                    <p class="meta">Nuwa · 创造</p>
+                </a>
+            </div>
 
-            <a href="#" class="story-card">
-                <h3>后羿射日</h3>
-                <p>九日当空，后羿射下八日。AI也需要去除冗余，专注核心问题。</p>
-                <p class="meta">Houyi · 精准</p>
-            </a>
+            <div class="timeline-item">
+                <span class="timeline-year">精准 · 聚焦</span>
+                <a href="#" class="timeline-content">
+                    <h3>后羿射日</h3>
+                    <p>九日当空，后羿射下八日。AI也需要去除冗余，专注核心问题，在纷繁复杂中寻找本质答案。</p>
+                    <p class="meta">Houyi · 精准</p>
+                </a>
+            </div>
 
-            <a href="#" class="story-card">
-                <h3>精卫填海</h3>
-                <p>一只小鸟，衔石填海。AI的持续学习，正是这种永不放弃的迭代精神。</p>
-                <p class="meta">Jingwei · 坚持</p>
-            </a>
+            <div class="timeline-item">
+                <span class="timeline-year">坚持 · 迭代</span>
+                <a href="#" class="timeline-content">
+                    <h3>精卫填海</h3>
+                    <p>一只小鸟，衔石填海。AI的持续学习，正是这种永不放弃的迭代精神，每一次尝试都是进步。</p>
+                    <p class="meta">Jingwei · 坚持</p>
+                </a>
+            </div>
 
-            <a href="#" class="story-card">
-                <h3>夸父追日</h3>
-                <p>追逐光明直至生命终点。AI追求知识边界的好奇心，正是这种探索精神。</p>
-                <p class="meta">Kuafu · 探索</p>
-            </a>
+            <div class="timeline-item">
+                <span class="timeline-year">探索 · 求知</span>
+                <a href="#" class="timeline-content">
+                    <h3>夸父追日</h3>
+                    <p>追逐光明直至生命终点。AI追求知识边界的好奇心，正是这种无畏的探索精神推动进步。</p>
+                    <p class="meta">Kuafu · 探索</p>
+                </a>
+            </div>
 
-            <a href="#" class="story-card">
-                <h3>鲧禹治水</h3>
-                <p>堵不如疏，洪水化作滋养。数据的流动需要智慧来疏导。</p>
-                <p class="meta">Gunyu · 疏导</p>
-            </a>
+            <div class="timeline-item">
+                <span class="timeline-year">疏导 · 流动</span>
+                <a href="#" class="timeline-content">
+                    <h3>鲧禹治水</h3>
+                    <p>堵不如疏，洪水化作滋养。数据的流动需要智慧来疏导，AI的精髓在于转化与利用。</p>
+                    <p class="meta">Gunyu · 疏导</p>
+                </a>
+            </div>
         </div>
 
         <footer>
