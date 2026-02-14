@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0a0f;
+            background: #000;
             color: #fff;
             min-height: 100vh;
             overflow-x: hidden;
@@ -87,12 +87,8 @@
         .title-cn {
             font-size: 48px;
             font-weight: 300;
-            letter-spacing: 12px;
+            letter-spacing: 20px;
             margin-bottom: 15px;
-            background: linear-gradient(90deg, #ff9a9e, #fecfef);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .title-en {
@@ -195,7 +191,7 @@
         @media (max-width: 768px) {
             .title-cn {
                 font-size: 32px;
-                letter-spacing: 8px;
+                letter-spacing: 10px;
             }
 
             header {
@@ -373,7 +369,7 @@
         });
 
         function animate() {
-            ctx.fillStyle = 'rgba(10,10,15,0.1)';
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
             ctx.fillRect(0, 0, width, height);
             targetX += (mouseX - targetX) * 0.05;
             targetY += (mouseY - targetY) * 0.05;
