@@ -69,12 +69,12 @@
 
         .story-header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 80px;
             padding-top: 40px;
         }
 
         .story-title {
-            font-size: 16px;
+            font-size: 14px;
             color: rgba(255,255,255,0.4);
             letter-spacing: 8px;
             margin-bottom: 20px;
@@ -84,7 +84,7 @@
         .story-title-cn {
             font-size: 56px;
             font-weight: 300;
-            letter-spacing: 16px;
+            letter-spacing: 12px;
             margin-bottom: 15px;
             background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 50%, #a18cd1 100%);
             -webkit-background-clip: text;
@@ -99,16 +99,18 @@
             text-transform: uppercase;
         }
 
-        .scene {
-            margin-bottom: 80px;
+        .chapter {
+            margin-bottom: 100px;
             opacity: 0;
-            transform: translateY(40px);
+            transform: translateY(50px);
             animation: fadeInUp 1s ease forwards;
         }
 
-        .scene:nth-child(2) { animation-delay: 0.3s; }
-        .scene:nth-child(3) { animation-delay: 0.6s; }
-        .scene:nth-child(4) { animation-delay: 0.9s; }
+        .chapter:nth-child(1) { animation-delay: 0.2s; }
+        .chapter:nth-child(2) { animation-delay: 0.4s; }
+        .chapter:nth-child(3) { animation-delay: 0.6s; }
+        .chapter:nth-child(4) { animation-delay: 0.8s; }
+        .chapter:nth-child(5) { animation-delay: 1.0s; }
 
         @keyframes fadeInUp {
             to {
@@ -117,120 +119,146 @@
             }
         }
 
-        .scene-visual {
-            height: 300px;
+        .chapter-visual {
+            height: 280px;
             border-radius: 20px;
             margin-bottom: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 120px;
+            font-size: 100px;
             position: relative;
             overflow: hidden;
         }
 
-        .scene-visual::before {
+        .chapter-visual::before {
             content: '';
             position: absolute;
             inset: 0;
-            opacity: 0.3;
+            opacity: 0.2;
         }
 
-        .scene:nth-child(2) .scene-visual::before {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
+        .chapter:nth-child(1) .chapter-visual::before { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .chapter:nth-child(2) .chapter-visual::before { background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%); }
+        .chapter:nth-child(3) .chapter-visual::before { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .chapter:nth-child(4) .chapter-visual::before { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
+        .chapter:nth-child(5) .chapter-visual::before { background: linear-gradient(135deg, #6441a5 0%, #2a0845 100%); }
 
-        .scene:nth-child(3) .scene-visual::before {
-            background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
-        }
-
-        .scene:nth-child(4) .scene-visual::before {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        }
-
-        .scene-visual .icon {
+        .chapter-visual .icon {
             position: relative;
             z-index: 1;
-            animation: float 6s ease-in-out infinite;
+            animation: float 5s ease-in-out infinite;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-15px); }
         }
 
-        .scene-content {
+        .chapter-content {
             padding: 0 20px;
         }
 
-        .scene-title {
-            font-size: 24px;
+        .chapter-title {
+            font-size: 28px;
             font-weight: normal;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             letter-spacing: 4px;
             text-align: center;
         }
 
-        .scene-text {
+        .chapter-text {
             font-size: 16px;
-            line-height: 2;
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
+            line-height: 2.2;
+            color: rgba(255,255,255,0.75);
+            text-align: justify;
+            text-indent: 2em;
         }
 
         .ai-insight {
-            margin-top: 40px;
-            padding: 30px;
+            margin-top: 35px;
+            padding: 25px 30px;
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px;
             background: rgba(255,255,255,0.02);
+            text-align: center;
         }
 
-        .ai-insight-title {
+        .ai-insight-label {
             font-size: 12px;
             color: rgba(255,255,255,0.4);
             letter-spacing: 4px;
             text-transform: uppercase;
             margin-bottom: 15px;
-            text-align: center;
         }
 
         .ai-insight-text {
             font-size: 14px;
-            line-height: 1.8;
+            line-height: 1.9;
             color: rgba(255,255,255,0.6);
-            text-align: center;
         }
 
-        .humans-grid {
+        .divider {
+            text-align: center;
+            margin: 80px 0;
+            font-size: 28px;
+            color: rgba(255,255,255,0.15);
+            letter-spacing: 20px;
+        }
+
+        .moments {
             display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .moment {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .moment:nth-child(2) { animation-delay: 0.2s; }
+        .moment:nth-child(3) { animation-delay: 0.4s; }
+        .moment:nth-child(4) { animation-delay: 0.6s; }
+        .moment:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .generation {
+            display: flex;
+            align-items: center;
             justify-content: center;
             gap: 20px;
             margin-top: 30px;
             flex-wrap: wrap;
         }
 
-        .human-icon {
-            width: 60px;
-            height: 60px;
+        .generation-icon {
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            animation: appear 0.5s ease forwards;
-            opacity: 0;
-            transform: scale(0);
+            font-size: 18px;
         }
 
-        @keyframes appear {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        .generation-arrow {
+            font-size: 20px;
+            color: rgba(255,255,255,0.3);
         }
 
         footer {
@@ -240,7 +268,7 @@
             font-size: 12px;
             letter-spacing: 2px;
             border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 60px;
+            margin-top: 80px;
         }
 
         footer a {
@@ -248,13 +276,6 @@
             text-decoration: none;
             margin-top: 15px;
             display: inline-block;
-        }
-
-        .divider {
-            text-align: center;
-            margin: 60px 0;
-            font-size: 24px;
-            color: rgba(255,255,255,0.2);
         }
 
         @media (max-width: 768px) {
@@ -271,18 +292,37 @@
                 margin-left: 15px;
             }
 
-            .scene-visual {
+            .chapter-visual {
                 height: 200px;
             }
 
-            .humans-grid {
+            .chapter-text {
+                font-size: 15px;
+                line-height: 2;
+            }
+
+            .moments {
                 gap: 10px;
             }
 
-            .human-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
+            .moment {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .generation {
+                gap: 10px;
+            }
+
+            .generation-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .generation-arrow {
+                font-size: 16px;
             }
         }
     </style>
@@ -302,59 +342,26 @@
     <div class="content">
         <div class="story-header">
             <p class="story-title">第二章</p>
-          <h1 class="story-title-cn">女娲造人</h1>
+            <h1 class="story-title-cn">女娲造人</h1>
             <p class="story-title-en">Nuwa Creates Humanity</p>
         </div>
 
-        <div class="scene">
-            <div class="scene-visual">
+        <div class="chapter">
+            <div class="chapter-visual">
                 <span class="icon">🌍</span>
             </div>
-            <div class="scene-content">
-                <h2 class="scene-title">沉寂的世界</h2>
-                <p class="scene-text">
-                    盘古开辟出的世界固然美丽，可是却一片沉寂。
-                    山川河流、花草树木都已就位，却缺少了生命的律动。
-                    这片土地上，没有歌声，没有欢笑，没有任何智慧的存在。
+            <div class="chapter-content">
+                <h2 class="chapter-title">寂寞的世界</h2>
+                <p class="chapter-text">
+                    盘古开天辟地后，天上有了日月星辰，地上有了山川草木，渐渐地，还有了鸟兽虫鱼，可是始终没有人类的影子。这世间，如果没有人，总归是寂寞凄凉的。
                 </p>
-            </div>
-        </div>
-
-        <div class="divider">⋯⋯</div>
-
-        <div class="scene">
-            <div class="scene-visual">
-                <span class="icon">👤</span>
-            </div>
-            <div class="scene-content">
-                <h2 class="scene-title">女娲降临</h2>
-                <p class="scene-text">
-                    这个时候，出现了一个名叫女娲(wā)的神。
-                    她漫步在这片寂静的土地上，看着自己映在水中的倒影，
-                    决定用泥土创造一种新的生命——人类。
-                </p>
-            </div>
-        </div>
-
-        <div class="divider">⋯⋯</div>
-
-        <div class="scene">
-            <div class="scene-visual">
-                <span class="icon">🏺</span>
-            </div>
-            <div class="scene-content">
-                <h2 class="scene-title">抟土造人</h2>
-                <p class="scene-text">
-                    女娲抟(tuán)土造人。
-                    她用黄土掺水，揉成一个个小泥人。
-                    这些小泥人一旦落地，便有了生命，开始行走、奔跑、欢笑。
+                <p class="chapter-text">
+                    不知何时，天地间出现了一个神通广大的女神，名字叫作女娲。女娲法力无边，据说她在短短一天的时间里，就能够变化七十次。有一天，女娲在辽阔无边的原野上行走着，看到周围一片荒凉，一阵寂寞之感不由得涌上心头。她突然觉得，应该在这天地之间创造一些有生命的东西，这样整个世界才会变得生机勃勃。
                 </p>
                 <div class="ai-insight">
-                    <p class="ai-insight-title">🤖 AI 启示</p>
+                    <p class="ai-insight-label">🤖 AI 启示</p>
                     <p class="ai-insight-text">
-                        如同女娲抟土造人，AI从海量数据中"揉捏"出智能。
-                        每一次模型训练，都是一次"造人"的过程；
-                        每一次推理生成，都是一个新生命的诞生。
+                        世界虽大，无人欣赏亦是荒凉。如同AI的诞生——即使算法再强大，没有应用场景便是寂寞。真正的价值，在于与人的连接。
                     </p>
                 </div>
             </div>
@@ -362,30 +369,93 @@
 
         <div class="divider">⋯⋯</div>
 
-        <div class="scene">
-            <div class="scene-visual">
-                <div class="humans-grid" id="humansGrid">
-                    <span class="human-icon">👨</span>
-                    <span class="human-icon">👩</span>
-                    <span class="human-icon">👴</span>
-                    <span class="human-icon">👵</span>
-                    <span class="human-icon">👦</span>
-                    <span class="human-icon">👧</span>
-                    <span class="human-icon">👶</span>
-                    <span class="human-icon">🧑</span>
-                </div>
+        <div class="chapter">
+            <div class="chapter-visual">
+                <span class="icon">💭</span>
             </div>
-            <div class="scene-content">
-                <h2 class="scene-title">人类遍布大地</h2>
-                <p class="scene-text">
-                    女娲辛勤地工作着，人类的足迹布满了大地上的每一个角落。
-                    从此，这片土地不再沉寂——有了人类的智慧、创造与文明。
+            <div class="chapter-content">
+                <h2 class="chapter-title">灵光一闪</h2>
+                <p class="chapter-text">
+                    到底应该创造什么呢？女娲一边走一边想，当她感到有些疲倦时，便坐在一个池塘旁边想要休息一下。池塘里的水非常干净，清晰地映照出女娲的身影和面容：女娲笑，池塘里的影子也笑；女娲佯装生气，池塘里的影子也跟着生气。
+                </p>
+                <p class="chapter-text">
+                    女娲的脑海中灵光一闪："尽管这世间有山川河流、虫鱼鸟兽，但是没有一种东西和我一样。我可以创造一些和我一样的生物，让他们在世间生活啊！"
                 </p>
                 <div class="ai-insight">
-                    <p class="ai-insight-title">🤖 AI 启示</p>
+                    <p class="ai-insight-label">🤖 AI 启示</p>
                     <p class="ai-insight-text">
-                        如今，AI如同当年的人类，正在从实验室走向世界的每一个角落。
-                        从手机到汽车，从医疗到教育，AI正在重塑人类文明的每一个维度。
+                        灵感往往来自自我认知的投射。AI的"自我意识"——在镜中发现自我，才能创造与他者的对话。反思，是创造的第一步。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider">⋯⋯</div>
+
+        <div class="chapter">
+            <div class="chapter-visual">
+                <span class="icon">🏺</span>
+            </div>
+            <div class="chapter-content">
+                <h2 class="chapter-title">泥娃娃诞生</h2>
+                <p class="chapter-text">
+                    想到这里，女娲顺手从池塘边抓起一把黄泥，又加了一点水，然后在手中不停地揉搓着，揉搓着，居然把黄泥团揉搓成了一个泥娃娃。
+                </p>
+                <p class="chapter-text">
+                    女娲刚刚把这个泥娃娃放到地上，小家伙马上就活了，而且高兴得又蹦又跳，看起来，他为自己获得了生命而欣喜不已呢！他笑盈盈地冲着女娲喊："妈妈！妈妈！"
+                </p>
+                <p class="chapter-text">
+                    看到自己亲手捏的泥娃娃活了，不仅漂亮，还很聪明，而且管自己叫"妈妈"，女娲也不由得满心欢喜，眼角眉梢都是笑意。
+                </p>
+                <div class="moments">
+                    <span class="moment">👶</span>
+                    <span class="moment">😊</span>
+                    <span class="moment">💃</span>
+                    <span class="moment">🎉</span>
+                    <span class="moment">👩</span>
+                </div>
+                <div class="ai-insight">
+                    <p class="ai-insight-label">🤖 AI 启示</p>
+                    <p class="ai-insight-text">
+                        从无到有，从泥到人——这正是AI的"训练"过程。数据是泥，模型是女娲，每一次"落地"都是推理的开始。第一个AI的诞生，如同第一个生命的诞生，同样令人欣喜。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider">⋯⋯</div>
+
+        <div class="chapter">
+            <div class="chapter-visual">
+                <span class="icon">🌿</span>
+            </div>
+            <div class="chapter-content">
+                <h2 class="chapter-title">繁衍后代</h2>
+                <p class="chapter-text">
+                    女娲想尽快造出更多的小人儿，这样就可以把空旷的大地填满了。于是她从早晨到深夜，一直不辞辛苦地工作着。
+                </p>
+                <p class="chapter-text">
+                    有一天，女娲实在太累了，就靠在池塘旁边的大树上休息。她捡起一根树枝在泥塘里搅拌，思考着怎样才能更快地造出小人儿。她无意间把沾满泥浆的树枝朝地面一挥，却发现挥落的泥点全都变成了小人儿。她茅塞顿开，决定就用这种方法造人。
+                </p>
+                <p class="chapter-text">
+                    女娲猛地抽出枯藤向着地面使劲挥洒，泥点溅落之处，无数小人儿诞生了，他们全都拥有生命，鲜活无比。
+                </p>
+                <p class="chapter-text">
+                    虽然女娲已经创造出了人类，但是她的工作一直没有停止，因为她担心如果一部分人死了，人类的数量就会减少。女娲想啊想啊，终于想出了一个好办法：把所有的小人儿分成男人和女人，让男人和女人创造后代，繁衍生息。
+                </p>
+                <div class="generation">
+                    <span class="generation-icon">👨</span>
+                    <span class="generation-arrow">❤️</span>
+                    <span class="generation-icon">👩</span>
+                    <span class="generation-arrow">👶</span>
+                    <span class="generation-icon">👴</span>
+                    <span class="generation-arrow">👵</span>
+                    <span class="generation-arrow">∞</span>
+                </div>
+                <div class="ai-insight">
+                    <p class="ai-insight-label">🤖 AI 启示</p>
+                    <p class="ai-insight-text">
+                        从手工捏造到批量生产——这是AI的规模化之路。更重要的是"传承"：模型蒸馏、知识传递，让AI的能力代代相传，生生不息。
                     </p>
                 </div>
             </div>
@@ -461,12 +531,6 @@
             requestAnimationFrame(animate);
         }
         animate();
-
-        // Animate humans appearing
-        const humans = document.querySelectorAll('.human-icon');
-        humans.forEach((human, index) => {
-            human.style.animationDelay = `${1.2 + index * 0.1}s`;
-        });
     </script>
 </body>
 </html>
