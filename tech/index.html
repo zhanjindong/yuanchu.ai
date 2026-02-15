@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>技术 - 元初AI</title>
+    <title>技术文章 - 元初AI</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -18,7 +18,7 @@
             position: relative;
             z-index: 1;
             padding: 40px 20px;
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .back {
@@ -45,56 +45,46 @@
             letter-spacing: 12px;
             margin-bottom: 60px;
         }
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+        .article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }
-        .tech-item {
-            padding: 30px;
-            border-left: 1px solid rgba(255,255,255,0.2);
+        .article-item {
+            display: block;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            text-decoration: none;
             transition: all 0.3s;
         }
-        .tech-item:hover {
-            border-left-color: rgba(255,255,255,0.8);
+        .article-item:first-child {
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .article-item:hover {
+            padding-left: 20px;
             background: rgba(255,255,255,0.02);
         }
-        .tech-item h3 {
-            font-size: 18px;
+        .article-title {
+            font-size: 20px;
             font-weight: 400;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.85);
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            transition: color 0.3s;
         }
-        .tech-item p {
-            font-size: 14px;
-            color: rgba(255,255,255,0.4);
-            line-height: 1.8;
-        }
-        .tech-stack {
-            margin-top: 80px;
-        }
-        .tech-stack h2 {
-            font-size: 24px;
-            font-weight: 300;
-            letter-spacing: 8px;
-            margin-bottom: 40px;
-        }
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .tag {
-            padding: 10px 20px;
-            font-size: 14px;
-            color: rgba(255,255,255,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-        }
-        .tag:hover {
+        .article-item:hover .article-title {
             color: #fff;
-            border-color: rgba(255,255,255,0.5);
+        }
+        .article-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+        }
+        .article-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         footer {
             margin-top: 100px;
@@ -109,54 +99,27 @@
 <body>
     <canvas id="canvas"></canvas>
     <div class="content">
-        <a href="index.html" class="back">BACK</a>
-        <div class="section-title">TECHNOLOGY</div>
-        <h1>技术</h1>
-        <div class="tech-grid">
-            <div class="tech-item">
-                <h3>大语言模型</h3>
-                <p>自研千亿参数大模型，理解、生成、推理能力达到行业领先水平。</p>
-            </div>
-            <div class="tech-item">
-                <h3>多模态理解</h3>
-                <p>融合文本、图像、音频、视频，实现跨模态智能交互。</p>
-            </div>
-            <div class="tech-item">
-                <h3>Agent 框架</h3>
-                <p>自主规划、多步推理、工具调用，构建通用智能体。</p>
-            </div>
-            <div class="tech-item">
-                <h3>知识图谱</h3>
-                <p>结构化知识表示与推理，让AI具备常识推理能力。</p>
-            </div>
-            <div class="tech-item">
-                <h3>向量检索</h3>
-                <p>百亿级向量毫秒级检索，实现精准语义搜索。</p>
-            </div>
-            <div class="tech-item">
-                <h3>模型压缩</h3>
-                <p>知识蒸馏、量化加速，模型体积更小、推理更快。</p>
-            </div>
-        </div>
-        <div class="tech-stack">
-            <h2>技术栈</h2>
-            <div class="tags">
-                <span class="tag">Python</span>
-                <span class="tag">PyTorch</span>
-                <span class="tag">TensorRT</span>
-                <span class="tag">vLLM</span>
-                <span class="tag">LangChain</span>
-                <span class="tag">OpenAI</span>
-                <span class="tag">Claude</span>
-                <span class="tag">向量数据库</span>
-                <span class="tag">Kubernetes</span>
-                <span class="tag">Docker</span>
-                <span class="tag">微服务</span>
-                <span class="tag">CI/CD</span>
-            </div>
+        <a href="../index.html" class="back">BACK</a>
+        <div class="section-title">TECH ARTICLES</div>
+        <h1>技术文章</h1>
+        <div class="article-list">
+            <a href="openteam-architecture.md" class="article-item">
+                <div class="article-title">OpenTeam：用 Claude Code 构建多 Agent 协作开发团队的架构与实现</div>
+                <div class="article-meta">
+                    <span>Jackie Zhan</span>
+                    <span>2026-02-15</span>
+                </div>
+            </a>
+            <a href="quickstart.md" class="article-item">
+                <div class="article-title">OpenTeam 快速开始</div>
+                <div class="article-meta">
+                    <span>Jackie Zhan</span>
+                    <span>2026-02-15</span>
+                </div>
+            </a>
         </div>
         <footer>
-            <p>© 2026 元初AI · ORIGIN OF INTELLIGENCE</p>
+            <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
         </footer>
     </div>
     <script>
