@@ -1,3 +1,8 @@
+---
+title: OpenTeam 快速开始
+layout: default
+---
+
 # OpenTeam 快速开始
 
 ## 前置要求

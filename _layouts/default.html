@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #canvas { position: fixed; top: 0; left: 0; z-index: 0; }
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: 40px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .back {
+            display: inline-block;
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            letter-spacing: 4px;
+            margin-bottom: 60px;
+            transition: color 0.3s;
+        }
+        .back:hover { color: #fff; }
+        .back::before { content: '← '; }
+        .article-content {
+            line-height: 1.9;
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+        }
+        .article-content h1 {
+            font-size: 36px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .article-content h2 {
+            font-size: 24px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .article-content h3 {
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            color: rgba(255,255,255,0.85);
+        }
+        .article-content h4 {
+            font-size: 17px;
+            font-weight: 500;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: rgba(255,255,255,0.8);
+        }
+        .article-content p {
+            margin-bottom: 16px;
+        }
+        .article-content a {
+            color: #6cb6ff;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(108,182,255,0.3);
+            transition: border-color 0.3s;
+        }
+        .article-content a:hover {
+            border-bottom-color: #6cb6ff;
+        }
+        .article-content blockquote {
+            border-left: 3px solid rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            margin: 20px 0;
+            color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.03);
+        }
+        .article-content pre {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .article-content code {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 14px;
+        }
+        .article-content p code,
+        .article-content li code {
+            background: rgba(255,255,255,0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .article-content ul, .article-content ol {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        .article-content li {
+            margin-bottom: 6px;
+        }
+        .article-content hr {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin: 40px 0;
+        }
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .article-content th,
+        .article-content td {
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: left;
+        }
+        .article-content th {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+        .article-content td {
+            color: rgba(255,255,255,0.6);
+        }
+        .article-content strong {
+            color: rgba(255,255,255,0.95);
+            font-weight: 600;
+        }
+        .article-content em {
+            color: rgba(255,255,255,0.6);
+        }
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="content">
+        <a href="{{ '/tech/index.html' | relative_url }}" class="back">BACK</a>
+        <div class="article-content">
+            {{ content }}
+        </div>
+        <footer>
+            <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+        </footer>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [], mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+        const particleCount = 80;
+        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize);
+        resize();
+        class Particle {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random() * width; this.y = Math.random() * height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.alpha = Math.random() * 0.5 + 0.2; }
+            update() { this.x += this.speedX + (targetX - width/2) * 0.0001; this.y += this.speedY + (targetY - height/2) * 0.0001; if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset(); }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${this.alpha})`; ctx.fill(); }
+        }
+        for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+        function animate() { ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0, 0, width, height); targetX += (mouseX - targetX) * 0.05; targetY += (mouseY - targetY) * 0.05; particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+        animate();
+    </script>
+</body>
+</html>
