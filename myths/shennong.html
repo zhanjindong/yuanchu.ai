@@ -369,6 +369,8 @@
                 this.y += this.speedY + (targetY - height/2)  * 0.0001;
                 if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
                     this.reset();
+                    this.x = Math.random() < 0.5 ? 0 : width;
+                    this.y = Math.random() * height;
                 }
             }
             draw() {
