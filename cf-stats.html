@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>统计 - 元初AI</title>
+    <title>流量统计 - 元初AI</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -43,6 +43,12 @@
             font-size: 48px;
             font-weight: 300;
             letter-spacing: 12px;
+            margin-bottom: 12px;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 2px;
             margin-bottom: 40px;
         }
 
@@ -191,13 +197,40 @@
             padding: 24px;
             position: relative;
         }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
         .chart-title {
             font-size: 14px;
             color: rgba(255,255,255,0.5);
             letter-spacing: 4px;
-            margin-bottom: 16px;
         }
-        #trendChart {
+        .granularity-btns {
+            display: flex;
+            gap: 0;
+        }
+        .gran-btn {
+            padding: 4px 12px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            background: none;
+            border: 1px solid rgba(255,255,255,0.12);
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+        .gran-btn:not(:first-child) { border-left: none; }
+        .gran-btn.active {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.25);
+        }
+        .gran-btn.active + .gran-btn { border-left-color: rgba(255,255,255,0.25); }
+        .trend-canvas {
             width: 100%;
             display: block;
         }
@@ -253,11 +286,11 @@
             color: rgba(255,255,255,0.7);
         }
         thead th.sorted-asc::after {
-            content: ' ▲';
+            content: ' \u25B2';
             font-size: 10px;
         }
         thead th.sorted-desc::after {
-            content: ' ▼';
+            content: ' \u25BC';
             font-size: 10px;
         }
         tbody tr {
@@ -279,6 +312,99 @@
             letter-spacing: 1px;
         }
 
+        /* Bar */
+        .bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            margin-top: 4px;
+        }
+        .bar-fill {
+            height: 100%;
+            background: rgba(100,180,255,0.5);
+            transition: width 0.5s;
+        }
+
+        /* Two-column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* Security cards */
+        .security-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Canvas chart for bar */
+        .bar-chart-container {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+        }
+        .bar-chart-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+        .bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .bar-label {
+            width: 120px;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bar-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            margin: 0 12px;
+        }
+        .bar-fill-h {
+            height: 100%;
+            transition: width 0.5s;
+        }
+        .bar-pct {
+            width: 50px;
+            text-align: right;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Status code badge */
+        .status-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .status-badge {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+        }
+        .status-badge.s2xx { border-color: rgba(100,255,160,0.3); color: rgba(100,255,160,0.8); }
+        .status-badge.s3xx { border-color: rgba(100,180,255,0.3); color: rgba(100,180,255,0.8); }
+        .status-badge.s4xx { border-color: rgba(255,200,100,0.3); color: rgba(255,200,100,0.8); }
+        .status-badge.s5xx { border-color: rgba(255,100,100,0.3); color: rgba(255,100,100,0.8); }
+
         /* Footer */
         footer {
             margin-top: 100px;
@@ -288,6 +414,12 @@
             font-size: 12px;
             color: rgba(255,255,255,0.3);
         }
+        .data-source {
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
 
         /* Dashboard hidden until loaded */
         #dashboard { display: none; }
@@ -296,9 +428,9 @@
             h1 {
                 font-size: 32px;
                 letter-spacing: 8px;
-                margin-bottom: 30px;
+                margin-bottom: 8px;
             }
-            .metrics {
+            .metrics, .security-metrics {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
             }
@@ -326,15 +458,22 @@
             .chart-container {
                 padding: 16px 12px;
             }
+            .two-col {
+                grid-template-columns: 1fr;
+            }
             table {
                 font-size: 13px;
             }
             thead th, tbody td {
                 padding: 10px 10px;
             }
+            .bar-label {
+                width: 80px;
+                font-size: 12px;
+            }
         }
         @media (max-width: 480px) {
-            .metrics {
+            .metrics, .security-metrics {
                 grid-template-columns: 1fr 1fr;
             }
             .metric-value {
@@ -347,8 +486,9 @@
     <canvas id="canvas"></canvas>
     <div class="content">
         <a href="index.html" class="back">BACK</a>
-        <div class="section-title">ANALYTICS</div>
-        <h1>统计</h1>
+        <div class="section-title">CLOUDFLARE ANALYTICS</div>
+        <h1>流量统计</h1>
+        <div class="subtitle">数据来源：Cloudflare Analytics API</div>
 
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
@@ -357,43 +497,48 @@
         <div id="errorState" class="error-msg" style="display:none;"></div>
 
         <div id="dashboard">
-            <!-- Metric Cards -->
-            <div class="metrics">
-                <div class="metric-card">
-                    <div class="metric-label">总 PV</div>
-                    <div class="metric-value" id="totalPV">-</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">总 UV</div>
-                    <div class="metric-value" id="totalUV">-</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">今日 PV</div>
-                    <div class="metric-value" id="todayPV">-</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">今日 UV</div>
-                    <div class="metric-value" id="todayUV">-</div>
-                </div>
-            </div>
-
             <!-- Controls -->
             <div class="controls">
                 <div class="range-btns">
-                    <button class="range-btn" data-range="today">今日</button>
+                    <button class="range-btn" data-range="1d">今日</button>
                     <button class="range-btn active" data-range="7d">7天</button>
                     <button class="range-btn" data-range="30d">30天</button>
-                    <button class="range-btn" data-range="all">全部</button>
                 </div>
                 <select class="domain-select" id="domainFilter">
                     <option value="">全部域名</option>
                 </select>
             </div>
 
+            <!-- Metric Cards -->
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-label">总请求数</div>
+                    <div class="metric-value" id="mRequests">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">页面浏览量</div>
+                    <div class="metric-value" id="mPageViews">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">独立访客</div>
+                    <div class="metric-value" id="mUniques">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">总带宽</div>
+                    <div class="metric-value" id="mBandwidth">-</div>
+                </div>
+            </div>
+
             <!-- Trend Chart -->
             <div class="chart-container">
-                <div class="chart-title">趋势</div>
-                <canvas id="trendChart" height="300"></canvas>
+                <div class="chart-header">
+                    <div class="chart-title">访问趋势</div>
+                    <div class="granularity-btns">
+                        <button class="gran-btn active" data-gran="daily">按天</button>
+                        <button class="gran-btn" data-gran="hourly">按小时</button>
+                    </div>
+                </div>
+                <canvas id="trendChart" class="trend-canvas" height="300"></canvas>
                 <div class="chart-tooltip" id="chartTooltip"></div>
             </div>
 
@@ -405,8 +550,8 @@
                         <thead>
                             <tr>
                                 <th>域名</th>
-                                <th>PV</th>
-                                <th>UV</th>
+                                <th class="sortable" data-table="domain" data-key="requests">请求数</th>
+                                <th>占比</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -416,25 +561,80 @@
 
             <!-- Page Detail Table -->
             <div class="table-section">
-                <div class="table-title">页面明细</div>
+                <div class="table-title">页面热度 TOP 30</div>
                 <div class="table-wrapper">
                     <table id="pageTable">
                         <thead>
                             <tr>
-                                <th class="sortable" data-key="domain">域名</th>
-                                <th class="sortable" data-key="path">路径</th>
-                                <th class="sortable" data-key="pv">PV</th>
-                                <th class="sortable" data-key="uv">UV</th>
+                                <th>域名</th>
+                                <th>路径</th>
+                                <th class="sortable" data-table="page" data-key="requests">请求数</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- Geo Table -->
+            <div class="table-section">
+                <div class="table-title">地理分布</div>
+                <div class="table-wrapper">
+                    <table id="geoTable">
+                        <thead>
+                            <tr>
+                                <th>国家/地区</th>
+                                <th class="sortable" data-table="geo" data-key="requests">请求数</th>
+                                <th>带宽</th>
+                                <th>占比</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Browser & Content Type -->
+            <div class="two-col">
+                <div class="bar-chart-container">
+                    <div class="bar-chart-title">浏览器分布</div>
+                    <div id="browserBars"></div>
+                </div>
+                <div class="bar-chart-container">
+                    <div class="bar-chart-title">内容类型分布</div>
+                    <div id="contentBars"></div>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div class="table-section">
+                <div class="table-title">安全与性能</div>
+                <div class="security-metrics">
+                    <div class="metric-card">
+                        <div class="metric-label">威胁拦截</div>
+                        <div class="metric-value" id="mThreats">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">HTTPS 占比</div>
+                        <div class="metric-value" id="mHttps">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">缓存命中率</div>
+                        <div class="metric-value" id="mCacheHit">-</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">节省带宽</div>
+                        <div class="metric-value" id="mCachedBW">-</div>
+                    </div>
+                </div>
+                <div class="table-title" style="margin-top:24px;">HTTP 状态码分布</div>
+                <div class="status-grid" id="statusGrid"></div>
+            </div>
         </div>
 
         <footer>
             <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+            <div class="data-source">数据来源：Cloudflare Analytics API &middot; 自适应采样 &middot; 缓存 5 分钟</div>
         </footer>
     </div>
 
@@ -443,7 +643,7 @@
         // =========================================
         // Configuration
         // =========================================
-        const ANALYTICS_HOST = 'https://analytics.yuanchu.ai';
+        const API_HOST = 'https://analytics.yuanchu.ai';
 
         // =========================================
         // Particle Background
@@ -467,17 +667,14 @@
         bgAnimate();
 
         // =========================================
-        // Token management
+        // Token
         // =========================================
         function getToken() {
             let token = sessionStorage.getItem('analytics_token');
             if (!token) {
                 token = prompt('请输入访问令牌 (Token):');
-                if (token) {
-                    sessionStorage.setItem('analytics_token', token);
-                } else {
-                    return null;
-                }
+                if (token) sessionStorage.setItem('analytics_token', token);
+                else return null;
             }
             return token;
         }
@@ -487,12 +684,22 @@
         // =========================================
         let currentRange = '7d';
         let currentDomain = '';
-        let currentData = null;
-        let pageSortKey = 'pv';
+        let currentGranularity = 'daily';
+        let dataOverview = null;
+        let dataTrend = null;
+        let dataDomains = null;
+        let dataPages = null;
+        let dataGeo = null;
+        let dataBrowsers = null;
+        let dataSecurity = null;
+
+        // Sort state
+        let domainSortDir = 'desc';
         let pageSortDir = 'desc';
+        let geoSortDir = 'desc';
 
         // =========================================
-        // DOM references
+        // DOM
         // =========================================
         const loadingEl = document.getElementById('loadingState');
         const errorEl = document.getElementById('errorState');
@@ -504,8 +711,24 @@
         // Utility
         // =========================================
         function formatNum(n) {
-            if (n == null) return '-';
+            if (n == null || isNaN(n)) return '-';
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 10000) return (n / 1000).toFixed(1) + 'K';
             return n.toLocaleString('zh-CN');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes == null || isNaN(bytes)) return '-';
+            if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+            if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+            if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return bytes + ' B';
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
 
         function showLoading() {
@@ -528,155 +751,273 @@
         }
 
         // =========================================
-        // Fetch data
+        // API
         // =========================================
-        async function fetchData() {
+        async function cfFetch(action, extra) {
             const token = getToken();
-            if (!token) {
-                showError('未提供令牌，无法访问统计数据');
-                return;
+            if (!token) throw new Error('未提供令牌');
+            const params = new URLSearchParams({ action, range: currentRange, ...extra });
+            const resp = await fetch(`${API_HOST}/api/cf-stats?${params}`, {
+                headers: { 'Authorization': 'Bearer ' + token },
+            });
+            if (!resp.ok) {
+                if (resp.status === 401 || resp.status === 403) {
+                    sessionStorage.removeItem('analytics_token');
+                    throw new Error('令牌无效或已过期，请刷新页面重新输入');
+                }
+                const body = await resp.json().catch(() => ({}));
+                throw new Error(body.error || `HTTP ${resp.status}`);
             }
+            return resp.json();
+        }
+
+        // =========================================
+        // Load all data
+        // =========================================
+        async function loadData() {
             showLoading();
             try {
-                const params = new URLSearchParams({
-                    range: currentRange,
-                    domain: currentDomain,
-                });
-                const url = `${ANALYTICS_HOST}/api/stats?${params.toString()}`;
-                const resp = await fetch(url, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                if (!resp.ok) {
-                    if (resp.status === 401 || resp.status === 403) {
-                        sessionStorage.removeItem('analytics_token');
-                        showError('令牌无效或已过期，请刷新页面重新输入');
-                        return;
-                    }
-                    throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-                }
-                currentData = await resp.json();
-                renderAll();
+                // Phase 1: core data in parallel
+                const [overview, trend, domains, pages] = await Promise.all([
+                    cfFetch('overview'),
+                    cfFetch('trend', { granularity: currentGranularity }),
+                    cfFetch('domains'),
+                    cfFetch('pages', currentDomain ? { domain: currentDomain } : {}),
+                ]);
+                dataOverview = overview;
+                dataTrend = trend;
+                dataDomains = domains;
+                dataPages = pages;
+
+                renderOverview();
+                renderDomainFilter();
+                renderDomainTable();
+                renderPageTable();
+                renderChart();
                 showDashboard();
+
+                // Phase 2: secondary data
+                loadSecondaryData();
             } catch (err) {
                 showError('加载数据失败: ' + err.message);
             }
         }
 
-        // =========================================
-        // Render all sections
-        // =========================================
-        function renderAll() {
-            if (!currentData) return;
-            renderMetrics();
-            renderDomainFilter();
-            renderDomainTable();
-            renderPageTable();
-            renderChart();
+        async function loadSecondaryData() {
+            try {
+                const [geo, browsers, security] = await Promise.all([
+                    cfFetch('geo'),
+                    cfFetch('browsers'),
+                    cfFetch('security'),
+                ]);
+                dataGeo = geo;
+                dataBrowsers = browsers;
+                dataSecurity = security;
+                renderGeoTable();
+                renderBrowserBars();
+                renderContentBars();
+                renderSecurity();
+            } catch (e) {
+                // secondary data failure is non-critical
+            }
         }
 
         // =========================================
-        // Metrics
+        // Render: Overview
         // =========================================
-        function renderMetrics() {
-            const d = currentData;
-            document.getElementById('totalPV').textContent = formatNum(d.totalPV || d.total_pv || 0);
-            document.getElementById('totalUV').textContent = formatNum(d.totalUV || d.total_uv || 0);
-            document.getElementById('todayPV').textContent = formatNum(d.todayPV || d.today_pv || 0);
-            document.getElementById('todayUV').textContent = formatNum(d.todayUV || d.today_uv || 0);
+        function renderOverview() {
+            if (!dataOverview) return;
+            document.getElementById('mRequests').textContent = formatNum(dataOverview.requests);
+            document.getElementById('mPageViews').textContent = formatNum(dataOverview.pageViews);
+            document.getElementById('mUniques').textContent = formatNum(dataOverview.uniqueVisitors);
+            document.getElementById('mBandwidth').textContent = formatBytes(dataOverview.bytes);
         }
 
         // =========================================
-        // Domain filter dropdown
+        // Render: Domain filter
         // =========================================
         function renderDomainFilter() {
-            const domains = currentData.domains || currentData.domain_summary || [];
+            if (!dataDomains) return;
             const prev = domainSelect.value;
             domainSelect.innerHTML = '<option value="">全部域名</option>';
-            const seen = new Set();
-            domains.forEach(d => {
-                const name = d.domain || d.name;
-                if (name && !seen.has(name)) {
-                    seen.add(name);
-                    const opt = document.createElement('option');
-                    opt.value = name;
-                    opt.textContent = name;
-                    domainSelect.appendChild(opt);
-                }
+            dataDomains.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.domain;
+                opt.textContent = d.domain;
+                domainSelect.appendChild(opt);
             });
             domainSelect.value = prev || '';
         }
 
         // =========================================
-        // Domain summary table
+        // Render: Domain table
         // =========================================
         function renderDomainTable() {
-            const domains = currentData.domains || currentData.domain_summary || [];
+            if (!dataDomains) return;
+            const sorted = [...dataDomains].sort((a, b) =>
+                domainSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
+            );
+            // Update sort indicator
+            const th = document.querySelector('#domainTable th[data-key="requests"]');
+            if (th) {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                th.classList.add(domainSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+            }
             const tbody = document.querySelector('#domainTable tbody');
             tbody.innerHTML = '';
-            if (domains.length === 0) {
+            if (sorted.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
                 return;
             }
-            domains.forEach(d => {
+            const maxReq = sorted[0].requests || 1;
+            sorted.forEach(d => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${escapeHtml(d.domain || d.name || '-')}</td><td class="num-cell">${formatNum(d.pv)}</td><td class="num-cell">${formatNum(d.uv)}</td>`;
+                const pct = parseFloat(d.percentage);
+                const barW = Math.max(((d.requests / maxReq) * 100), 2);
+                tr.innerHTML = `<td>${escapeHtml(d.domain)}</td><td class="num-cell">${formatNum(d.requests)}<div class="bar-bg"><div class="bar-fill" style="width:${barW}%"></div></div></td><td class="num-cell">${pct}%</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         // =========================================
-        // Page detail table (sortable)
+        // Render: Page table
         // =========================================
         function renderPageTable() {
-            const pages = currentData.pages || currentData.page_detail || [];
-            // Sort
-            const sorted = [...pages].sort((a, b) => {
-                let va = a[pageSortKey], vb = b[pageSortKey];
-                if (typeof va === 'string') va = va.toLowerCase();
-                if (typeof vb === 'string') vb = vb.toLowerCase();
-                if (va < vb) return pageSortDir === 'asc' ? -1 : 1;
-                if (va > vb) return pageSortDir === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            // Update header classes
-            document.querySelectorAll('#pageTable th.sortable').forEach(th => {
+            if (!dataPages) return;
+            const sorted = [...dataPages].sort((a, b) =>
+                pageSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
+            );
+            const th = document.querySelector('#pageTable th[data-key="requests"]');
+            if (th) {
                 th.classList.remove('sorted-asc', 'sorted-desc');
-                if (th.dataset.key === pageSortKey) {
-                    th.classList.add(pageSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-                }
-            });
-
+                th.classList.add(pageSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+            }
             const tbody = document.querySelector('#pageTable tbody');
+            tbody.innerHTML = '';
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+                return;
+            }
+            sorted.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escapeHtml(p.domain)}</td><td>${escapeHtml(p.path)}</td><td class="num-cell">${formatNum(p.requests)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // =========================================
+        // Render: Geo table
+        // =========================================
+        function renderGeoTable() {
+            if (!dataGeo) return;
+            const sorted = [...dataGeo].sort((a, b) =>
+                geoSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
+            );
+            const th = document.querySelector('#geoTable th[data-key="requests"]');
+            if (th) {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                th.classList.add(geoSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+            }
+            const tbody = document.querySelector('#geoTable tbody');
             tbody.innerHTML = '';
             if (sorted.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
                 return;
             }
-            sorted.forEach(p => {
+            sorted.forEach((g, i) => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${escapeHtml(p.domain || '-')}</td><td>${escapeHtml(p.path || p.url || '-')}</td><td class="num-cell">${formatNum(p.pv)}</td><td class="num-cell">${formatNum(p.uv)}</td>`;
+                if (i < 10) tr.style.color = 'rgba(255,255,255,0.9)';
+                tr.innerHTML = `<td>${escapeHtml(g.country)}</td><td class="num-cell">${formatNum(g.requests)}</td><td class="num-cell">${formatBytes(g.bytes)}</td><td class="num-cell">${g.percentage}%</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+        // =========================================
+        // Render: Browser bars
+        // =========================================
+        const BAR_COLORS = [
+            'rgba(100,180,255,0.7)',
+            'rgba(100,255,160,0.7)',
+            'rgba(255,200,100,0.7)',
+            'rgba(255,130,180,0.7)',
+            'rgba(180,130,255,0.7)',
+            'rgba(130,220,220,0.7)',
+            'rgba(255,160,100,0.7)',
+            'rgba(200,200,100,0.7)',
+        ];
+
+        function renderBrowserBars() {
+            if (!dataBrowsers || !dataBrowsers.browsers) return;
+            const container = document.getElementById('browserBars');
+            container.innerHTML = '';
+            const top = dataBrowsers.browsers.slice(0, 8);
+            if (top.length === 0) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:20px 0;">暂无数据</div>';
+                return;
+            }
+            top.forEach((b, i) => {
+                const div = document.createElement('div');
+                div.className = 'bar-item';
+                div.innerHTML = `<span class="bar-label">${escapeHtml(b.name)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${b.percentage}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-pct">${b.percentage}%</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        function renderContentBars() {
+            if (!dataBrowsers || !dataBrowsers.contentTypes) return;
+            const container = document.getElementById('contentBars');
+            container.innerHTML = '';
+            const top = dataBrowsers.contentTypes.slice(0, 8);
+            if (top.length === 0) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:20px 0;">暂无数据</div>';
+                return;
+            }
+            top.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = 'bar-item';
+                div.innerHTML = `<span class="bar-label">${escapeHtml(c.name)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${c.percentage}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-pct">${c.percentage}%</span>`;
+                container.appendChild(div);
+            });
         }
 
         // =========================================
-        // Trend Chart (Canvas, hand-drawn)
+        // Render: Security
         // =========================================
-        let chartPoints = []; // for tooltip hit-testing
+        function renderSecurity() {
+            if (!dataSecurity) return;
+            document.getElementById('mThreats').textContent = formatNum(dataSecurity.threats);
+            document.getElementById('mHttps').textContent = dataSecurity.httpsPercentage + '%';
+            document.getElementById('mCacheHit').textContent = dataSecurity.cacheHitRate + '%';
+            document.getElementById('mCachedBW').textContent = formatBytes(dataSecurity.cachedBytes);
+
+            // Status codes
+            const grid = document.getElementById('statusGrid');
+            grid.innerHTML = '';
+            (dataSecurity.statusCodes || []).forEach(s => {
+                const span = document.createElement('span');
+                let cls = '';
+                if (s.code >= 200 && s.code < 300) cls = 's2xx';
+                else if (s.code >= 300 && s.code < 400) cls = 's3xx';
+                else if (s.code >= 400 && s.code < 500) cls = 's4xx';
+                else if (s.code >= 500) cls = 's5xx';
+                span.className = 'status-badge ' + cls;
+                span.textContent = s.code + ': ' + formatNum(s.requests);
+                grid.appendChild(span);
+            });
+        }
+
+        // =========================================
+        // Trend Chart (Canvas)
+        // =========================================
+        let chartPoints = [];
 
         function renderChart() {
-            const trend = currentData.trend || currentData.daily || [];
+            if (!dataTrend) return;
+            const trend = dataTrend;
             const chartCanvas = document.getElementById('trendChart');
             const container = chartCanvas.parentElement;
             const dpr = window.devicePixelRatio || 1;
-            const displayW = container.clientWidth - 48; // account for padding
+            const displayW = container.clientWidth - 48;
             const displayH = 300;
             chartCanvas.style.width = displayW + 'px';
             chartCanvas.style.height = displayH + 'px';
@@ -685,7 +1026,6 @@
             const ctx = chartCanvas.getContext('2d');
             ctx.scale(dpr, dpr);
 
-            // Chart area
             const padL = 56, padR = 20, padT = 20, padB = 50;
             const cw = displayW - padL - padR;
             const ch = displayH - padT - padB;
@@ -701,24 +1041,22 @@
                 return;
             }
 
-            const pvData = trend.map(t => t.pv || 0);
-            const uvData = trend.map(t => t.uv || 0);
-            const labels = trend.map(t => t.date || t.day || '');
+            const pvData = trend.map(t => t.pageViews || 0);
+            const uvData = trend.map(t => t.uniques || 0);
+            const labels = trend.map(t => t.date || '');
             const maxVal = Math.max(Math.max(...pvData), Math.max(...uvData), 1);
 
-            // Nice ticks
             const tickCount = 5;
             const niceMax = niceNum(maxVal, tickCount);
             const tickStep = niceMax / tickCount;
 
-            // Grid lines and Y axis labels
+            // Grid
             ctx.strokeStyle = 'rgba(255,255,255,0.06)';
             ctx.lineWidth = 1;
             ctx.fillStyle = 'rgba(255,255,255,0.35)';
             ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
-
             for (let i = 0; i <= tickCount; i++) {
                 const val = tickStep * i;
                 const y = padT + ch - (val / niceMax) * ch;
@@ -729,7 +1067,7 @@
                 ctx.fillText(formatTickLabel(val), padL - 8, y);
             }
 
-            // X axis labels
+            // X labels
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             const labelInterval = Math.max(1, Math.floor(labels.length / 8));
@@ -740,41 +1078,25 @@
                 }
             });
 
-            // Store points for tooltip
             chartPoints = [];
-
             function getX(i) { return padL + (i / Math.max(trend.length - 1, 1)) * cw; }
             function getY(val) { return padT + ch - (val / niceMax) * ch; }
 
-            // Draw PV line
+            // PV line
             drawLine(ctx, pvData, getX, getY, 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.08)', padT, ch);
-            // Draw UV line
+            // UV line
             drawLine(ctx, uvData, getX, getY, 'rgba(100,255,160,0.8)', 'rgba(100,255,160,0.08)', padT, ch);
 
-            // Draw dots and collect points
+            // Dots & collect points
             for (let i = 0; i < trend.length; i++) {
                 const x = getX(i);
-                // PV dot
                 const yp = getY(pvData[i]);
-                ctx.beginPath();
-                ctx.arc(x, yp, 3, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(100,180,255,0.9)';
-                ctx.fill();
-                // UV dot
+                ctx.beginPath(); ctx.arc(x, yp, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100,180,255,0.9)'; ctx.fill();
                 const yu = getY(uvData[i]);
-                ctx.beginPath();
-                ctx.arc(x, yu, 3, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(100,255,160,0.9)';
-                ctx.fill();
-
-                chartPoints.push({
-                    x: x,
-                    pvY: yp,
-                    uvY: yu,
-                    date: labels[i],
-                    pv: pvData[i],
-                    uv: uvData[i]
-                });
+                ctx.beginPath(); ctx.arc(x, yu, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100,255,160,0.9)'; ctx.fill();
+                chartPoints.push({ x, pvY: yp, uvY: yu, date: labels[i], pv: pvData[i], uv: uvData[i] });
             }
 
             // Legend
@@ -782,12 +1104,10 @@
             ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            // PV legend
             ctx.fillStyle = 'rgba(100,180,255,0.9)';
             ctx.fillRect(padL, legendY - 4, 16, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
             ctx.fillText('PV', padL + 22, legendY);
-            // UV legend
             ctx.fillStyle = 'rgba(100,255,160,0.9)';
             ctx.fillRect(padL + 60, legendY - 4, 16, 8);
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
@@ -798,16 +1118,12 @@
             if (data.length === 0) return;
             ctx.beginPath();
             ctx.moveTo(getX(0), getY(data[0]));
-            for (let i = 1; i < data.length; i++) {
-                ctx.lineTo(getX(i), getY(data[i]));
-            }
+            for (let i = 1; i < data.length; i++) ctx.lineTo(getX(i), getY(data[i]));
             ctx.strokeStyle = strokeColor;
             ctx.lineWidth = 2;
             ctx.lineJoin = 'round';
             ctx.lineCap = 'round';
             ctx.stroke();
-
-            // Area fill
             ctx.lineTo(getX(data.length - 1), padT + ch);
             ctx.lineTo(getX(0), padT + ch);
             ctx.closePath();
@@ -835,56 +1151,48 @@
 
         function formatDateLabel(dateStr) {
             if (!dateStr) return '';
-            // Expect YYYY-MM-DD or similar
+            // Handle ISO datetime
+            if (dateStr.includes('T')) {
+                const d = new Date(dateStr);
+                return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':00';
+            }
             const parts = dateStr.split('-');
             if (parts.length >= 3) return parts[1] + '/' + parts[2];
-            if (parts.length === 2) return parts[0] + '/' + parts[1];
             return dateStr;
         }
 
         // =========================================
-        // Chart tooltip
+        // Chart Tooltip
         // =========================================
         const trendChart = document.getElementById('trendChart');
         trendChart.addEventListener('mousemove', function(e) {
             if (chartPoints.length === 0) { chartTooltip.style.display = 'none'; return; }
             const rect = trendChart.getBoundingClientRect();
             const mx = e.clientX - rect.left;
-            const my = e.clientY - rect.top;
-
-            // Find nearest point
             let closest = null, minDist = Infinity;
             chartPoints.forEach(p => {
                 const dist = Math.abs(p.x - mx);
                 if (dist < minDist) { minDist = dist; closest = p; }
             });
-
             if (closest && minDist < 40) {
                 chartTooltip.style.display = 'block';
-                chartTooltip.innerHTML = `${closest.date}<br>PV: ${formatNum(closest.pv)}<br>UV: ${formatNum(closest.uv)}`;
-                // Position tooltip
+                const dateLabel = formatDateLabel(closest.date);
+                chartTooltip.innerHTML = `${dateLabel}<br>PV: ${formatNum(closest.pv)}<br>UV: ${formatNum(closest.uv)}`;
                 const containerRect = trendChart.parentElement.getBoundingClientRect();
                 let tx = e.clientX - containerRect.left + 16;
                 let ty = e.clientY - containerRect.top - 10;
-                // Keep within bounds
                 if (tx + 150 > containerRect.width) tx = tx - 170;
                 if (ty < 0) ty = 10;
                 chartTooltip.style.left = tx + 'px';
                 chartTooltip.style.top = ty + 'px';
-
-                // Draw crosshair
-                renderChart.__crosshairX = closest.x;
             } else {
                 chartTooltip.style.display = 'none';
             }
         });
-
-        trendChart.addEventListener('mouseleave', function() {
-            chartTooltip.style.display = 'none';
-        });
+        trendChart.addEventListener('mouseleave', function() { chartTooltip.style.display = 'none'; });
 
         // =========================================
-        // Event listeners
+        // Event Listeners
         // =========================================
 
         // Range buttons
@@ -893,43 +1201,63 @@
                 document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentRange = this.dataset.range;
-                fetchData();
+                loadData();
             });
         });
 
         // Domain filter
         domainSelect.addEventListener('change', function() {
             currentDomain = this.value;
-            fetchData();
+            // Only reload pages with domain filter
+            cfFetch('pages', currentDomain ? { domain: currentDomain } : {}).then(pages => {
+                dataPages = pages;
+                renderPageTable();
+            }).catch(() => {});
         });
 
-        // Page table sorting
-        document.querySelectorAll('#pageTable th.sortable').forEach(th => {
-            th.addEventListener('click', function() {
-                const key = this.dataset.key;
-                if (pageSortKey === key) {
-                    pageSortDir = pageSortDir === 'asc' ? 'desc' : 'asc';
-                } else {
-                    pageSortKey = key;
-                    pageSortDir = (key === 'pv' || key === 'uv') ? 'desc' : 'asc';
-                }
-                renderPageTable();
+        // Granularity buttons
+        document.querySelectorAll('.gran-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.gran-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentGranularity = this.dataset.gran;
+                cfFetch('trend', { granularity: currentGranularity }).then(trend => {
+                    dataTrend = trend;
+                    renderChart();
+                }).catch(() => {});
             });
         });
 
-        // Handle chart resize
+        // Table sorting
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const table = this.dataset.table;
+                if (table === 'domain') {
+                    domainSortDir = domainSortDir === 'desc' ? 'asc' : 'desc';
+                    renderDomainTable();
+                } else if (table === 'page') {
+                    pageSortDir = pageSortDir === 'desc' ? 'asc' : 'desc';
+                    renderPageTable();
+                } else if (table === 'geo') {
+                    geoSortDir = geoSortDir === 'desc' ? 'asc' : 'desc';
+                    renderGeoTable();
+                }
+            });
+        });
+
+        // Resize chart
         let resizeTimer;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
-                if (currentData) renderChart();
+                if (dataTrend) renderChart();
             }, 200);
         });
 
         // =========================================
         // Init
         // =========================================
-        fetchData();
+        loadData();
 
     })();
     </script>
