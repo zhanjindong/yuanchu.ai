@@ -52,7 +52,6 @@
             margin-bottom: 40px;
         }
 
-        /* Loading & Error */
         .loading {
             text-align: center;
             padding: 80px 0;
@@ -96,7 +95,6 @@
             border-color: rgba(255,255,255,0.5);
         }
 
-        /* Metric Cards */
         .metrics {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -125,8 +123,13 @@
             letter-spacing: 2px;
             color: rgba(255,255,255,0.9);
         }
+        .metric-sub {
+            font-size: 11px;
+            color: rgba(255,255,255,0.25);
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
 
-        /* Controls */
         .controls {
             display: flex;
             flex-wrap: wrap;
@@ -149,9 +152,7 @@
             letter-spacing: 2px;
             font-family: inherit;
         }
-        .range-btn:not(:first-child) {
-            border-left: none;
-        }
+        .range-btn:not(:first-child) { border-left: none; }
         .range-btn:hover {
             color: rgba(255,255,255,0.8);
             background: rgba(255,255,255,0.05);
@@ -161,10 +162,8 @@
             background: rgba(255,255,255,0.1);
             border-color: rgba(255,255,255,0.3);
         }
-        .range-btn.active + .range-btn {
-            border-left-color: rgba(255,255,255,0.3);
-        }
-        .domain-select {
+        .range-btn.active + .range-btn { border-left-color: rgba(255,255,255,0.3); }
+        .zone-select, .domain-select {
             padding: 8px 16px;
             font-size: 13px;
             color: rgba(255,255,255,0.6);
@@ -180,16 +179,15 @@
             background-repeat: no-repeat;
             background-position: right 12px center;
         }
-        .domain-select:focus {
+        .zone-select:focus, .domain-select:focus {
             outline: none;
             border-color: rgba(255,255,255,0.3);
         }
-        .domain-select option {
+        .zone-select option, .domain-select option {
             background: #111;
             color: #fff;
         }
 
-        /* Chart */
         .chart-container {
             margin-bottom: 40px;
             background: rgba(255,255,255,0.03);
@@ -208,28 +206,6 @@
             color: rgba(255,255,255,0.5);
             letter-spacing: 4px;
         }
-        .granularity-btns {
-            display: flex;
-            gap: 0;
-        }
-        .gran-btn {
-            padding: 4px 12px;
-            font-size: 11px;
-            color: rgba(255,255,255,0.4);
-            background: none;
-            border: 1px solid rgba(255,255,255,0.12);
-            cursor: pointer;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-            font-family: inherit;
-        }
-        .gran-btn:not(:first-child) { border-left: none; }
-        .gran-btn.active {
-            color: rgba(255,255,255,0.8);
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.25);
-        }
-        .gran-btn.active + .gran-btn { border-left-color: rgba(255,255,255,0.25); }
         .trend-canvas {
             width: 100%;
             display: block;
@@ -249,19 +225,14 @@
             white-space: nowrap;
         }
 
-        /* Tables */
-        .table-section {
-            margin-bottom: 40px;
-        }
+        .table-section { margin-bottom: 40px; }
         .table-title {
             font-size: 14px;
             color: rgba(255,255,255,0.5);
             letter-spacing: 4px;
             margin-bottom: 16px;
         }
-        .table-wrapper {
-            overflow-x: auto;
-        }
+        .table-wrapper { overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -282,37 +253,24 @@
             user-select: none;
             transition: color 0.3s;
         }
-        thead th.sortable:hover {
-            color: rgba(255,255,255,0.7);
-        }
-        thead th.sorted-asc::after {
-            content: ' \u25B2';
-            font-size: 10px;
-        }
-        thead th.sorted-desc::after {
-            content: ' \u25BC';
-            font-size: 10px;
-        }
+        thead th.sortable:hover { color: rgba(255,255,255,0.7); }
+        thead th.sorted-desc::after { content: ' ▼'; font-size: 10px; }
+        thead th.sorted-asc::after { content: ' ▲'; font-size: 10px; }
         tbody tr {
             border-bottom: 1px solid rgba(255,255,255,0.06);
             transition: background 0.2s;
         }
-        tbody tr:hover {
-            background: rgba(255,255,255,0.04);
-        }
+        tbody tr:hover { background: rgba(255,255,255,0.04); }
         tbody td {
             padding: 12px 16px;
             color: rgba(255,255,255,0.7);
         }
-        tbody td:first-child {
-            color: rgba(255,255,255,0.85);
-        }
+        tbody td:first-child { color: rgba(255,255,255,0.85); }
         .num-cell {
             font-variant-numeric: tabular-nums;
             letter-spacing: 1px;
         }
 
-        /* Bar */
         .bar-bg {
             width: 100%;
             height: 4px;
@@ -325,7 +283,6 @@
             transition: width 0.5s;
         }
 
-        /* Two-column layout */
         .two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -333,15 +290,6 @@
             margin-bottom: 40px;
         }
 
-        /* Security cards */
-        .security-metrics {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        /* Canvas chart for bar */
         .bar-chart-container {
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.1);
@@ -360,7 +308,7 @@
             font-size: 13px;
         }
         .bar-label {
-            width: 120px;
+            width: 140px;
             color: rgba(255,255,255,0.6);
             letter-spacing: 1px;
             flex-shrink: 0;
@@ -378,15 +326,14 @@
             height: 100%;
             transition: width 0.5s;
         }
-        .bar-pct {
-            width: 50px;
+        .bar-val {
+            width: 70px;
             text-align: right;
             color: rgba(255,255,255,0.5);
             font-size: 12px;
             font-variant-numeric: tabular-nums;
         }
 
-        /* Status code badge */
         .status-grid {
             display: flex;
             flex-wrap: wrap;
@@ -405,7 +352,22 @@
         .status-badge.s4xx { border-color: rgba(255,200,100,0.3); color: rgba(255,200,100,0.8); }
         .status-badge.s5xx { border-color: rgba(255,100,100,0.3); color: rgba(255,100,100,0.8); }
 
-        /* Footer */
+        .security-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .empty-state p { margin-bottom: 12px; }
+
         footer {
             margin-top: 100px;
             padding-top: 40px;
@@ -421,64 +383,26 @@
             margin-top: 8px;
         }
 
-        /* Dashboard hidden until loaded */
         #dashboard { display: none; }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 32px;
-                letter-spacing: 8px;
-                margin-bottom: 8px;
-            }
-            .metrics, .security-metrics {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            .metric-value {
-                font-size: 24px;
-            }
-            .metric-card {
-                padding: 16px;
-            }
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .range-btns {
-                width: 100%;
-            }
-            .range-btn {
-                flex: 1;
-                text-align: center;
-                padding: 8px 8px;
-            }
-            .domain-select {
-                width: 100%;
-            }
-            .chart-container {
-                padding: 16px 12px;
-            }
-            .two-col {
-                grid-template-columns: 1fr;
-            }
-            table {
-                font-size: 13px;
-            }
-            thead th, tbody td {
-                padding: 10px 10px;
-            }
-            .bar-label {
-                width: 80px;
-                font-size: 12px;
-            }
+            h1 { font-size: 32px; letter-spacing: 8px; margin-bottom: 8px; }
+            .metrics, .security-metrics { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .metric-value { font-size: 24px; }
+            .metric-card { padding: 16px; }
+            .controls { flex-direction: column; align-items: stretch; }
+            .range-btns { width: 100%; }
+            .range-btn { flex: 1; text-align: center; padding: 8px 8px; }
+            .zone-select, .domain-select { width: 100%; }
+            .chart-container { padding: 16px 12px; }
+            .two-col { grid-template-columns: 1fr; }
+            table { font-size: 13px; }
+            thead th, tbody td { padding: 10px 10px; }
+            .bar-label { width: 80px; font-size: 12px; }
         }
         @media (max-width: 480px) {
-            .metrics, .security-metrics {
-                grid-template-columns: 1fr 1fr;
-            }
-            .metric-value {
-                font-size: 20px;
-            }
+            .metrics, .security-metrics { grid-template-columns: 1fr 1fr; }
+            .metric-value { font-size: 20px; }
         }
     </style>
 </head>
@@ -488,44 +412,47 @@
         <a href="index.html" class="back">BACK</a>
         <div class="section-title">CLOUDFLARE ANALYTICS</div>
         <h1>流量统计</h1>
-        <div class="subtitle">数据来源：Cloudflare Analytics API</div>
+        <div class="subtitle">数据来源：Cloudflare GraphQL Analytics API · 纯静态页面直连</div>
 
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
-            <div>加载中...</div>
+            <div>正在连接 Cloudflare...</div>
         </div>
         <div id="errorState" class="error-msg" style="display:none;"></div>
 
         <div id="dashboard">
-            <!-- Controls -->
             <div class="controls">
+                <select class="zone-select" id="zoneSelect"></select>
                 <div class="range-btns">
-                    <button class="range-btn" data-range="1d">今日</button>
-                    <button class="range-btn active" data-range="7d">7天</button>
-                    <button class="range-btn" data-range="30d">30天</button>
+                    <button class="range-btn" data-range="1">今日</button>
+                    <button class="range-btn active" data-range="7">7天</button>
+                    <button class="range-btn" data-range="30">30天</button>
                 </div>
                 <select class="domain-select" id="domainFilter">
                     <option value="">全部域名</option>
                 </select>
             </div>
 
-            <!-- Metric Cards -->
             <div class="metrics">
                 <div class="metric-card">
                     <div class="metric-label">总请求数</div>
                     <div class="metric-value" id="mRequests">-</div>
+                    <div class="metric-sub" id="mRequestsSub"></div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">页面浏览量</div>
                     <div class="metric-value" id="mPageViews">-</div>
+                    <div class="metric-sub" id="mPageViewsSub"></div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-label">独立访客</div>
+                    <div class="metric-label">独立访客 (UV)</div>
                     <div class="metric-value" id="mUniques">-</div>
+                    <div class="metric-sub" id="mUniquesSub"></div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">总带宽</div>
                     <div class="metric-value" id="mBandwidth">-</div>
+                    <div class="metric-sub" id="mBandwidthSub"></div>
                 </div>
             </div>
 
@@ -533,24 +460,22 @@
             <div class="chart-container">
                 <div class="chart-header">
                     <div class="chart-title">访问趋势</div>
-                    <div class="granularity-btns">
-                        <button class="gran-btn active" data-gran="daily">按天</button>
-                        <button class="gran-btn" data-gran="hourly">按小时</button>
-                    </div>
                 </div>
                 <canvas id="trendChart" class="trend-canvas" height="300"></canvas>
                 <div class="chart-tooltip" id="chartTooltip"></div>
             </div>
 
-            <!-- Domain Summary Table -->
+            <!-- Domain Table -->
             <div class="table-section">
-                <div class="table-title">域名统计</div>
+                <div class="table-title">域名统计（含子域名）</div>
                 <div class="table-wrapper">
                     <table id="domainTable">
                         <thead>
                             <tr>
                                 <th>域名</th>
                                 <th class="sortable" data-table="domain" data-key="requests">请求数</th>
+                                <th class="sortable" data-table="domain" data-key="uniques">独立访客</th>
+                                <th class="sortable" data-table="domain" data-key="bytes">带宽</th>
                                 <th>占比</th>
                             </tr>
                         </thead>
@@ -559,33 +484,16 @@
                 </div>
             </div>
 
-            <!-- Page Detail Table -->
+            <!-- Page Table -->
             <div class="table-section">
                 <div class="table-title">页面热度 TOP 30</div>
                 <div class="table-wrapper">
                     <table id="pageTable">
                         <thead>
                             <tr>
-                                <th>域名</th>
                                 <th>路径</th>
                                 <th class="sortable" data-table="page" data-key="requests">请求数</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Geo Table -->
-            <div class="table-section">
-                <div class="table-title">地理分布</div>
-                <div class="table-wrapper">
-                    <table id="geoTable">
-                        <thead>
-                            <tr>
-                                <th>国家/地区</th>
-                                <th class="sortable" data-table="geo" data-key="requests">请求数</th>
-                                <th>带宽</th>
+                                <th class="sortable" data-table="page" data-key="uniques">独立访客</th>
                                 <th>占比</th>
                             </tr>
                         </thead>
@@ -594,19 +502,19 @@
                 </div>
             </div>
 
-            <!-- Browser & Content Type -->
+            <!-- Geo & Browser -->
             <div class="two-col">
+                <div class="bar-chart-container">
+                    <div class="bar-chart-title">国家/地区分布 TOP 10</div>
+                    <div id="geoBars"></div>
+                </div>
                 <div class="bar-chart-container">
                     <div class="bar-chart-title">浏览器分布</div>
                     <div id="browserBars"></div>
                 </div>
-                <div class="bar-chart-container">
-                    <div class="bar-chart-title">内容类型分布</div>
-                    <div id="contentBars"></div>
-                </div>
             </div>
 
-            <!-- Security -->
+            <!-- Security & Performance -->
             <div class="table-section">
                 <div class="table-title">安全与性能</div>
                 <div class="security-metrics">
@@ -633,17 +541,19 @@
         </div>
 
         <footer>
-            <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
-            <div class="data-source">数据来源：Cloudflare Analytics API &middot; 自适应采样 &middot; 缓存 5 分钟</div>
+            <p>&copy; 2026 元初AI · ORIGIN OF INTELLIGENCE</p>
+            <div class="data-source">数据来源：Cloudflare GraphQL Analytics API · 纯静态页面 · 无后端服务</div>
         </footer>
     </div>
 
     <script>
     (function() {
         // =========================================
-        // Configuration
+        // Config
         // =========================================
-        const API_HOST = 'https://analytics.yuanchu.ai';
+        const CF_API_TOKEN = 'Mdyp9VMX2fFuWDIwxT3jW5HTOJaraGt_VRESSVjk';
+        const CF_GQL = 'https://api.cloudflare.com/client/v4/graphql';
+        const CF_REST = 'https://api.cloudflare.com/client/v4';
 
         // =========================================
         // Particle Background
@@ -651,7 +561,6 @@
         const bgCanvas = document.getElementById('canvas');
         const bgCtx = bgCanvas.getContext('2d');
         let bgW, bgH, bgParticles = [], bgMouseX = 0, bgMouseY = 0, bgTargetX = 0, bgTargetY = 0;
-        const PARTICLE_COUNT = 80;
         function bgResize() { bgW = bgCanvas.width = window.innerWidth; bgH = bgCanvas.height = window.innerHeight; }
         window.addEventListener('resize', bgResize);
         bgResize();
@@ -661,42 +570,32 @@
             update() { this.x += this.speedX + (bgTargetX - bgW/2) * 0.0001; this.y += this.speedY + (bgTargetY - bgH/2) * 0.0001; if (this.x < 0 || this.x > bgW || this.y < 0 || this.y > bgH) this.reset(); }
             draw() { bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); bgCtx.fillStyle = `rgba(255,255,255,${this.alpha})`; bgCtx.fill(); }
         }
-        for (let i = 0; i < PARTICLE_COUNT; i++) bgParticles.push(new BgParticle());
-        bgCanvas.addEventListener('mousemove', (e) => { bgMouseX = e.clientX; bgMouseY = e.clientY; });
+        for (let i = 0; i < 80; i++) bgParticles.push(new BgParticle());
+        bgCanvas.addEventListener('mousemove', e => { bgMouseX = e.clientX; bgMouseY = e.clientY; });
         function bgAnimate() { bgCtx.fillStyle = 'rgba(0,0,0,0.1)'; bgCtx.fillRect(0, 0, bgW, bgH); bgTargetX += (bgMouseX - bgTargetX) * 0.05; bgTargetY += (bgMouseY - bgTargetY) * 0.05; bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(bgAnimate); }
         bgAnimate();
 
         // =========================================
-        // Token
-        // =========================================
-        function getToken() {
-            let token = sessionStorage.getItem('analytics_token');
-            if (!token) {
-                token = prompt('请输入访问令牌 (Token):');
-                if (token) sessionStorage.setItem('analytics_token', token);
-                else return null;
-            }
-            return token;
-        }
-
-        // =========================================
         // State
         // =========================================
-        let currentRange = '7d';
+        let zones = [];
+        let currentZoneId = '';
+        let currentZoneName = '';
+        let currentRange = 7;
         let currentDomain = '';
-        let currentGranularity = 'daily';
+
         let dataOverview = null;
-        let dataTrend = null;
-        let dataDomains = null;
-        let dataPages = null;
-        let dataGeo = null;
-        let dataBrowsers = null;
+        let dataTrend = [];
+        let dataDomains = [];
+        let dataPages = [];
+        let dataGeo = [];
+        let dataBrowsers = [];
         let dataSecurity = null;
 
-        // Sort state
+        let domainSortKey = 'requests';
         let domainSortDir = 'desc';
+        let pageSortKey = 'requests';
         let pageSortDir = 'desc';
-        let geoSortDir = 'desc';
 
         // =========================================
         // DOM
@@ -704,7 +603,8 @@
         const loadingEl = document.getElementById('loadingState');
         const errorEl = document.getElementById('errorState');
         const dashboardEl = document.getElementById('dashboard');
-        const domainSelect = document.getElementById('domainFilter');
+        const zoneSelect = document.getElementById('zoneSelect');
+        const domainFilter = document.getElementById('domainFilter');
         const chartTooltip = document.getElementById('chartTooltip');
 
         // =========================================
@@ -731,8 +631,20 @@
             return div.innerHTML;
         }
 
-        function showLoading() {
+        function getDateRange(days) {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - days + 1);
+            start.setHours(0, 0, 0, 0);
+            return {
+                since: start.toISOString().split('T')[0],
+                until: end.toISOString().split('T')[0]
+            };
+        }
+
+        function showLoading(msg) {
             loadingEl.style.display = 'block';
+            loadingEl.querySelector('div:last-child').textContent = msg || '加载中...';
             errorEl.style.display = 'none';
             dashboardEl.style.display = 'none';
         }
@@ -751,130 +663,623 @@
         }
 
         // =========================================
-        // API
+        // Cloudflare REST API
         // =========================================
-        async function cfFetch(action, extra) {
-            const token = getToken();
-            if (!token) throw new Error('未提供令牌');
-            const params = new URLSearchParams({ action, range: currentRange, ...extra });
-            const resp = await fetch(`${API_HOST}/api/cf-stats?${params}`, {
-                headers: { 'Authorization': 'Bearer ' + token },
-            });
-            if (!resp.ok) {
-                if (resp.status === 401 || resp.status === 403) {
-                    sessionStorage.removeItem('analytics_token');
-                    throw new Error('令牌无效或已过期，请刷新页面重新输入');
+        async function cfRest(path) {
+            const resp = await fetch(CF_REST + path, {
+                headers: {
+                    'Authorization': 'Bearer ' + CF_API_TOKEN,
+                    'Content-Type': 'application/json'
                 }
-                const body = await resp.json().catch(() => ({}));
-                throw new Error(body.error || `HTTP ${resp.status}`);
-            }
-            return resp.json();
+            });
+            const data = await resp.json();
+            if (!data.success) throw new Error(data.errors?.[0]?.message || 'API Error');
+            return data.result;
         }
 
         // =========================================
-        // Load all data
+        // Cloudflare GraphQL API
+        // =========================================
+        async function cfGql(query, variables) {
+            const resp = await fetch(CF_GQL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + CF_API_TOKEN,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query, variables })
+            });
+            const data = await resp.json();
+            if (data.errors && data.errors.length > 0) {
+                throw new Error(data.errors[0].message);
+            }
+            return data.data;
+        }
+
+        // =========================================
+        // Load zones
+        // =========================================
+        async function loadZones() {
+            showLoading('正在获取域名列表...');
+            try {
+                const result = await cfRest('/zones?per_page=50');
+                zones = result || [];
+                if (zones.length === 0) {
+                    showError('未找到任何域名。请确保 API Token 具有 Zone 读取权限，且账户下已添加域名。<br><br>当前 Token 状态：有效<br>可能原因：账户下尚未添加任何域名到 Cloudflare');
+                    return false;
+                }
+                renderZoneSelect();
+                currentZoneId = zones[0].id;
+                currentZoneName = zones[0].name;
+                return true;
+            } catch (err) {
+                showError('获取域名列表失败: ' + err.message);
+                return false;
+            }
+        }
+
+        function renderZoneSelect() {
+            zoneSelect.innerHTML = '';
+            zones.forEach(z => {
+                const opt = document.createElement('option');
+                opt.value = z.id;
+                opt.textContent = z.name;
+                zoneSelect.appendChild(opt);
+            });
+        }
+
+        // =========================================
+        // Load all analytics data
         // =========================================
         async function loadData() {
-            showLoading();
+            showLoading('正在加载分析数据...');
+            const { since, until } = getDateRange(currentRange);
+
             try {
-                // Phase 1: core data in parallel
-                const [overview, trend, domains, pages] = await Promise.all([
-                    cfFetch('overview'),
-                    cfFetch('trend', { granularity: currentGranularity }),
-                    cfFetch('domains'),
-                    cfFetch('pages', currentDomain ? { domain: currentDomain } : {}),
-                ]);
-                dataOverview = overview;
-                dataTrend = trend;
-                dataDomains = domains;
-                dataPages = pages;
+                // Build the domain filter for GraphQL
+                const hostFilter = currentDomain ? `, clientRequestHTTPHost: "${currentDomain}"` : '';
 
-                renderOverview();
-                renderDomainFilter();
-                renderDomainTable();
-                renderPageTable();
-                renderChart();
+                // Main query: overview + daily trend + domains + pages + geo + browser + status codes
+                const query = `
+                query Analytics($zoneTag: string!, $since: Date!, $until: Date!) {
+                    viewer {
+                        zones(filter: {zoneTag: $zoneTag}) {
+                            # Daily overview totals
+                            totals: httpRequests1dGroups(
+                                filter: {date_geq: $since, date_leq: $until${hostFilter}}
+                                limit: 1000
+                            ) {
+                                sum {
+                                    requests
+                                    pageViews
+                                    bytes
+                                    cachedBytes
+                                    threats
+                                    encryptedRequests
+                                }
+                                uniq {
+                                    uniques
+                                }
+                            }
+
+                            # Daily trend
+                            trend: httpRequests1dGroups(
+                                filter: {date_geq: $since, date_leq: $until${hostFilter}}
+                                orderBy: [date_ASC]
+                                limit: 1000
+                            ) {
+                                dimensions {
+                                    date
+                                }
+                                sum {
+                                    requests
+                                    pageViews
+                                    bytes
+                                }
+                                uniq {
+                                    uniques
+                                }
+                            }
+
+                            # By hostname (domain/subdomain)
+                            hostnames: httpRequests1dGroups(
+                                filter: {date_geq: $since, date_leq: $until}
+                                limit: 100
+                            ) {
+                                dimensions {
+                                    date
+                                }
+                                sum {
+                                    requests
+                                    bytes
+                                    countryMap {
+                                        clientCountryName
+                                        requests
+                                        bytes
+                                        threats
+                                    }
+                                    responseStatusMap {
+                                        edgeResponseStatus
+                                        requests
+                                    }
+                                    browserMap {
+                                        uaBrowserFamily
+                                        pageViews
+                                    }
+                                }
+                                uniq {
+                                    uniques
+                                }
+                            }
+
+                            # Top paths (via httpRequestsAdaptiveGroups for more granularity)
+                            topPaths: httpRequests1dGroups(
+                                filter: {date_geq: $since, date_leq: $until${hostFilter}}
+                                limit: 1000
+                            ) {
+                                sum {
+                                    requests
+                                    bytes
+                                }
+                                uniq {
+                                    uniques
+                                }
+                            }
+                        }
+                    }
+                }`;
+
+                const data = await cfGql(query, {
+                    zoneTag: currentZoneId,
+                    since: since,
+                    until: until
+                });
+
+                const zone = data.viewer.zones[0];
+                if (!zone) {
+                    showError('未获取到该域名的分析数据');
+                    return;
+                }
+
+                processOverview(zone.totals);
+                processTrend(zone.trend);
+                processHostnames(zone.hostnames);
+                processSecurityAndBrowser(zone.hostnames);
+
+                // Now try adaptive groups for domain + path detail
+                await loadAdaptiveData(since, until, hostFilter);
+
+                renderAll();
                 showDashboard();
-
-                // Phase 2: secondary data
-                loadSecondaryData();
             } catch (err) {
-                showError('加载数据失败: ' + err.message);
+                console.error('Analytics load error:', err);
+                // If GraphQL query fails, try a simpler approach
+                try {
+                    await loadSimpleData();
+                } catch (err2) {
+                    showError('加载分析数据失败: ' + err.message + '<br><br>提示：确保 API Token 具有 Analytics 读取权限');
+                }
             }
         }
 
-        async function loadSecondaryData() {
+        // Simpler fallback query
+        async function loadSimpleData() {
+            showLoading('尝试基础查询...');
+            const { since, until } = getDateRange(currentRange);
+            const hostFilter = currentDomain ? `, clientRequestHTTPHost: "${currentDomain}"` : '';
+
+            const query = `
+            query SimpleAnalytics($zoneTag: string!, $since: Date!, $until: Date!) {
+                viewer {
+                    zones(filter: {zoneTag: $zoneTag}) {
+                        totals: httpRequests1dGroups(
+                            filter: {date_geq: $since, date_leq: $until${hostFilter}}
+                            limit: 1000
+                        ) {
+                            dimensions { date }
+                            sum {
+                                requests
+                                pageViews
+                                bytes
+                                cachedBytes
+                                threats
+                                encryptedRequests
+                                countryMap {
+                                    clientCountryName
+                                    requests
+                                    bytes
+                                }
+                                responseStatusMap {
+                                    edgeResponseStatus
+                                    requests
+                                }
+                                browserMap {
+                                    uaBrowserFamily
+                                    pageViews
+                                }
+                            }
+                            uniq { uniques }
+                        }
+                    }
+                }
+            }`;
+
+            const data = await cfGql(query, {
+                zoneTag: currentZoneId,
+                since: since,
+                until: until
+            });
+
+            const zone = data.viewer.zones[0];
+            if (!zone) {
+                showError('未获取到该域名的分析数据');
+                return;
+            }
+
+            processAllFromDailyGroups(zone.totals);
+            renderAll();
+            showDashboard();
+        }
+
+        // Process all data from daily groups
+        function processAllFromDailyGroups(groups) {
+            if (!groups || groups.length === 0) {
+                dataOverview = { requests: 0, pageViews: 0, uniques: 0, bytes: 0, cachedBytes: 0, threats: 0, encryptedRequests: 0 };
+                dataTrend = [];
+                dataGeo = [];
+                dataBrowsers = [];
+                dataSecurity = { threats: 0, httpsPercentage: 0, cacheHitRate: 0, cachedBytes: 0, statusCodes: [] };
+                return;
+            }
+
+            // Aggregate overview
+            let totalRequests = 0, totalPageViews = 0, totalUniques = 0, totalBytes = 0, totalCachedBytes = 0, totalThreats = 0, totalEncrypted = 0;
+            const geoMap = {};
+            const browserMap = {};
+            const statusMap = {};
+
+            groups.forEach(g => {
+                totalRequests += g.sum.requests || 0;
+                totalPageViews += g.sum.pageViews || 0;
+                totalUniques += g.uniq.uniques || 0;
+                totalBytes += g.sum.bytes || 0;
+                totalCachedBytes += g.sum.cachedBytes || 0;
+                totalThreats += g.sum.threats || 0;
+                totalEncrypted += g.sum.encryptedRequests || 0;
+
+                (g.sum.countryMap || []).forEach(c => {
+                    if (!geoMap[c.clientCountryName]) geoMap[c.clientCountryName] = { requests: 0, bytes: 0 };
+                    geoMap[c.clientCountryName].requests += c.requests || 0;
+                    geoMap[c.clientCountryName].bytes += c.bytes || 0;
+                });
+
+                (g.sum.browserMap || []).forEach(b => {
+                    const name = b.uaBrowserFamily || 'Other';
+                    if (!browserMap[name]) browserMap[name] = 0;
+                    browserMap[name] += b.pageViews || 0;
+                });
+
+                (g.sum.responseStatusMap || []).forEach(s => {
+                    const code = s.edgeResponseStatus;
+                    if (!statusMap[code]) statusMap[code] = 0;
+                    statusMap[code] += s.requests || 0;
+                });
+            });
+
+            dataOverview = {
+                requests: totalRequests,
+                pageViews: totalPageViews,
+                uniques: totalUniques,
+                bytes: totalBytes,
+                cachedBytes: totalCachedBytes,
+                threats: totalThreats,
+                encryptedRequests: totalEncrypted
+            };
+
+            dataTrend = groups.map(g => ({
+                date: g.dimensions.date,
+                requests: g.sum.requests || 0,
+                pageViews: g.sum.pageViews || 0,
+                uniques: g.uniq.uniques || 0,
+                bytes: g.sum.bytes || 0
+            })).sort((a, b) => a.date.localeCompare(b.date));
+
+            dataGeo = Object.entries(geoMap)
+                .map(([country, d]) => ({ country, requests: d.requests, bytes: d.bytes }))
+                .sort((a, b) => b.requests - a.requests);
+
+            dataBrowsers = Object.entries(browserMap)
+                .map(([name, pageViews]) => ({ name, pageViews }))
+                .sort((a, b) => b.pageViews - a.pageViews);
+
+            const httpsPercent = totalRequests > 0 ? ((totalEncrypted / totalRequests) * 100).toFixed(1) : 0;
+            const cacheHitRate = totalRequests > 0 ? ((totalCachedBytes / totalBytes) * 100).toFixed(1) : 0;
+
+            dataSecurity = {
+                threats: totalThreats,
+                httpsPercentage: httpsPercent,
+                cacheHitRate: cacheHitRate,
+                cachedBytes: totalCachedBytes,
+                statusCodes: Object.entries(statusMap)
+                    .map(([code, requests]) => ({ code: parseInt(code), requests }))
+                    .sort((a, b) => b.requests - a.requests)
+            };
+        }
+
+        // Load adaptive groups for domain + path breakdown
+        async function loadAdaptiveData(since, until, hostFilter) {
             try {
-                const [geo, browsers, security] = await Promise.all([
-                    cfFetch('geo'),
-                    cfFetch('browsers'),
-                    cfFetch('security'),
-                ]);
-                dataGeo = geo;
-                dataBrowsers = browsers;
-                dataSecurity = security;
-                renderGeoTable();
-                renderBrowserBars();
-                renderContentBars();
-                renderSecurity();
+                const query = `
+                query AdaptiveAnalytics($zoneTag: string!, $since: Date!, $until: Date!) {
+                    viewer {
+                        zones(filter: {zoneTag: $zoneTag}) {
+                            # By hostname
+                            byHost: httpRequestsAdaptiveGroups(
+                                filter: {date_geq: $since, date_leq: $until}
+                                limit: 100
+                            ) {
+                                count
+                                dimensions {
+                                    clientRequestHTTPHost
+                                }
+                                avg {
+                                    sampleInterval
+                                }
+                            }
+
+                            # Top paths
+                            byPath: httpRequestsAdaptiveGroups(
+                                filter: {date_geq: $since, date_leq: $until${hostFilter}}
+                                limit: 50
+                            ) {
+                                count
+                                dimensions {
+                                    clientRequestPath
+                                    clientRequestHTTPHost
+                                }
+                                avg {
+                                    sampleInterval
+                                }
+                            }
+                        }
+                    }
+                }`;
+
+                const data = await cfGql(query, {
+                    zoneTag: currentZoneId,
+                    since: since,
+                    until: until
+                });
+
+                const zone = data.viewer.zones[0];
+                if (zone) {
+                    processDomainAdaptive(zone.byHost);
+                    processPathAdaptive(zone.byPath);
+                }
             } catch (e) {
-                // secondary data failure is non-critical
+                // Adaptive groups may not be available, that's OK
+                console.log('Adaptive groups not available:', e.message);
             }
         }
 
         // =========================================
-        // Render: Overview
+        // Data processors
+        // =========================================
+        function processOverview(groups) {
+            if (!groups || groups.length === 0) {
+                dataOverview = { requests: 0, pageViews: 0, uniques: 0, bytes: 0, cachedBytes: 0, threats: 0, encryptedRequests: 0 };
+                return;
+            }
+            let requests = 0, pageViews = 0, uniques = 0, bytes = 0, cachedBytes = 0, threats = 0, encrypted = 0;
+            groups.forEach(g => {
+                requests += g.sum.requests || 0;
+                pageViews += g.sum.pageViews || 0;
+                uniques += g.uniq.uniques || 0;
+                bytes += g.sum.bytes || 0;
+                cachedBytes += g.sum.cachedBytes || 0;
+                threats += g.sum.threats || 0;
+                encrypted += g.sum.encryptedRequests || 0;
+            });
+            dataOverview = { requests, pageViews, uniques, bytes, cachedBytes, threats, encryptedRequests: encrypted };
+        }
+
+        function processTrend(groups) {
+            if (!groups) { dataTrend = []; return; }
+            dataTrend = groups.map(g => ({
+                date: g.dimensions.date,
+                requests: g.sum.requests || 0,
+                pageViews: g.sum.pageViews || 0,
+                uniques: g.uniq.uniques || 0,
+                bytes: g.sum.bytes || 0
+            })).sort((a, b) => a.date.localeCompare(b.date));
+        }
+
+        function processHostnames(groups) {
+            // For domain table, if adaptive data is not available, aggregate from daily hostnames
+            // This is a fallback - real domain data comes from adaptive groups
+        }
+
+        function processSecurityAndBrowser(groups) {
+            if (!groups || groups.length === 0) {
+                dataSecurity = { threats: 0, httpsPercentage: 0, cacheHitRate: 0, cachedBytes: 0, statusCodes: [] };
+                dataBrowsers = [];
+                dataGeo = [];
+                return;
+            }
+
+            const geoMap = {};
+            const browserMap = {};
+            const statusMap = {};
+            let totalRequests = 0;
+
+            groups.forEach(g => {
+                totalRequests += g.sum.requests || 0;
+                (g.sum.countryMap || []).forEach(c => {
+                    if (!geoMap[c.clientCountryName]) geoMap[c.clientCountryName] = { requests: 0, bytes: 0 };
+                    geoMap[c.clientCountryName].requests += c.requests || 0;
+                    geoMap[c.clientCountryName].bytes += c.bytes || 0;
+                });
+                (g.sum.browserMap || []).forEach(b => {
+                    const name = b.uaBrowserFamily || 'Other';
+                    if (!browserMap[name]) browserMap[name] = 0;
+                    browserMap[name] += b.pageViews || 0;
+                });
+                (g.sum.responseStatusMap || []).forEach(s => {
+                    const code = s.edgeResponseStatus;
+                    if (!statusMap[code]) statusMap[code] = 0;
+                    statusMap[code] += s.requests || 0;
+                });
+            });
+
+            dataGeo = Object.entries(geoMap)
+                .map(([country, d]) => ({ country, requests: d.requests, bytes: d.bytes }))
+                .sort((a, b) => b.requests - a.requests);
+
+            dataBrowsers = Object.entries(browserMap)
+                .map(([name, pageViews]) => ({ name, pageViews }))
+                .sort((a, b) => b.pageViews - a.pageViews);
+
+            const o = dataOverview || {};
+            const httpsPercent = o.requests > 0 ? ((o.encryptedRequests / o.requests) * 100).toFixed(1) : 0;
+            const cacheHitRate = o.bytes > 0 ? ((o.cachedBytes / o.bytes) * 100).toFixed(1) : 0;
+
+            dataSecurity = {
+                threats: o.threats || 0,
+                httpsPercentage: httpsPercent,
+                cacheHitRate: cacheHitRate,
+                cachedBytes: o.cachedBytes || 0,
+                statusCodes: Object.entries(statusMap)
+                    .map(([code, requests]) => ({ code: parseInt(code), requests }))
+                    .sort((a, b) => b.requests - a.requests)
+            };
+        }
+
+        function processDomainAdaptive(groups) {
+            if (!groups || groups.length === 0) return;
+            const domainMap = {};
+            groups.forEach(g => {
+                const host = g.dimensions.clientRequestHTTPHost || 'unknown';
+                if (!domainMap[host]) domainMap[host] = { requests: 0, uniques: 0, bytes: 0 };
+                const estimated = Math.round(g.count * (g.avg.sampleInterval || 1));
+                domainMap[host].requests += estimated;
+            });
+            const totalRequests = Object.values(domainMap).reduce((s, d) => s + d.requests, 0);
+            dataDomains = Object.entries(domainMap)
+                .map(([domain, d]) => ({
+                    domain,
+                    requests: d.requests,
+                    uniques: d.uniques,
+                    bytes: d.bytes,
+                    percentage: totalRequests > 0 ? ((d.requests / totalRequests) * 100).toFixed(1) : 0
+                }))
+                .sort((a, b) => b.requests - a.requests);
+
+            // Update domain filter
+            renderDomainFilter();
+        }
+
+        function processPathAdaptive(groups) {
+            if (!groups || groups.length === 0) return;
+            const pathMap = {};
+            groups.forEach(g => {
+                const path = g.dimensions.clientRequestPath || '/';
+                const host = g.dimensions.clientRequestHTTPHost || '';
+                const key = host + path;
+                if (!pathMap[key]) pathMap[key] = { path, host, requests: 0, uniques: 0 };
+                const estimated = Math.round(g.count * (g.avg.sampleInterval || 1));
+                pathMap[key].requests += estimated;
+            });
+            const totalRequests = Object.values(pathMap).reduce((s, d) => s + d.requests, 0);
+            dataPages = Object.entries(pathMap)
+                .map(([_, d]) => ({
+                    path: d.path,
+                    host: d.host,
+                    requests: d.requests,
+                    uniques: d.uniques,
+                    percentage: totalRequests > 0 ? ((d.requests / totalRequests) * 100).toFixed(1) : 0
+                }))
+                .sort((a, b) => b.requests - a.requests)
+                .slice(0, 30);
+        }
+
+        // =========================================
+        // Render All
+        // =========================================
+        function renderAll() {
+            renderOverview();
+            renderChart();
+            renderDomainTable();
+            renderPageTable();
+            renderGeoBars();
+            renderBrowserBars();
+            renderSecurity();
+        }
+
+        // =========================================
+        // Render: Overview metrics
         // =========================================
         function renderOverview() {
-            if (!dataOverview) return;
-            document.getElementById('mRequests').textContent = formatNum(dataOverview.requests);
-            document.getElementById('mPageViews').textContent = formatNum(dataOverview.pageViews);
-            document.getElementById('mUniques').textContent = formatNum(dataOverview.uniqueVisitors);
-            document.getElementById('mBandwidth').textContent = formatBytes(dataOverview.bytes);
+            const o = dataOverview || {};
+            document.getElementById('mRequests').textContent = formatNum(o.requests);
+            document.getElementById('mPageViews').textContent = formatNum(o.pageViews);
+            document.getElementById('mUniques').textContent = formatNum(o.uniques);
+            document.getElementById('mBandwidth').textContent = formatBytes(o.bytes);
+
+            const rangeLabel = currentRange === 1 ? '今日' : `过去 ${currentRange} 天`;
+            document.getElementById('mRequestsSub').textContent = rangeLabel;
+            document.getElementById('mPageViewsSub').textContent = rangeLabel;
+            document.getElementById('mUniquesSub').textContent = rangeLabel;
+            document.getElementById('mBandwidthSub').textContent = rangeLabel;
         }
 
         // =========================================
         // Render: Domain filter
         // =========================================
         function renderDomainFilter() {
-            if (!dataDomains) return;
-            const prev = domainSelect.value;
-            domainSelect.innerHTML = '<option value="">全部域名</option>';
+            const prev = domainFilter.value;
+            domainFilter.innerHTML = '<option value="">全部域名</option>';
             dataDomains.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d.domain;
                 opt.textContent = d.domain;
-                domainSelect.appendChild(opt);
+                domainFilter.appendChild(opt);
             });
-            domainSelect.value = prev || '';
+            domainFilter.value = prev || '';
         }
 
         // =========================================
         // Render: Domain table
         // =========================================
         function renderDomainTable() {
-            if (!dataDomains) return;
-            const sorted = [...dataDomains].sort((a, b) =>
-                domainSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
-            );
-            // Update sort indicator
-            const th = document.querySelector('#domainTable th[data-key="requests"]');
-            if (th) {
+            const sorted = [...dataDomains].sort((a, b) => {
+                const va = a[domainSortKey] || 0;
+                const vb = b[domainSortKey] || 0;
+                return domainSortDir === 'desc' ? vb - va : va - vb;
+            });
+
+            document.querySelectorAll('#domainTable th.sortable').forEach(th => {
                 th.classList.remove('sorted-asc', 'sorted-desc');
-                th.classList.add(domainSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
-            }
+                if (th.dataset.key === domainSortKey) {
+                    th.classList.add(domainSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+                }
+            });
+
             const tbody = document.querySelector('#domainTable tbody');
             tbody.innerHTML = '';
             if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无域名数据（需要 Adaptive Analytics 权限）</td></tr>';
                 return;
             }
-            const maxReq = sorted[0].requests || 1;
+            const maxReq = sorted[0]?.requests || 1;
             sorted.forEach(d => {
                 const tr = document.createElement('tr');
-                const pct = parseFloat(d.percentage);
-                const barW = Math.max(((d.requests / maxReq) * 100), 2);
-                tr.innerHTML = `<td>${escapeHtml(d.domain)}</td><td class="num-cell">${formatNum(d.requests)}<div class="bar-bg"><div class="bar-fill" style="width:${barW}%"></div></div></td><td class="num-cell">${pct}%</td>`;
+                const barW = Math.max((d.requests / maxReq) * 100, 2);
+                tr.innerHTML = `
+                    <td>${escapeHtml(d.domain)}</td>
+                    <td class="num-cell">${formatNum(d.requests)}<div class="bar-bg"><div class="bar-fill" style="width:${barW}%"></div></div></td>
+                    <td class="num-cell">${formatNum(d.uniques) || '-'}</td>
+                    <td class="num-cell">${formatBytes(d.bytes)}</td>
+                    <td class="num-cell">${d.percentage}%</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -883,99 +1288,81 @@
         // Render: Page table
         // =========================================
         function renderPageTable() {
-            if (!dataPages) return;
-            const sorted = [...dataPages].sort((a, b) =>
-                pageSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
-            );
-            const th = document.querySelector('#pageTable th[data-key="requests"]');
-            if (th) {
+            const sorted = [...dataPages].sort((a, b) => {
+                const va = a[pageSortKey] || 0;
+                const vb = b[pageSortKey] || 0;
+                return pageSortDir === 'desc' ? vb - va : va - vb;
+            });
+
+            document.querySelectorAll('#pageTable th.sortable').forEach(th => {
                 th.classList.remove('sorted-asc', 'sorted-desc');
-                th.classList.add(pageSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
-            }
+                if (th.dataset.key === pageSortKey) {
+                    th.classList.add(pageSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
+                }
+            });
+
             const tbody = document.querySelector('#pageTable tbody');
             tbody.innerHTML = '';
             if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无页面数据</td></tr>';
                 return;
             }
             sorted.forEach(p => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${escapeHtml(p.domain)}</td><td>${escapeHtml(p.path)}</td><td class="num-cell">${formatNum(p.requests)}</td>`;
+                tr.innerHTML = `
+                    <td title="${escapeHtml(p.host + p.path)}">${escapeHtml(p.path)}</td>
+                    <td class="num-cell">${formatNum(p.requests)}</td>
+                    <td class="num-cell">${formatNum(p.uniques) || '-'}</td>
+                    <td class="num-cell">${p.percentage}%</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         // =========================================
-        // Render: Geo table
+        // Render: Geo bars
         // =========================================
-        function renderGeoTable() {
-            if (!dataGeo) return;
-            const sorted = [...dataGeo].sort((a, b) =>
-                geoSortDir === 'desc' ? b.requests - a.requests : a.requests - b.requests
-            );
-            const th = document.querySelector('#geoTable th[data-key="requests"]');
-            if (th) {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-                th.classList.add(geoSortDir === 'desc' ? 'sorted-desc' : 'sorted-asc');
-            }
-            const tbody = document.querySelector('#geoTable tbody');
-            tbody.innerHTML = '';
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+        const BAR_COLORS = [
+            'rgba(100,180,255,0.7)', 'rgba(100,255,160,0.7)', 'rgba(255,200,100,0.7)',
+            'rgba(255,130,180,0.7)', 'rgba(180,130,255,0.7)', 'rgba(130,220,220,0.7)',
+            'rgba(255,160,100,0.7)', 'rgba(200,200,100,0.7)', 'rgba(100,200,255,0.7)',
+            'rgba(200,100,255,0.7)'
+        ];
+
+        function renderGeoBars() {
+            const container = document.getElementById('geoBars');
+            container.innerHTML = '';
+            const top = dataGeo.slice(0, 10);
+            if (top.length === 0) {
+                container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:20px 0;">暂无数据</div>';
                 return;
             }
-            sorted.forEach((g, i) => {
-                const tr = document.createElement('tr');
-                if (i < 10) tr.style.color = 'rgba(255,255,255,0.9)';
-                tr.innerHTML = `<td>${escapeHtml(g.country)}</td><td class="num-cell">${formatNum(g.requests)}</td><td class="num-cell">${formatBytes(g.bytes)}</td><td class="num-cell">${g.percentage}%</td>`;
-                tbody.appendChild(tr);
+            const maxReq = top[0]?.requests || 1;
+            top.forEach((g, i) => {
+                const pct = ((g.requests / maxReq) * 100).toFixed(0);
+                const div = document.createElement('div');
+                div.className = 'bar-item';
+                div.innerHTML = `<span class="bar-label">${escapeHtml(g.country)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${pct}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-val">${formatNum(g.requests)}</span>`;
+                container.appendChild(div);
             });
         }
 
         // =========================================
         // Render: Browser bars
         // =========================================
-        const BAR_COLORS = [
-            'rgba(100,180,255,0.7)',
-            'rgba(100,255,160,0.7)',
-            'rgba(255,200,100,0.7)',
-            'rgba(255,130,180,0.7)',
-            'rgba(180,130,255,0.7)',
-            'rgba(130,220,220,0.7)',
-            'rgba(255,160,100,0.7)',
-            'rgba(200,200,100,0.7)',
-        ];
-
         function renderBrowserBars() {
-            if (!dataBrowsers || !dataBrowsers.browsers) return;
             const container = document.getElementById('browserBars');
             container.innerHTML = '';
-            const top = dataBrowsers.browsers.slice(0, 8);
+            const top = dataBrowsers.slice(0, 8);
             if (top.length === 0) {
                 container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:20px 0;">暂无数据</div>';
                 return;
             }
+            const maxVal = top[0]?.pageViews || 1;
             top.forEach((b, i) => {
+                const pct = ((b.pageViews / maxVal) * 100).toFixed(0);
                 const div = document.createElement('div');
                 div.className = 'bar-item';
-                div.innerHTML = `<span class="bar-label">${escapeHtml(b.name)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${b.percentage}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-pct">${b.percentage}%</span>`;
-                container.appendChild(div);
-            });
-        }
-
-        function renderContentBars() {
-            if (!dataBrowsers || !dataBrowsers.contentTypes) return;
-            const container = document.getElementById('contentBars');
-            container.innerHTML = '';
-            const top = dataBrowsers.contentTypes.slice(0, 8);
-            if (top.length === 0) {
-                container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:20px 0;">暂无数据</div>';
-                return;
-            }
-            top.forEach((c, i) => {
-                const div = document.createElement('div');
-                div.className = 'bar-item';
-                div.innerHTML = `<span class="bar-label">${escapeHtml(c.name)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${c.percentage}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-pct">${c.percentage}%</span>`;
+                div.innerHTML = `<span class="bar-label">${escapeHtml(b.name)}</span><div class="bar-track"><div class="bar-fill-h" style="width:${pct}%;background:${BAR_COLORS[i % BAR_COLORS.length]}"></div></div><span class="bar-val">${formatNum(b.pageViews)}</span>`;
                 container.appendChild(div);
             });
         }
@@ -990,7 +1377,6 @@
             document.getElementById('mCacheHit').textContent = dataSecurity.cacheHitRate + '%';
             document.getElementById('mCachedBW').textContent = formatBytes(dataSecurity.cachedBytes);
 
-            // Status codes
             const grid = document.getElementById('statusGrid');
             grid.innerHTML = '';
             (dataSecurity.statusCodes || []).forEach(s => {
@@ -1012,7 +1398,6 @@
         let chartPoints = [];
 
         function renderChart() {
-            if (!dataTrend) return;
             const trend = dataTrend;
             const chartCanvas = document.getElementById('trendChart');
             const container = chartCanvas.parentElement;
@@ -1041,10 +1426,12 @@
                 return;
             }
 
+            // Three lines: requests, pageViews, uniques
+            const reqData = trend.map(t => t.requests || 0);
             const pvData = trend.map(t => t.pageViews || 0);
             const uvData = trend.map(t => t.uniques || 0);
             const labels = trend.map(t => t.date || '');
-            const maxVal = Math.max(Math.max(...pvData), Math.max(...uvData), 1);
+            const maxVal = Math.max(Math.max(...reqData), Math.max(...pvData), Math.max(...uvData), 1);
 
             const tickCount = 5;
             const niceMax = niceNum(maxVal, tickCount);
@@ -1082,21 +1469,25 @@
             function getX(i) { return padL + (i / Math.max(trend.length - 1, 1)) * cw; }
             function getY(val) { return padT + ch - (val / niceMax) * ch; }
 
-            // PV line
-            drawLine(ctx, pvData, getX, getY, 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.08)', padT, ch);
-            // UV line
-            drawLine(ctx, uvData, getX, getY, 'rgba(100,255,160,0.8)', 'rgba(100,255,160,0.08)', padT, ch);
+            // Draw lines: Requests (blue), PageViews (green), Uniques (orange)
+            drawLine(ctx, reqData, getX, getY, 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.05)', padT, ch);
+            drawLine(ctx, pvData, getX, getY, 'rgba(100,255,160,0.8)', 'rgba(100,255,160,0.05)', padT, ch);
+            drawLine(ctx, uvData, getX, getY, 'rgba(255,200,100,0.8)', 'rgba(255,200,100,0.05)', padT, ch);
 
-            // Dots & collect points
+            // Dots & points
             for (let i = 0; i < trend.length; i++) {
                 const x = getX(i);
-                const yp = getY(pvData[i]);
-                ctx.beginPath(); ctx.arc(x, yp, 3, 0, Math.PI * 2);
+                // Requests dot
+                ctx.beginPath(); ctx.arc(x, getY(reqData[i]), 3, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(100,180,255,0.9)'; ctx.fill();
-                const yu = getY(uvData[i]);
-                ctx.beginPath(); ctx.arc(x, yu, 3, 0, Math.PI * 2);
+                // PV dot
+                ctx.beginPath(); ctx.arc(x, getY(pvData[i]), 3, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(100,255,160,0.9)'; ctx.fill();
-                chartPoints.push({ x, pvY: yp, uvY: yu, date: labels[i], pv: pvData[i], uv: uvData[i] });
+                // UV dot
+                ctx.beginPath(); ctx.arc(x, getY(uvData[i]), 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,200,100,0.9)'; ctx.fill();
+
+                chartPoints.push({ x, date: labels[i], requests: reqData[i], pv: pvData[i], uv: uvData[i] });
             }
 
             // Legend
@@ -1104,14 +1495,22 @@
             ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
+            let lx = padL;
+
             ctx.fillStyle = 'rgba(100,180,255,0.9)';
-            ctx.fillRect(padL, legendY - 4, 16, 8);
+            ctx.fillRect(lx, legendY - 4, 16, 8); lx += 20;
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillText('PV', padL + 22, legendY);
+            ctx.fillText('请求', lx, legendY); lx += 40;
+
             ctx.fillStyle = 'rgba(100,255,160,0.9)';
-            ctx.fillRect(padL + 60, legendY - 4, 16, 8);
+            ctx.fillRect(lx, legendY - 4, 16, 8); lx += 20;
             ctx.fillStyle = 'rgba(255,255,255,0.5)';
-            ctx.fillText('UV', padL + 82, legendY);
+            ctx.fillText('PV', lx, legendY); lx += 30;
+
+            ctx.fillStyle = 'rgba(255,200,100,0.9)';
+            ctx.fillRect(lx, legendY - 4, 16, 8); lx += 20;
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText('UV', lx, legendY);
         }
 
         function drawLine(ctx, data, getX, getY, strokeColor, fillColor, padT, ch) {
@@ -1133,14 +1532,14 @@
 
         function niceNum(maxVal, tickCount) {
             const rough = maxVal / tickCount;
-            const pow = Math.pow(10, Math.floor(Math.log10(rough)));
-            const frac = rough / pow;
+            const pow10 = Math.pow(10, Math.floor(Math.log10(Math.max(rough, 1))));
+            const frac = rough / pow10;
             let nice;
             if (frac <= 1.5) nice = 1;
             else if (frac <= 3) nice = 2;
             else if (frac <= 7) nice = 5;
             else nice = 10;
-            return nice * pow * tickCount;
+            return nice * pow10 * tickCount;
         }
 
         function formatTickLabel(val) {
@@ -1151,7 +1550,6 @@
 
         function formatDateLabel(dateStr) {
             if (!dateStr) return '';
-            // Handle ISO datetime
             if (dateStr.includes('T')) {
                 const d = new Date(dateStr);
                 return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':00';
@@ -1176,12 +1574,11 @@
             });
             if (closest && minDist < 40) {
                 chartTooltip.style.display = 'block';
-                const dateLabel = formatDateLabel(closest.date);
-                chartTooltip.innerHTML = `${dateLabel}<br>PV: ${formatNum(closest.pv)}<br>UV: ${formatNum(closest.uv)}`;
+                chartTooltip.innerHTML = `${formatDateLabel(closest.date)}<br>请求: ${formatNum(closest.requests)}<br>PV: ${formatNum(closest.pv)}<br>UV: ${formatNum(closest.uv)}`;
                 const containerRect = trendChart.parentElement.getBoundingClientRect();
                 let tx = e.clientX - containerRect.left + 16;
                 let ty = e.clientY - containerRect.top - 10;
-                if (tx + 150 > containerRect.width) tx = tx - 170;
+                if (tx + 160 > containerRect.width) tx = tx - 180;
                 if (ty < 0) ty = 10;
                 chartTooltip.style.left = tx + 'px';
                 chartTooltip.style.top = ty + 'px';
@@ -1195,69 +1592,66 @@
         // Event Listeners
         // =========================================
 
+        // Zone selector
+        zoneSelect.addEventListener('change', function() {
+            currentZoneId = this.value;
+            currentZoneName = this.options[this.selectedIndex].text;
+            currentDomain = '';
+            domainFilter.value = '';
+            loadData();
+        });
+
         // Range buttons
         document.querySelectorAll('.range-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                currentRange = this.dataset.range;
+                currentRange = parseInt(this.dataset.range);
                 loadData();
             });
         });
 
         // Domain filter
-        domainSelect.addEventListener('change', function() {
+        domainFilter.addEventListener('change', function() {
             currentDomain = this.value;
-            // Only reload pages with domain filter
-            cfFetch('pages', currentDomain ? { domain: currentDomain } : {}).then(pages => {
-                dataPages = pages;
-                renderPageTable();
-            }).catch(() => {});
-        });
-
-        // Granularity buttons
-        document.querySelectorAll('.gran-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.gran-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentGranularity = this.dataset.gran;
-                cfFetch('trend', { granularity: currentGranularity }).then(trend => {
-                    dataTrend = trend;
-                    renderChart();
-                }).catch(() => {});
-            });
+            loadData();
         });
 
         // Table sorting
         document.querySelectorAll('th.sortable').forEach(th => {
             th.addEventListener('click', function() {
                 const table = this.dataset.table;
+                const key = this.dataset.key;
                 if (table === 'domain') {
-                    domainSortDir = domainSortDir === 'desc' ? 'asc' : 'desc';
+                    if (domainSortKey === key) domainSortDir = domainSortDir === 'desc' ? 'asc' : 'desc';
+                    else { domainSortKey = key; domainSortDir = 'desc'; }
                     renderDomainTable();
                 } else if (table === 'page') {
-                    pageSortDir = pageSortDir === 'desc' ? 'asc' : 'desc';
+                    if (pageSortKey === key) pageSortDir = pageSortDir === 'desc' ? 'asc' : 'desc';
+                    else { pageSortKey = key; pageSortDir = 'desc'; }
                     renderPageTable();
-                } else if (table === 'geo') {
-                    geoSortDir = geoSortDir === 'desc' ? 'asc' : 'desc';
-                    renderGeoTable();
                 }
             });
         });
 
-        // Resize chart
+        // Resize
         let resizeTimer;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(function() {
-                if (dataTrend) renderChart();
-            }, 200);
+            resizeTimer = setTimeout(function() { if (dataTrend.length > 0) renderChart(); }, 200);
         });
 
         // =========================================
         // Init
         // =========================================
-        loadData();
+        async function init() {
+            const hasZones = await loadZones();
+            if (hasZones) {
+                await loadData();
+            }
+        }
+
+        init();
 
     })();
     </script>
