@@ -6,7 +6,7 @@
 测试范围：
   1. HTML 结构完整性（DOCTYPE、head、body、必要元素）
   2. 故事首页 Timeline 内容和链接
-  3. 5个故事页面的导航链完整性
+  3. 13个故事页面的导航链完整性
   4. 内容丰富度（段落数、古籍引文、AI映射数量）
   5. 视觉标识（渐变色、背景色一致性）
   6. 移动端适配（响应式媒体查询）
@@ -235,6 +235,14 @@ STORY_PAGES = {
     'youchao': os.path.join(BASE_DIR, 'youchao.html'),
     'suiren': os.path.join(BASE_DIR, 'suiren.html'),
     'fuxi': os.path.join(BASE_DIR, 'fuxi.html'),
+    'shennong': os.path.join(BASE_DIR, 'shennong.html'),
+    'xuanyuan': os.path.join(BASE_DIR, 'xuanyuan.html'),
+    'qinchiyou': os.path.join(BASE_DIR, 'qinchiyou.html'),
+    'fenghou': os.path.join(BASE_DIR, 'fenghou.html'),
+    'xuannv': os.path.join(BASE_DIR, 'xuannv.html'),
+    'changxian': os.path.join(BASE_DIR, 'changxian.html'),
+    'hanba': os.path.join(BASE_DIR, 'hanba.html'),
+    'xingtian': os.path.join(BASE_DIR, 'xingtian.html'),
 }
 
 INDEX_PAGE = os.path.join(BASE_DIR, 'index.html')
@@ -276,6 +284,46 @@ class TestFileExistence(unittest.TestCase):
         """伏羲画卦页面应该存在（新建）"""
         self.assertTrue(os.path.exists(STORY_PAGES['fuxi']),
                         "fuxi.html 不存在")
+
+    def test_shennong_page_exists(self):
+        """神农尝百草页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['shennong']),
+                        "shennong.html 不存在")
+
+    def test_xuanyuan_page_exists(self):
+        """轩辕黄帝页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['xuanyuan']),
+                        "xuanyuan.html 不存在")
+
+    def test_qinchiyou_page_exists(self):
+        """黄帝擒蚩尤页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['qinchiyou']),
+                        "qinchiyou.html 不存在")
+
+    def test_fenghou_page_exists(self):
+        """风后指南页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['fenghou']),
+                        "fenghou.html 不存在")
+
+    def test_xuannv_page_exists(self):
+        """玄女赐书页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['xuannv']),
+                        "xuannv.html 不存在")
+
+    def test_changxian_page_exists(self):
+        """常先制鼓页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['changxian']),
+                        "changxian.html 不存在")
+
+    def test_hanba_page_exists(self):
+        """旱神女魃页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['hanba']),
+                        "hanba.html 不存在")
+
+    def test_xingtian_page_exists(self):
+        """刑天断首页面应该存在"""
+        self.assertTrue(os.path.exists(STORY_PAGES['xingtian']),
+                        "xingtian.html 不存在")
 
 
 # ============================================================================
@@ -339,6 +387,14 @@ class TestHTMLStructure(unittest.TestCase):
             'youchao': '有巢构木',
             'suiren': '燧人取火',
             'fuxi': '伏羲画卦',
+            'shennong': '神农尝百草',
+            'xuanyuan': '轩辕黄帝',
+            'qinchiyou': '黄帝擒蚩尤',
+            'fenghou': '风后指南',
+            'xuannv': '玄女赐书',
+            'changxian': '常先制鼓',
+            'hanba': '旱神女魃',
+            'xingtian': '刑天断首',
         }
         for name, expected in expected_titles.items():
             if name in self.parsers:
@@ -366,21 +422,23 @@ class TestIndexTimeline(unittest.TestCase):
             cls.parser = None
             cls.raw = ""
 
-    def test_timeline_has_5_items(self):
-        """Timeline 应该恰好有 5 个故事项"""
-        count = self.raw.count('timeline-item')
-        # 减去 CSS 中的引用（class定义等），只计算 HTML 中的 div
+    def test_timeline_has_13_items(self):
+        """Timeline 应该恰好有 13 个故事项"""
         html_body = self.raw.split('<body')[1] if '<body' in self.raw else self.raw
         div_count = html_body.count('class="timeline-item"')
-        self.assertEqual(div_count, 5,
-                         f"Timeline 应有 5 个故事项，实际有 {div_count} 个")
+        self.assertEqual(div_count, 13,
+                         f"Timeline 应有 13 个故事项，实际有 {div_count} 个")
 
     def test_timeline_story_order(self):
-        """Timeline 故事顺序应为：盘古→女娲→有巢→燧人→伏羲"""
-        expected_order = ['盘古开天地', '女娲造人', '有巢构木', '燧人取火', '伏羲画卦']
+        """Timeline 故事顺序应正确"""
+        expected_order = [
+            '盘古开天地', '女娲造人', '有巢构木', '燧人取火', '伏羲画卦',
+            '神农尝百草', '轩辕黄帝', '黄帝擒蚩尤', '风后指南', '玄女赐书',
+            '常先制鼓', '旱神女魃', '刑天断首',
+        ]
         h3_in_timeline = re.findall(r'<h3>(.*?)</h3>', self.raw)
-        self.assertEqual(len(h3_in_timeline), 5,
-                         f"Timeline 中应有 5 个 h3 标题，实际有 {len(h3_in_timeline)} 个")
+        self.assertEqual(len(h3_in_timeline), 13,
+                         f"Timeline 中应有 13 个 h3 标题，实际有 {len(h3_in_timeline)} 个")
         for i, expected in enumerate(expected_order):
             self.assertEqual(h3_in_timeline[i], expected,
                              f"第 {i+1} 个故事应为 '{expected}'，实际为 '{h3_in_timeline[i]}'")
@@ -393,6 +451,14 @@ class TestIndexTimeline(unittest.TestCase):
             '有巢构木': 'youchao.html',
             '燧人取火': 'suiren.html',
             '伏羲画卦': 'fuxi.html',
+            '神农尝百草': 'shennong.html',
+            '轩辕黄帝': 'xuanyuan.html',
+            '黄帝擒蚩尤': 'qinchiyou.html',
+            '风后指南': 'fenghou.html',
+            '玄女赐书': 'xuannv.html',
+            '常先制鼓': 'changxian.html',
+            '旱神女魃': 'hanba.html',
+            '刑天断首': 'xingtian.html',
         }
         for story, expected_href in expected_links.items():
             with self.subTest(story=story):
@@ -410,12 +476,14 @@ class TestIndexTimeline(unittest.TestCase):
         )
         # 简单检查：每个 timeline-content 内应有 <p> 描述
         p_tags = re.findall(r'class="timeline-content".*?<p>(.*?)</p>', self.raw, re.DOTALL)
-        self.assertGreaterEqual(len(p_tags), 5,
+        self.assertGreaterEqual(len(p_tags), 13,
                                 f"Timeline 中每项都应有描述，找到 {len(p_tags)} 个 <p>")
 
     def test_timeline_has_meta_labels(self):
         """每个 Timeline 项应有 meta 标签（英文名+主题）"""
-        expected_metas = ['Pangu', 'Nvwa', 'Youchao', 'Suiren', 'Fuxi']
+        expected_metas = ['Pangu', 'Nvwa', 'Youchao', 'Suiren', 'Fuxi',
+                          'Shennong', 'Xuanyuan', 'Qinchiyou', 'Fenghou', 'Xuannv',
+                          'Changxian', 'Hanba', 'Xingtian']
         for meta in expected_metas:
             with self.subTest(meta=meta):
                 self.assertIn(meta, self.raw,
@@ -424,8 +492,8 @@ class TestIndexTimeline(unittest.TestCase):
     def test_timeline_has_year_labels(self):
         """每个 Timeline 项应有 timeline-year 标签"""
         year_count = self.raw.count('class="timeline-year"')
-        self.assertEqual(year_count, 5,
-                         f"应有 5 个 timeline-year 标签，实际有 {year_count} 个")
+        self.assertEqual(year_count, 13,
+                         f"应有 13 个 timeline-year 标签，实际有 {year_count} 个")
 
 
 # ============================================================================
@@ -433,7 +501,7 @@ class TestIndexTimeline(unittest.TestCase):
 # ============================================================================
 
 class TestNavigationChain(unittest.TestCase):
-    """测试5个故事页面的前后导航链"""
+    """测试13个故事页面的前后导航链"""
 
     @classmethod
     def setUpClass(cls):
@@ -518,11 +586,139 @@ class TestNavigationChain(unittest.TestCase):
         self.assertIn('燧人取火', footer,
                       "伏羲页面的上一个应显示'燧人取火'")
 
-    def test_fuxi_nav_no_next(self):
-        """伏羲页面不应有"下一个"链接"""
+    def test_fuxi_nav_next_is_shennong(self):
+        """伏羲页面的"下一个"应指向神农尝百草"""
         footer = self._get_footer_content(self.raws.get('fuxi', ''))
+        self.assertIn('shennong.html', footer,
+                      "伏羲页面的下一个应链接到 shennong.html")
+        self.assertIn('神农尝百草', footer,
+                      "伏羲页面的下一个应显示'神农尝百草'")
+
+    def test_shennong_nav_previous_is_fuxi(self):
+        """神农页面的"上一个"应指向伏羲画卦"""
+        footer = self._get_footer_content(self.raws.get('shennong', ''))
+        self.assertIn('fuxi.html', footer,
+                      "神农页面的上一个应链接到 fuxi.html")
+        self.assertIn('伏羲画卦', footer,
+                      "神农页面的上一个应显示'伏羲画卦'")
+
+    def test_shennong_nav_next_is_xuanyuan(self):
+        """神农页面的"下一个"应指向轩辕黄帝"""
+        footer = self._get_footer_content(self.raws.get('shennong', ''))
+        self.assertIn('xuanyuan.html', footer,
+                      "神农页面的下一个应链接到 xuanyuan.html")
+        self.assertIn('轩辕黄帝', footer,
+                      "神农页面的下一个应显示'轩辕黄帝'")
+
+    def test_xuanyuan_nav_previous_is_shennong(self):
+        """轩辕页面的"上一个"应指向神农尝百草"""
+        footer = self._get_footer_content(self.raws.get('xuanyuan', ''))
+        self.assertIn('shennong.html', footer,
+                      "轩辕页面的上一个应链接到 shennong.html")
+        self.assertIn('神农尝百草', footer,
+                      "轩辕页面的上一个应显示'神农尝百草'")
+
+    def test_xuanyuan_nav_next_is_qinchiyou(self):
+        """轩辕页面的"下一个"应指向黄帝擒蚩尤"""
+        footer = self._get_footer_content(self.raws.get('xuanyuan', ''))
+        self.assertIn('qinchiyou.html', footer,
+                      "轩辕页面的下一个应链接到 qinchiyou.html")
+        self.assertIn('黄帝擒蚩尤', footer,
+                      "轩辕页面的下一个应显示'黄帝擒蚩尤'")
+
+    def test_qinchiyou_nav_previous_is_xuanyuan(self):
+        """擒蚩尤页面的"上一个"应指向轩辕黄帝"""
+        footer = self._get_footer_content(self.raws.get('qinchiyou', ''))
+        self.assertIn('xuanyuan.html', footer,
+                      "擒蚩尤页面的上一个应链接到 xuanyuan.html")
+        self.assertIn('轩辕黄帝', footer,
+                      "擒蚩尤页面的上一个应显示'轩辕黄帝'")
+
+    def test_qinchiyou_nav_next_is_fenghou(self):
+        """擒蚩尤页面的"下一个"应指向风后指南"""
+        footer = self._get_footer_content(self.raws.get('qinchiyou', ''))
+        self.assertIn('fenghou.html', footer,
+                      "擒蚩尤页面的下一个应链接到 fenghou.html")
+        self.assertIn('风后指南', footer,
+                      "擒蚩尤页面的下一个应显示'风后指南'")
+
+    def test_fenghou_nav_previous_is_qinchiyou(self):
+        """风后页面的"上一个"应指向黄帝擒蚩尤"""
+        footer = self._get_footer_content(self.raws.get('fenghou', ''))
+        self.assertIn('qinchiyou.html', footer,
+                      "风后页面的上一个应链接到 qinchiyou.html")
+        self.assertIn('黄帝擒蚩尤', footer,
+                      "风后页面的上一个应显示'黄帝擒蚩尤'")
+
+    def test_fenghou_nav_next_is_xuannv(self):
+        """风后页面的"下一个"应指向玄女赐书"""
+        footer = self._get_footer_content(self.raws.get('fenghou', ''))
+        self.assertIn('xuannv.html', footer,
+                      "风后页面的下一个应链接到 xuannv.html")
+        self.assertIn('玄女赐书', footer,
+                      "风后页面的下一个应显示'玄女赐书'")
+
+    def test_xuannv_nav_previous_is_fenghou(self):
+        """玄女页面的"上一个"应指向风后指南"""
+        footer = self._get_footer_content(self.raws.get('xuannv', ''))
+        self.assertIn('fenghou.html', footer,
+                      "玄女页面的上一个应链接到 fenghou.html")
+        self.assertIn('风后指南', footer,
+                      "玄女页面的上一个应显示'风后指南'")
+
+    def test_xuannv_nav_next_is_changxian(self):
+        """玄女页面的"下一个"应指向常先制鼓"""
+        footer = self._get_footer_content(self.raws.get('xuannv', ''))
+        self.assertIn('changxian.html', footer,
+                      "玄女页面的下一个应链接到 changxian.html")
+        self.assertIn('常先制鼓', footer,
+                      "玄女页面的下一个应显示'常先制鼓'")
+
+    def test_changxian_nav_previous_is_xuannv(self):
+        """常先页面的"上一个"应指向玄女赐书"""
+        footer = self._get_footer_content(self.raws.get('changxian', ''))
+        self.assertIn('xuannv.html', footer,
+                      "常先页面的上一个应链接到 xuannv.html")
+        self.assertIn('玄女赐书', footer,
+                      "常先页面的上一个应显示'玄女赐书'")
+
+    def test_changxian_nav_next_is_hanba(self):
+        """常先页面的"下一个"应指向旱神女魃"""
+        footer = self._get_footer_content(self.raws.get('changxian', ''))
+        self.assertIn('hanba.html', footer,
+                      "常先页面的下一个应链接到 hanba.html")
+        self.assertIn('旱神女魃', footer,
+                      "常先页面的下一个应显示'旱神女魃'")
+
+    def test_hanba_nav_previous_is_changxian(self):
+        """女魃页面的"上一个"应指向常先制鼓"""
+        footer = self._get_footer_content(self.raws.get('hanba', ''))
+        self.assertIn('changxian.html', footer,
+                      "女魃页面的上一个应链接到 changxian.html")
+        self.assertIn('常先制鼓', footer,
+                      "女魃页面的上一个应显示'常先制鼓'")
+
+    def test_hanba_nav_next_is_xingtian(self):
+        """女魃页面的"下一个"应指向刑天断首"""
+        footer = self._get_footer_content(self.raws.get('hanba', ''))
+        self.assertIn('xingtian.html', footer,
+                      "女魃页面的下一个应链接到 xingtian.html")
+        self.assertIn('刑天断首', footer,
+                      "女魃页面的下一个应显示'刑天断首'")
+
+    def test_xingtian_nav_previous_is_hanba(self):
+        """刑天页面的"上一个"应指向旱神女魃"""
+        footer = self._get_footer_content(self.raws.get('xingtian', ''))
+        self.assertIn('hanba.html', footer,
+                      "刑天页面的上一个应链接到 hanba.html")
+        self.assertIn('旱神女魃', footer,
+                      "刑天页面的上一个应显示'旱神女魃'")
+
+    def test_xingtian_nav_no_next(self):
+        """刑天页面不应有"下一个"链接"""
+        footer = self._get_footer_content(self.raws.get('xingtian', ''))
         self.assertNotIn('下一个', footer,
-                         "伏羲页面不应有下一个故事链接")
+                         "刑天页面不应有下一个故事链接")
 
     def test_all_pages_have_home_link(self):
         """所有故事页面都应有"回到首页"链接"""
@@ -671,6 +867,182 @@ class TestContentRichness(unittest.TestCase):
         count = self._count_ai_items(self.raws.get('fuxi', ''))
         self.assertGreaterEqual(count, 5,
                                 f"伏羲页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 神农尝百草 ---
+    def test_shennong_text_paragraphs(self):
+        """神农页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('shennong', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"神农页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_shennong_ancient_quotes(self):
+        """神农页面应有古籍引文（《淮南子》）"""
+        raw = self.raws.get('shennong', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"神农页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('淮南子', raw,
+                      "神农页面应引用《淮南子》")
+
+    def test_shennong_ai_items(self):
+        """神农页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('shennong', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"神农页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 轩辕黄帝 ---
+    def test_xuanyuan_text_paragraphs(self):
+        """轩辕页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('xuanyuan', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"轩辕页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_xuanyuan_ancient_quotes(self):
+        """轩辕页面应有古籍引文（《史记》）"""
+        raw = self.raws.get('xuanyuan', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"轩辕页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('史记', raw,
+                      "轩辕页面应引用《史记》")
+
+    def test_xuanyuan_ai_items(self):
+        """轩辕页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('xuanyuan', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"轩辕页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 黄帝擒蚩尤 ---
+    def test_qinchiyou_text_paragraphs(self):
+        """擒蚩尤页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('qinchiyou', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"擒蚩尤页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_qinchiyou_ancient_quotes(self):
+        """擒蚩尤页面应有古籍引文（《史记》）"""
+        raw = self.raws.get('qinchiyou', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"擒蚩尤页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('史记', raw,
+                      "擒蚩尤页面应引用《史记》")
+
+    def test_qinchiyou_ai_items(self):
+        """擒蚩尤页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('qinchiyou', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"擒蚩尤页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 风后指南 ---
+    def test_fenghou_text_paragraphs(self):
+        """风后页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('fenghou', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"风后页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_fenghou_ancient_quotes(self):
+        """风后页面应有古籍引文（《太平御览》）"""
+        raw = self.raws.get('fenghou', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"风后页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('太平御览', raw,
+                      "风后页面应引用《太平御览》")
+
+    def test_fenghou_ai_items(self):
+        """风后页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('fenghou', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"风后页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 玄女赐书 ---
+    def test_xuannv_text_paragraphs(self):
+        """玄女页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('xuannv', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"玄女页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_xuannv_ancient_quotes(self):
+        """玄女页面应有古籍引文（《太平御览》）"""
+        raw = self.raws.get('xuannv', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"玄女页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('太平御览', raw,
+                      "玄女页面应引用《太平御览》")
+
+    def test_xuannv_ai_items(self):
+        """玄女页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('xuannv', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"玄女页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 常先制鼓 ---
+    def test_changxian_text_paragraphs(self):
+        """常先页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('changxian', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"常先页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_changxian_ancient_quotes(self):
+        """常先页面应有古籍引文（《山海经》）"""
+        raw = self.raws.get('changxian', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"常先页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('山海经', raw,
+                      "常先页面应引用《山海经》")
+
+    def test_changxian_ai_items(self):
+        """常先页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('changxian', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"常先页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 旱神女魃 ---
+    def test_hanba_text_paragraphs(self):
+        """女魃页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('hanba', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"女魃页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_hanba_ancient_quotes(self):
+        """女魃页面应有古籍引文（《山海经》）"""
+        raw = self.raws.get('hanba', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"女魃页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('山海经', raw,
+                      "女魃页面应引用《山海经》")
+
+    def test_hanba_ai_items(self):
+        """女魃页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('hanba', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"女魃页面 AI Metaphor 数为 {count}，要求至少5个")
+
+    # --- 刑天断首 ---
+    def test_xingtian_text_paragraphs(self):
+        """刑天页面应有至少6段 .text 叙述"""
+        count = self._count_text_paragraphs(self.raws.get('xingtian', ''))
+        self.assertGreaterEqual(count, 6,
+                                f"刑天页面 .text 段落数为 {count}，要求至少6段")
+
+    def test_xingtian_ancient_quotes(self):
+        """刑天页面应有古籍引文（《山海经》）"""
+        raw = self.raws.get('xingtian', '')
+        count = self._count_ancient_quotes(raw)
+        self.assertGreaterEqual(count, 1,
+                                f"刑天页面古籍引文数为 {count}，要求至少1段")
+        self.assertIn('山海经', raw,
+                      "刑天页面应引用《山海经》")
+
+    def test_xingtian_ai_items(self):
+        """刑天页面应有至少5个 AI Metaphor 项"""
+        count = self._count_ai_items(self.raws.get('xingtian', ''))
+        self.assertGreaterEqual(count, 5,
+                                f"刑天页面 AI Metaphor 数为 {count}，要求至少5个")
 
     # --- 通用检查 ---
     def test_all_pages_have_quote_section(self):
@@ -977,6 +1349,38 @@ class TestH1Titles(unittest.TestCase):
         """伏羲页面的 H1 应为"伏羲画卦" """
         self.assertEqual(self.parsers['fuxi'].h1_text, '伏羲画卦')
 
+    def test_shennong_h1(self):
+        """神农页面的 H1 应为"神农尝百草" """
+        self.assertEqual(self.parsers['shennong'].h1_text, '神农尝百草')
+
+    def test_xuanyuan_h1(self):
+        """轩辕页面的 H1 应为"轩辕黄帝" """
+        self.assertEqual(self.parsers['xuanyuan'].h1_text, '轩辕黄帝')
+
+    def test_qinchiyou_h1(self):
+        """擒蚩尤页面的 H1 应为"黄帝擒蚩尤" """
+        self.assertEqual(self.parsers['qinchiyou'].h1_text, '黄帝擒蚩尤')
+
+    def test_fenghou_h1(self):
+        """风后页面的 H1 应为"风后指南" """
+        self.assertEqual(self.parsers['fenghou'].h1_text, '风后指南')
+
+    def test_xuannv_h1(self):
+        """玄女页面的 H1 应为"玄女赐书" """
+        self.assertEqual(self.parsers['xuannv'].h1_text, '玄女赐书')
+
+    def test_changxian_h1(self):
+        """常先页面的 H1 应为"常先制鼓" """
+        self.assertEqual(self.parsers['changxian'].h1_text, '常先制鼓')
+
+    def test_hanba_h1(self):
+        """女魃页面的 H1 应为"旱神女魃" """
+        self.assertEqual(self.parsers['hanba'].h1_text, '旱神女魃')
+
+    def test_xingtian_h1(self):
+        """刑天页面的 H1 应为"刑天断首" """
+        self.assertEqual(self.parsers['xingtian'].h1_text, '刑天断首')
+
 
 # ============================================================================
 # 测试10：英文名称标签
@@ -1001,6 +1405,14 @@ class TestEnglishNames(unittest.TestCase):
             'youchao': 'YOUCHAO',
             'suiren': 'SUIREN',
             'fuxi': 'FUXI',
+            'shennong': 'SHENNONG',
+            'xuanyuan': 'XUANYUAN',
+            'qinchiyou': 'QINCHIYOU',
+            'fenghou': 'FENGHOU',
+            'xuannv': 'XUANNV',
+            'changxian': 'CHANGXIAN',
+            'hanba': 'HANBA',
+            'xingtian': 'XINGTIAN',
         }
         for name, en_name in expected.items():
             with self.subTest(page=name):
@@ -1031,6 +1443,14 @@ class TestImagePaths(unittest.TestCase):
             'youchao': 'youchao.jpg',
             'suiren': 'suiren.jpg',
             'fuxi': 'fuxi.jpg',
+            'shennong': 'shennong.jpg',
+            'xuanyuan': 'xuanyuan.jpg',
+            'qinchiyou': 'qinchiyou.jpg',
+            'fenghou': 'fenghou.jpg',
+            'xuannv': 'xuannv.jpg',
+            'changxian': 'changxian.jpg',
+            'hanba': 'hanba.jpg',
+            'xingtian': 'xingtian.jpg',
         }
         for name, expected_src in expected_images.items():
             if name in self.parsers:
@@ -1130,7 +1550,9 @@ class TestCrossPageConsistency(unittest.TestCase):
     def test_index_links_match_story_pages(self):
         """首页 Timeline 中的链接应与故事页面文件名匹配"""
         index_raw = self.raws.get('index', '')
-        expected_files = ['pangu.html', 'nvwa.html', 'youchao.html', 'suiren.html', 'fuxi.html']
+        expected_files = ['pangu.html', 'nvwa.html', 'youchao.html', 'suiren.html', 'fuxi.html',
+                          'shennong.html', 'xuanyuan.html', 'qinchiyou.html', 'fenghou.html',
+                          'xuannv.html', 'changxian.html', 'hanba.html', 'xingtian.html']
         for filename in expected_files:
             with self.subTest(file=filename):
                 self.assertIn(f'href="{filename}"', index_raw,
