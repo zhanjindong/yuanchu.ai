@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #canvas { position: fixed; top: 0; left: 0; z-index: 0; }
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .back {
+            display: inline-block;
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            letter-spacing: 4px;
+            margin-bottom: 60px;
+            transition: color 0.3s;
+        }
+        .back:hover { color: #fff; }
+        .back::before { content: '← '; }
+        .section-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 12px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 12px;
+            margin-bottom: 40px;
+        }
+
+        /* Loading & Error */
+        .loading {
+            text-align: center;
+            padding: 80px 0;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            letter-spacing: 4px;
+        }
+        .loading .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-msg {
+            text-align: center;
+            padding: 60px 0;
+            color: rgba(255,100,100,0.8);
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+        .error-msg .retry-btn {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 8px 24px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            font-family: inherit;
+        }
+        .error-msg .retry-btn:hover {
+            color: #fff;
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* Metric Cards */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .metric-card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .metric-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .metric-value {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .range-btns {
+            display: flex;
+            gap: 0;
+        }
+        .range-btn {
+            padding: 8px 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            background: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+            font-family: inherit;
+        }
+        .range-btn:not(:first-child) {
+            border-left: none;
+        }
+        .range-btn:hover {
+            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.05);
+        }
+        .range-btn.active {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .range-btn.active + .range-btn {
+            border-left-color: rgba(255,255,255,0.3);
+        }
+        .domain-select {
+            padding: 8px 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            cursor: pointer;
+            font-family: inherit;
+            letter-spacing: 1px;
+            appearance: none;
+            -webkit-appearance: none;
+            padding-right: 32px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+        .domain-select:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.3);
+        }
+        .domain-select option {
+            background: #111;
+            color: #fff;
+        }
+
+        /* Chart */
+        .chart-container {
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+            position: relative;
+        }
+        .chart-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+        #trendChart {
+            width: 100%;
+            display: block;
+        }
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(20,20,20,0.95);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 14px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            pointer-events: none;
+            z-index: 10;
+            display: none;
+            line-height: 1.8;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* Tables */
+        .table-section {
+            margin-bottom: 40px;
+        }
+        .table-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        thead th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 400;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            white-space: nowrap;
+        }
+        thead th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.3s;
+        }
+        thead th.sortable:hover {
+            color: rgba(255,255,255,0.7);
+        }
+        thead th.sorted-asc::after {
+            content: ' ▲';
+            font-size: 10px;
+        }
+        thead th.sorted-desc::after {
+            content: ' ▼';
+            font-size: 10px;
+        }
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        tbody td {
+            padding: 12px 16px;
+            color: rgba(255,255,255,0.7);
+        }
+        tbody td:first-child {
+            color: rgba(255,255,255,0.85);
+        }
+        .num-cell {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* Dashboard hidden until loaded */
+        #dashboard { display: none; }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+                letter-spacing: 8px;
+                margin-bottom: 30px;
+            }
+            .metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .metric-value {
+                font-size: 24px;
+            }
+            .metric-card {
+                padding: 16px;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .range-btns {
+                width: 100%;
+            }
+            .range-btn {
+                flex: 1;
+                text-align: center;
+                padding: 8px 8px;
+            }
+            .domain-select {
+                width: 100%;
+            }
+            .chart-container {
+                padding: 16px 12px;
+            }
+            table {
+                font-size: 13px;
+            }
+            thead th, tbody td {
+                padding: 10px 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            .metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+            .metric-value {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="content">
+        <a href="index.html" class="back">BACK</a>
+        <div class="section-title">ANALYTICS</div>
+        <h1>统计</h1>
+
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <div>加载中...</div>
+        </div>
+        <div id="errorState" class="error-msg" style="display:none;"></div>
+
+        <div id="dashboard">
+            <!-- Metric Cards -->
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-label">总 PV</div>
+                    <div class="metric-value" id="totalPV">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">总 UV</div>
+                    <div class="metric-value" id="totalUV">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">今日 PV</div>
+                    <div class="metric-value" id="todayPV">-</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">今日 UV</div>
+                    <div class="metric-value" id="todayUV">-</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="range-btns">
+                    <button class="range-btn" data-range="today">今日</button>
+                    <button class="range-btn active" data-range="7d">7天</button>
+                    <button class="range-btn" data-range="30d">30天</button>
+                    <button class="range-btn" data-range="all">全部</button>
+                </div>
+                <select class="domain-select" id="domainFilter">
+                    <option value="">全部域名</option>
+                </select>
+            </div>
+
+            <!-- Trend Chart -->
+            <div class="chart-container">
+                <div class="chart-title">趋势</div>
+                <canvas id="trendChart" height="300"></canvas>
+                <div class="chart-tooltip" id="chartTooltip"></div>
+            </div>
+
+            <!-- Domain Summary Table -->
+            <div class="table-section">
+                <div class="table-title">域名统计</div>
+                <div class="table-wrapper">
+                    <table id="domainTable">
+                        <thead>
+                            <tr>
+                                <th>域名</th>
+                                <th>PV</th>
+                                <th>UV</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Page Detail Table -->
+            <div class="table-section">
+                <div class="table-title">页面明细</div>
+                <div class="table-wrapper">
+                    <table id="pageTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-key="domain">域名</th>
+                                <th class="sortable" data-key="path">路径</th>
+                                <th class="sortable" data-key="pv">PV</th>
+                                <th class="sortable" data-key="uv">UV</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+        </footer>
+    </div>
+
+    <script>
+    (function() {
+        // =========================================
+        // Configuration
+        // =========================================
+        const ANALYTICS_HOST = 'https://analytics.yuanchu.ai';
+
+        // =========================================
+        // Particle Background
+        // =========================================
+        const bgCanvas = document.getElementById('canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let bgW, bgH, bgParticles = [], bgMouseX = 0, bgMouseY = 0, bgTargetX = 0, bgTargetY = 0;
+        const PARTICLE_COUNT = 80;
+        function bgResize() { bgW = bgCanvas.width = window.innerWidth; bgH = bgCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', bgResize);
+        bgResize();
+        class BgParticle {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random() * bgW; this.y = Math.random() * bgH; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.alpha = Math.random() * 0.5 + 0.2; }
+            update() { this.x += this.speedX + (bgTargetX - bgW/2) * 0.0001; this.y += this.speedY + (bgTargetY - bgH/2) * 0.0001; if (this.x < 0 || this.x > bgW || this.y < 0 || this.y > bgH) this.reset(); }
+            draw() { bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); bgCtx.fillStyle = `rgba(255,255,255,${this.alpha})`; bgCtx.fill(); }
+        }
+        for (let i = 0; i < PARTICLE_COUNT; i++) bgParticles.push(new BgParticle());
+        bgCanvas.addEventListener('mousemove', (e) => { bgMouseX = e.clientX; bgMouseY = e.clientY; });
+        function bgAnimate() { bgCtx.fillStyle = 'rgba(0,0,0,0.1)'; bgCtx.fillRect(0, 0, bgW, bgH); bgTargetX += (bgMouseX - bgTargetX) * 0.05; bgTargetY += (bgMouseY - bgTargetY) * 0.05; bgParticles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(bgAnimate); }
+        bgAnimate();
+
+        // =========================================
+        // Token management
+        // =========================================
+        function getToken() {
+            let token = sessionStorage.getItem('analytics_token');
+            if (!token) {
+                token = prompt('请输入访问令牌 (Token):');
+                if (token) {
+                    sessionStorage.setItem('analytics_token', token);
+                } else {
+                    return null;
+                }
+            }
+            return token;
+        }
+
+        // =========================================
+        // State
+        // =========================================
+        let currentRange = '7d';
+        let currentDomain = '';
+        let currentData = null;
+        let pageSortKey = 'pv';
+        let pageSortDir = 'desc';
+
+        // =========================================
+        // DOM references
+        // =========================================
+        const loadingEl = document.getElementById('loadingState');
+        const errorEl = document.getElementById('errorState');
+        const dashboardEl = document.getElementById('dashboard');
+        const domainSelect = document.getElementById('domainFilter');
+        const chartTooltip = document.getElementById('chartTooltip');
+
+        // =========================================
+        // Utility
+        // =========================================
+        function formatNum(n) {
+            if (n == null) return '-';
+            return n.toLocaleString('zh-CN');
+        }
+
+        function showLoading() {
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            dashboardEl.style.display = 'none';
+        }
+
+        function showError(msg) {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+            errorEl.innerHTML = msg + '<br><button class="retry-btn" onclick="location.reload()">重试</button>';
+            dashboardEl.style.display = 'none';
+        }
+
+        function showDashboard() {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'none';
+            dashboardEl.style.display = 'block';
+        }
+
+        // =========================================
+        // Fetch data
+        // =========================================
+        async function fetchData() {
+            const token = getToken();
+            if (!token) {
+                showError('未提供令牌，无法访问统计数据');
+                return;
+            }
+            showLoading();
+            try {
+                const params = new URLSearchParams({
+                    range: currentRange,
+                    domain: currentDomain,
+                    token: token
+                });
+                const url = `${ANALYTICS_HOST}/api/stats?${params.toString()}`;
+                const resp = await fetch(url);
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        sessionStorage.removeItem('analytics_token');
+                        showError('令牌无效或已过期，请刷新页面重新输入');
+                        return;
+                    }
+                    throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+                }
+                currentData = await resp.json();
+                renderAll();
+                showDashboard();
+            } catch (err) {
+                showError('加载数据失败: ' + err.message);
+            }
+        }
+
+        // =========================================
+        // Render all sections
+        // =========================================
+        function renderAll() {
+            if (!currentData) return;
+            renderMetrics();
+            renderDomainFilter();
+            renderDomainTable();
+            renderPageTable();
+            renderChart();
+        }
+
+        // =========================================
+        // Metrics
+        // =========================================
+        function renderMetrics() {
+            const d = currentData;
+            document.getElementById('totalPV').textContent = formatNum(d.totalPV || d.total_pv || 0);
+            document.getElementById('totalUV').textContent = formatNum(d.totalUV || d.total_uv || 0);
+            document.getElementById('todayPV').textContent = formatNum(d.todayPV || d.today_pv || 0);
+            document.getElementById('todayUV').textContent = formatNum(d.todayUV || d.today_uv || 0);
+        }
+
+        // =========================================
+        // Domain filter dropdown
+        // =========================================
+        function renderDomainFilter() {
+            const domains = currentData.domains || currentData.domain_summary || [];
+            const prev = domainSelect.value;
+            domainSelect.innerHTML = '<option value="">全部域名</option>';
+            const seen = new Set();
+            domains.forEach(d => {
+                const name = d.domain || d.name;
+                if (name && !seen.has(name)) {
+                    seen.add(name);
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    domainSelect.appendChild(opt);
+                }
+            });
+            domainSelect.value = prev || '';
+        }
+
+        // =========================================
+        // Domain summary table
+        // =========================================
+        function renderDomainTable() {
+            const domains = currentData.domains || currentData.domain_summary || [];
+            const tbody = document.querySelector('#domainTable tbody');
+            tbody.innerHTML = '';
+            if (domains.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+                return;
+            }
+            domains.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escapeHtml(d.domain || d.name || '-')}</td><td class="num-cell">${formatNum(d.pv)}</td><td class="num-cell">${formatNum(d.uv)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // =========================================
+        // Page detail table (sortable)
+        // =========================================
+        function renderPageTable() {
+            const pages = currentData.pages || currentData.page_detail || [];
+            // Sort
+            const sorted = [...pages].sort((a, b) => {
+                let va = a[pageSortKey], vb = b[pageSortKey];
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return pageSortDir === 'asc' ? -1 : 1;
+                if (va > vb) return pageSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Update header classes
+            document.querySelectorAll('#pageTable th.sortable').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+                if (th.dataset.key === pageSortKey) {
+                    th.classList.add(pageSortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                }
+            });
+
+            const tbody = document.querySelector('#pageTable tbody');
+            tbody.innerHTML = '';
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;">暂无数据</td></tr>';
+                return;
+            }
+            sorted.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escapeHtml(p.domain || '-')}</td><td>${escapeHtml(p.path || p.url || '-')}</td><td class="num-cell">${formatNum(p.pv)}</td><td class="num-cell">${formatNum(p.uv)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // =========================================
+        // Trend Chart (Canvas, hand-drawn)
+        // =========================================
+        let chartPoints = []; // for tooltip hit-testing
+
+        function renderChart() {
+            const trend = currentData.trend || currentData.daily || [];
+            const chartCanvas = document.getElementById('trendChart');
+            const container = chartCanvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            const displayW = container.clientWidth - 48; // account for padding
+            const displayH = 300;
+            chartCanvas.style.width = displayW + 'px';
+            chartCanvas.style.height = displayH + 'px';
+            chartCanvas.width = displayW * dpr;
+            chartCanvas.height = displayH * dpr;
+            const ctx = chartCanvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            // Chart area
+            const padL = 56, padR = 20, padT = 20, padB = 50;
+            const cw = displayW - padL - padR;
+            const ch = displayH - padT - padB;
+
+            ctx.clearRect(0, 0, displayW, displayH);
+
+            if (trend.length === 0) {
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.font = '14px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂无趋势数据', displayW / 2, displayH / 2);
+                chartPoints = [];
+                return;
+            }
+
+            const pvData = trend.map(t => t.pv || 0);
+            const uvData = trend.map(t => t.uv || 0);
+            const labels = trend.map(t => t.date || t.day || '');
+            const maxVal = Math.max(Math.max(...pvData), Math.max(...uvData), 1);
+
+            // Nice ticks
+            const tickCount = 5;
+            const niceMax = niceNum(maxVal, tickCount);
+            const tickStep = niceMax / tickCount;
+
+            // Grid lines and Y axis labels
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = 'rgba(255,255,255,0.35)';
+            ctx.font = '11px -apple-system, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
+            for (let i = 0; i <= tickCount; i++) {
+                const val = tickStep * i;
+                const y = padT + ch - (val / niceMax) * ch;
+                ctx.beginPath();
+                ctx.moveTo(padL, y);
+                ctx.lineTo(padL + cw, y);
+                ctx.stroke();
+                ctx.fillText(formatTickLabel(val), padL - 8, y);
+            }
+
+            // X axis labels
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const labelInterval = Math.max(1, Math.floor(labels.length / 8));
+            labels.forEach((label, i) => {
+                if (i % labelInterval === 0 || i === labels.length - 1) {
+                    const x = padL + (i / Math.max(labels.length - 1, 1)) * cw;
+                    ctx.fillText(formatDateLabel(label), x, padT + ch + 10);
+                }
+            });
+
+            // Store points for tooltip
+            chartPoints = [];
+
+            function getX(i) { return padL + (i / Math.max(trend.length - 1, 1)) * cw; }
+            function getY(val) { return padT + ch - (val / niceMax) * ch; }
+
+            // Draw PV line
+            drawLine(ctx, pvData, getX, getY, 'rgba(100,180,255,0.8)', 'rgba(100,180,255,0.08)', padT, ch);
+            // Draw UV line
+            drawLine(ctx, uvData, getX, getY, 'rgba(100,255,160,0.8)', 'rgba(100,255,160,0.08)', padT, ch);
+
+            // Draw dots and collect points
+            for (let i = 0; i < trend.length; i++) {
+                const x = getX(i);
+                // PV dot
+                const yp = getY(pvData[i]);
+                ctx.beginPath();
+                ctx.arc(x, yp, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100,180,255,0.9)';
+                ctx.fill();
+                // UV dot
+                const yu = getY(uvData[i]);
+                ctx.beginPath();
+                ctx.arc(x, yu, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100,255,160,0.9)';
+                ctx.fill();
+
+                chartPoints.push({
+                    x: x,
+                    pvY: yp,
+                    uvY: yu,
+                    date: labels[i],
+                    pv: pvData[i],
+                    uv: uvData[i]
+                });
+            }
+
+            // Legend
+            const legendY = padT + ch + 32;
+            ctx.font = '11px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            // PV legend
+            ctx.fillStyle = 'rgba(100,180,255,0.9)';
+            ctx.fillRect(padL, legendY - 4, 16, 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText('PV', padL + 22, legendY);
+            // UV legend
+            ctx.fillStyle = 'rgba(100,255,160,0.9)';
+            ctx.fillRect(padL + 60, legendY - 4, 16, 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillText('UV', padL + 82, legendY);
+        }
+
+        function drawLine(ctx, data, getX, getY, strokeColor, fillColor, padT, ch) {
+            if (data.length === 0) return;
+            ctx.beginPath();
+            ctx.moveTo(getX(0), getY(data[0]));
+            for (let i = 1; i < data.length; i++) {
+                ctx.lineTo(getX(i), getY(data[i]));
+            }
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Area fill
+            ctx.lineTo(getX(data.length - 1), padT + ch);
+            ctx.lineTo(getX(0), padT + ch);
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+        }
+
+        function niceNum(maxVal, tickCount) {
+            const rough = maxVal / tickCount;
+            const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+            const frac = rough / pow;
+            let nice;
+            if (frac <= 1.5) nice = 1;
+            else if (frac <= 3) nice = 2;
+            else if (frac <= 7) nice = 5;
+            else nice = 10;
+            return nice * pow * tickCount;
+        }
+
+        function formatTickLabel(val) {
+            if (val >= 10000) return (val / 10000).toFixed(val % 10000 === 0 ? 0 : 1) + '万';
+            if (val >= 1000) return (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1) + 'k';
+            return Math.round(val).toString();
+        }
+
+        function formatDateLabel(dateStr) {
+            if (!dateStr) return '';
+            // Expect YYYY-MM-DD or similar
+            const parts = dateStr.split('-');
+            if (parts.length >= 3) return parts[1] + '/' + parts[2];
+            if (parts.length === 2) return parts[0] + '/' + parts[1];
+            return dateStr;
+        }
+
+        // =========================================
+        // Chart tooltip
+        // =========================================
+        const trendChart = document.getElementById('trendChart');
+        trendChart.addEventListener('mousemove', function(e) {
+            if (chartPoints.length === 0) { chartTooltip.style.display = 'none'; return; }
+            const rect = trendChart.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            // Find nearest point
+            let closest = null, minDist = Infinity;
+            chartPoints.forEach(p => {
+                const dist = Math.abs(p.x - mx);
+                if (dist < minDist) { minDist = dist; closest = p; }
+            });
+
+            if (closest && minDist < 40) {
+                chartTooltip.style.display = 'block';
+                chartTooltip.innerHTML = `${closest.date}<br>PV: ${formatNum(closest.pv)}<br>UV: ${formatNum(closest.uv)}`;
+                // Position tooltip
+                const containerRect = trendChart.parentElement.getBoundingClientRect();
+                let tx = e.clientX - containerRect.left + 16;
+                let ty = e.clientY - containerRect.top - 10;
+                // Keep within bounds
+                if (tx + 150 > containerRect.width) tx = tx - 170;
+                if (ty < 0) ty = 10;
+                chartTooltip.style.left = tx + 'px';
+                chartTooltip.style.top = ty + 'px';
+
+                // Draw crosshair
+                renderChart.__crosshairX = closest.x;
+            } else {
+                chartTooltip.style.display = 'none';
+            }
+        });
+
+        trendChart.addEventListener('mouseleave', function() {
+            chartTooltip.style.display = 'none';
+        });
+
+        // =========================================
+        // Event listeners
+        // =========================================
+
+        // Range buttons
+        document.querySelectorAll('.range-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentRange = this.dataset.range;
+                fetchData();
+            });
+        });
+
+        // Domain filter
+        domainSelect.addEventListener('change', function() {
+            currentDomain = this.value;
+            fetchData();
+        });
+
+        // Page table sorting
+        document.querySelectorAll('#pageTable th.sortable').forEach(th => {
+            th.addEventListener('click', function() {
+                const key = this.dataset.key;
+                if (pageSortKey === key) {
+                    pageSortDir = pageSortDir === 'asc' ? 'desc' : 'asc';
+                } else {
+                    pageSortKey = key;
+                    pageSortDir = (key === 'pv' || key === 'uv') ? 'desc' : 'asc';
+                }
+                renderPageTable();
+            });
+        });
+
+        // Handle chart resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                if (currentData) renderChart();
+            }, 200);
+        });
+
+        // =========================================
+        // Init
+        // =========================================
+        fetchData();
+
+    })();
+    </script>
+</body>
+</html>
