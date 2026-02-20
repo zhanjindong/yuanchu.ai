@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="100%" height="100%" fill="#000000"/>
+  <g fill="none" stroke="rgba(200,200,200,0.8)" stroke-width="2">
+    <circle cx="256" cy="256" r="70"/>
+    <circle cx="256" cy="256" r="120"/>
+    <circle cx="256" cy="256" r="170"/>
+  </g>
+  <g stroke="rgba(100,100,100,0.6)" stroke-width="1">
+    <line x1="286.0" y1="256.0" x2="456.0" y2="256.0"/>
+    <line x1="277.2" y1="277.2" x2="397.4" y2="397.4"/>
+    <line x1="256.0" y1="286.0" x2="256.0" y2="456.0"/>
+    <line x1="234.8" y1="277.2" x2="114.6" y2="397.4"/>
+    <line x1="226.0" y1="256.0" x2="56.0" y2="256.0"/>
+    <line x1="234.8" y1="234.8" x2="114.6" y2="114.6"/>
+    <line x1="256.0" y1="226.0" x2="256.0" y2="56.0"/>
+    <line x1="277.2" y1="234.8" x2="397.4" y2="114.6"/>
+  </g>
+  <g>
+    <circle cx="256" cy="256" r="12" fill="white"/>
+    <circle cx="256" cy="256" r="6" fill="white"/>
+  </g>
+</svg>

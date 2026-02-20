@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="100%" height="100%" fill="#000000"/>
+  <g>
+    <!-- 中心奇点 - 道生一 -->
+    <circle cx="256" cy="256" r="16" fill="white"/>
+    <circle cx="256" cy="256" r="12" fill="white"/>
+    <circle cx="256" cy="256" r="8" fill="white"/>
+    <circle cx="256" cy="256" r="4" fill="white"/>
+    <!-- 极细外环 -->
+    <circle cx="256" cy="256" r="100" fill="none" stroke="rgba(150,150,150,0.4)"/>
+  </g>
+</svg>
