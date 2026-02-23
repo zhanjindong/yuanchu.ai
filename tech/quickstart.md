@@ -1,9 +1,7 @@
----
-title: OpenTeam 快速开始
-layout: default
----
-
 # OpenTeam 快速开始
+
+> 作者：Jackie Zhan
+> 日期：2026-02-15
 
 ## 前置要求
 
@@ -54,26 +52,41 @@ python -m openteam
 
 通过 iMessage（经由 OpenClaw）发送命令。支持两种前缀：`/openteam` 和 `@openteam`（效果相同，不区分大小写）。
 
+**默认为普通对话模式**，进入开发模式需要显式指定参数。所有 flag 支持单短线（`-`）和双短线（`--`），方便手机输入。
+
 | 命令 | 说明 |
 |------|------|
-| `/openteam <任务>` | 运行完整流水线（product → arch → dev → test → review） |
-| `/openteam dev <任务>` | 仅运行开发 Agent |
-| `/openteam dev+test <任务>` | 运行开发 + 测试 Agent |
-| `/openteam dev --dir ~/myrepo <任务>` | 指定工作目录 |
-| `/openteam status` | 查看活跃任务 |
-| `/openteam stop <task_id>` | 停止正在运行的任务 |
-| `/openteam help` | 显示帮助信息 |
+| `@openteam <消息>` | 普通对话（不进入开发模式） |
+| `@openteam -pipeline <任务>` | 运行完整流水线（product → arch → dev → test → review） |
+| `@openteam dev <任务>` | 仅运行开发 Agent |
+| `@openteam dev+test <任务>` | 运行开发 + 测试 Agent |
+| `@openteam -team <任务>` | Team 模式（AI 按角色调度 Agent） |
+| `@openteam -auto <任务>` | Auto 模式（AI 自主规划，按任务拆解） |
+| `@openteam dev -dir ~/myrepo <任务>` | 指定工作目录 |
+| `@openteam status` | 查看活跃任务 |
+| `@openteam stop <task_id>` | 停止正在运行的任务 |
+| `@openteam help` | 显示帮助信息 |
+
+### 三种开发模式
+
+| 模式 | 触发方式 | 说明 |
+|------|---------|------|
+| **Pipeline** | `-pipeline` 或指定阶段（如 `dev`） | 确定性流水线，Agent 按固定顺序串行执行 |
+| **Team** | `-team` | AI Orchestrator 按角色调度预定义 Agent |
+| **Auto** | `-auto` | AI 自主规划，按任务需求动态拆解和调度 |
 
 ### 示例
 
 ```
-/openteam 写一个 Python 脚本，批量重命名文件
+@openteam 你好，介绍一下你自己
+@openteam -pipeline 写一个 Python 脚本，批量重命名文件
 @openteam dev 给 server.py 添加健康检查端点
-/openteam dev+test 实现用户登录功能
-/openteam dev --dir ~/myrepo 修复登录 bug
-@openteam --dir /tmp/project 写一个计算器
+@openteam dev+test 实现用户登录功能
+@openteam -team 重构数据库访问层
+@openteam -auto 开发一个用户登录系统
+@openteam dev -dir ~/myrepo 修复登录 bug
 @openteam status
-/openteam stop task-0001
+@openteam stop task-0001
 ```
 
 ### 阶段别名
@@ -88,17 +101,17 @@ python -m openteam
 | testing | test, t |
 | review | rev, r |
 
-### 指定工作目录（`--dir`）
+### 指定工作目录（`-dir`）
 
 默认情况下，所有任务在 `agents.default_working_dir`（配置中设定，默认 `~/OpenProjects`）下执行。
-使用 `--dir` 参数可以为单个任务指定工作目录：
+使用 `-dir` 参数可以为单个任务指定工作目录：
 
 ```
-/openteam dev --dir ~/github/myproject 修复 bug
-@openteam dev+test --dir /path/to/repo 添加新功能
+@openteam dev -dir ~/github/myproject 修复 bug
+@openteam dev+test -dir /path/to/repo 添加新功能
 ```
 
-`--dir` 可以放在命令的任意位置（阶段名前后均可）。
+`-dir` 可以放在命令的任意位置（阶段名前后均可）。
 
 ### 停止任务
 

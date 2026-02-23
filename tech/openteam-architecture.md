@@ -1,8 +1,3 @@
----
-title: OpenTeam：用 Claude Code 构建多 Agent 协作开发团队的架构与实现
-layout: default
----
-
 # OpenTeam：用 Claude Code 构建多 Agent 协作开发团队的架构与实现
 
 > 作者：Jackie Zhan
@@ -25,8 +20,9 @@ OpenTeam 是一个基于 Claude Code CLI 的多 Agent 编排系统。它的核�
 ### 1.1 一句话描述
 
 ```
-用户通过 iMessage 发送 /openteam 指令 → 系统解析命令 →
-启动 Agent Pipeline/Team → 每个 Agent 作为独立 Claude Code 进程运行 →
+用户通过 iMessage 发送 @openteam 指令 → 系统解析命令 →
+普通对话直接回复 / 开发模式启动 Agent Pipeline/Team/Auto →
+每个 Agent 作为独立 Claude Code 进程运行 →
 实时推送进度 → 完成后通过 iMessage 回复结果
 ```
 
@@ -48,15 +44,14 @@ OpenTeam 是一个基于 Claude Code CLI 的多 Agent 编排系统。它的核�
 ┌─────────────────────────────────────────────────────────┐
 │                    编排引擎层                              │
 │                                                          │
-│   ┌─────────────┐          ┌──────────────────┐         │
-│   │  Pipeline    │          │   Team Mode      │         │
-│   │  Orchestrator│          │   Orchestrator   │         │
-│   │             │          │                  │         │
-│   │  P→A→D→T→R  │          │   AI 动态调度     │         │
-│   │  顺序执行    │          │   Task / MCP     │         │
-│   └──────┬──────┘          └────────┬─────────┘         │
-│          │                          │                    │
-│          └──────────┬───────────────┘                    │
+│   ┌───────────┐   ┌───────────┐   ┌───────────┐         │
+│   │ Pipeline  │   │   Team    │   │   Auto    │         │
+│   │           │   │   Mode    │   │   Mode    │         │
+│   │ P→A→D→T→R │   │ AI 按角色 │   │ AI 自主   │         │
+│   │ 顺序执行   │   │ 调度      │   │ 规划拆解  │         │
+│   └─────┬─────┘   └─────┬─────┘   └─────┬─────┘         │
+│         │               │               │                │
+│         └───────────────┼───────────────┘                │
 │                     ▼                                    │
 │              HandoffContext                               │
 │         (上下文在 Agent 间传递)                             │
@@ -179,7 +174,11 @@ class AgentRegistry:
 
 这意味着：**添加新 Agent 只需要新增一个 `.md` 文件，并在 JSON 中配置参数**。零代码变更。
 
-### 2.3 两种工作模式
+### 2.3 四种工作模式
+
+#### Chat 模式：普通对话（默认）
+
+`@openteam <消息>` 不带任何开发模式参数时进入 Chat 模式。系统调用 Claude Code 进行简单对话回复，不触发任何 Agent 流水线。适合问答、闲聊、了解系统功能等场景。
 
 #### Pipeline 模式：确定性流水线
 
@@ -187,11 +186,11 @@ class AgentRegistry:
 Product → Architecture → Development → Testing → Review
 ```
 
-每个 Agent 按固定顺序执行，前一个 Agent 的输出作为下一个的上下文输入。这模拟了传统软件开发的瀑布流程。
+通过 `--pipeline` 或指定阶段名（如 `dev`、`dev+test`）触发。每个 Agent 按固定顺序执行，前一个 Agent 的输出作为下一个的上下文输入。这模拟了传统软件开发的瀑布流程。
 
 **特点**：可预测、可追踪、成本可控。适合结构清晰的开发任务。
 
-#### Team 模式：AI 自主调度
+#### Team 模式：AI 按角色调度
 
 ```
          ┌─────────┐
@@ -203,9 +202,23 @@ Product → Architecture → Development → Testing → Review
            Review
 ```
 
-由一个 AI Orchestrator 分析任务，自主决定调用哪些 Agent、什么顺序、是否并行。适合复杂、探索性的任务。
+通过 `--team` 触发。由一个 AI Orchestrator 分析任务，按预定义的角色 Agent（Product、Architecture、Development、Testing、Review）自主决定调用顺序和组合。
 
-**特点**：灵活、智能，但成本和行为不完全可预测。
+**特点**：灵活、智能，Agent 角色固定但调度顺序由 AI 决定。
+
+#### Auto 模式：AI 自主规划
+
+```
+         ┌─────────┐
+         │Orchestrator│
+         └────┬────┘
+        ╱   ╱   ╲   ╲
+   前端开发  API设计  数据库  测试
+```
+
+通过 `--auto` 触发。AI Orchestrator 完全按任务需求自由拆解子任务，不受预定义角色约束，动态创建面向任务的 Agent（如"前端开发"、"API 设计"、"数据库迁移"等）。
+
+**特点**：最大灵活性，AI 自主决定拆解粒度和执行策略。适合复杂、跨领域的任务。
 
 ---
 
@@ -300,9 +313,9 @@ async def execute(self, task_session: TaskSession) -> None:
 
 ---
 
-## 四、Team 模式实现：AI Orchestrator
+## 四、Team / Auto 模式实现：AI Orchestrator
 
-Team 模式的哲学完全不同：**不再预设执行顺序，而是让 AI 自己决定如何组织团队**。
+Team 和 Auto 模式的哲学完全不同：**不再预设执行顺序，而是让 AI 自己决定如何组织团队**。Team 模式按预定义角色调度，Auto 模式则完全由 AI 自主规划任务拆解。
 
 ### 4.1 两种后端实现
 
@@ -525,13 +538,15 @@ OpenTeam 的用户界面不是 Web 页面或 CLI，而是 **iMessage**。这个�
 
 ```python
 # 支持的命令格式
-/openteam <task>              # 全流水线
-/openteam dev <task>          # 单阶段
-/openteam dev+test <task>     # 多阶段组合
-/openteam --team <task>       # Team 模式
-/openteam --dir ~/repo <task> # 指定工作目录
-/openteam status              # 查看状态
-/openteam stop task-0001      # 停止任务
+@openteam <message>             # 普通对话（默认）
+@openteam --pipeline <task>     # 全流水线
+@openteam dev <task>            # 单阶段（Pipeline 模式）
+@openteam dev+test <task>       # 多阶段组合（Pipeline 模式）
+@openteam --team <task>         # Team 模式
+@openteam --auto <task>         # Auto 模式
+@openteam --dir ~/repo <task>   # 指定工作目录
+@openteam status                # 查看状态
+@openteam stop task-0001        # 停止任务
 
 # 阶段别名
 product → prod, p
@@ -541,7 +556,7 @@ testing → test, t
 review → rev, r
 ```
 
-`MessageParser` 的实现充分考虑了自然输入的灵活性：支持 `/` 和 `@` 两种前缀、阶段名缩写、`+` 号组合多阶段、可选的 flag 参数。
+`MessageParser` 的实现充分考虑了自然输入的灵活性：支持 `/` 和 `@` 两种前缀、阶段名缩写、`+` 号组合多阶段、可选的 flag 参数。默认不带模式参数时进入普通对话模式，避免误触发开发流水线。
 
 ### 7.3 消息轮询
 
@@ -587,7 +602,7 @@ Pydantic 提供了类型安全的配置验证。如果 `config.json` 中有错�
 
 ### 9.1 Workflow 可视化
 
-页面包含一个交互式 Workflow 区域，通过 Tab 切换两种视图：
+页面包含一个交互式 Workflow 区域，通过 Tab 切换三种视图：
 
 **Pipeline 视图**：五个 Agent 节点横向排列，通过流光连接线串联，节点依次激活模拟任务在流水线中流转。
 
@@ -598,7 +613,9 @@ Pydantic 提供了类型安全的配置验证。如果 `config.json` 中有错�
               ▲ 流光动画从左向右流动
 ```
 
-**Team 视图**：Orchestrator 居中，五个 Agent 以五边形分布环绕，SVG 连接线从中心辐射到各节点，随机 dispatch 动画模拟 AI 调度过程。
+**Team 视图**：Orchestrator 居中，五个 Agent 以五边形分布环绕，SVG 连接线从中心辐射到各节点，随机 dispatch 动画模拟 AI 按角色调度过程。
+
+**Auto 视图**：Orchestrator 居中，动态展示 AI 自主规划的任务拆解过程。Agent 池从预定义的任务类型（如前端开发、API 设计、数据库等）中随机选取 3-6 个，每个周期动态变化，模拟 AI 根据任务需求自由拆解的过程。
 
 ### 9.2 动画实现
 
@@ -697,7 +714,13 @@ Claude Code CLI 提供了 API 不具备的能力：原生文件操作（Edit/Wri
 
 在实践中这是个好的平衡点。产品规格通常在 3000-5000 字符，架构设计在 5000-8000 字符。超过 8000 的通常是代码实现，而后续 Agent（如 Review）更关心代码变更摘要而非完整代码。如果需要完整代码，Agent 可以直接读取文件。
 
-### Team 模式的 Task 后端 vs MCP 后端如何选择？
+### Pipeline vs Team vs Auto 如何选择？
+
+- **Pipeline 模式**：确定性串行执行，可预测、成本可控。适合结构清晰的标准开发任务。
+- **Team 模式**：AI 按预定义角色调度，灵活但保持角色约束。适合需要多角色协作但顺序不固定的任务。
+- **Auto 模式**：AI 完全自主规划，最大灵活性。适合复杂、跨领域、无法预定义角色分工的任务。
+
+### Team/Auto 的 Task 后端 vs MCP 后端如何选择？
 
 - **Task 后端**更简单，Orchestrator 和子 Agent 在同一个 Claude Code 进程树中。适合快速原型和简单任务。
 - **MCP 后端**让每个 Agent 完全独立，有自己的上下文窗口，通过 HTTP API 通信。适合复杂任务和需要更细粒度控制的场景。
@@ -718,7 +741,7 @@ Claude Code CLI 提供了 API 不具备的能力：原生文件操作（Edit/Wri
 1. **上下文窗口管理**：随着 Pipeline 推进，累积的 Handoff 上下文会越来越大。未来可以引入 RAG 或摘要机制。
 2. **错误恢复**：目前某个阶段失败后整个 Pipeline 停止。可以支持从断点恢复或跳过非关键阶段。
 3. **并行执行**：Pipeline 模式是严格串行的。某些场景下 Testing 和 Review 可以并行进行。
-4. **成本优化**：Team 模式下 Orchestrator 本身也消耗 token，某些简单任务直接用 Pipeline 更经济。
+4. **成本优化**：Team/Auto 模式下 Orchestrator 本身也消耗 token，某些简单任务直接用 Pipeline 更经济。
 
 ---
 
