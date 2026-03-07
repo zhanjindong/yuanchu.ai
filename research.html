@@ -8,12 +8,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
+            background: #fff;
+            color: #1a1a1a;
             min-height: 100vh;
             overflow-x: hidden;
         }
-        #canvas { position: fixed; top: 0; left: 0; z-index: 0; }
         .content {
             position: relative;
             z-index: 1;
@@ -24,17 +23,17 @@
         .back {
             display: inline-block;
             font-size: 14px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
             text-decoration: none;
             letter-spacing: 4px;
             margin-bottom: 60px;
             transition: color 0.3s;
         }
-        .back:hover { color: #fff; }
+        .back:hover { color: #1a1a1a; }
         .back::before { content: '← '; }
         .section-title {
             font-size: 14px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
             letter-spacing: 12px;
             text-transform: uppercase;
             margin-bottom: 20px;
@@ -53,7 +52,7 @@
             font-weight: 400;
             letter-spacing: 4px;
             margin-bottom: 30px;
-            color: rgba(255,255,255,0.6);
+            color: rgba(0,0,0,0.6);
         }
         .paper-list {
             display: flex;
@@ -62,12 +61,12 @@
         }
         .paper-item {
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
             transition: all 0.3s;
         }
         .paper-item:hover {
-            border-color: rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.02);
+            border-color: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.02);
         }
         .paper-title {
             font-size: 18px;
@@ -77,12 +76,12 @@
         }
         .paper-meta {
             font-size: 12px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
             margin-bottom: 15px;
         }
         .paper-abstract {
             font-size: 14px;
-            color: rgba(255,255,255,0.5);
+            color: rgba(0,0,0,0.5);
             line-height: 1.8;
         }
         .research-areas {
@@ -93,7 +92,7 @@
             font-weight: 400;
             letter-spacing: 4px;
             margin-bottom: 30px;
-            color: rgba(255,255,255,0.6);
+            color: rgba(0,0,0,0.6);
         }
         .areas-grid {
             display: grid;
@@ -103,11 +102,11 @@
         .area-item {
             padding: 25px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(0,0,0,0.1);
             transition: all 0.3s;
         }
         .area-item:hover {
-            border-color: rgba(255,255,255,0.3);
+            border-color: rgba(0,0,0,0.3);
         }
         .area-icon {
             font-size: 32px;
@@ -121,20 +120,19 @@
         }
         .area-item p {
             font-size: 12px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
         }
         footer {
             margin-top: 100px;
             padding-top: 40px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(0,0,0,0.1);
             text-align: center;
             font-size: 12px;
-            color: rgba(255,255,255,0.3);
+            color: rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
     <div class="content">
         <a href="index.html" class="back">BACK</a>
         <div class="section-title">RESEARCH</div>
@@ -188,25 +186,6 @@
             <p>© 2026 元初AI · ORIGIN OF INTELLIGENCE</p>
         </footer>
     </div>
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, particles = [], mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
-        const particleCount = 80;
-        function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-        window.addEventListener('resize', resize);
-        resize();
-        class Particle {
-            constructor() { this.reset(); }
-            reset() { this.x = Math.random() * width; this.y = Math.random() * height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() - 0.5) * 0.3; this.speedY = (Math.random() - 0.5) * 0.3; this.alpha = Math.random() * 0.5 + 0.2; }
-            update() { this.x += this.speedX + (targetX - width/2) * 0.0001; this.y += this.speedY + (targetY - height/2) * 0.0001; if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset(); }
-            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(255,255,255,${this.alpha})`; ctx.fill(); }
-        }
-        for (let i = 0; i < particleCount; i++) particles.push(new Particle());
-        canvas.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
-        function animate() { ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0, 0, width, height); targetX += (mouseX - targetX) * 0.05; targetY += (mouseY - targetY) * 0.05; particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-        animate();
-    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

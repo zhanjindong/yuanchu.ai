@@ -12,16 +12,22 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
+            background: #fff;
+            color: #1a1a1a;
             min-height: 100vh;
             overflow-x: hidden;
         }
-        #canvas {
+        .mountain-bg {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
+            width: 100%;
             z-index: 0;
+            pointer-events: none;
+            filter: grayscale(1) brightness(1.8) contrast(10) blur(3px);
+            opacity: 0.25;
+            object-fit: cover;
+            object-position: center bottom;
         }
         .content {
             position: relative;
@@ -35,7 +41,7 @@
         }
         .logo {
             font-size: 20px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
             margin-bottom: 60px;
             letter-spacing: 8px;
             text-transform: uppercase;
@@ -57,20 +63,20 @@
             font-weight: 300;
             letter-spacing: 20px;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #666 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .title-en {
             font-size: 14px;
-            color: rgba(255,255,255,0.5);
+            color: rgba(0,0,0,0.5);
             letter-spacing: 12px;
             text-transform: uppercase;
         }
         .tagline {
             font-size: 16px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(0,0,0,0.4);
             margin-bottom: 80px;
             max-width: 500px;
             text-align: center;
@@ -83,7 +89,7 @@
         }
         .menu-item {
             font-size: 15px;
-            color: rgba(255,255,255,0.6);
+            color: rgba(0,0,0,0.6);
             text-decoration: none;
             letter-spacing: 4px;
             text-transform: uppercase;
@@ -92,7 +98,7 @@
             position: relative;
         }
         .menu-item:hover {
-            color: #fff;
+            color: #1a1a1a;
         }
         .menu-item::after {
             content: '';
@@ -102,41 +108,11 @@
             transform: translateX(-50%);
             width: 0;
             height: 1px;
-            background: #fff;
+            background: #1a1a1a;
             transition: width 0.3s;
         }
         .menu-item:hover::after {
             width: 100%;
-        }
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.3);
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #00ff88;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .scroll-hint {
-            position: absolute;
-            bottom: 40px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.3);
-            letter-spacing: 4px;
-            animation: scroll 2s infinite;
-        }
-        @keyframes scroll {
-            0%, 100% { transform: translateY(0); opacity: 0.3; }
-            50% { transform: translateY(10px); opacity: 0.1; }
         }
         @media (max-width: 768px) {
             .title-cn {
@@ -151,19 +127,20 @@
     </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
+    <img src="logo/1.jpg" alt="珠穆朗玛峰" class="mountain-bg">
+
     <div class="content">
         <div class="logo">YuanChu AI</div>
         <div class="title">
             <a href="index.html" class="title-link">
-                <div class="title-cn">远处</div>
+                <div class="title-cn">元初</div>
                 <div class="title-en"></div>
             </a>
         </div>
         <p class="tagline">
             宇宙、文明与万物的初始 · 一切智能的本源与开端<br>
-            <span style="margin-top: 12px; display: block; color: rgba(255,255,255,0.35); letter-spacing: 4px;">始于元初，行致远处</span><br>
-            <span style="color: rgba(255,255,255,0.3)">From the beginning, To the beyond</span>
+            <span style="margin-top: 12px; display: block; color: rgba(0,0,0,0.35); letter-spacing: 4px;">始于元初，行致远处</span><br>
+            <span style="color: rgba(0,0,0,0.3)">From the beginning, To the beyond</span>
         </p>
         <nav class="menu">
             <a href="myths/index.html" class="menu-item">故事</a>
@@ -171,75 +148,6 @@
             <a href="tech/index.html" class="menu-item">技术</a>
             <a href="about.html" class="menu-item">关于</a>
         </nav>
-        <div class="status">
-            <div class="status-dot"></div>
-            <span>System Active</span>
-        </div>
     </div>
-    <div class="scroll-hint">SCROLL</div>
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-        const particleCount = 100;
-        let mouseX = 0, mouseY = 0;
-        let targetX = 0, targetY = 0;
-        
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-        
-        class Particle {
-            constructor() {
-                this.reset();
-            }
-            reset() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.3;
-                this.speedY = (Math.random() - 0.5) * 0.3;
-                this.alpha = Math.random() * 0.5 + 0.2;
-            }
-            update() {
-                this.x += this.speedX + (targetX - width/2) * 0.0001;
-                this.y += this.speedY + (targetY - height/2) * 0.0001;
-                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
-                    this.reset();
-                    this.x = Math.random() < 0.5 ? 0 : width;
-                    this.y = Math.random() * height;
-                }
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
-                ctx.fill();
-            }
-        }
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
-        }
-        canvas.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
-        function animate() {
-            ctx.fillStyle = 'rgba(0,0,0,0.1)';
-            ctx.fillRect(0, 0, width, height);
-            targetX += (mouseX - targetX) * 0.05;
-            targetY += (mouseY - targetY) * 0.05;
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-    </script>
 </body>
 </html>
