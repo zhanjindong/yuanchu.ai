@@ -282,8 +282,8 @@ ul.bullet li strong{color:var(--text);}
 <div style="display:flex;gap:40px;justify-content:center;margin-top:16px;font-size:.95em;color:#94a3b8;">
 <span class="cover-link" onclick="go(4)">模型能力</span><span>·</span>
 <span class="cover-link" onclick="go(6)">编排模式</span><span>·</span>
-<span class="cover-link" onclick="go(25)">工具与数据</span><span>·</span>
-<span class="cover-link" onclick="go(34)">应用场景</span>
+<span class="cover-link" onclick="go(26)">工具与数据</span><span>·</span>
+<span class="cover-link" onclick="go(35)">应用场景</span>
 </div>
 </div>
 </div>
@@ -860,8 +860,50 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 23: 8个积木块 ==================== -->
+<!-- ==================== SLIDE 23: 从图灵机到Agent ==================== -->
 <div class="slide" id="s23">
+<div class="slide-inner compact">
+<span class="section-tag tag-amber">第一性原理 · 溯源</span>
+<h2>从图灵机到 Agent</h2>
+<div class="flow fade-in fade-in-1">
+<span class="flow-node gray">图灵机 1936</span><span class="flow-arrow">→</span>
+<span class="flow-node">冯诺依曼 1945</span><span class="flow-arrow">→</span>
+<span class="flow-node purple">传统程序</span><span class="flow-arrow">→</span>
+<span class="flow-node amber">Agent</span>
+</div>
+<div class="grid g2 fade-in fade-in-2" style="margin-top:12px;">
+<div class="card">
+<h3 style="color:var(--blue);">🖥️ 图灵机四要素</h3>
+<table>
+<tbody>
+<tr><td>状态</td><td>有限状态集合，记录当前所处阶段</td></tr>
+<tr><td>纸带</td><td>无限长存储介质，读写数据</td></tr>
+<tr><td>读写头</td><td>感知当前符号 & 写入新符号</td></tr>
+<tr><td>转移函数</td><td>δ(状态, 输入) → (新状态, 输出, 移动)</td></tr>
+</tbody>
+</table>
+</div>
+<div class="card">
+<h3 style="color:var(--purple);">🤖 Agent 四要素</h3>
+<table>
+<tbody>
+<tr><td>内部状态</td><td>对话历史 + 推理中间态</td></tr>
+<tr><td>记忆系统</td><td>短期上下文 + 长期向量存储</td></tr>
+<tr><td>感知与行动</td><td>工具调用 / API / 环境交互</td></tr>
+<tr><td>LLM 决策</td><td>f(状态, 输入) → 概率分布(下一步动作)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3" style="margin-top:12px;">
+<strong>关键飞跃：</strong>图灵机的转移函数是<strong>确定性的</strong>（人工编写规则），Agent 的转移函数是<strong>概率性的</strong>（LLM 从数据中学习）<br/>
+<span style="color:var(--text2);">传统编程 = 人写规则；Agent = 编排一个已经懂规则的系统</span>
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 24: 8个积木块 ==================== -->
+<div class="slide" id="s24">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">第一性原理 · 第二层</span>
 <h2>8个原子操作（积木块）</h2>
@@ -894,8 +936,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 24: 解构表 ==================== -->
-<div class="slide" id="s24">
+<!-- ==================== SLIDE 25: 解构表 ==================== -->
+<div class="slide" id="s25">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">第一性原理 · 第三层</span>
 <h2>用原子操作解构11种编排</h2>
@@ -920,8 +962,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 25: 编排全景总结 ==================== -->
-<div class="slide" id="s25">
+<!-- ==================== SLIDE 26: 编排全景总结 ==================== -->
+<div class="slide" id="s26">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">编排模式</span>
 <h2>3.15 编排模式全景总结</h2>
@@ -959,8 +1001,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 26: 工具与数据引导 ==================== -->
-<div class="slide" id="s26">
+<!-- ==================== SLIDE 27: 工具与数据引导 ==================== -->
+<div class="slide" id="s27">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官 — 工具与数据</span>
 <h2>光有大脑还不够</h2>
@@ -989,8 +1031,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 27: 工具调用 ==================== -->
-<div class="slide" id="s27">
+<!-- ==================== SLIDE 28: 工具调用 ==================== -->
+<div class="slide" id="s28">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.1 工具调用（Tool Use）</h2>
@@ -1015,8 +1057,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 28: Function Calling ==================== -->
-<div class="slide" id="s28">
+<!-- ==================== SLIDE 29: Function Calling ==================== -->
+<div class="slide" id="s29">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.2 Function Calling</h2>
@@ -1066,8 +1108,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 29: MCP ==================== -->
-<div class="slide" id="s29">
+<!-- ==================== SLIDE 30: MCP ==================== -->
+<div class="slide" id="s30">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.3 MCP — 模型上下文协议</h2>
@@ -1097,8 +1139,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 30: A2A ==================== -->
-<div class="slide" id="s30">
+<!-- ==================== SLIDE 31: A2A ==================== -->
+<div class="slide" id="s31">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.4 A2A — Agent间互联协议</h2>
@@ -1128,8 +1170,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 31: RAG ==================== -->
-<div class="slide" id="s31">
+<!-- ==================== SLIDE 32: RAG ==================== -->
+<div class="slide" id="s32">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.5 知识库 / RAG</h2>
@@ -1161,8 +1203,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 32: 记忆 ==================== -->
-<div class="slide" id="s32">
+<!-- ==================== SLIDE 33: 记忆 ==================== -->
+<div class="slide" id="s33">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.6 记忆（Memory）</h2>
@@ -1191,8 +1233,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 33: 上下文窗口 ==================== -->
-<div class="slide" id="s33">
+<!-- ==================== SLIDE 34: 上下文窗口 ==================== -->
+<div class="slide" id="s34">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.7 上下文窗口 — Agent的"工作台"</h2>
@@ -1230,8 +1272,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 34: 上下文管理策略 ==================== -->
-<div class="slide" id="s34">
+<!-- ==================== SLIDE 35: 上下文管理策略 ==================== -->
+<div class="slide" id="s35">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.8 上下文管理策略</h2>
@@ -1268,8 +1310,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 35: 通用应用场景 ==================== -->
-<div class="slide" id="s35">
+<!-- ==================== SLIDE 36: 通用应用场景 ==================== -->
+<div class="slide" id="s36">
 <div class="slide-inner">
 <span class="section-tag tag-amber">五、应用场景</span>
 <h2>5.1 通用场景</h2>
@@ -1298,8 +1340,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 36: 代码助手深度解析 ==================== -->
-<div class="slide" id="s36">
+<!-- ==================== SLIDE 37: 代码助手深度解析 ==================== -->
+<div class="slide" id="s37">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、应用场景</span>
 <h2>5.2 代码助手 — 以Cursor为例</h2>
@@ -1336,8 +1378,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 37: 实践经验与避坑 ==================== -->
-<div class="slide" id="s37">
+<!-- ==================== SLIDE 38: 实践经验与避坑 ==================== -->
+<div class="slide" id="s38">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、应用场景</span>
 <h2>5.3 Agent落地经验与避坑</h2>
@@ -1369,8 +1411,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 38: 教师智能体 ==================== -->
-<div class="slide" id="s38">
+<!-- ==================== SLIDE 39: 教师智能体 ==================== -->
+<div class="slide" id="s39">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、教育场景</span>
 <h2>5.4 教师智能体</h2>
@@ -1398,8 +1440,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 39: 学生智能体 ==================== -->
-<div class="slide" id="s39">
+<!-- ==================== SLIDE 40: 学生智能体 ==================== -->
+<div class="slide" id="s40">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、教育场景</span>
 <h2>5.5 学生智能体</h2>
@@ -1427,8 +1469,46 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 40: 总结 ==================== -->
-<div class="slide" id="s40">
+<!-- ==================== SLIDE 41: 教育Agent构建与核心壁垒 ==================== -->
+<div class="slide" id="s41">
+<div class="slide-inner compact">
+<span class="section-tag tag-amber">五、教育场景</span>
+<h2>5.6 教育 Agent：构建路径与核心壁垒</h2>
+<div class="flow fade-in fade-in-1" style="font-size:.85em;">
+<span class="flow-node">通用大模型</span><span class="flow-arrow">→</span>
+<span class="flow-node amber">教育领域适配</span><span class="flow-arrow">→</span>
+<span class="flow-node purple">场景化 Agent</span><span class="flow-arrow">→</span>
+<span class="flow-node green">数据飞轮</span>
+</div>
+<div class="grid g2 fade-in fade-in-2">
+<div class="card">
+<h3>🔧 如何构建</h3>
+<ul class="bullet">
+<li><strong>🧩 学科知识图谱：</strong>结构化的知识点、考点、能力关联</li>
+<li><strong>📐 教学策略库：</strong>教学法 + 提问技巧 + 难度梯度编排</li>
+<li><strong>👤 学生画像系统：</strong>学习行为、薄弱点、偏好的持续建模</li>
+<li><strong>✅ 效果评估引擎：</strong>对教学效果可量化（掌握率、成绩变化）</li>
+</ul>
+</div>
+<div class="card">
+<h3>🏰 核心壁垒</h3>
+<ul class="bullet">
+<li><strong>📊 数据飞轮：</strong>教育数据 → 优化模型 → 更好体验 → 更多数据</li>
+<li><strong>🏫 场景渗透：</strong>与学校/机构深度集成，理解真实教学流程</li>
+<li><strong>🔒 信任壁垒：</strong>教育场景安全准确性要求极高，先入者建立信任</li>
+<li><strong>🎓 领域 Know-how：</strong>教学法 × AI 编排 = 不可替代的经验积累</li>
+</ul>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3">
+<strong>关键洞察：</strong>模型能力是"水电煤"，所有人都能接入 → 不是壁垒<br/>
+<strong>真正的护城河 = 领域数据 × 教学编排经验 × 场景渗透深度</strong>
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 42: 总结 ==================== -->
+<div class="slide" id="s42">
 <div class="slide-inner" style="text-align:center;">
 <span class="section-tag tag-blue">六、总结</span>
 <h2>回顾：Agent的三大核心要素</h2>
@@ -1456,8 +1536,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 41: 未来展望 ==================== -->
-<div class="slide" id="s41">
+<!-- ==================== SLIDE 43: 未来展望 ==================== -->
+<div class="slide" id="s43">
 <div class="slide-inner compact">
 <span class="section-tag tag-blue">六、总结</span>
 <h2>Agent 的未来演进</h2>
@@ -1493,8 +1573,8 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 42: 致谢 ==================== -->
-<div class="slide cover-slide" id="s42">
+<!-- ==================== SLIDE 44: 致谢 ==================== -->
+<div class="slide cover-slide" id="s44">
 <div class="slide-inner">
 <h1 style="font-size:2.8em;">谢谢</h1>
 <p class="subtitle" style="margin-top:12px;">Q & A</p>
@@ -1521,18 +1601,18 @@ ul.bullet li strong{color:var(--text);}
 <div class="nav-item sub" onclick="navGo(19)">框架层</div>
 <div class="nav-item sub" onclick="navGo(20)">第一性原理</div>
 <div class="nav-divider"></div>
-<div class="nav-item" onclick="navGo(25)">四、工具与数据</div>
+<div class="nav-item" onclick="navGo(26)">四、工具与数据</div>
 <div class="nav-divider"></div>
-<div class="nav-item" onclick="navGo(34)">五、应用场景</div>
+<div class="nav-item" onclick="navGo(35)">五、应用场景</div>
 <div class="nav-divider"></div>
-<div class="nav-item" onclick="navGo(39)">六、总结</div>
+<div class="nav-item" onclick="navGo(41)">六、总结</div>
 </div>
 
 <!-- Navigation Bar -->
 <div class="nav-bar">
 <button class="nav-btn" id="prevBtn" onclick="go(current-1)" aria-label="上一页" disabled>◀</button>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-<span class="page-num" id="pageNum" title="点击导航菜单" style="cursor:pointer;" onclick="toggleNav(event)">1 / 42</span>
+<span class="page-num" id="pageNum" title="点击导航菜单" style="cursor:pointer;" onclick="toggleNav(event)">1 / 44</span>
 <button class="nav-btn" id="nextBtn" onclick="go(current+1)" aria-label="下一页">▶</button>
 </div>
 
