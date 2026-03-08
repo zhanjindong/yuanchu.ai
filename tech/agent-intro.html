@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>什么是Agent智能体</title>
+<title>什么是Agent</title>
 <style>
 :root{
   --bg:#f1f5f9;--card:#fff;--text:#1e293b;--text2:#64748b;
   --blue:#3b82f6;--purple:#8b5cf6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;
-  --border:#e2e8f0;--radius:12px;
+  --border:#e2e8f0;--radius:12px;--bg-subtle:#f8fafc;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -55,9 +55,9 @@ p,.desc{font-size:1.05em;line-height:1.7;color:var(--text2);}
 /* Tables */
 table{width:100%;border-collapse:collapse;font-size:.85em;margin:12px 0;}
 th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);}
-th{background:#f8fafc;font-weight:600;white-space:nowrap;}
+th{background:var(--bg-subtle);font-weight:600;white-space:nowrap;}
 td:first-child{font-weight:600;white-space:nowrap;}
-tr:hover td{background:#f8fafc;}
+tr:hover td{background:var(--bg-subtle);}
 
 /* Comparison columns */
 .vs{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:start;margin:16px 0;}
@@ -74,20 +74,16 @@ tr:hover td{background:#f8fafc;}
 .def-box .formula{font-size:1.15em;margin-top:12px;line-height:1.8;opacity:.95;}
 
 /* SVG Animations */
-.anim-wrap{display:flex;justify-content:center;margin:16px 0;}
+.anim-wrap{display:flex;justify-content:center;margin:12px 0;}
 .anim-wrap svg{max-width:100%;height:auto;}
 svg text{font-family:var(--font);font-size:13px;fill:var(--text);}
-svg .node{fill:#e2e8f0;stroke:#94a3b8;stroke-width:2;transition:fill .3s;}
-svg .arrow-line{stroke:#cbd5e1;stroke-width:2;fill:none;marker-end:url(#ah);}
+svg .node{fill:#e2e8f0;stroke:#94a3b8;stroke-width:1.2;transition:fill .3s;}
+svg .arrow-line{stroke:#cbd5e1;stroke-width:1.2;fill:none;marker-end:url(#ah);}
 svg .label{font-size:12px;fill:var(--text2);text-anchor:middle;}
 
 /* Animation keyframes */
-@keyframes nodeGlow{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--blue);stroke:var(--blue);}}
-@keyframes nodeGlowGreen{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--green);stroke:var(--green);}}
-@keyframes nodeGlowPurple{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--purple);stroke:var(--purple);}}
-@keyframes nodeGlowAmber{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--amber);stroke:var(--amber);}}
-@keyframes nodeGlowRed{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--red);stroke:var(--red);}}
-@keyframes lineFlow{0%,100%{stroke:#cbd5e1;stroke-width:2;}30%,70%{stroke:var(--blue);stroke-width:3;}}
+@keyframes nodeGlow{0%,100%{fill:#e2e8f0;stroke:#94a3b8;}30%,70%{fill:var(--glow-color,var(--blue));stroke:var(--glow-color,var(--blue));}}
+@keyframes lineFlow{0%,100%{stroke:#cbd5e1;stroke-width:1.2;}30%,70%{stroke:var(--blue);stroke-width:2;}}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(15px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
 @keyframes checkMark{from{stroke-dashoffset:20;}to{stroke-dashoffset:0;}}
@@ -107,6 +103,18 @@ svg .label{font-size:12px;fill:var(--text2);text-anchor:middle;}
 .nav-btn{width:36px;height:36px;border:none;background:#f1f5f9;border-radius:8px;cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:background .2s;}
 .nav-btn:hover{background:#e2e8f0;}
 .page-num{font-size:.8em;color:var(--text2);min-width:60px;text-align:center;}
+
+/* Cover links */
+.cover-link{cursor:pointer;transition:color .2s;}
+.cover-link:hover{color:var(--blue);text-decoration:underline;}
+
+/* Navigation Menu */
+#navMenu{display:none;position:fixed;bottom:56px;right:20px;background:#fff;border-radius:var(--radius);box-shadow:0 4px 24px rgba(0,0,0,.15);padding:12px 0;z-index:200;min-width:220px;max-height:70vh;overflow-y:auto;}
+#navMenu.show{display:block;}
+#navMenu .nav-item{display:block;padding:8px 24px;font-size:.9em;color:var(--text);cursor:pointer;transition:background .15s;white-space:nowrap;}
+#navMenu .nav-item:hover{background:var(--bg-subtle);color:var(--blue);}
+#navMenu .nav-item.sub{padding-left:44px;font-size:.85em;color:var(--text2);}
+#navMenu .nav-divider{height:1px;background:var(--border);margin:6px 0;}
 
 /* Pyramid */
 .pyramid{text-align:center;margin:16px 0;}
@@ -131,18 +139,129 @@ ul.bullet li{color:var(--text2);}
 ul.bullet li strong{color:var(--text);}
 
 /* Compact */
-.compact p,.compact .desc{font-size:.9em;line-height:1.6;}
-.compact h2{font-size:1.5em;}
-.compact h3{font-size:1.1em;}
-.compact .card{padding:14px;}
+.compact p,.compact .desc{font-size:.9em;line-height:1.5;}
+.compact h2{font-size:1.4em;margin-bottom:.3em;}
+.compact h3{font-size:1.05em;}
+.compact .card{padding:12px;}
 .compact table{font-size:.78em;}
-.compact ul.bullet{font-size:.88em;line-height:1.7;}
+.compact ul.bullet{font-size:.88em;line-height:1.6;}
+.compact .anim-wrap{margin:10px 0;}
+.compact .highlight{margin:10px 0;padding:12px 16px;font-size:.95em;}
+.compact .grid{margin:10px 0;gap:10px;}
+.compact .section-tag{margin-bottom:8px;}
+.compact .desc{margin-bottom:8px;}
 
 /* Scenario cards */
 .scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;}
 .scenario-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
 .scenario-card h4{font-size:.95em;margin-bottom:6px;color:var(--blue);}
 .scenario-card p{font-size:.85em;line-height:1.6;color:var(--text2);}
+
+/* Slide-specific animations */
+/* Slide 8: ReAct */
+.slide.active .react-anim .n1{animation:nodeGlow 3s 0s infinite;}
+.slide.active .react-anim .n2{animation:nodeGlow 3s 1s infinite;}
+.slide.active .react-anim .n3{animation:nodeGlow 3s 2s infinite;}
+.slide.active .react-anim .al1{animation:lineFlow 3s 0.5s infinite;}
+.slide.active .react-anim .al2{animation:lineFlow 3s 1.5s infinite;}
+.slide.active .react-anim .al3{animation:lineFlow 3s 2.5s infinite;}
+/* Slide 9: Reflect */
+.slide.active .reflect-anim .rn1{animation:nodeGlow 4s 0s infinite;}
+.slide.active .reflect-anim .rn2{--glow-color:var(--amber);animation:nodeGlow 4s 1.2s infinite;}
+.slide.active .reflect-anim .rn3{--glow-color:var(--green);animation:nodeGlow 4s 2.4s infinite;}
+.slide.active .reflect-anim .rl1{animation:lineFlow 4s 0.6s infinite;}
+.slide.active .reflect-anim .rl2{animation:lineFlow 4s 1.8s infinite;}
+.slide.active .reflect-anim .rl3{animation:lineFlow 4s 3s infinite;}
+/* Slide 10: Plan */
+.slide.active .plan-anim .pi1{animation:fadeInUp .5s .2s both;}
+.slide.active .plan-anim .pi2{animation:fadeInUp .5s .4s both;}
+.slide.active .plan-anim .pi3{animation:fadeInUp .5s .6s both;}
+.slide.active .plan-anim .pi4{animation:fadeInUp .5s .8s both;}
+/* Slide 12: DAG */
+.slide.active .dag-anim .dn1{animation:nodeGlow 5s 0s infinite;}
+.slide.active .dag-anim .dn2{animation:nodeGlow 5s 1s infinite;}
+.slide.active .dag-anim .dn3{animation:nodeGlow 5s 2s infinite;}
+.slide.active .dag-anim .dn4{--glow-color:var(--purple);animation:nodeGlow 5s 2s infinite;}
+.slide.active .dag-anim .dn5{--glow-color:var(--green);animation:nodeGlow 5s 3.5s infinite;}
+.slide.active .dag-anim .dl1{animation:lineFlow 5s 0.5s infinite;}
+.slide.active .dag-anim .dl2{animation:lineFlow 5s 1.5s infinite;}
+.slide.active .dag-anim .dl3{animation:lineFlow 5s 1.5s infinite;}
+.slide.active .dag-anim .dl4{animation:lineFlow 5s 2.8s infinite;}
+.slide.active .dag-anim .dl5{animation:lineFlow 5s 2.8s infinite;}
+/* Slide 13: Route */
+.slide.active .route-anim .rtn1{animation:nodeGlow 4s 0s infinite;}
+.slide.active .route-anim .rtn2{--glow-color:var(--green);animation:nodeGlow 4s 1.5s infinite;}
+.slide.active .route-anim .rtn3{--glow-color:var(--amber);animation:nodeGlow 4s 2.2s infinite;}
+.slide.active .route-anim .rtn4{--glow-color:var(--purple);animation:nodeGlow 4s 2.9s infinite;}
+.slide.active .route-anim .rtl1{animation:lineFlow 4s 0.8s infinite;}
+.slide.active .route-anim .rtl2{animation:lineFlow 4s 1.5s infinite;}
+.slide.active .route-anim .rtl3{animation:lineFlow 4s 2.2s infinite;}
+/* Slide 14: Maker-Checker */
+.slide.active .mc-anim .mn1{animation:nodeGlow 4s 0s infinite;}
+.slide.active .mc-anim .mn2{--glow-color:var(--amber);animation:nodeGlow 4s 1.5s infinite;}
+.slide.active .mc-anim .ml1{animation:lineFlow 4s 0.5s infinite;}
+.slide.active .mc-anim .ml2{animation:lineFlow 4s 2.5s infinite;}
+/* Slide 15: Role */
+.slide.active .role-anim .ron1{animation:nodeGlow 4s 0s infinite;}
+.slide.active .role-anim .ron2{--glow-color:var(--green);animation:nodeGlow 4s 1s infinite;}
+.slide.active .role-anim .ron3{--glow-color:var(--amber);animation:nodeGlow 4s 1.8s infinite;}
+.slide.active .role-anim .ron4{--glow-color:var(--purple);animation:nodeGlow 4s 2.6s infinite;}
+.slide.active .role-anim .rol1{animation:lineFlow 4s 0.5s infinite;}
+.slide.active .role-anim .rol2{animation:lineFlow 4s 1.3s infinite;}
+.slide.active .role-anim .rol3{animation:lineFlow 4s 2.1s infinite;}
+/* Slide 16: Hierarchy */
+.slide.active .hier-anim .hn1{animation:nodeGlow 5s 0s infinite;}
+.slide.active .hier-anim .hn2{--glow-color:var(--purple);animation:nodeGlow 5s 1s infinite;}
+.slide.active .hier-anim .hn3{--glow-color:var(--purple);animation:nodeGlow 5s 1s infinite;}
+.slide.active .hier-anim .hn4{--glow-color:var(--green);animation:nodeGlow 5s 2.2s infinite;}
+.slide.active .hier-anim .hn5{--glow-color:var(--green);animation:nodeGlow 5s 2.5s infinite;}
+.slide.active .hier-anim .hn6{--glow-color:var(--green);animation:nodeGlow 5s 2.2s infinite;}
+.slide.active .hier-anim .hn7{--glow-color:var(--green);animation:nodeGlow 5s 2.5s infinite;}
+.slide.active .hier-anim .hl1{animation:lineFlow 5s 0.5s infinite;}
+.slide.active .hier-anim .hl2{animation:lineFlow 5s 0.5s infinite;}
+.slide.active .hier-anim .hl3{animation:lineFlow 5s 1.5s infinite;}
+.slide.active .hier-anim .hl4{animation:lineFlow 5s 1.5s infinite;}
+.slide.active .hier-anim .hl5{animation:lineFlow 5s 1.5s infinite;}
+.slide.active .hier-anim .hl6{animation:lineFlow 5s 1.5s infinite;}
+/* Slide 17: Blackboard */
+.slide.active .bb-anim .bn1{animation:nodeGlow 4s 0s infinite;}
+.slide.active .bb-anim .bn2{--glow-color:var(--purple);animation:nodeGlow 4s 1.3s infinite;}
+.slide.active .bb-anim .bn3{--glow-color:var(--green);animation:nodeGlow 4s 2.6s infinite;}
+.slide.active .bb-anim .bl1{animation:lineFlow 4s 0.5s infinite;}
+.slide.active .bb-anim .bl2{animation:lineFlow 4s 1.8s infinite;}
+.slide.active .bb-anim .bl3{animation:lineFlow 4s 3.1s infinite;}
+/* Slide 18: Debate */
+.slide.active .debate-anim .cb1,.slide.active .debate-anim .ct1{animation:bubbleIn .5s .3s both;}
+.slide.active .debate-anim .cb2,.slide.active .debate-anim .ct2{animation:bubbleIn .5s .8s both;}
+.slide.active .debate-anim .cb3,.slide.active .debate-anim .ct3{animation:bubbleIn .5s 1.3s both;}
+.slide.active .debate-anim .cb4,.slide.active .debate-anim .ct4{animation:bubbleIn .5s 1.8s both;}
+/* Slide 22: Loop */
+.slide.active .loop-anim .ln1{animation:nodeGlow 5s 0s infinite;}
+.slide.active .loop-anim .ln2{animation:nodeGlow 5s 1s infinite;}
+.slide.active .loop-anim .ln3{animation:nodeGlow 5s 2s infinite;}
+.slide.active .loop-anim .ln4{animation:nodeGlow 5s 3s infinite;}
+.slide.active .loop-anim .ln5{--glow-color:var(--amber);animation:nodeGlow 5s 4s infinite;}
+
+/* Navigation disabled state */
+.nav-btn:disabled{opacity:.35;cursor:default;pointer-events:none;}
+
+/* Mobile responsive */
+@media(max-width:768px){
+  h1{font-size:1.8em;}
+  h2{font-size:1.4em;}
+  h3{font-size:1.05em;}
+  .cover-slide h1{font-size:2em !important;}
+  .cover-slide .subtitle{font-size:1.1em;}
+  .g2,.g3,.g4,.scenario-grid{grid-template-columns:1fr;}
+  .vs{grid-template-columns:1fr;gap:10px;}
+  .vs-mid{font-size:1.2em;padding:4px 0;}
+  table{font-size:.72em;}
+  .compact table{font-size:.68em;}
+  .slide-inner{width:95%;padding:14px;}
+  .nav-bar{padding:0 10px;}
+  .flow{font-size:.8em;}
+  .pyramid-level{font-size:.8em;padding:10px;}
+}
 </style>
 </head>
 <body>
@@ -150,22 +269,21 @@ ul.bullet li strong{color:var(--text);}
 <!-- Shared SVG defs -->
 <svg style="position:absolute;width:0;height:0;">
 <defs>
-<marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#94a3b8"/></marker>
-<marker id="ahb" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#3b82f6"/></marker>
+<marker id="ah" markerWidth="10" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,3.5 L0,7 Z" fill="context-stroke"/></marker>
 </defs>
 </svg>
 
 <!-- ==================== SLIDE 1: Cover ==================== -->
 <div class="slide cover-slide active" id="s1">
 <div class="slide-inner">
-<h1>什么是Agent智能体</h1>
+<h1>什么是Agent</h1>
 <p class="subtitle">从LLM到Agent的进化之路</p>
 <div class="meta" style="margin-top:40px">
 <div style="display:flex;gap:40px;justify-content:center;margin-top:16px;font-size:.95em;color:#94a3b8;">
-<span>模型能力</span><span>·</span>
-<span>编排模式</span><span>·</span>
-<span>工具与数据</span><span>·</span>
-<span>应用场景</span>
+<span class="cover-link" onclick="go(4)">模型能力</span><span>·</span>
+<span class="cover-link" onclick="go(6)">编排模式</span><span>·</span>
+<span class="cover-link" onclick="go(25)">工具与数据</span><span>·</span>
+<span class="cover-link" onclick="go(34)">应用场景</span>
 </div>
 </div>
 </div>
@@ -268,20 +386,20 @@ ul.bullet li strong{color:var(--text);}
 
 <!-- ==================== SLIDE 6: 模型选型 ==================== -->
 <div class="slide" id="s6">
-<div class="slide-inner">
+<div class="slide-inner compact">
 <span class="section-tag tag-purple">二、大脑 — 模型能力</span>
 <h2>模型选择的权衡</h2>
-<div class="anim-wrap fade-in fade-in-1">
-<svg viewBox="0 0 400 240" width="360">
-<polygon points="200,20 360,200 40,200" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linejoin="round"/>
-<text x="200" y="16" text-anchor="middle" font-weight="700" font-size="14" fill="var(--purple)">能力</text>
-<text x="36" y="220" text-anchor="middle" font-weight="700" font-size="14" fill="var(--blue)">成本</text>
-<text x="364" y="220" text-anchor="middle" font-weight="700" font-size="14" fill="var(--green)">速度</text>
-<circle cx="200" cy="120" r="5" fill="var(--amber)"/>
-<text x="200" y="140" text-anchor="middle" font-size="11" fill="var(--text2)">最佳平衡点</text>
+<div class="anim-wrap fade-in fade-in-1" style="max-width:480px;margin:0 auto;">
+<svg viewBox="0 0 400 175">
+<polygon points="200,15 350,150 50,150" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linejoin="round"/>
+<text x="200" y="11" text-anchor="middle" font-weight="700" font-size="14" fill="var(--purple)">能力</text>
+<text x="46" y="168" text-anchor="middle" font-weight="700" font-size="14" fill="var(--blue)">成本</text>
+<text x="354" y="168" text-anchor="middle" font-weight="700" font-size="14" fill="var(--green)">速度</text>
+<circle cx="200" cy="90" r="5" fill="var(--amber)"/>
+<text x="200" y="108" text-anchor="middle" font-size="11" fill="var(--text2)">最佳平衡点</text>
 </svg>
 </div>
-<div class="grid g2" style="margin-top:12px;">
+<div class="grid g2" style="margin-top:8px;">
 <div class="card fade-in fade-in-2">
 <h3>复杂推理任务</h3>
 <p class="desc">使用强模型（如 Claude Opus）— 能力强，成本高</p>
@@ -327,16 +445,16 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.1 Think → Act（ReAct）</h2>
 <p class="desc">最基础的模式：思考 → 行动 → 观察 → 再思考，循环往复直到完成</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 460 220" width="440" class="react-anim">
-<circle cx="150" cy="60" r="35" class="node n1"/><text x="150" y="65" text-anchor="middle" font-weight="600">思考</text>
-<circle cx="350" cy="60" r="35" class="node n2"/><text x="350" y="65" text-anchor="middle" font-weight="600">行动</text>
-<circle cx="250" cy="180" r="35" class="node n3"/><text x="250" y="185" text-anchor="middle" font-weight="600">观察</text>
-<line x1="188" y1="55" x2="312" y2="55" class="arrow-line al1"/>
-<line x1="365" y1="95" x2="275" y2="155" class="arrow-line al2"/>
-<line x1="225" y1="160" x2="160" y2="95" class="arrow-line al3"/>
-<text x="250" y="38" text-anchor="middle" class="label">决定做什么</text>
-<text x="330" y="135" text-anchor="middle" class="label">执行工具</text>
-<text x="175" y="145" text-anchor="middle" class="label">获取结果</text>
+<svg viewBox="0 0 460 155" class="react-anim">
+<circle cx="150" cy="38" r="28" class="node n1"/><text x="150" y="43" text-anchor="middle" font-weight="600">思考</text>
+<circle cx="350" cy="38" r="28" class="node n2"/><text x="350" y="43" text-anchor="middle" font-weight="600">行动</text>
+<circle cx="250" cy="125" r="28" class="node n3"/><text x="250" y="130" text-anchor="middle" font-weight="600">观察</text>
+<line x1="178" y1="38" x2="320" y2="38" class="arrow-line al1"/>
+<line x1="329" y1="56" x2="273" y2="105" class="arrow-line al2"/>
+<line x1="229" y1="107" x2="173" y2="58" class="arrow-line al3"/>
+<text x="250" y="18" text-anchor="middle" class="label">决定做什么</text>
+<text x="325" y="92" text-anchor="middle" class="label">执行工具</text>
+<text x="178" y="92" text-anchor="middle" class="label">获取结果</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -356,18 +474,18 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.2 Think → Reflect → Act</h2>
 <p class="desc">在ReAct基础上增加"自我反思" — 执行后反思"做得对不对？有没有更好的方式？"</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 500 220" width="480" class="reflect-anim">
-<circle cx="80" cy="110" r="32" class="node rn1"/><text x="80" y="115" text-anchor="middle" font-weight="600">执行</text>
-<circle cx="250" cy="110" r="32" class="node rn2"/><text x="250" y="115" text-anchor="middle" font-weight="600">反思</text>
-<circle cx="420" cy="110" r="32" class="node rn3"/><text x="420" y="115" text-anchor="middle" font-weight="600">优化</text>
-<line x1="115" y1="105" x2="215" y2="105" class="arrow-line rl1"/>
-<line x1="285" y1="105" x2="385" y2="105" class="arrow-line rl2"/>
-<path d="M400,140 Q250,210 100,140" fill="none" class="arrow-line rl3"/>
-<text x="168" y="92" text-anchor="middle" class="label">产出结果</text>
-<text x="335" y="92" text-anchor="middle" class="label">调整策略</text>
-<text x="250" y="200" text-anchor="middle" class="label">不满意则重新执行</text>
-<rect x="190" y="28" width="120" height="24" rx="12" fill="#fef3c7" stroke="#f59e0b"/>
-<text x="250" y="44" text-anchor="middle" font-size="11" fill="#92400e">自我评价/打分</text>
+<svg viewBox="0 0 500 185" class="reflect-anim">
+<circle cx="80" cy="90" r="30" class="node rn1"/><text x="80" y="95" text-anchor="middle" font-weight="600">执行</text>
+<circle cx="250" cy="90" r="30" class="node rn2"/><text x="250" y="95" text-anchor="middle" font-weight="600">反思</text>
+<circle cx="420" cy="90" r="30" class="node rn3"/><text x="420" y="95" text-anchor="middle" font-weight="600">优化</text>
+<line x1="113" y1="85" x2="217" y2="85" class="arrow-line rl1"/>
+<line x1="283" y1="85" x2="387" y2="85" class="arrow-line rl2"/>
+<path d="M400,118 Q250,180 100,118" fill="none" class="arrow-line rl3"/>
+<text x="168" y="74" text-anchor="middle" class="label">产出结果</text>
+<text x="335" y="74" text-anchor="middle" class="label">调整策略</text>
+<text x="250" y="172" text-anchor="middle" class="label">不满意则重新执行</text>
+<rect x="190" y="18" width="120" height="24" rx="12" fill="#fef3c7" stroke="#f59e0b"/>
+<text x="250" y="34" text-anchor="middle" font-size="11" fill="#92400e">自我评价/打分</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -387,25 +505,25 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.3 Plan and Execute（规划-执行）</h2>
 <p class="desc">先制定完整计划，再逐步执行 — 像项目经理先制定WBS，再逐步交付</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 520 200" width="500" class="plan-anim">
-<rect x="10" y="30" width="140" height="140" rx="10" fill="#f0f0ff" stroke="var(--purple)" stroke-width="2"/>
-<text x="80" y="22" text-anchor="middle" font-weight="700" font-size="13" fill="var(--purple)">Planner 规划器</text>
-<text x="80" y="58" text-anchor="middle" font-size="12" class="plan-item pi1">📋 步骤1：收集数据</text>
-<text x="80" y="82" text-anchor="middle" font-size="12" class="plan-item pi2">📋 步骤2：清洗处理</text>
-<text x="80" y="106" text-anchor="middle" font-size="12" class="plan-item pi3">📋 步骤3：分析建模</text>
-<text x="80" y="130" text-anchor="middle" font-size="12" class="plan-item pi4">📋 步骤4：生成报告</text>
-<line x1="155" y1="100" x2="195" y2="100" class="arrow-line"/>
-<rect x="200" y="30" width="140" height="140" rx="10" fill="#f0fdf4" stroke="var(--green)" stroke-width="2"/>
-<text x="270" y="22" text-anchor="middle" font-weight="700" font-size="13" fill="var(--green)">Executor 执行器</text>
-<text x="270" y="58" text-anchor="middle" font-size="12" class="exec-item ei1">⬜ 执行步骤1</text>
-<text x="270" y="82" text-anchor="middle" font-size="12" class="exec-item ei2">⬜ 执行步骤2</text>
-<text x="270" y="106" text-anchor="middle" font-size="12" class="exec-item ei3">⬜ 执行步骤3</text>
-<text x="270" y="130" text-anchor="middle" font-size="12" class="exec-item ei4">⬜ 执行步骤4</text>
-<line x1="345" y1="100" x2="385" y2="100" class="arrow-line"/>
-<rect x="390" y="65" width="110" height="70" rx="10" fill="#fef3c7" stroke="var(--amber)" stroke-width="2"/>
-<text x="445" y="95" text-anchor="middle" font-size="12" font-weight="600">✅ 验证结果</text>
-<text x="445" y="115" text-anchor="middle" font-size="10" fill="var(--text2)">不满意→重规划</text>
-<path d="M390,145 Q250,200 80,175" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah)"/>
+<svg viewBox="0 0 520 175" class="plan-anim">
+<rect x="10" y="25" width="140" height="125" rx="10" fill="#f0f0ff" stroke="var(--purple)" stroke-width="2"/>
+<text x="80" y="18" text-anchor="middle" font-weight="700" font-size="13" fill="var(--purple)">Planner 规划器</text>
+<text x="80" y="50" text-anchor="middle" font-size="12" class="plan-item pi1">📋 步骤1：收集数据</text>
+<text x="80" y="72" text-anchor="middle" font-size="12" class="plan-item pi2">📋 步骤2：清洗处理</text>
+<text x="80" y="94" text-anchor="middle" font-size="12" class="plan-item pi3">📋 步骤3：分析建模</text>
+<text x="80" y="116" text-anchor="middle" font-size="12" class="plan-item pi4">📋 步骤4：生成报告</text>
+<line x1="155" y1="88" x2="195" y2="88" class="arrow-line"/>
+<rect x="200" y="25" width="140" height="125" rx="10" fill="#f0fdf4" stroke="var(--green)" stroke-width="2"/>
+<text x="270" y="18" text-anchor="middle" font-weight="700" font-size="13" fill="var(--green)">Executor 执行器</text>
+<text x="270" y="50" text-anchor="middle" font-size="12" class="exec-item ei1">⬜ 执行步骤1</text>
+<text x="270" y="72" text-anchor="middle" font-size="12" class="exec-item ei2">⬜ 执行步骤2</text>
+<text x="270" y="94" text-anchor="middle" font-size="12" class="exec-item ei3">⬜ 执行步骤3</text>
+<text x="270" y="116" text-anchor="middle" font-size="12" class="exec-item ei4">⬜ 执行步骤4</text>
+<line x1="345" y1="88" x2="385" y2="88" class="arrow-line"/>
+<rect x="390" y="55" width="110" height="60" rx="10" fill="#fef3c7" stroke="var(--amber)" stroke-width="2"/>
+<text x="445" y="82" text-anchor="middle" font-size="12" font-weight="600">✅ 验证结果</text>
+<text x="445" y="100" text-anchor="middle" font-size="11" fill="var(--text2)">不满意→重规划</text>
+<path d="M390,125 Q250,175 80,155" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ah)"/>
 </svg>
 </div>
 <div class="grid g2">
@@ -444,18 +562,18 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.5 工作流模式（DAG）</h2>
 <p class="desc">按照预定义的流程，将任务分配给不同的Agent节点 — 像工厂流水线</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 540 180" width="520" class="dag-anim">
-<rect x="10" y="65" width="90" height="40" rx="8" class="node dn1"/><text x="55" y="90" text-anchor="middle" font-size="12" font-weight="600">数据采集</text>
-<rect x="130" y="65" width="90" height="40" rx="8" class="node dn2"/><text x="175" y="90" text-anchor="middle" font-size="12" font-weight="600">数据清洗</text>
-<rect x="260" y="25" width="90" height="40" rx="8" class="node dn3"/><text x="305" y="50" text-anchor="middle" font-size="12" font-weight="600">分析建模</text>
-<rect x="260" y="105" width="90" height="40" rx="8" class="node dn4"/><text x="305" y="130" text-anchor="middle" font-size="12" font-weight="600">可视化</text>
-<rect x="400" y="65" width="90" height="40" rx="8" class="node dn5"/><text x="445" y="90" text-anchor="middle" font-size="12" font-weight="600">生成报告</text>
-<line x1="100" y1="85" x2="128" y2="85" class="arrow-line dl1"/>
-<line x1="220" y1="78" x2="258" y2="50" class="arrow-line dl2"/>
-<line x1="220" y1="92" x2="258" y2="120" class="arrow-line dl3"/>
-<line x1="350" y1="50" x2="398" y2="78" class="arrow-line dl4"/>
-<line x1="350" y1="120" x2="398" y2="92" class="arrow-line dl5"/>
-<text x="270" y="16" text-anchor="middle" font-size="10" fill="var(--text2)">并行分支</text>
+<svg viewBox="0 0 540 155" class="dag-anim">
+<rect x="10" y="52" width="90" height="36" rx="8" class="node dn1"/><text x="55" y="75" text-anchor="middle" font-size="12" font-weight="600">数据采集</text>
+<rect x="130" y="52" width="90" height="36" rx="8" class="node dn2"/><text x="175" y="75" text-anchor="middle" font-size="12" font-weight="600">数据清洗</text>
+<rect x="260" y="18" width="90" height="36" rx="8" class="node dn3"/><text x="305" y="41" text-anchor="middle" font-size="12" font-weight="600">分析建模</text>
+<rect x="260" y="90" width="90" height="36" rx="8" class="node dn4"/><text x="305" y="113" text-anchor="middle" font-size="12" font-weight="600">可视化</text>
+<rect x="400" y="52" width="90" height="36" rx="8" class="node dn5"/><text x="445" y="75" text-anchor="middle" font-size="12" font-weight="600">生成报告</text>
+<line x1="100" y1="70" x2="128" y2="70" class="arrow-line dl1"/>
+<line x1="220" y1="64" x2="258" y2="40" class="arrow-line dl2"/>
+<line x1="220" y1="78" x2="258" y2="105" class="arrow-line dl3"/>
+<line x1="350" y1="40" x2="398" y2="64" class="arrow-line dl4"/>
+<line x1="350" y1="105" x2="398" y2="78" class="arrow-line dl5"/>
+<text x="270" y="10" text-anchor="middle" font-size="11" fill="var(--text2)">并行分支</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -479,16 +597,16 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.6 路由/分发模式（Routing）</h2>
 <p class="desc">一个"入口Agent"根据任务内容，动态路由到最合适的专业Agent — 像医院分诊台</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 480 220" width="460" class="route-anim">
-<rect x="20" y="85" width="80" height="40" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/><text x="60" y="110" text-anchor="middle" font-size="12" font-weight="600">用户请求</text>
-<circle cx="200" cy="105" r="38" class="node rtn1"/><text x="200" y="100" text-anchor="middle" font-size="12" font-weight="600">分诊</text><text x="200" y="116" text-anchor="middle" font-size="12" font-weight="600">Agent</text>
-<rect x="330" y="15" width="110" height="36" rx="8" class="node rtn2"/><text x="385" y="38" text-anchor="middle" font-size="11" font-weight="600">技术支持Agent</text>
-<rect x="330" y="85" width="110" height="36" rx="8" class="node rtn3"/><text x="385" y="108" text-anchor="middle" font-size="11" font-weight="600">财务Agent</text>
-<rect x="330" y="155" width="110" height="36" rx="8" class="node rtn4"/><text x="385" y="178" text-anchor="middle" font-size="11" font-weight="600">账户Agent</text>
-<line x1="100" y1="105" x2="160" y2="105" class="arrow-line"/>
-<line x1="238" y1="85" x2="328" y2="40" class="arrow-line rtl1"/>
-<line x1="240" y1="105" x2="328" y2="105" class="arrow-line rtl2"/>
-<line x1="238" y1="125" x2="328" y2="168" class="arrow-line rtl3"/>
+<svg viewBox="0 0 480 190" class="route-anim">
+<rect x="20" y="72" width="80" height="36" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/><text x="60" y="95" text-anchor="middle" font-size="12" font-weight="600">用户请求</text>
+<circle cx="200" cy="90" r="35" class="node rtn1"/><text x="200" y="86" text-anchor="middle" font-size="12" font-weight="600">分诊</text><text x="200" y="100" text-anchor="middle" font-size="12" font-weight="600">Agent</text>
+<rect x="330" y="10" width="110" height="34" rx="8" class="node rtn2"/><text x="385" y="32" text-anchor="middle" font-size="11" font-weight="600">技术支持Agent</text>
+<rect x="330" y="72" width="110" height="34" rx="8" class="node rtn3"/><text x="385" y="94" text-anchor="middle" font-size="11" font-weight="600">财务Agent</text>
+<rect x="330" y="135" width="110" height="34" rx="8" class="node rtn4"/><text x="385" y="157" text-anchor="middle" font-size="11" font-weight="600">账户Agent</text>
+<line x1="100" y1="90" x2="163" y2="90" class="arrow-line"/>
+<line x1="235" y1="72" x2="328" y2="32" class="arrow-line rtl1"/>
+<line x1="237" y1="90" x2="328" y2="90" class="arrow-line rtl2"/>
+<line x1="235" y1="108" x2="328" y2="148" class="arrow-line rtl3"/>
 </svg>
 </div>
 <div class="grid g2">
@@ -505,15 +623,15 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.7 生成-校验模式（Maker-Checker）</h2>
 <p class="desc">一个Agent生成，另一个审查，不合格则打回重做 — 像开发与Code Review</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 480 200" width="460" class="mc-anim">
-<rect x="40" y="60" width="120" height="50" rx="10" class="node mn1"/><text x="100" y="90" text-anchor="middle" font-size="13" font-weight="600">生成Agent</text>
-<rect x="300" y="60" width="120" height="50" rx="10" class="node mn2"/><text x="360" y="90" text-anchor="middle" font-size="13" font-weight="600">校验Agent</text>
-<line x1="162" y1="75" x2="298" y2="75" class="arrow-line ml1"/>
-<text x="230" y="68" text-anchor="middle" font-size="11" fill="var(--text2)">提交作品</text>
-<path d="M300,120 Q230,170 160,120" fill="none" class="arrow-line ml2"/>
-<text x="230" y="158" text-anchor="middle" font-size="11" fill="var(--red)">❌ 不通过，附修改意见</text>
-<line x1="420" y1="85" x2="460" y2="85" stroke="var(--green)" stroke-width="2.5" marker-end="url(#ah)"/>
-<text x="462" y="82" font-size="11" fill="var(--green)" font-weight="600">✅ 通过</text>
+<svg viewBox="0 0 480 170" class="mc-anim">
+<rect x="40" y="45" width="120" height="45" rx="10" class="node mn1"/><text x="100" y="73" text-anchor="middle" font-size="13" font-weight="600">生成Agent</text>
+<rect x="300" y="45" width="120" height="45" rx="10" class="node mn2"/><text x="360" y="73" text-anchor="middle" font-size="13" font-weight="600">校验Agent</text>
+<line x1="160" y1="68" x2="298" y2="68" class="arrow-line ml1"/>
+<text x="230" y="61" text-anchor="middle" font-size="11" fill="var(--text2)">提交作品</text>
+<path d="M300,90 Q230,135 162,90" fill="none" class="arrow-line ml2"/>
+<text x="230" y="130" text-anchor="middle" font-size="11" fill="var(--red)">❌ 不通过，附修改意见</text>
+<line x1="420" y1="68" x2="460" y2="68" stroke="var(--green)" stroke-width="2.5" marker-end="url(#ah)"/>
+<text x="462" y="72" font-size="11" fill="var(--green)" font-weight="600">✅ 通过</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -530,16 +648,16 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.8 角色扮演模式（Role-based）</h2>
 <p class="desc">按工作角色分工，每个Agent扮演一个专业角色 — 像一个虚拟项目团队</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 400 250" width="380" class="role-anim">
-<circle cx="200" cy="60" r="35" class="node ron1"/><text x="200" y="56" text-anchor="middle" font-size="11" font-weight="600">协调者</text><text x="200" y="72" text-anchor="middle" font-size="11" font-weight="600">PM Agent</text>
-<rect x="20" y="170" width="90" height="44" rx="8" class="node ron2"/><text x="65" y="197" text-anchor="middle" font-size="11" font-weight="600">研发Agent</text>
-<rect x="155" y="200" width="90" height="44" rx="8" class="node ron3"/><text x="200" y="227" text-anchor="middle" font-size="11" font-weight="600">测试Agent</text>
-<rect x="290" y="170" width="90" height="44" rx="8" class="node ron4"/><text x="335" y="197" text-anchor="middle" font-size="11" font-weight="600">设计Agent</text>
-<line x1="178" y1="90" x2="80" y2="168" class="arrow-line rol1"/>
-<line x1="200" y1="95" x2="200" y2="198" class="arrow-line rol2"/>
-<line x1="222" y1="90" x2="320" y2="168" class="arrow-line rol3"/>
-<text x="110" y="130" font-size="10" fill="var(--text2)">分配任务</text>
-<text x="290" y="130" font-size="10" fill="var(--text2)">分配任务</text>
+<svg viewBox="0 0 400 165" class="role-anim">
+<circle cx="200" cy="38" r="35" class="node ron1"/><text x="200" y="35" text-anchor="middle" font-size="9" font-weight="600">协调者</text><text x="200" y="47" text-anchor="middle" font-size="9" font-weight="600">PM Agent</text>
+<rect x="10" y="110" width="110" height="34" rx="8" class="node ron2"/><text x="65" y="131" text-anchor="middle" font-size="9" font-weight="600">研发Agent</text>
+<rect x="145" y="128" width="110" height="34" rx="8" class="node ron3"/><text x="200" y="149" text-anchor="middle" font-size="9" font-weight="600">测试Agent</text>
+<rect x="280" y="110" width="110" height="34" rx="8" class="node ron4"/><text x="335" y="131" text-anchor="middle" font-size="9" font-weight="600">设计Agent</text>
+<line x1="171" y1="57" x2="78" y2="108" class="arrow-line rol1"/>
+<line x1="200" y1="73" x2="200" y2="126" class="arrow-line rol2"/>
+<line x1="229" y1="57" x2="322" y2="108" class="arrow-line rol3"/>
+<text x="112" y="86" font-size="11" fill="var(--text2)">分配任务</text>
+<text x="288" y="86" font-size="11" fill="var(--text2)">分配任务</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -556,21 +674,21 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.9 层级委派模式（Hierarchical）</h2>
 <p class="desc">多层级管理链，顶层设定目标，逐级分解和委派 — 像企业组织架构</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 500 230" width="480" class="hier-anim">
-<rect x="195" y="10" width="110" height="36" rx="8" class="node hn1"/><text x="250" y="33" text-anchor="middle" font-size="12" font-weight="600">顶层管理Agent</text>
-<rect x="80" y="80" width="110" height="36" rx="8" class="node hn2"/><text x="135" y="103" text-anchor="middle" font-size="11" font-weight="600">中层Agent A</text>
-<rect x="310" y="80" width="110" height="36" rx="8" class="node hn3"/><text x="365" y="103" text-anchor="middle" font-size="11" font-weight="600">中层Agent B</text>
-<rect x="20" y="155" width="85" height="32" rx="6" class="node hn4"/><text x="62" y="175" text-anchor="middle" font-size="10">执行Agent A1</text>
-<rect x="120" y="155" width="85" height="32" rx="6" class="node hn5"/><text x="162" y="175" text-anchor="middle" font-size="10">执行Agent A2</text>
-<rect x="260" y="155" width="85" height="32" rx="6" class="node hn6"/><text x="302" y="175" text-anchor="middle" font-size="10">执行Agent B1</text>
-<rect x="360" y="155" width="85" height="32" rx="6" class="node hn7"/><text x="402" y="175" text-anchor="middle" font-size="10">执行Agent B2</text>
-<line x1="230" y1="46" x2="160" y2="78" class="arrow-line hl1"/>
-<line x1="270" y1="46" x2="340" y2="78" class="arrow-line hl2"/>
-<line x1="115" y1="116" x2="80" y2="153" class="arrow-line hl3"/>
-<line x1="155" y1="116" x2="175" y2="153" class="arrow-line hl4"/>
-<line x1="345" y1="116" x2="315" y2="153" class="arrow-line hl5"/>
-<line x1="385" y1="116" x2="405" y2="153" class="arrow-line hl6"/>
-<text x="250" y="215" text-anchor="middle" font-size="11" fill="var(--text2)">结果逐级汇报回顶层</text>
+<svg viewBox="0 0 500 200" class="hier-anim">
+<rect x="195" y="5" width="110" height="34" rx="8" class="node hn1"/><text x="250" y="27" text-anchor="middle" font-size="12" font-weight="600">顶层管理Agent</text>
+<rect x="80" y="68" width="110" height="34" rx="8" class="node hn2"/><text x="135" y="90" text-anchor="middle" font-size="11" font-weight="600">中层Agent A</text>
+<rect x="310" y="68" width="110" height="34" rx="8" class="node hn3"/><text x="365" y="90" text-anchor="middle" font-size="11" font-weight="600">中层Agent B</text>
+<rect x="20" y="132" width="85" height="30" rx="6" class="node hn4"/><text x="62" y="151" text-anchor="middle" font-size="11" font-weight="600">执行Agent A1</text>
+<rect x="120" y="132" width="85" height="30" rx="6" class="node hn5"/><text x="162" y="151" text-anchor="middle" font-size="11" font-weight="600">执行Agent A2</text>
+<rect x="260" y="132" width="85" height="30" rx="6" class="node hn6"/><text x="302" y="151" text-anchor="middle" font-size="11" font-weight="600">执行Agent B1</text>
+<rect x="360" y="132" width="85" height="30" rx="6" class="node hn7"/><text x="402" y="151" text-anchor="middle" font-size="11" font-weight="600">执行Agent B2</text>
+<line x1="230" y1="39" x2="160" y2="66" class="arrow-line hl1"/>
+<line x1="270" y1="39" x2="340" y2="66" class="arrow-line hl2"/>
+<line x1="115" y1="102" x2="80" y2="130" class="arrow-line hl3"/>
+<line x1="155" y1="102" x2="175" y2="130" class="arrow-line hl4"/>
+<line x1="345" y1="102" x2="315" y2="130" class="arrow-line hl5"/>
+<line x1="385" y1="102" x2="405" y2="130" class="arrow-line hl6"/>
+<text x="250" y="185" text-anchor="middle" font-size="11" fill="var(--text2)">结果逐级汇报回顶层</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -587,18 +705,18 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.10 黑板模式（Blackboard）</h2>
 <p class="desc">多个Agent通过共享"白板"间接协作 — 像研究人员围着白板讨论</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 440 220" width="420" class="bb-anim">
-<rect x="140" y="60" width="160" height="100" rx="10" fill="#fefce8" stroke="#eab308" stroke-width="2"/>
-<text x="220" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#854d0e">共享白板</text>
-<text x="220" y="105" text-anchor="middle" font-size="10" fill="#a16207">状态 / 中间成果</text>
-<text x="220" y="125" text-anchor="middle" font-size="10" fill="#a16207" class="bb-text">📊 数据 📝 分析 💡 洞察</text>
-<circle cx="60" cy="60" r="28" class="node bn1"/><text x="60" y="56" text-anchor="middle" font-size="10" font-weight="600">数据</text><text x="60" y="70" text-anchor="middle" font-size="10" font-weight="600">分析</text>
-<circle cx="60" cy="180" r="28" class="node bn2"/><text x="60" y="176" text-anchor="middle" font-size="10" font-weight="600">领域</text><text x="60" y="190" text-anchor="middle" font-size="10" font-weight="600">专家</text>
-<circle cx="380" cy="120" r="28" class="node bn3"/><text x="380" y="116" text-anchor="middle" font-size="10" font-weight="600">方法</text><text x="380" y="130" text-anchor="middle" font-size="10" font-weight="600">论</text>
-<line x1="88" y1="68" x2="138" y2="80" class="arrow-line bl1"/>
-<line x1="88" y1="172" x2="138" y2="145" class="arrow-line bl2"/>
-<line x1="352" y1="120" x2="302" y2="115" class="arrow-line bl3"/>
-<text x="220" y="195" text-anchor="middle" font-size="10" fill="var(--text2)">去中心化、松耦合、各自独立读写</text>
+<svg viewBox="0 0 440 160" class="bb-anim">
+<rect x="140" y="32" width="160" height="85" rx="10" fill="#fefce8" stroke="#eab308" stroke-width="2"/>
+<text x="220" y="55" text-anchor="middle" font-size="12" font-weight="700" fill="#854d0e">共享白板</text>
+<text x="220" y="73" text-anchor="middle" font-size="11" fill="#a16207">状态 / 中间成果</text>
+<text x="220" y="93" text-anchor="middle" font-size="11" fill="#a16207" class="bb-text">📊 数据 📝 分析 💡 洞察</text>
+<circle cx="60" cy="40" r="26" class="node bn1"/><text x="60" y="36" text-anchor="middle" font-size="11" font-weight="600">数据</text><text x="60" y="50" text-anchor="middle" font-size="11" font-weight="600">分析</text>
+<circle cx="60" cy="128" r="26" class="node bn2"/><text x="60" y="124" text-anchor="middle" font-size="11" font-weight="600">领域</text><text x="60" y="138" text-anchor="middle" font-size="11" font-weight="600">专家</text>
+<circle cx="380" cy="80" r="26" class="node bn3"/><text x="380" y="76" text-anchor="middle" font-size="11" font-weight="600">方法</text><text x="380" y="90" text-anchor="middle" font-size="11" font-weight="600">论</text>
+<line x1="84" y1="48" x2="138" y2="55" class="arrow-line bl1"/>
+<line x1="84" y1="120" x2="138" y2="106" class="arrow-line bl2"/>
+<line x1="356" y1="80" x2="302" y2="78" class="arrow-line bl3"/>
+<text x="220" y="148" text-anchor="middle" font-size="11" fill="var(--text2)">去中心化、松耦合、各自独立读写</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -616,17 +734,25 @@ ul.bullet li strong{color:var(--text);}
 <h2>3.11 辩论/群聊模式（Debate）</h2>
 <p class="desc">多个Agent在共享对话线程中讨论、辩论，通过交流达成共识 — 像圆桌讨论会</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 460 230" width="440" class="debate-anim">
-<rect x="170" y="5" width="120" height="30" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="230" y="24" text-anchor="middle" font-size="11" font-weight="600" fill="#4338ca">主持人 / Manager</text>
-<rect x="80" y="50" width="300" height="140" rx="10" fill="#fff" stroke="var(--border)" stroke-width="1.5"/>
-<text x="230" y="46" text-anchor="middle" font-size="10" fill="var(--text2)">共享对话线程</text>
-<rect x="100" y="62" width="200" height="22" rx="6" fill="#dbeafe" class="chat-b cb1"/><text x="110" y="77" font-size="10" fill="#1e40af" class="chat-t ct1">Agent A: 我认为应该……</text>
-<rect x="100" y="90" width="220" height="22" rx="6" fill="#fce7f3" class="chat-b cb2"/><text x="110" y="105" font-size="10" fill="#9d174d" class="chat-t ct2">Agent B: 我不同意，因为……</text>
-<rect x="100" y="118" width="190" height="22" rx="6" fill="#dcfce7" class="chat-b cb3"/><text x="110" y="133" font-size="10" fill="#166534" class="chat-t ct3">Agent C: 补充一点……</text>
-<rect x="100" y="146" width="210" height="22" rx="6" fill="#dbeafe" class="chat-b cb4"/><text x="110" y="161" font-size="10" fill="#1e40af" class="chat-t ct4">Agent A: 好的，那我调整……</text>
-<line x1="230" y1="190" x2="230" y2="210" stroke="var(--green)" stroke-width="2" marker-end="url(#ah)"/>
-<text x="230" y="225" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">达成共识 → 最终决策</text>
+<svg viewBox="0 0 620 155" class="debate-anim">
+<!-- 左：主持人 -->
+<rect x="2" y="66" width="80" height="30" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="42" y="85" text-anchor="middle" font-size="10" font-weight="600" fill="#4338ca">主持人</text>
+<text x="42" y="58" text-anchor="middle" font-size="9" fill="#4338ca">Manager</text>
+<!-- 连线：主持人→聊天容器 -->
+<line x1="82" y1="81" x2="98" y2="81" stroke="#6366f1" stroke-width="1.5"/>
+<!-- 中：共享对话线程 -->
+<text x="310" y="12" text-anchor="middle" font-size="11" fill="var(--text2)">共享对话线程</text>
+<rect x="100" y="18" width="420" height="125" rx="10" fill="#fff" stroke="var(--border)" stroke-width="1.5"/>
+<rect x="115" y="28" width="200" height="22" rx="6" fill="#dbeafe" class="chat-b cb1"/><text x="125" y="43" font-size="11" fill="#1e40af" class="chat-t ct1">Agent A: 我认为应该……</text>
+<rect x="115" y="54" width="220" height="22" rx="6" fill="#fce7f3" class="chat-b cb2"/><text x="125" y="69" font-size="11" fill="#9d174d" class="chat-t ct2">Agent B: 我不同意，因为……</text>
+<rect x="115" y="80" width="190" height="22" rx="6" fill="#dcfce7" class="chat-b cb3"/><text x="125" y="95" font-size="11" fill="#166534" class="chat-t ct3">Agent C: 补充一点……</text>
+<rect x="115" y="106" width="210" height="22" rx="6" fill="#dbeafe" class="chat-b cb4"/><text x="125" y="121" font-size="11" fill="#1e40af" class="chat-t ct4">Agent A: 好的，那我调整……</text>
+<!-- 连线：聊天容器→达成共识 -->
+<line x1="520" y1="80" x2="543" y2="80" stroke="var(--green)" stroke-width="2" marker-end="url(#ah)"/>
+<!-- 右：达成共识 -->
+<text x="580" y="75" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">达成共识</text>
+<text x="580" y="90" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">最终决策</text>
 </svg>
 </div>
 <div class="grid g2">
@@ -700,30 +826,30 @@ ul.bullet li strong{color:var(--text);}
 <h2>一个公式理解所有Agent</h2>
 <p class="desc">所有Agent系统底层都是同一个东西 — <strong>反馈控制循环</strong>（控制论经典模型）</p>
 <div class="anim-wrap">
-<svg viewBox="0 0 520 180" width="500" class="loop-anim">
-<rect x="10" y="70" width="80" height="36" rx="8" class="node ln1" fill="#dbeafe" stroke="#3b82f6"/><text x="50" y="93" text-anchor="middle" font-size="12" font-weight="600">目标</text>
-<rect x="120" y="70" width="80" height="36" rx="8" class="node ln2"/><text x="160" y="93" text-anchor="middle" font-size="12" font-weight="600">感知</text>
-<rect x="230" y="70" width="80" height="36" rx="8" class="node ln3"/><text x="270" y="93" text-anchor="middle" font-size="12" font-weight="600">决策</text>
-<rect x="340" y="70" width="80" height="36" rx="8" class="node ln4"/><text x="380" y="93" text-anchor="middle" font-size="12" font-weight="600">行动</text>
-<rect x="450" y="70" width="60" height="36" rx="8" class="node ln5"/><text x="480" y="93" text-anchor="middle" font-size="12" font-weight="600">反馈</text>
-<line x1="90" y1="88" x2="118" y2="88" class="arrow-line"/>
-<line x1="200" y1="88" x2="228" y2="88" class="arrow-line"/>
-<line x1="310" y1="88" x2="338" y2="88" class="arrow-line"/>
-<line x1="420" y1="88" x2="448" y2="88" class="arrow-line"/>
-<path d="M480,108 Q480,150 270,150 Q120,150 120,108" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah)"/>
-<text x="300" y="145" text-anchor="middle" font-size="10" fill="var(--amber)">反馈回感知层，循环往复</text>
-<rect x="230" y="18" width="80" height="24" rx="4" fill="#f0fdf4" stroke="var(--green)"/>
-<text x="270" y="35" text-anchor="middle" font-size="10" fill="var(--green)" font-weight="600">LLM驱动</text>
-<line x1="270" y1="42" x2="270" y2="68" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="3,2"/>
+<svg viewBox="0 0 520 155" class="loop-anim">
+<rect x="10" y="55" width="80" height="34" rx="8" class="node ln1" fill="#dbeafe" stroke="#3b82f6"/><text x="50" y="77" text-anchor="middle" font-size="12" font-weight="600">目标</text>
+<rect x="120" y="55" width="80" height="34" rx="8" class="node ln2"/><text x="160" y="77" text-anchor="middle" font-size="12" font-weight="600">感知</text>
+<rect x="230" y="55" width="80" height="34" rx="8" class="node ln3"/><text x="270" y="77" text-anchor="middle" font-size="12" font-weight="600">决策</text>
+<rect x="340" y="55" width="80" height="34" rx="8" class="node ln4"/><text x="380" y="77" text-anchor="middle" font-size="12" font-weight="600">行动</text>
+<rect x="450" y="55" width="60" height="34" rx="8" class="node ln5"/><text x="480" y="77" text-anchor="middle" font-size="12" font-weight="600">反馈</text>
+<line x1="90" y1="72" x2="118" y2="72" class="arrow-line"/>
+<line x1="200" y1="72" x2="228" y2="72" class="arrow-line"/>
+<line x1="310" y1="72" x2="338" y2="72" class="arrow-line"/>
+<line x1="420" y1="72" x2="448" y2="72" class="arrow-line"/>
+<path d="M480,91 Q480,130 270,130 Q120,130 120,91" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#ah)"/>
+<text x="300" y="125" text-anchor="middle" font-size="11" fill="var(--amber)">反馈回感知层，循环往复</text>
+<rect x="230" y="10" width="80" height="22" rx="4" fill="#f0fdf4" stroke="var(--green)"/>
+<text x="270" y="26" text-anchor="middle" font-size="11" fill="var(--green)" font-weight="600">LLM驱动</text>
+<line x1="270" y1="32" x2="270" y2="53" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="3,2"/>
 </svg>
 </div>
-<div class="def-box fade-in fade-in-2" style="text-align:center;">
-<div style="font-size:1.1em;line-height:1.8;">
+<div class="def-box fade-in fade-in-2" style="text-align:center;padding:16px 24px;margin:10px 0;">
+<div style="font-size:1em;line-height:1.6;">
 <strong>终极公式：</strong>任何Agent系统 = N个「感知→决策→行动」的反馈循环 × 循环之间的连接方式<br/>
 <span style="opacity:.85;">Agent vs 传统程序的本质区别：「决策」这一步由LLM驱动，而非硬编码规则</span>
 </div>
 </div>
-<table style="margin-top:12px;">
+<table style="margin-top:8px;">
 <thead><tr><th>维度</th><th>问题</th><th>变化范围</th></tr></thead>
 <tbody>
 <tr><td>循环有几个</td><td>1个Agent还是N个Agent？</td><td>单循环 → 多循环</td></tr>
@@ -799,27 +925,27 @@ ul.bullet li strong{color:var(--text);}
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">编排模式</span>
 <h2>3.15 编排模式全景总结</h2>
-<div style="text-align:center;margin:10px 0;">
-<div class="card" style="display:inline-block;text-align:left;padding:16px 24px;border:2px solid var(--blue);">
-<div style="font-weight:700;color:var(--blue);margin-bottom:6px;">单Agent（简单→复杂）</div>
+<div style="text-align:center;margin:6px 0;">
+<div class="card" style="display:inline-block;text-align:left;padding:12px 20px;border:2px solid var(--blue);">
+<div style="font-weight:700;color:var(--blue);margin-bottom:4px;">单Agent（简单→复杂）</div>
 <div class="flow"><span class="flow-node">Think→Act</span><span class="flow-arrow">→</span><span class="flow-node purple">+ Reflect</span><span class="flow-arrow">→</span><span class="flow-node amber">+ Plan</span></div>
 </div>
 </div>
-<div style="text-align:center;font-size:1.3em;color:var(--text2);margin:4px 0;">↓</div>
-<div style="text-align:center;margin:6px 0;">
-<div class="card" style="display:inline-block;text-align:left;padding:16px 24px;border:2px solid var(--purple);">
-<div style="font-weight:700;color:var(--purple);margin-bottom:6px;">多Agent（确定性高 ←→ 开放性高）</div>
+<div style="text-align:center;font-size:1.1em;color:var(--text2);margin:2px 0;">↓</div>
+<div style="text-align:center;margin:4px 0;">
+<div class="card" style="display:inline-block;text-align:left;padding:12px 20px;border:2px solid var(--purple);">
+<div style="font-weight:700;color:var(--purple);margin-bottom:4px;">多Agent（确定性高 ←→ 开放性高）</div>
 <div class="flow" style="font-size:.82em;"><span class="flow-node">工作流</span><span class="flow-arrow">→</span><span class="flow-node">路由</span><span class="flow-arrow">→</span><span class="flow-node">生成校验</span><span class="flow-arrow">→</span><span class="flow-node purple">角色扮演</span><span class="flow-arrow">→</span><span class="flow-node purple">层级</span><span class="flow-arrow">→</span><span class="flow-node amber">黑板</span><span class="flow-arrow">→</span><span class="flow-node amber">群聊</span></div>
 </div>
 </div>
-<div style="text-align:center;font-size:1.3em;color:var(--text2);margin:4px 0;">↓</div>
-<div style="text-align:center;margin:6px 0;">
-<div class="card" style="display:inline-block;text-align:left;padding:16px 24px;border:2px solid var(--green);">
+<div style="text-align:center;font-size:1.1em;color:var(--text2);margin:2px 0;">↓</div>
+<div style="text-align:center;margin:4px 0;">
+<div class="card" style="display:inline-block;text-align:left;padding:12px 20px;border:2px solid var(--green);">
 <div style="font-weight:700;color:var(--green);margin-bottom:4px;">框架层 — 提供积木，自由组合</div>
 <div style="font-size:.9em;color:var(--text2);">LangGraph / Dify / Coze / CrewAI / AutoGen</div>
 </div>
 </div>
-<div class="grid g3" style="margin-top:14px;font-size:.85em;">
+<div class="grid g3" style="margin-top:8px;font-size:.85em;">
 <div class="card" style="padding:10px 14px;">
 <h3 style="font-size:.95em;">任务简单</h3><p class="desc" style="font-size:.85em;">→ Think→Act</p>
 </div>
@@ -833,8 +959,38 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 26: 工具调用 ==================== -->
+<!-- ==================== SLIDE 26: 工具与数据引导 ==================== -->
 <div class="slide" id="s26">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官 — 工具与数据</span>
+<h2>光有大脑还不够</h2>
+<p class="desc" style="margin-bottom:16px;">LLM能思考，但不能行动 — 不能上网、不能查数据库、也记不住上次聊了什么</p>
+<div class="highlight fade-in fade-in-1">
+<strong>类比：</strong>大脑（模型能力）决定思考上限，四肢与感官（工具与数据）决定行动边界。Agent = 大脑 + 四肢 + 记忆。
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+<div class="card fade-in fade-in-2" style="border-left:4px solid var(--blue);display:flex;align-items:center;gap:16px;">
+  <div style="font-size:2em;">🔧</div>
+  <div><h3>工具调用 & Function Calling</h3><p class="desc">概念与机制 — 让Agent能"动手"</p></div>
+</div>
+<div class="card fade-in fade-in-3" style="border-left:4px solid var(--purple);display:flex;align-items:center;gap:16px;">
+  <div style="font-size:2em;">🔌</div>
+  <div><h3>MCP & A2A 协议</h3><p class="desc">标准化连接 — 工具即插即用，Agent互联互通</p></div>
+</div>
+<div class="card fade-in fade-in-4" style="border-left:4px solid var(--green);display:flex;align-items:center;gap:16px;">
+  <div style="font-size:2em;">📚</div>
+  <div><h3>RAG & 记忆</h3><p class="desc">数据接入 + 状态持久化 — 让Agent能"看见"和"记住"</p></div>
+</div>
+<div class="card fade-in fade-in-5" style="border-left:4px solid var(--amber);display:flex;align-items:center;gap:16px;">
+  <div style="font-size:2em;">📐</div>
+  <div><h3>上下文管理 & Skills</h3><p class="desc">有限空间的高效利用 — 让Agent更聪明地管理信息</p></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 27: 工具调用 ==================== -->
+<div class="slide" id="s27">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
 <h2>4.1 工具调用（Tool Use）</h2>
@@ -859,31 +1015,144 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 27: RAG ==================== -->
-<div class="slide" id="s27">
+<!-- ==================== SLIDE 28: Function Calling ==================== -->
+<div class="slide" id="s28">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
-<h2>4.2 知识库 / RAG</h2>
+<h2>4.2 Function Calling</h2>
+<p class="desc">模型不是直接执行工具，而是输出"我想调什么、传什么参数"的结构化指令</p>
+<div class="anim-wrap" style="margin:20px 0;">
+<svg viewBox="0 0 600 140">
+  <rect x="10" y="50" width="100" height="40" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="60" y="75" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">开发者定义</text>
+  <text x="60" y="30" text-anchor="middle" font-size="11" fill="var(--text2)">声明可用工具</text>
+  <text x="60" y="42" text-anchor="middle" font-size="10" fill="var(--text2)">（JSON Schema）</text>
+
+  <line x1="110" y1="70" x2="155" y2="70" class="arrow-line"/>
+
+  <rect x="155" y="50" width="100" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="205" y="75" text-anchor="middle" font-size="12" font-weight="600" fill="#92400e">模型推理</text>
+  <text x="205" y="30" text-anchor="middle" font-size="11" fill="var(--text2)">选择工具</text>
+  <text x="205" y="42" text-anchor="middle" font-size="10" fill="var(--text2)">并填充参数</text>
+
+  <line x1="255" y1="70" x2="300" y2="70" class="arrow-line"/>
+
+  <rect x="300" y="50" width="100" height="40" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+  <text x="350" y="75" text-anchor="middle" font-size="12" font-weight="600" fill="#4338ca">系统执行</text>
+  <text x="350" y="30" text-anchor="middle" font-size="11" fill="var(--text2)">运行函数</text>
+  <text x="350" y="42" text-anchor="middle" font-size="10" fill="var(--text2)">获取结果</text>
+
+  <line x1="400" y1="70" x2="445" y2="70" class="arrow-line"/>
+
+  <rect x="445" y="50" width="100" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="495" y="75" text-anchor="middle" font-size="12" font-weight="600" fill="#166534">模型继续</text>
+  <text x="495" y="30" text-anchor="middle" font-size="11" fill="var(--text2)">基于结果</text>
+  <text x="495" y="42" text-anchor="middle" font-size="10" fill="var(--text2)">继续推理</text>
+
+  <path d="M495,90 L495,120 L60,120 L60,90" stroke="#cbd5e1" stroke-width="1.2" fill="none" stroke-dasharray="4,4" marker-end="url(#ah)"/>
+  <text x="280" y="135" text-anchor="middle" font-size="11" fill="var(--text2)">循环直到任务完成</text>
+</svg>
+</div>
+<div class="grid g2" style="margin-top:12px;">
+<div class="card fade-in fade-in-1" style="padding:14px;">
+  <h3 style="font-size:.95em;">关键点</h3>
+  <p class="desc" style="font-size:.85em;">模型<strong>不执行</strong>代码，只输出结构化的调用意图（函数名+参数）。执行由外部系统完成，结果再返回模型。</p>
+</div>
+<div class="card fade-in fade-in-2" style="padding:14px;">
+  <h3 style="font-size:.95em;">为什么重要</h3>
+  <p class="desc" style="font-size:.85em;">这是Agent"动手能力"的技术基础。没有Function Calling，模型只能输出文字建议，无法真正执行操作。</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 29: MCP ==================== -->
+<div class="slide" id="s29">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官</span>
+<h2>4.3 MCP — 模型上下文协议</h2>
+<p class="desc">AI世界的"USB-C接口" — 一个标准协议，让任何工具即插即用</p>
+<div class="vs" style="margin-top:20px;">
+<div class="vs-col vs-left fade-in fade-in-1">
+  <h3>没有MCP之前</h3>
+  <ul>
+    <li>每个工具单独写适配代码</li>
+    <li>M个模型 × N个工具 = M×N种适配</li>
+    <li>换模型要重写所有集成</li>
+  </ul>
+</div>
+<div class="vs-mid">→</div>
+<div class="vs-col vs-right fade-in fade-in-2">
+  <h3>有了MCP之后</h3>
+  <ul>
+    <li>工具实现一次MCP Server</li>
+    <li>模型/应用实现一次MCP Client</li>
+    <li>M + N 次适配，即插即用</li>
+  </ul>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3">
+<strong>架构：</strong>MCP Host（AI应用）↔ MCP Client ↔ MCP Server（工具/数据源）。Server可以暴露工具（Tools）、资源（Resources）、提示词模板（Prompts）。
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 30: A2A ==================== -->
+<div class="slide" id="s30">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官</span>
+<h2>4.4 A2A — Agent间互联协议</h2>
+<p class="desc">MCP连接工具，A2A连接Agent — 让不同框架、不同厂商的Agent能协作</p>
+<div class="grid g2" style="margin-top:20px;">
+<div class="card fade-in fade-in-1" style="border-top:3px solid var(--purple);text-align:center;">
+  <div class="card-icon">🔌</div>
+  <h3>MCP</h3>
+  <p class="desc">Agent ↔ 工具</p>
+  <div style="margin-top:8px;padding:8px;background:var(--bg-subtle);border-radius:8px;font-size:.85em;color:var(--text2);">
+    连接外部能力<br/>工具是"被动"的
+  </div>
+</div>
+<div class="card fade-in fade-in-2" style="border-top:3px solid var(--blue);text-align:center;">
+  <div class="card-icon">🤝</div>
+  <h3>A2A</h3>
+  <p class="desc">Agent ↔ Agent</p>
+  <div style="margin-top:8px;padding:8px;background:var(--bg-subtle);border-radius:8px;font-size:.85em;color:var(--text2);">
+    连接其他Agent<br/>对方是"主动"的
+  </div>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3" style="margin-top:16px;">
+<strong>核心机制：</strong>Agent Card（能力名片）发现对方能力 → Task（任务对象）管理协作过程 → 支持流式通信和进度推送。<br/>
+<strong>类比：</strong>MCP像"招聘员工"（工具听命于你），A2A像"找合作伙伴"（Agent各有自主权）。
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 31: RAG ==================== -->
+<div class="slide" id="s31">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官</span>
+<h2>4.5 知识库 / RAG</h2>
 <p class="desc">模型的知识有截止日期，也不了解企业内部信息 — RAG来解决这个问题</p>
 <div class="anim-wrap" style="margin:20px 0;">
-<svg viewBox="0 0 520 120" width="500">
+<svg viewBox="0 0 520 120">
 <rect x="10" y="40" width="90" height="40" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
 <text x="55" y="65" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">用户提问</text>
 <rect x="140" y="40" width="90" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
 <text x="185" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#92400e">检索</text>
-<text x="185" y="72" text-anchor="middle" font-size="10" fill="#92400e">Retrieve</text>
+<text x="185" y="72" text-anchor="middle" font-size="11" fill="#92400e">Retrieve</text>
 <rect x="270" y="40" width="90" height="40" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
 <text x="315" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#4338ca">增强</text>
-<text x="315" y="72" text-anchor="middle" font-size="10" fill="#4338ca">Augment</text>
+<text x="315" y="72" text-anchor="middle" font-size="11" fill="#4338ca">Augment</text>
 <rect x="400" y="40" width="90" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
 <text x="445" y="58" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">生成</text>
-<text x="445" y="72" text-anchor="middle" font-size="10" fill="#166534">Generate</text>
+<text x="445" y="72" text-anchor="middle" font-size="11" fill="#166534">Generate</text>
 <line x1="100" y1="60" x2="138" y2="60" class="arrow-line"/>
 <line x1="230" y1="60" x2="268" y2="60" class="arrow-line"/>
 <line x1="360" y1="60" x2="398" y2="60" class="arrow-line"/>
-<text x="185" y="28" text-anchor="middle" font-size="10" fill="var(--text2)">从知识库中检索相关文档</text>
-<text x="315" y="28" text-anchor="middle" font-size="10" fill="var(--text2)">拼接上下文</text>
-<text x="445" y="28" text-anchor="middle" font-size="10" fill="var(--text2)">模型基于文档回答</text>
+<text x="185" y="28" text-anchor="middle" font-size="11" fill="var(--text2)">从知识库中检索相关文档</text>
+<text x="315" y="28" text-anchor="middle" font-size="11" fill="var(--text2)">拼接上下文</text>
+<text x="445" y="28" text-anchor="middle" font-size="11" fill="var(--text2)">模型基于文档回答</text>
 </svg>
 </div>
 <div class="highlight">
@@ -892,18 +1161,18 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 28: 记忆 ==================== -->
-<div class="slide" id="s28">
+<!-- ==================== SLIDE 32: 记忆 ==================== -->
+<div class="slide" id="s32">
 <div class="slide-inner">
 <span class="section-tag tag-green">四、四肢与感官</span>
-<h2>4.3 记忆（Memory）</h2>
+<h2>4.6 记忆（Memory）</h2>
 <p class="desc">让Agent能持续、连贯地工作，而不是每次都"失忆"</p>
 <div class="grid g2" style="margin-top:20px;">
 <div class="card fade-in fade-in-1" style="border-top:3px solid var(--blue);text-align:center;">
 <div class="card-icon">💬</div>
 <h3>短期记忆</h3>
 <p class="desc">当前对话的上下文（对话历史）</p>
-<div style="margin-top:10px;padding:8px;background:#f8fafc;border-radius:8px;font-size:.85em;color:var(--text2);">
+<div style="margin-top:10px;padding:8px;background:var(--bg-subtle);border-radius:8px;font-size:.85em;color:var(--text2);">
 类似人的"工作记忆"<br/>对话结束即消失
 </div>
 </div>
@@ -911,7 +1180,7 @@ ul.bullet li strong{color:var(--text);}
 <div class="card-icon">🧠</div>
 <h3>长期记忆</h3>
 <p class="desc">跨会话持久化的信息（用户偏好、历史决策等）</p>
-<div style="margin-top:10px;padding:8px;background:#f8fafc;border-radius:8px;font-size:.85em;color:var(--text2);">
+<div style="margin-top:10px;padding:8px;background:var(--bg-subtle);border-radius:8px;font-size:.85em;color:var(--text2);">
 类似人的"长期记忆"<br/>跨会话持续存在
 </div>
 </div>
@@ -922,8 +1191,85 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 29: 通用应用场景 ==================== -->
-<div class="slide" id="s29">
+<!-- ==================== SLIDE 33: 上下文窗口 ==================== -->
+<div class="slide" id="s33">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官</span>
+<h2>4.7 上下文窗口 — Agent的"工作台"</h2>
+<p class="desc">所有信息必须摆在同一张桌子上 — 桌子大小有限，怎么摆决定了工作效率</p>
+<div class="anim-wrap" style="margin:20px 0;">
+<svg viewBox="0 0 600 90">
+  <rect x="10" y="30" width="80" height="36" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="50" y="52" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">系统提示</text>
+  <rect x="92" y="30" width="120" height="36" rx="4" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="152" y="52" text-anchor="middle" font-size="10" font-weight="600" fill="#4338ca">工具定义</text>
+  <rect x="214" y="30" width="150" height="36" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="289" y="52" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">对话历史 & 工具返回</text>
+  <rect x="366" y="30" width="90" height="36" rx="4" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="411" y="52" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">检索文档</text>
+  <rect x="458" y="30" width="130" height="36" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <text x="523" y="48" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">留给推理的空间</text>
+  <text x="523" y="60" text-anchor="middle" font-size="9" fill="#dc2626">↑ 越小越影响质量</text>
+  <line x1="10" y1="78" x2="588" y2="78" stroke="var(--border)" stroke-width="2"/>
+  <text x="300" y="88" text-anchor="middle" font-size="10" fill="var(--text2)">← 上下文窗口总容量（如 128K / 200K tokens）→</text>
+</svg>
+</div>
+<div class="grid g2" style="margin-top:12px;">
+<div class="card fade-in fade-in-1" style="border-top:3px solid var(--blue);padding:14px;">
+  <h3 style="font-size:.95em;">📏 硬约束</h3>
+  <p class="desc" style="font-size:.85em;">每个模型有固定上下文窗口。超出部分直接截断丢失。Token数越多，成本越高、速度越慢。</p>
+</div>
+<div class="card fade-in fade-in-2" style="border-top:3px solid var(--amber);padding:14px;">
+  <h3 style="font-size:.95em;">🎯 注意力衰减</h3>
+  <p class="desc" style="font-size:.85em;">"Lost in the Middle" — 模型对开头和结尾关注度高，中间容易"看漏"。上下文越长，推理质量越差。</p>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3" style="margin-top:12px;">
+<strong>对Agent的影响：</strong>Agent多步推理不断累积上下文 — 工具定义、每轮对话、每次工具返回都在消耗空间。管理上下文，和选对模型一样重要。
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 34: 上下文管理策略 ==================== -->
+<div class="slide" id="s34">
+<div class="slide-inner">
+<span class="section-tag tag-green">四、四肢与感官</span>
+<h2>4.8 上下文管理策略</h2>
+<p class="desc">不是把所有东西都塞进去，而是在正确的时间加载正确的信息</p>
+<div class="grid g3" style="margin-top:16px;">
+<div class="card fade-in fade-in-1" style="border-top:3px solid var(--blue);padding:14px;">
+  <div class="card-icon">✂️</div>
+  <h3>压缩与裁剪</h3>
+  <p class="desc" style="font-size:.85em;">旧对话摘要化，只保留最近N轮完整内容</p>
+  <div style="margin-top:8px;padding:6px;background:var(--bg-subtle);border-radius:8px;font-size:.82em;color:var(--text2);">
+    类比：会议纪要代替完整录音
+  </div>
+</div>
+<div class="card fade-in fade-in-2" style="border-top:3px solid var(--purple);padding:14px;">
+  <div class="card-icon">📦</div>
+  <h3>Skills / 按需加载</h3>
+  <p class="desc" style="font-size:.85em;">不一次性加载所有工具定义，用到哪个技能包才加载哪个</p>
+  <div style="margin-top:8px;padding:6px;background:var(--bg-subtle);border-radius:8px;font-size:.82em;color:var(--text2);">
+    类比：手机App — 装了100个，只打开你需要的
+  </div>
+</div>
+<div class="card fade-in fade-in-3" style="border-top:3px solid var(--green);padding:14px;">
+  <div class="card-icon">⚡</div>
+  <h3>智能缓存</h3>
+  <p class="desc" style="font-size:.85em;">Prompt Caching缓存不变的系统提示；RAG按需检索代替预加载</p>
+  <div style="margin-top:8px;padding:6px;background:var(--bg-subtle);border-radius:8px;font-size:.82em;color:var(--text2);">
+    类比：图书馆借书，不用把书都搬回家
+  </div>
+</div>
+</div>
+<div class="highlight fade-in fade-in-4" style="margin-top:16px;">
+<strong>Skills 模式（Claude Code、Cursor 等正在使用）：</strong>将Agent能力拆为独立"技能包"，System Prompt只放一句话描述。用户触发时才动态加载完整指令和工具定义。效果：上下文从 50K tokens 降到 5K — 更快、更便宜、推理更准确。
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 35: 通用应用场景 ==================== -->
+<div class="slide" id="s35">
 <div class="slide-inner">
 <span class="section-tag tag-amber">五、应用场景</span>
 <h2>5.1 通用场景</h2>
@@ -952,11 +1298,82 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 30: 教师智能体 ==================== -->
-<div class="slide" id="s30">
+<!-- ==================== SLIDE 36: 代码助手深度解析 ==================== -->
+<div class="slide" id="s36">
+<div class="slide-inner compact">
+<span class="section-tag tag-amber">五、应用场景</span>
+<h2>5.2 代码助手 — 以Cursor为例</h2>
+<div class="flow fade-in fade-in-1">
+<span class="flow-node">用户指令</span><span class="flow-arrow">→</span>
+<span class="flow-node purple">代码索引检索</span><span class="flow-arrow">→</span>
+<span class="flow-node amber">上下文组装</span><span class="flow-arrow">→</span>
+<span class="flow-node">模型规划</span><span class="flow-arrow">→</span>
+<span class="flow-node green">多文件编辑</span><span class="flow-arrow">→</span>
+<span class="flow-node red">终端验证</span><span class="flow-arrow">→</span>
+<span class="flow-node gray">输出结果</span>
+</div>
+<div class="grid g2">
+<div class="card fade-in fade-in-2" style="border-top:3px solid var(--purple);">
+<h3>🔍 理解代码库</h3>
+<ul class="bullet" style="font-size:.88em;">
+<li><strong>代码索引</strong> — Embedding + 向量搜索，快速定位相关代码</li>
+<li><strong>自动选取</strong> — 将相关文件、函数填入上下文窗口</li>
+<li><strong>Rules文件</strong> — .cursorrules / CLAUDE.md 提供项目规范与约束</li>
+</ul>
+</div>
+<div class="card fade-in fade-in-3" style="border-top:3px solid var(--green);">
+<h3>🛠️ 自主执行</h3>
+<ul class="bullet" style="font-size:.88em;">
+<li><strong>读写文件</strong> — 跨文件编辑，运行终端命令、执行测试</li>
+<li><strong>Diff模式</strong> — 精准修改而非全量重写，减少出错</li>
+<li><strong>多步迭代</strong> — 改代码 → 跑测试 → 修复 → 直到通过</li>
+</ul>
+</div>
+</div>
+<div class="highlight fade-in fade-in-4">
+<strong>本质：</strong>Cursor = <strong>ReAct循环</strong> + <strong>代码索引(RAG)</strong> + <strong>工具调用</strong>(读/写/终端) + <strong>上下文管理</strong> — 串联了前面讲过的所有核心概念
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 37: 实践经验与避坑 ==================== -->
+<div class="slide" id="s37">
+<div class="slide-inner compact">
+<span class="section-tag tag-amber">五、应用场景</span>
+<h2>5.3 Agent落地经验与避坑</h2>
+<div class="grid g2">
+<div class="card fade-in fade-in-1" style="border-left:3px solid var(--red);">
+<h3>🗑️ 上下文污染</h3>
+<p class="desc">塞太多无关信息 → 模型"注意力分散"，质量反而下降</p>
+<p class="desc" style="margin-top:6px;color:var(--green);"><strong>经验：</strong>精选上下文 &gt; 堆砌信息</p>
+</div>
+<div class="card fade-in fade-in-2" style="border-left:3px solid var(--purple);">
+<h3>👻 幻觉与虚构</h3>
+<p class="desc">模型会编造不存在的API/函数，写出看似正确的错误代码</p>
+<p class="desc" style="margin-top:6px;color:var(--green);"><strong>经验：</strong>要求Agent先读代码再改，永远跑测试验证</p>
+</div>
+<div class="card fade-in fade-in-3" style="border-left:3px solid var(--amber);">
+<h3>🔄 循环陷阱</h3>
+<p class="desc">修A破B → 修B破A → 无限循环，越改越乱</p>
+<p class="desc" style="margin-top:6px;color:var(--green);"><strong>经验：</strong>设置最大迭代次数，超限回退让人介入</p>
+</div>
+<div class="card fade-in fade-in-4" style="border-left:3px solid var(--blue);">
+<h3>💰 成本失控</h3>
+<p class="desc">无限制的Agent循环 = 烧钱（Token按量计费）</p>
+<p class="desc" style="margin-top:6px;color:var(--green);"><strong>经验：</strong>设Token/轮次上限，用便宜模型做简单判断</p>
+</div>
+</div>
+<div class="highlight fade-in fade-in-5">
+<strong>护栏设计原则：</strong>Human-in-the-loop（关键操作需人确认）· 渐进信任（先小范围试，再放开权限）· 可观测（记录每步决策，出问题能回溯）
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 38: 教师智能体 ==================== -->
+<div class="slide" id="s38">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、教育场景</span>
-<h2>5.2 教师智能体</h2>
+<h2>5.4 教师智能体</h2>
 <div class="grid g2">
 <div class="card fade-in fade-in-1">
 <h3>📝 自动出题与组卷</h3>
@@ -981,11 +1398,11 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 31: 学生智能体 ==================== -->
-<div class="slide" id="s31">
+<!-- ==================== SLIDE 39: 学生智能体 ==================== -->
+<div class="slide" id="s39">
 <div class="slide-inner compact">
 <span class="section-tag tag-amber">五、教育场景</span>
-<h2>5.2 学生智能体</h2>
+<h2>5.5 学生智能体</h2>
 <div class="grid g2">
 <div class="card fade-in fade-in-1">
 <h3>🎯 个性化辅导</h3>
@@ -1010,13 +1427,13 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 32: 总结 ==================== -->
-<div class="slide" id="s32">
+<!-- ==================== SLIDE 40: 总结 ==================== -->
+<div class="slide" id="s40">
 <div class="slide-inner" style="text-align:center;">
 <span class="section-tag tag-blue">六、总结</span>
 <h2>回顾：Agent的三大核心要素</h2>
 <div class="def-box fade-in fade-in-1" style="margin:20px auto;max-width:700px;">
-<h2 style="font-size:1.4em;">Agent = 模型（大脑）+ 编排（思维方式）+ 工具与数据（四肢感官）</h2>
+<h2 style="font-size:1.15em;white-space:nowrap;">Agent = 模型（大脑）+ 编排（思维方式）+ 工具与数据（四肢感官）</h2>
 </div>
 <div class="grid g3" style="margin-top:20px;">
 <div class="card fade-in fade-in-2">
@@ -1039,28 +1456,84 @@ ul.bullet li strong{color:var(--text);}
 </div>
 </div>
 
-<!-- ==================== SLIDE 33: 致谢 ==================== -->
-<div class="slide cover-slide" id="s33">
+<!-- ==================== SLIDE 41: 未来展望 ==================== -->
+<div class="slide" id="s41">
+<div class="slide-inner compact">
+<span class="section-tag tag-blue">六、总结</span>
+<h2>Agent 的未来演进</h2>
+<div class="flow fade-in fade-in-1" style="font-size:.82em;">
+<span class="flow-node gray">L1 聊天</span><span class="flow-arrow">→</span>
+<span class="flow-node">L2 工具</span><span class="flow-arrow">→</span>
+<span class="flow-node red" style="position:relative;">L3 自主执行<span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:.7em;color:var(--red);white-space:nowrap;">← 我们在这里</span></span><span class="flow-arrow">→</span>
+<span class="flow-node purple">L4 长期自主</span><span class="flow-arrow">→</span>
+<span class="flow-node green">L5 协作智能</span>
+</div>
+<div class="grid g2 fade-in fade-in-2" style="margin-top:14px;">
+<div class="card">
+<h3>🧬 更长的记忆</h3>
+<p class="desc">从无状态对话到跨会话持久记忆；Agent从历史任务中学习，越用越懂你</p>
+</div>
+<div class="card">
+<h3>🖥️ Computer Use</h3>
+<p class="desc">直接看屏幕、点鼠标、操作任意软件；不再需要专门的API集成</p>
+</div>
+<div class="card">
+<h3>🤝 多Agent协作网络</h3>
+<p class="desc">专业Agent自动发现、协商、分工；类似微服务架构的Agent生态</p>
+</div>
+<div class="card">
+<h3>🏗️ 从助手到同事</h3>
+<p class="desc">从"给指令-执行"到"理解目标-自主规划-持续推进"；数字同事</p>
+</div>
+</div>
+<div class="highlight fade-in fade-in-3" style="margin-top:14px;">
+<strong>趋势：</strong>更自主 · 更持久 · 更协作 · 更通用<br/>
+<strong>核心挑战不变：</strong>如何确保 Agent 可控、可信、与人类意图对齐
+</div>
+</div>
+</div>
+
+<!-- ==================== SLIDE 42: 致谢 ==================== -->
+<div class="slide cover-slide" id="s42">
 <div class="slide-inner">
 <h1 style="font-size:2.8em;">谢谢</h1>
 <p class="subtitle" style="margin-top:12px;">Q & A</p>
 <div class="meta" style="margin-top:40px;font-size:.85em;line-height:2;">
 <div>参考资料</div>
 <div style="color:#94a3b8;font-size:.9em;">
-Microsoft Azure AI Agent Design Patterns<br/>
-智能体设计模式全面解析 · iceyao.com.cn<br/>
-Datawhale · hello-agents<br/>
+<a href="https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/agent-design-patterns" target="_blank" style="color:#94a3b8;text-decoration:underline;">Microsoft Azure AI Agent Design Patterns</a><br/>
+<a href="https://iceyao.com.cn/" target="_blank" style="color:#94a3b8;text-decoration:underline;">智能体设计模式全面解析 · iceyao.com.cn</a><br/>
+<a href="https://github.com/datawhalechina/hello-agents" target="_blank" style="color:#94a3b8;text-decoration:underline;">Datawhale · hello-agents</a><br/>
 </div>
 </div>
 </div>
 </div>
 
+<!-- Navigation Menu -->
+<div id="navMenu">
+<div class="nav-item" onclick="navGo(1)">一、从LLM到Agent</div>
+<div class="nav-divider"></div>
+<div class="nav-item" onclick="navGo(4)">二、模型能力</div>
+<div class="nav-divider"></div>
+<div class="nav-item" onclick="navGo(6)">三、编排模式</div>
+<div class="nav-item sub" onclick="navGo(7)">单Agent模式</div>
+<div class="nav-item sub" onclick="navGo(11)">多Agent协作</div>
+<div class="nav-item sub" onclick="navGo(19)">框架层</div>
+<div class="nav-item sub" onclick="navGo(20)">第一性原理</div>
+<div class="nav-divider"></div>
+<div class="nav-item" onclick="navGo(25)">四、工具与数据</div>
+<div class="nav-divider"></div>
+<div class="nav-item" onclick="navGo(34)">五、应用场景</div>
+<div class="nav-divider"></div>
+<div class="nav-item" onclick="navGo(39)">六、总结</div>
+</div>
+
 <!-- Navigation Bar -->
 <div class="nav-bar">
-<button class="nav-btn" id="prevBtn" onclick="go(current-1)">◀</button>
+<button class="nav-btn" id="prevBtn" onclick="go(current-1)" aria-label="上一页" disabled>◀</button>
 <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-<span class="page-num" id="pageNum">1 / 33</span>
-<button class="nav-btn" id="nextBtn" onclick="go(current+1)">▶</button>
+<span class="page-num" id="pageNum" title="点击导航菜单" style="cursor:pointer;" onclick="toggleNav(event)">1 / 42</span>
+<button class="nav-btn" id="nextBtn" onclick="go(current+1)" aria-label="下一页">▶</button>
 </div>
 
 <script>
@@ -1068,14 +1541,35 @@ const slides=document.querySelectorAll('.slide');
 const total=slides.length;
 let current=0;
 
+const navMenu=document.getElementById('navMenu');
+
 function go(n){
   if(n<0||n>=total)return;
+  navMenu.classList.remove('show');
   slides[current].classList.remove('active');
   current=n;
   slides[current].classList.add('active');
   document.getElementById('progressFill').style.width=((current/(total-1))*100)+'%';
   document.getElementById('pageNum').textContent=(current+1)+' / '+total;
+  document.getElementById('prevBtn').disabled=(current===0);
+  document.getElementById('nextBtn').disabled=(current===total-1);
+  triggerAnimations(slides[current]);
 }
+
+function toggleNav(e){
+  e.stopPropagation();
+  navMenu.classList.toggle('show');
+}
+
+function navGo(n){
+  go(n);
+}
+
+document.addEventListener('click',function(e){
+  if(!navMenu.contains(e.target)&&e.target.id!=='pageNum'){
+    navMenu.classList.remove('show');
+  }
+});
 
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(current+1);}
@@ -1092,124 +1586,15 @@ document.addEventListener('touchend',e=>{
   if(Math.abs(dx)>50){dx<0?go(current+1):go(current-1);}
 });
 
-/* Trigger SVG animations when slides become active */
-const observer=new MutationObserver(muts=>{
-  muts.forEach(m=>{
-    if(m.target.classList.contains('active')){
-      triggerAnimations(m.target);
-    }
-  });
-});
-slides.forEach(s=>observer.observe(s,{attributes:true,attributeFilter:['class']}));
 
 function triggerAnimations(slide){
-  /* Re-trigger CSS animations by briefly removing and re-adding animated elements' classes */
-  const animNodes=slide.querySelectorAll('.node,.arrow-line,.chat-b,.chat-t');
+  const animNodes=slide.querySelectorAll('.node,.arrow-line,.chat-b,.chat-t,.plan-item,.exec-item');
   animNodes.forEach(el=>{
     el.style.animation='none';
-    el.offsetHeight; /* trigger reflow */
+    el.offsetHeight;
     el.style.animation='';
   });
 }
-
-/* Apply slide-specific animations via CSS */
-const styleEl=document.createElement('style');
-styleEl.textContent=`
-/* Slide 8: ReAct animation */
-.slide.active .react-anim .n1{animation:nodeGlow 3s 0s infinite;}
-.slide.active .react-anim .n2{animation:nodeGlow 3s 1s infinite;}
-.slide.active .react-anim .n3{animation:nodeGlow 3s 2s infinite;}
-.slide.active .react-anim .al1{animation:lineFlow 3s 0.5s infinite;}
-.slide.active .react-anim .al2{animation:lineFlow 3s 1.5s infinite;}
-.slide.active .react-anim .al3{animation:lineFlow 3s 2.5s infinite;}
-
-/* Slide 9: Reflect animation */
-.slide.active .reflect-anim .rn1{animation:nodeGlow 4s 0s infinite;}
-.slide.active .reflect-anim .rn2{animation:nodeGlowAmber 4s 1.2s infinite;}
-.slide.active .reflect-anim .rn3{animation:nodeGlowGreen 4s 2.4s infinite;}
-.slide.active .reflect-anim .rl1{animation:lineFlow 4s 0.6s infinite;}
-.slide.active .reflect-anim .rl2{animation:lineFlow 4s 1.8s infinite;}
-.slide.active .reflect-anim .rl3{animation:lineFlow 4s 3s infinite;}
-
-/* Slide 10: Plan animation */
-.slide.active .plan-anim .pi1{animation:fadeInUp .5s .2s both;}
-.slide.active .plan-anim .pi2{animation:fadeInUp .5s .4s both;}
-.slide.active .plan-anim .pi3{animation:fadeInUp .5s .6s both;}
-.slide.active .plan-anim .pi4{animation:fadeInUp .5s .8s both;}
-
-/* Slide 12: DAG animation */
-.slide.active .dag-anim .dn1{animation:nodeGlow 5s 0s infinite;}
-.slide.active .dag-anim .dn2{animation:nodeGlow 5s 1s infinite;}
-.slide.active .dag-anim .dn3{animation:nodeGlow 5s 2s infinite;}
-.slide.active .dag-anim .dn4{animation:nodeGlowPurple 5s 2s infinite;}
-.slide.active .dag-anim .dn5{animation:nodeGlowGreen 5s 3.5s infinite;}
-.slide.active .dag-anim .dl1{animation:lineFlow 5s 0.5s infinite;}
-.slide.active .dag-anim .dl2{animation:lineFlow 5s 1.5s infinite;}
-.slide.active .dag-anim .dl3{animation:lineFlow 5s 1.5s infinite;}
-.slide.active .dag-anim .dl4{animation:lineFlow 5s 2.8s infinite;}
-.slide.active .dag-anim .dl5{animation:lineFlow 5s 2.8s infinite;}
-
-/* Slide 13: Route animation */
-.slide.active .route-anim .rtn1{animation:nodeGlow 4s 0s infinite;}
-.slide.active .route-anim .rtn2{animation:nodeGlowGreen 4s 1.5s infinite;}
-.slide.active .route-anim .rtn3{animation:nodeGlowAmber 4s 2.2s infinite;}
-.slide.active .route-anim .rtn4{animation:nodeGlowPurple 4s 2.9s infinite;}
-.slide.active .route-anim .rtl1{animation:lineFlow 4s 0.8s infinite;}
-.slide.active .route-anim .rtl2{animation:lineFlow 4s 1.5s infinite;}
-.slide.active .route-anim .rtl3{animation:lineFlow 4s 2.2s infinite;}
-
-/* Slide 14: Maker-Checker animation */
-.slide.active .mc-anim .mn1{animation:nodeGlow 4s 0s infinite;}
-.slide.active .mc-anim .mn2{animation:nodeGlowAmber 4s 1.5s infinite;}
-.slide.active .mc-anim .ml1{animation:lineFlow 4s 0.5s infinite;}
-.slide.active .mc-anim .ml2{animation:lineFlow 4s 2.5s infinite;}
-
-/* Slide 15: Role animation */
-.slide.active .role-anim .ron1{animation:nodeGlow 4s 0s infinite;}
-.slide.active .role-anim .ron2{animation:nodeGlowGreen 4s 1s infinite;}
-.slide.active .role-anim .ron3{animation:nodeGlowAmber 4s 1.8s infinite;}
-.slide.active .role-anim .ron4{animation:nodeGlowPurple 4s 2.6s infinite;}
-.slide.active .role-anim .rol1{animation:lineFlow 4s 0.5s infinite;}
-.slide.active .role-anim .rol2{animation:lineFlow 4s 1.3s infinite;}
-.slide.active .role-anim .rol3{animation:lineFlow 4s 2.1s infinite;}
-
-/* Slide 16: Hierarchy animation */
-.slide.active .hier-anim .hn1{animation:nodeGlow 5s 0s infinite;}
-.slide.active .hier-anim .hn2{animation:nodeGlowPurple 5s 1s infinite;}
-.slide.active .hier-anim .hn3{animation:nodeGlowPurple 5s 1s infinite;}
-.slide.active .hier-anim .hn4{animation:nodeGlowGreen 5s 2.2s infinite;}
-.slide.active .hier-anim .hn5{animation:nodeGlowGreen 5s 2.5s infinite;}
-.slide.active .hier-anim .hn6{animation:nodeGlowGreen 5s 2.2s infinite;}
-.slide.active .hier-anim .hn7{animation:nodeGlowGreen 5s 2.5s infinite;}
-.slide.active .hier-anim .hl1{animation:lineFlow 5s 0.5s infinite;}
-.slide.active .hier-anim .hl2{animation:lineFlow 5s 0.5s infinite;}
-.slide.active .hier-anim .hl3{animation:lineFlow 5s 1.5s infinite;}
-.slide.active .hier-anim .hl4{animation:lineFlow 5s 1.5s infinite;}
-.slide.active .hier-anim .hl5{animation:lineFlow 5s 1.5s infinite;}
-.slide.active .hier-anim .hl6{animation:lineFlow 5s 1.5s infinite;}
-
-/* Slide 17: Blackboard animation */
-.slide.active .bb-anim .bn1{animation:nodeGlow 4s 0s infinite;}
-.slide.active .bb-anim .bn2{animation:nodeGlowPurple 4s 1.3s infinite;}
-.slide.active .bb-anim .bn3{animation:nodeGlowGreen 4s 2.6s infinite;}
-.slide.active .bb-anim .bl1{animation:lineFlow 4s 0.5s infinite;}
-.slide.active .bb-anim .bl2{animation:lineFlow 4s 1.8s infinite;}
-.slide.active .bb-anim .bl3{animation:lineFlow 4s 3.1s infinite;}
-
-/* Slide 18: Debate animation */
-.slide.active .debate-anim .cb1,.slide.active .debate-anim .ct1{animation:bubbleIn .5s .3s both;}
-.slide.active .debate-anim .cb2,.slide.active .debate-anim .ct2{animation:bubbleIn .5s .8s both;}
-.slide.active .debate-anim .cb3,.slide.active .debate-anim .ct3{animation:bubbleIn .5s 1.3s both;}
-.slide.active .debate-anim .cb4,.slide.active .debate-anim .ct4{animation:bubbleIn .5s 1.8s both;}
-
-/* Slide 22: Loop animation */
-.slide.active .loop-anim .ln1{animation:nodeGlow 5s 0s infinite;}
-.slide.active .loop-anim .ln2{animation:nodeGlow 5s 1s infinite;}
-.slide.active .loop-anim .ln3{animation:nodeGlow 5s 2s infinite;}
-.slide.active .loop-anim .ln4{animation:nodeGlow 5s 3s infinite;}
-.slide.active .loop-anim .ln5{animation:nodeGlowAmber 5s 4s infinite;}
-`;
-document.head.appendChild(styleEl);
 
 /* Init */
 go(0);
