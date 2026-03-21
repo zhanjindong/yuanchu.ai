@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "对协变和逆变的简单理解"
 description: "对协变和逆变的简单理解"
 categories: [articles]

@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "HTTP协议头部与Keep-Alive模式详解"
 description: "HTTP协议头部与Keep-Alive模式详解"
 categories: [转载]

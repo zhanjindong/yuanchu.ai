@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "C#的Task和Java的Future"
 description: "C#的Task和Java的Future"
 categories: [articles]

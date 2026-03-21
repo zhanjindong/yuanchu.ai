@@ -1,3 +1,8 @@
+---
+layout: default
+title: "OpenTeam 快速开始"
+---
+
 # OpenTeam 快速开始
 
 > 作者：Jackie Zhan

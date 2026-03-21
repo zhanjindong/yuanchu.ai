@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "Java并发包源码学习之AQS框架（三）LockSupport和interrupt"
 description: "Java并发包源码学习之AQS框架（三）LockSupport和interrupt"
 categories: [articles]

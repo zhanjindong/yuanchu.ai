@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "又见KeepAlive"
 description: "又见KeepAlive"
 categories: [转载]

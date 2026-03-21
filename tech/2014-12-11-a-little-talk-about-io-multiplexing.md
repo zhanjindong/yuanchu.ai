@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "简单聊下IO复用"
 description: "简单聊下IO复用"
 categories: [articles]

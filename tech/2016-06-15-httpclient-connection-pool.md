@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "HttpClient连接池的连接保持、超时和失效机制"
 description: "HttpClient连接池的连接保持、超时和失效机制"
 categories: [articles]

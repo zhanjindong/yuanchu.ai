@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "Synology NAS 外部访问"
 description: "Synology NAS 外部访问"
 categories: [articles]

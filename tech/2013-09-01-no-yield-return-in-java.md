@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "可惜Java中没有yield return"
 description: "可惜Java中没有yield return"
 categories: [articles]

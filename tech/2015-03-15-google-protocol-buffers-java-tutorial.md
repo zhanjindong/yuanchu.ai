@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "Google Protocol Buffer 简单介绍"
 description: "Google Protocol Buffer 简单介绍"
 categories: [notes]

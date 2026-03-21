@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "新年新技术:HTTP/2"
 description: "新年新技术:HTTP/2"
 categories: [notes]

@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "Windows 下编译 gRPC"
 description: "Windows 下编译 gRPC"
 categories: [notes]

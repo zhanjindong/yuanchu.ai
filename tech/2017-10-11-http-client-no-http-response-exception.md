@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "HttpClient NoHttpResponseException问题排查"
 description: "HttpClient NoHttpResponseException问题排查"
 categories: [articles]

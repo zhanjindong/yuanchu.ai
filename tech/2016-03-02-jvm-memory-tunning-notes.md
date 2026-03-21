@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "JVM内存调优相关的一些笔记（杂）"
 description: "JVM内存调优相关的一些笔记（杂）"
 categories: [notes]

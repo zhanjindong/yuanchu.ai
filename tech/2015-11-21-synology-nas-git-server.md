@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "Synology DSM Git Server配置"
 description: "Synology DSM Git Server配置"
 categories: [articles]

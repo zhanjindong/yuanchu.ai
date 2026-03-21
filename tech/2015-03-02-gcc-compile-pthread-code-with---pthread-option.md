@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "GCC编译pthread代码需要跟-pthread选项"
 description: "GCC编译pthread代码需要跟-pthread选项"
 categories: [notes]

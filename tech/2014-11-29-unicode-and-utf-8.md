@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "简单聊下Unicode和UTF-8"
 description: "简单聊下Unicode和UTF-8"
 categories: [notes]

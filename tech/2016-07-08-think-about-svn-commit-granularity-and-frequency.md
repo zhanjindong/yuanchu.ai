@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "关于SVN代码提交粒度和频率的思考"
 description: "关于SVN代码提交粒度和频率的思考"
 categories: [notes]

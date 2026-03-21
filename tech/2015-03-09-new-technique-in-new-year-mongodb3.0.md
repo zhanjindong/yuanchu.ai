@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "新年新技术:MongoDB 3.0"
 description: "新年新技术:MongoDB 3.0"
 categories: [notes]

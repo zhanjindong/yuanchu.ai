@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "关于高性能Web服务的一点思考"
 description: "关于高性能Web服务的一点思考"
 categories: [articles]

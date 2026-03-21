@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "本地缓存的雪崩预防"
 description: "本地缓存的雪崩预防"
 categories: [notes]
