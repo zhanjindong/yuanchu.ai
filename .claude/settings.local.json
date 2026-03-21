@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/jindongzhan/github/yuanchu/yuanchu.ai/logo/1.jpg)",
+      "Bash(git add index.html && git commit -m \"$\\(cat <<'EOF'\nUpdate: 首页标题改为「始于元初，行致远处」，精简副标题\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push origin main)"
+    ]
+  }
+}
