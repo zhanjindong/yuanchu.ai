@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MCP 协议详解：让 AI 工具调用像 USB 一样即插即用 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">MCP</span>
+    <span class="tag">Agent</span>
+    <span class="tag">LLM</span>
+  </div>
+  <h1>MCP 协议详解：让 AI 工具调用像 USB 一样即插即用</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-21</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、MCP 是什么：AI 世界的 USB-C 接口</a>
+  <a href="#s2">二、核心架构：Host、Client、Server</a>
+  <a href="#s3">三、三大基本能力：Tools、Resources、Prompts</a>
+  <a href="#s4">四、通信机制：JSON-RPC 与 Transport</a>
+  <a href="#s5">五、MCP vs Function Calling：到底该用哪个？</a>
+  <a href="#s6">六、动手写一个 MCP Server</a>
+  <a href="#s7">七、总结与展望</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>想象一下：你让 AI 助手帮你查一下明天北京的天气，顺便把会议记录存到 Notion 里，再看看 GitHub 上有没有新的 PR 要处理。AI 很聪明，它知道该怎么做——但问题是，<strong>它不知道怎么连接到这些工具</strong>。</p>
+
+<p>每个工具都有自己的 API 格式，每个 AI 应用都要单独写一套对接代码。10 个工具就要写 10 套集成，换一个 AI 平台又要重写一遍。这就像早年手机充电器的混乱年代：诺基亚、三星、摩托罗拉，每家一个接口，出门得带一堆线。</p>
+
+<p>MCP（Model Context Protocol，模型上下文协议）就是来解决这个问题的。它由 Anthropic 在 2024 年 11 月发布，目标很简单：<strong>给 AI 应用和外部工具之间定一个统一的"接口标准"</strong>，就像 USB-C 统一了充电接口一样。</p>
+
+<p>本文将从核心概念、架构原理、通信机制、与 Function Calling 的对比，以及动手实战五个角度，带你彻底搞懂 MCP。</p>
+
+<hr>
+
+<!-- ==================== SECTION: MCP 是什么 ==================== -->
+<h2 id="s1">一、MCP 是什么：AI 世界的 USB-C 接口</h2>
+
+<p>一句话定义：<strong>MCP 是一个开源协议，用来标准化 AI 应用与外部系统之间的连接方式。</strong></p>
+
+<p>在 MCP 出现之前，如果你想让 Claude 能够读取本地文件、查询数据库、调用搜索引擎，你需要为每个工具单独编写集成代码。不同的 AI 平台（OpenAI、Anthropic、Google）各有各的工具调用格式，工具提供方也得为每个平台做适配。</p>
+
+<p>这种 M x N 的集成模式（M 个 AI 应用 x N 个工具）效率极低。MCP 把它变成了 M + N：AI 应用只要支持 MCP 协议，就能连接任何 MCP Server；工具只要暴露为 MCP Server，就能被任何支持 MCP 的 AI 应用使用。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左侧：M x N -->
+    <text class="group-label" x="10" y="16">之前：M x N 集成</text>
+    <rect class="group-box" x="5" y="24" width="330" height="190"/>
+    <!-- AI 应用 -->
+    <rect class="node-rect-blue" x="20" y="44" width="100" height="36"/><text class="node-label" x="70" y="62">Claude</text>
+    <rect class="node-rect-blue" x="20" y="96" width="100" height="36"/><text class="node-label" x="70" y="114">ChatGPT</text>
+    <rect class="node-rect-blue" x="20" y="148" width="100" height="36"/><text class="node-label" x="70" y="166">Cursor</text>
+    <!-- 工具 -->
+    <rect class="node-rect-green" x="210" y="44" width="110" height="36"/><text class="node-label" x="265" y="62">文件系统</text>
+    <rect class="node-rect-green" x="210" y="96" width="110" height="36"/><text class="node-label" x="265" y="114">数据库</text>
+    <rect class="node-rect-green" x="210" y="148" width="110" height="36"/><text class="node-label" x="265" y="166">GitHub</text>
+    <!-- 连线 (每个都要连) -->
+    <line class="arrow-line" x1="120" y1="55" x2="208" y2="55"/>
+    <line class="arrow-line" x1="120" y1="62" x2="208" y2="107"/>
+    <line class="arrow-line" x1="120" y1="69" x2="208" y2="159"/>
+    <line class="arrow-line" x1="120" y1="107" x2="208" y2="62"/>
+    <line class="arrow-line" x1="120" y1="114" x2="208" y2="114"/>
+    <line class="arrow-line" x1="120" y1="121" x2="208" y2="166"/>
+    <line class="arrow-line" x1="120" y1="159" x2="208" y2="69"/>
+    <line class="arrow-line" x1="120" y1="166" x2="208" y2="121"/>
+    <line class="arrow-line" x1="120" y1="173" x2="208" y2="173"/>
+
+    <!-- 右侧：M + N -->
+    <text class="group-label" x="385" y="16">现在：M + N 集成</text>
+    <rect class="group-box" x="380" y="24" width="335" height="190"/>
+    <!-- AI 应用 -->
+    <rect class="node-rect-blue" x="395" y="44" width="100" height="36"/><text class="node-label" x="445" y="62">Claude</text>
+    <rect class="node-rect-blue" x="395" y="96" width="100" height="36"/><text class="node-label" x="445" y="114">ChatGPT</text>
+    <rect class="node-rect-blue" x="395" y="148" width="100" height="36"/><text class="node-label" x="445" y="166">Cursor</text>
+    <!-- MCP 中间节点 -->
+    <rect class="node-rect-purple" x="535" y="82" width="60" height="56" rx="28" ry="28"/><text class="node-label" x="565" y="110">MCP</text>
+    <!-- 工具 -->
+    <rect class="node-rect-green" x="635" y="44" width="70" height="30"/><text class="node-label" x="670" y="59" style="font-size:11px">文件系统</text>
+    <rect class="node-rect-green" x="635" y="96" width="70" height="30"/><text class="node-label" x="670" y="111" style="font-size:11px">数据库</text>
+    <rect class="node-rect-green" x="635" y="148" width="70" height="30"/><text class="node-label" x="670" y="163" style="font-size:11px">GitHub</text>
+    <!-- 左连线 -->
+    <line class="arrow-line-blue" x1="495" y1="62" x2="533" y2="100"/>
+    <line class="arrow-line-blue" x1="495" y1="114" x2="533" y2="110"/>
+    <line class="arrow-line-blue" x1="495" y1="166" x2="533" y2="120"/>
+    <!-- 右连线 -->
+    <line class="arrow-line-blue" x1="597" y1="100" x2="633" y2="59"/>
+    <line class="arrow-line-blue" x1="597" y1="110" x2="633" y2="111"/>
+    <line class="arrow-line-blue" x1="597" y1="120" x2="633" y2="163"/>
+  </svg>
+  <div class="diagram-caption">MCP 将 M x N 的集成模式简化为 M + N</div>
+</div>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话理解</div>
+  MCP 就是 AI 应用的「万能充电线」——不管什么工具，插上就能用，不用再为每个设备买一根专用线。
+</div>
+
+<p>截至 2026 年 3 月，MCP 已经捐赠给了 Linux 基金会下的 Agentic AI Foundation（AAIF），由 Anthropic、OpenAI、Block 等公司联合治理。MCP Registry 上已有超过 10,000 个公开的 MCP Server，覆盖文件系统、数据库、Slack、GitHub、Sentry 等主流工具。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 核心架构 ==================== -->
+<h2 id="s2">二、核心架构：Host、Client、Server</h2>
+
+<p>MCP 的架构很清晰，就三个角色：<strong>Host、Client、Server</strong>。用一个生活中的类比就能理解。</p>
+
+<p>想象你去一家餐厅吃饭：</p>
+
+<ul>
+  <li><strong>你（Host）</strong>：就是 AI 应用本身，比如 Claude Desktop、VS Code、Cursor。你是发起需求的人。</li>
+  <li><strong>服务员（Client）</strong>：Host 内部为每个工具创建一个专属 Client，负责和对应的厨房沟通。你点了三道菜，就有三个服务员分别对接三个后厨。</li>
+  <li><strong>厨房（Server）</strong>：就是具体的工具或数据源。一个做文件操作，一个做数据库查询，一个连接 GitHub。</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- Host 分组框 -->
+    <rect class="group-box" x="100" y="10" width="400" height="110"/>
+    <text class="group-label" x="115" y="32">MCP Host (AI 应用)</text>
+    <!-- Client 节点 -->
+    <rect class="node-rect-blue" x="130" y="50" width="120" height="44"/>
+    <text class="node-label" x="190" y="66">Client 1</text>
+    <text class="node-sublabel" x="190" y="82">Stdio</text>
+    <rect class="node-rect-blue" x="290" y="50" width="120" height="44"/>
+    <text class="node-label" x="350" y="66">Client 2</text>
+    <text class="node-sublabel" x="350" y="82">HTTP</text>
+    <rect class="node-rect-gray" x="440" y="50" width="44" height="44"/>
+    <text class="node-label" x="462" y="72" style="font-size:16px">...</text>
+    <!-- 箭头 -->
+    <line class="arrow-line-blue" x1="190" y1="96" x2="190" y2="168"/>
+    <line class="arrow-line-blue" x1="350" y1="96" x2="350" y2="168"/>
+    <text class="arrow-label" x="170" y="140">1:1</text>
+    <text class="arrow-label" x="330" y="140">1:1</text>
+    <!-- Server 节点 -->
+    <rect class="node-rect-green" x="130" y="170" width="120" height="50"/>
+    <text class="node-label" x="190" y="189">Server A</text>
+    <text class="node-sublabel" x="190" y="205">本地 · 文件系统</text>
+    <rect class="node-rect-purple" x="290" y="170" width="120" height="50"/>
+    <text class="node-label" x="350" y="189">Server B</text>
+    <text class="node-sublabel" x="350" y="205">远程 · Sentry</text>
+  </svg>
+  <div class="diagram-caption">MCP Host-Client-Server 架构：每个 Client 与 Server 保持 1:1 专属连接</div>
+</div>
+
+<p>关键设计：<strong>每个 Client 和 Server 是 1:1 的关系</strong>。Host 连接了 5 个 MCP Server，就会创建 5 个 Client 实例。这种设计让每个连接独立管理，互不干扰。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">本地 vs 远程</div>
+  MCP Server 可以跑在本地（比如文件系统 Server，用 stdio 通信），也可以跑在远程（比如 Sentry 的 MCP Server，用 HTTP 通信）。「Server」这个词指的是提供服务的程序，不是指物理位置。
+</div>
+
+<p>举个具体例子：当你在 VS Code 中使用 Copilot，并配置了 Sentry MCP Server 和本地文件系统 Server，VS Code 作为 Host 会创建两个 Client——一个连接 Sentry（远程），一个连接文件系统（本地）。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 三大基本能力 ==================== -->
+<h2 id="s3">三、三大基本能力：Tools、Resources、Prompts</h2>
+
+<p>MCP Server 能提供三种类型的能力，官方叫 <strong>Primitives</strong>（基本原语）。你可以把一个 MCP Server 想象成一把瑞士军刀——它不只有一种用途，而是组合了多种功能。</p>
+
+<h3>Tools：让 AI 能「动手」</h3>
+
+<p>Tool 就是 AI 可以调用的函数。比如「发送一封邮件」、「查询数据库」、「创建一个 GitHub Issue」。AI 模型决定什么时候调用、传什么参数，MCP Server 负责执行并返回结果。</p>
+
+<h3>Resources：让 AI 能「看到」</h3>
+
+<p>Resource 是数据源，提供上下文信息给 AI。比如文件内容、数据库 Schema、API 文档。和 Tool 的区别是：Resource 是「读」，Tool 是「做」。</p>
+
+<h3>Prompts：让 AI 知道「怎么问」</h3>
+
+<p>Prompt 是预制的交互模板，帮助用户更好地使用 MCP Server。比如一个数据库 Server 可以提供一个 Prompt 模板，教 AI 如何用最优的方式查询数据。</p>
+
+<table>
+<thead>
+<tr><th>Primitive</th><th>类比</th><th>谁控制调用</th><th>典型场景</th></tr>
+</thead>
+<tbody>
+<tr><td>Tools</td><td>瑞士军刀的各种工具</td><td>AI 模型决定</td><td>API 调用、文件操作、数据库写入</td></tr>
+<tr><td>Resources</td><td>参考书和字典</td><td>应用程序决定</td><td>文件内容、数据库记录、配置信息</td></tr>
+<tr><td>Prompts</td><td>考试的答题模板</td><td>用户选择</td><td>SQL 查询模板、代码审查提示词</td></tr>
+</tbody>
+</table>
+
+<p>每种 Primitive 都有统一的发现机制。Client 通过 <code>tools/list</code>、<code>resources/list</code>、<code>prompts/list</code> 请求来发现 Server 提供了哪些能力，然后按需调用。这种「先发现、再使用」的模式让整个系统非常灵活——Server 可以动态增减能力，Client 能实时感知变化。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话记住</div>
+  Tools 让 AI 动手做事，Resources 让 AI 获取信息，Prompts 让 AI 知道最佳做法。一个好的 MCP Server 通常会组合使用这三种能力。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 通信机制 ==================== -->
+<h2 id="s4">四、通信机制：JSON-RPC 与 Transport</h2>
+
+<p>MCP 的通信分为两层，就像寄快递：<strong>包裹里装什么（数据层）</strong>和<strong>怎么运过去（传输层）</strong>是两回事。</p>
+
+<h3>数据层：JSON-RPC 2.0</h3>
+
+<p>MCP 使用 <a href="https://www.jsonrpc.org/" target="_blank">JSON-RPC 2.0</a> 作为消息格式。不管底层用什么传输方式，消息长得都一样。一个典型的工具调用请求长这样：</p>
+
+<pre><code class="language-json">// Client 请求调用天气工具
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "weather_current",
+    "arguments": {
+      "location": "Beijing",
+      "units": "metric"
+    }
+  }
+}
+
+// Server 返回结果
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "北京当前天气：22°C，晴，东北风 3 级"
+      }
+    ]
+  }
+}</code></pre>
+
+<p>数据层还负责<strong>生命周期管理</strong>：连接建立时，Client 和 Server 会做一次「握手」，互相告知自己支持哪些能力（Capabilities Negotiation）。这样双方都知道对方能做什么、不能做什么，避免调用不存在的功能。</p>
+
+<h3>传输层：两种方式</h3>
+
+<table>
+<thead>
+<tr><th>传输方式</th><th>适用场景</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>Stdio（标准输入输出）</td><td>本地 Server</td><td>零网络开销，进程间直接通信</td></tr>
+<tr><td>Streamable HTTP</td><td>远程 Server</td><td>支持 SSE 流式传输，支持 OAuth 2.1 认证</td></tr>
+</tbody>
+</table>
+
+<p>换句话说，如果 MCP Server 跑在你的电脑上（比如文件系统），用 Stdio 最快；如果 Server 在云端（比如 Sentry），就走 HTTP。传输方式的切换对上层数据层完全透明，同样的 JSON-RPC 消息格式，换个「运输方式」就行。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">2026 年 3 月更新</div>
+  最新版本的 MCP 协议新增了 OAuth 2.1 认证、Streamable HTTP 传输、JSON-RPC 批处理和工具注解（Tool Annotations）等功能，进一步增强了企业级应用能力。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: MCP vs Function Calling ==================== -->
+<h2 id="s5">五、MCP vs Function Calling：到底该用哪个？</h2>
+
+<p>这是被问得最多的问题。很多人第一次听到 MCP 都会想：「这不就是 Function Calling 换了个名字吗？」</p>
+
+<p>其实它们解决的是<strong>不同层次的问题</strong>。打个比方：Function Calling 是手机里「内置的计算器和闹钟」，MCP 是「App Store」。</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>Function Calling</th><th>MCP</th></tr>
+</thead>
+<tbody>
+<tr><td>定义</td><td>LLM 生成结构化的函数调用指令</td><td>标准化的工具发现、连接和执行协议</td></tr>
+<tr><td>作用域</td><td>单次 API 请求内</td><td>持久连接，跨请求复用</td></tr>
+<tr><td>工具注册</td><td>每次请求都要传完整的工具定义</td><td>连接时一次发现，动态更新</td></tr>
+<tr><td>厂商绑定</td><td>各家格式不同（OpenAI / Claude / Gemini）</td><td>统一标准，厂商无关</td></tr>
+<tr><td>复用性</td><td>工具定义与应用代码耦合</td><td>MCP Server 独立部署，多应用共享</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误区</div>
+  MCP 不是 Function Calling 的替代品——它们是互补的。Function Calling 是 LLM「决定调用什么」的能力，MCP 是「怎么找到工具、怎么连接、怎么执行」的标准。实际工作中，AI 应用通过 MCP 发现可用工具，LLM 通过 Function Calling 决定调用哪个。
+</div>
+
+<p><strong>什么时候用 Function Calling 就够了？</strong>你的应用只需要 2-3 个简单工具，而且不需要跨应用共享——比如一个内部小工具。</p>
+
+<p><strong>什么时候该用 MCP？</strong>你需要接入多个外部服务、想让工具能被多个 AI 应用复用、或者在构建生产级的 Agent 系统——MCP 的初始复杂度会在规模化时得到回报。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 动手写一个 MCP Server ==================== -->
+<h2 id="s6">六、动手写一个 MCP Server</h2>
+
+<p>说了这么多概念，来点代码。下面用 Python 写一个最简单的 MCP Server，提供一个「打招呼」工具：</p>
+
+<pre><code class="language-python"># hello_server.py
+from mcp.server.fastmcp import FastMCP
+
+# 创建 MCP Server 实例
+mcp = FastMCP("hello-server")
+
+# 用装饰器注册一个 Tool
+@mcp.tool()
+def greet(name: str) -&gt; str:
+    """向指定的人打招呼"""
+    return f"你好，{name}！欢迎体验 MCP 协议。"
+
+# 用装饰器注册一个 Resource
+@mcp.resource("greeting://guide")
+def greeting_guide() -&gt; str:
+    """提供打招呼的使用指南"""
+    return "本 Server 提供 greet 工具，传入名字即可获得问候。"
+
+# 启动 Server
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+
+<p>就这么简单——<code>@mcp.tool()</code> 装饰器会自动将函数的参数类型和文档字符串转化为 MCP 的工具定义（包括 inputSchema）。运行这个脚本，它就是一个通过 Stdio 通信的本地 MCP Server。</p>
+
+<p>要在 Claude Desktop 中使用，只需在配置文件中添加：</p>
+
+<pre><code class="language-json">{
+  "mcpServers": {
+    "hello": {
+      "command": "python",
+      "args": ["hello_server.py"]
+    }
+  }
+}</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">调试技巧</div>
+  开发 MCP Server 时，可以用官方的 <a href="https://github.com/modelcontextprotocol/inspector" target="_blank">MCP Inspector</a> 来测试——它是一个 GUI 工具，不需要接入 LLM 就能验证 Server 的 Tool、Resource、Prompt 是否正常工作。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 总结与展望 ==================== -->
+<h2 id="s7">七、总结与展望</h2>
+
+<p>回顾一下本文的核心要点：</p>
+
+<ul>
+  <li><strong>MCP 是什么</strong>：AI 应用与外部工具的统一连接协议，把 M x N 的集成变成 M + N</li>
+  <li><strong>三层架构</strong>：Host（AI 应用）创建 Client，Client 1:1 连接 Server，职责清晰</li>
+  <li><strong>三大能力</strong>：Tools（执行操作）、Resources（提供数据）、Prompts（交互模板）</li>
+  <li><strong>双层通信</strong>：JSON-RPC 数据层 + Stdio/HTTP 传输层，关注点分离</li>
+  <li><strong>与 Function Calling 互补</strong>：MCP 负责「连接和发现」，Function Calling 负责「决策和调用」</li>
+</ul>
+
+<p><strong>我的看法：</strong>MCP 最大的价值不在于技术本身有多复杂——恰恰相反，它的设计很简洁。它的价值在于<strong>网络效应</strong>：当越来越多的工具提供 MCP Server、越来越多的 AI 应用支持 MCP Client，整个生态就会形成飞轮。2025 年底 MCP 捐赠给 Linux 基金会、OpenAI 等公司加入共建，这个信号很明确——MCP 正在从 Anthropic 的单家协议变成行业标准。</p>
+
+<p><strong>下一步建议：</strong></p>
+<ol>
+  <li><strong>试一试</strong>：用 <code>pip install mcp</code> 安装 Python SDK，花 10 分钟写一个 MCP Server，在 Claude Desktop 或 VS Code 中体验一下</li>
+  <li><strong>逛一逛</strong>：去 <a href="https://modelcontextprotocol.io" target="_blank">modelcontextprotocol.io</a> 看看官方文档和 Server 目录，找找有没有你日常用的工具已经有了 MCP Server</li>
+</ol>
+
+<blockquote>
+好的协议不是让你学新东西，而是让你不用再学那么多东西。MCP 正在做的，就是这件事。
+</blockquote>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://modelcontextprotocol.io/docs/getting-started/intro" target="_blank">What is the Model Context Protocol (MCP)? - 官方文档</a></li>
+    <li><a href="https://modelcontextprotocol.io/docs/learn/architecture" target="_blank">Architecture Overview - MCP 官方架构文档</a></li>
+    <li><a href="https://modelcontextprotocol.io/development/roadmap" target="_blank">MCP 2026 Roadmap - 官方路线图</a></li>
+    <li><a href="https://www.descope.com/blog/post/mcp-vs-function-calling" target="_blank">MCP vs. Function Calling: How They Differ and Which to Use - Descope</a></li>
+    <li><a href="https://modelcontextprotocol.io/docs/develop/build-server" target="_blank">Build an MCP Server - 官方教程</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Model_Context_Protocol" target="_blank">Model Context Protocol - Wikipedia</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>

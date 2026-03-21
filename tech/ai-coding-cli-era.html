@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI 编程进入 CLI 时代：从 Chat 到终端，开发者工具链的第三次进化 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI Coding</span>
+    <span class="tag">CLI</span>
+    <span class="tag">Agent</span>
+    <span class="tag">开发工具</span>
+  </div>
+  <h1>AI 编程进入 CLI 时代：从 Chat 到终端，开发者工具链的第三次进化</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-21</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、AI 编程的三次范式跃迁</a>
+  <a href="#s2">二、CLI Agent 凭什么赢？五个技术硬优势</a>
+  <a href="#s3">三、三大 CLI 工具横评：Claude Code vs Codex CLI vs Gemini CLI</a>
+  <a href="#s4">四、实战体验：CLI Agent 的典型工作流</a>
+  <a href="#s5">五、IDE 没死，混合才是最优解</a>
+  <a href="#s6">六、总结与展望</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周五晚上十点，我正用 Claude Code 在终端里重构一个 Skill 模块。一句话描述需求，它自己读代码、改文件、跑测试、修报错，整个过程我只按了几次回车。忽然想起一年前，我还在 ChatGPT 和 VS Code 之间反复切换，手动复制粘贴代码片段的场景——那感觉就像从手洗衣服跳到了全自动洗衣机。</p>
+
+<p>这不是个人感受的偏差。2026 年初，一个明确的信号浮出水面：<strong>CLI 终端正在取代 IDE 插件，成为专业开发者使用 AI 编程工具的主流方式</strong>。Claude Code 在 2025 年底超越 GitHub Copilot 成为开发者使用最多的 AI 编程工具；OpenAI 推出 Codex CLI；Google 开源 Gemini CLI——三大巨头不约而同押注终端。</p>
+
+<p>这背后到底发生了什么？本文将从<strong>范式演进、技术优势、工具对比、实战体验</strong>四个角度，聊聊 AI 编程为什么走向了终端，以及这对每个开发者意味着什么。</p>
+
+<hr>
+
+<!-- ==================== SECTION: AI 编程的三次范式跃迁 ==================== -->
+<h2 id="s1">一、AI 编程的三次范式跃迁</h2>
+
+<p>AI 编程工具的演进，可以用一个打车的类比来理解：</p>
+
+<ul>
+<li><strong>第一代（Chat 模式）</strong>就像路边招手拦出租车——你得跑到路边（打开 ChatGPT），说清楚目的地（描述需求），然后自己把答案"搬运"回项目里。能到达目的地，但每次都要中断工作流。</li>
+<li><strong>第二代（IDE 插件）</strong>就像网约车——车来找你（Copilot 嵌入 VS Code），实时建议路线（自动补全），你只需点头或摇头。但它本质上还是一个"建议者"，不会替你开车。</li>
+<li><strong>第三代（CLI Agent）</strong>就像自动驾驶——你说"去机场"，它自己规划路线、绕开堵车、停好车。<strong>你从操作者变成了指挥者。</strong></li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 120" xmlns="http://www.w3.org/2000/svg">
+    <rect class="node-rect-gray" x="10" y="40" width="160" height="44"/>
+    <text class="node-label" x="90" y="55">ChatGPT / Chat</text>
+    <text class="node-sublabel" x="90" y="72">复制粘贴 · 2022</text>
+    <line class="arrow-line" x1="178" y1="62" x2="248" y2="62"/>
+    <text class="arrow-label" x="213" y="52">嵌入 IDE</text>
+    <rect class="node-rect-blue" x="256" y="40" width="160" height="44"/>
+    <text class="node-label" x="336" y="55">Copilot / Cursor</text>
+    <text class="node-sublabel" x="336" y="72">实时建议 · 2023</text>
+    <line class="arrow-line-blue" x1="424" y1="62" x2="494" y2="62"/>
+    <text class="arrow-label" x="459" y="52">走进终端</text>
+    <rect class="node-rect-green" x="502" y="40" width="200" height="44"/>
+    <text class="node-label" x="602" y="55">Claude Code / Codex CLI</text>
+    <text class="node-sublabel" x="602" y="72">自主执行 · 2025-2026</text>
+  </svg>
+  <div class="diagram-caption">AI 编程工具的三代演进：从对话到自主执行</div>
+</div>
+
+<p>关键的转折点在于：<strong>前两代工具是"辅助"，第三代是"委托"</strong>。IDE 插件的设计哲学是"建议（suggestion）"，你写一行代码它补全下一行；CLI Agent 的设计哲学是"委派（delegation）"，你描述任务它完成整个过程。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话理解</div>
+  IDE 插件是你的副驾驶，帮你导航但你得自己握方向盘；CLI Agent 是你的专属司机，你只需要说目的地。
+</div>
+
+<p>这个变化之所以重要，是因为它改变了开发者与 AI 协作的<strong>粒度</strong>。过去你和 AI 的交互单位是"一行代码"或"一个函数"，现在变成了"一个特性"甚至"一个模块"。</p>
+
+<hr>
+
+<!-- ==================== SECTION: CLI Agent 凭什么赢 ==================== -->
+<h2 id="s2">二、CLI Agent 凭什么赢？五个技术硬优势</h2>
+
+<p>CLI 之所以成为 AI Agent 的最佳栖息地，不是因为某个产品做得好，而是<strong>终端本身的设计哲学</strong>天然契合 Agent 的工作方式。</p>
+
+<h3>1. 原子反馈循环——Agent 的自愈能力</h3>
+
+<p>CLI 的每条命令要么成功（exit code 0），要么失败（exit code > 0）。这种确定性反馈就像医院的心电监护仪——Agent 跑完一个命令就能立刻知道结果，失败了就读取 stderr 自动重试。</p>
+
+<p>而 IDE 里的"状态"是混乱的：未保存的文件、半开的 tab、未提交的改动混在一起。你可以理解为，<strong>终端是一个"干净的手术室"，IDE 是一个"堆满东西的书桌"</strong>——机器人在手术室里工作效率远高于书桌。</p>
+
+<h3>2. Unix 哲学——LLM 的母语</h3>
+
+<p>Unix 的核心理念是"一切皆文本流"：一个程序的 stdout 是另一个程序的 stdin。你可以把 <code>grep</code>、<code>sed</code>、<code>awk</code> 这些命令想象成乐高积木，随意拼接就能组合出强大功能。</p>
+
+<p>巧的是，<strong>LLM 天生就是文本处理器</strong>。文本流就是它的母语。Agent 可以像一个经验丰富的 Linux 运维一样，把各种命令用管道串起来完成复杂任务。这种组合能力在 GUI 环境下几乎无法实现。</p>
+
+<h3>3. CI/CD 集成——跑在流水线里的 Agent</h3>
+
+<p>一个关键事实：<strong>你无法把 IDE 插件放进 CI/CD 流水线，但 CLI 工具天然就是流水线的一部分</strong>。这意味着 CLI Agent 不只是帮你写代码，还能帮你审代码、跑测试、修 lint 错误——而且是在每次 PR 触发时自动执行。</p>
+
+<h3>4. 上下文更干净——省 token 也省钱</h3>
+
+<p>IDE 插件每次交互会把打开的文件、对话历史、项目结构一股脑发给模型，容易"上下文污染"。CLI Agent 采用"渐进式信息披露"策略——<strong>只在需要时读取文件</strong>，像一个高效的侦探，只翻与案件相关的卷宗，而不是把整个档案室搬过来。</p>
+
+<h3>5. 迭代速度快——轻量意味着敏捷</h3>
+
+<p>CLI 工具不需要设计复杂的 GUI，迭代周期极短。Claude Code、Codex CLI 几乎每周都在更新。你今天提的 feature request，下周可能就上线了。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">你知道吗？</div>
+  Claude Code 和 Gemini CLI 都是用 Node.js 编写，基于 React + Ink 渲染终端界面。Codex CLI 则选择了 Rust，追求极致的启动速度。终端 AI 工具的技术栈选择也在悄悄竞争。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 三大 CLI 工具横评 ==================== -->
+<h2 id="s3">三、三大 CLI 工具横评：Claude Code vs Codex CLI vs Gemini CLI</h2>
+
+<p>2026 年 3 月，AI 编程 CLI 的三巨头格局已基本形成。下面这张表帮你快速了解它们的核心差异：</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>Claude Code</th><th>Codex CLI</th><th>Gemini CLI</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>开发商</strong></td><td>Anthropic</td><td>OpenAI</td><td>Google</td></tr>
+<tr><td><strong>默认模型</strong></td><td>Opus 4.6 / Sonnet 4.6</td><td>GPT-5.4 Codex</td><td>Gemini 3 Flash</td></tr>
+<tr><td><strong>上下文窗口</strong></td><td>200K tokens</td><td>400K tokens</td><td>1M tokens</td></tr>
+<tr><td><strong>开源</strong></td><td>否</td><td>是（Rust）</td><td>是（Node.js）</td></tr>
+<tr><td><strong>Agent 循环</strong></td><td>Plan → Execute → Verify</td><td>Agent 模式默认开启</td><td>ReAct 循环</td></tr>
+<tr><td><strong>扩展机制</strong></td><td>Skills + MCP + Hooks</td><td>配置文件 + 插件</td><td>MCP + GEMINI.md</td></tr>
+<tr><td><strong>免费额度</strong></td><td>需 API key 或订阅</td><td>ChatGPT Plus 包含</td><td>60 次/分钟免费</td></tr>
+<tr><td><strong>核心优势</strong></td><td>代码质量、子 Agent 架构</td><td>推理深度、长上下文</td><td>免费额度大、Google 生态</td></tr>
+</tbody>
+</table>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 中心 -->
+    <rect class="node-rect" x="270" y="80" width="160" height="44"/>
+    <text class="node-label" x="350" y="95">你的终端</text>
+    <text class="node-sublabel" x="350" y="112">开发者工作台</text>
+    <!-- Claude Code -->
+    <rect class="node-rect-blue" x="20" y="10" width="170" height="44"/>
+    <text class="node-label" x="105" y="25">Claude Code</text>
+    <text class="node-sublabel" x="105" y="42">Skills + 子 Agent</text>
+    <line class="arrow-line-blue" x1="198" y1="38" x2="268" y2="86"/>
+    <!-- Codex CLI -->
+    <rect class="node-rect-green" x="20" y="150" width="170" height="44"/>
+    <text class="node-label" x="105" y="165">Codex CLI</text>
+    <text class="node-sublabel" x="105" y="182">Rust + 长上下文</text>
+    <line class="arrow-line" x1="198" y1="166" x2="268" y2="118"/>
+    <!-- Gemini CLI -->
+    <rect class="node-rect-purple" x="510" y="10" width="170" height="44"/>
+    <text class="node-label" x="595" y="25">Gemini CLI</text>
+    <text class="node-sublabel" x="595" y="42">1M tokens + 免费</text>
+    <line class="arrow-line" x1="508" y1="38" x2="438" y2="86"/>
+    <!-- Aider -->
+    <rect class="node-rect-amber" x="510" y="150" width="170" height="44"/>
+    <text class="node-label" x="595" y="165">Aider</text>
+    <text class="node-sublabel" x="595" y="182">Git 原生 + 全模型</text>
+    <line class="arrow-line" x1="508" y1="166" x2="438" y2="118"/>
+  </svg>
+  <div class="diagram-caption">2026 年主流 CLI 编程工具生态，开发者的终端成为 AI 编程的中枢</div>
+</div>
+
+<p><strong>怎么选？</strong>我的建议很简单：</p>
+
+<ul>
+<li>如果你追求<strong>代码质量和深度任务</strong>，选 Claude Code。它的子 Agent 架构和 Skills 扩展机制是目前最成熟的。</li>
+<li>如果你需要<strong>超长上下文</strong>处理大型代码库，Codex CLI 的 400K token 窗口有优势。</li>
+<li>如果你想<strong>零成本试水</strong>，Gemini CLI 的免费额度（每分钟 60 次请求）可以让你无压力体验终端 AI 编程。</li>
+<li>如果你是<strong>Git 重度用户</strong>且想灵活切换模型，开源的 Aider（39K GitHub stars）是不错的选择。</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误区</div>
+  不要迷信上下文窗口大小。1M token 的上下文不代表效果一定好——模型在超长上下文中容易"注意力分散"。实际开发中，更重要的是工具的<strong>上下文管理策略</strong>（什么时候读什么文件），而非一股脑把所有代码喂进去。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 实战体验 ==================== -->
+<h2 id="s4">四、实战体验：CLI Agent 的典型工作流</h2>
+
+<p>说了这么多理论，来看一个真实的开发场景。假设你需要给项目添加一个新的 API 端点：</p>
+
+<h3>传统方式（IDE 插件）</h3>
+<ol>
+<li>在 Cursor 里打开项目，手动打开相关文件</li>
+<li>在 AI 对话框里描述需求</li>
+<li>AI 建议修改，你逐个 Accept</li>
+<li>手动切到终端跑测试</li>
+<li>测试报错，把错误信息复制回 AI 对话框</li>
+<li>重复 3-5 步若干次...</li>
+</ol>
+
+<h3>CLI Agent 方式</h3>
+
+<pre><code class="language-bash"># 一句话描述需求，Agent 自主完成
+$ claude "给 /api/articles 添加分页功能，支持 page 和 limit 参数，
+  默认每页 20 条，加上对应的单元测试"
+
+# Claude Code 会自动：
+# 1. 读取现有路由和数据库模型
+# 2. 修改 API handler 添加分页逻辑
+# 3. 创建或修改测试文件
+# 4. 运行 pytest 验证
+# 5. 如果测试失败，自动读取错误信息并修复
+# 6. 所有测试通过后，输出修改摘要</code></pre>
+
+<p>整个过程你只做了一件事：<strong>描述需求</strong>。Agent 自己完成了"读代码 → 写代码 → 跑测试 → 修 bug"的完整循环。如果中途测试失败，它会自动读取 stderr 输出、分析错误原因、修改代码重试——这就是前面说的"原子反馈循环"在实际中的体现。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">高效使用 CLI Agent 的三个技巧</div>
+  <strong>1. 写好 CLAUDE.md</strong>：在项目根目录放一个 CLAUDE.md，写清技术栈、命名规范、禁止模式，Agent 每次启动都会读取。<br>
+  <strong>2. 善用 Skills</strong>：把重复任务封装成 Skill（如生成文章、跑发布流程），一个命令触发完整工作流。<br>
+  <strong>3. 批量 + 并行</strong>：利用子 Agent 机制并行处理多个独立任务，比如同时搜索资料和分析代码。
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: IDE 没死 ==================== -->
+<h2 id="s5">五、IDE 没死，混合才是最优解</h2>
+
+<p>虽然 CLI Agent 势头凶猛，但这并不意味着 IDE 要被淘汰。就像显微镜和望远镜各有用途——<strong>CLI 是望远镜，适合看全局、做大事；IDE 是显微镜，适合看细节、做精活</strong>。</p>
+
+<p>2026 年最高效的开发者工作流，通常是这样的组合：</p>
+
+<table>
+<thead>
+<tr><th>任务类型</th><th>最佳工具</th><th>原因</th></tr>
+</thead>
+<tbody>
+<tr><td>新功能开发、模块重构</td><td>CLI Agent</td><td>自主多文件操作，完整执行循环</td></tr>
+<tr><td>写单个函数、调样式</td><td>IDE + Copilot</td><td>实时反馈，视觉确认</td></tr>
+<tr><td>调试 UI 问题</td><td>IDE</td><td>需要视觉交互</td></tr>
+<tr><td>CI/CD 集成、自动化</td><td>CLI Agent</td><td>天然脚本化</td></tr>
+<tr><td>Code Review</td><td>CLI Agent</td><td>可以跑在 PR 触发的流水线中</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+"最常见的高效配置是：用 IDE Agent 做日常编码，遇到难题切到终端 Agent。"<br>
+—— InventiveHQ，《CLI vs IDE vs Cloud: Which AI Coding Interface is Best?》
+</blockquote>
+
+<p>值得注意的一个趋势是，<strong>两种模式正在融合</strong>。Claude Code 已经有了 VS Code 扩展，可以在 IDE 内调起 CLI Agent 的能力；Cursor 也在尝试把 Agent 模式做得更自主。未来的 AI 开发环境，很可能是一个"终端能力内核 + 可选 GUI 外壳"的架构。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">六、总结与展望</h2>
+
+<p>回顾本文的核心要点：</p>
+
+<ul>
+<li><strong>三次进化</strong>：AI 编程从 Chat（复制粘贴）→ IDE 插件（实时建议）→ CLI Agent（自主执行），每一代的核心变化是开发者从"操作者"变成"指挥者"</li>
+<li><strong>CLI 的技术优势</strong>：原子反馈循环、Unix 哲学契合、CI/CD 集成、干净的上下文管理、快速迭代</li>
+<li><strong>三巨头格局</strong>：Claude Code（质量）、Codex CLI（推理）、Gemini CLI（免费）各有所长</li>
+<li><strong>混合使用</strong>：CLI 做"宏观"、IDE 做"微观"是当前最优策略</li>
+<li><strong>趋势融合</strong>：CLI 和 IDE 正在相互渗透，终端能力内核 + GUI 外壳将成为下一代开发环境</li>
+</ul>
+
+<p><strong>我的看法：</strong>CLI Agent 不是终点，而是一个重要的中间态。它证明了一件事——<strong>AI 编程的核心价值不在于"补全代码"，而在于"完成任务"</strong>。当 AI 能自主读文件、跑命令、修 bug 时，交互界面是终端还是 GUI 就不再重要了。重要的是，开发者可以把精力从"怎么写代码"转移到"写什么代码"——这才是真正的效率革命。</p>
+
+<p><strong>下一步建议：</strong></p>
+<ol>
+<li><strong>现在就试一个 CLI Agent</strong>：推荐从 Gemini CLI 开始（免费），或者直接上 Claude Code（效果最好）。装好后给你当前项目写一个 CLAUDE.md，花 10 分钟就能体验到范式转换的威力。</li>
+<li><strong>把重复任务 Agent 化</strong>：找出你每天重复做的开发任务（跑测试、写模板代码、Review PR），尝试用 CLI Agent 自动化它们。一旦你习惯了"描述需求而非编写步骤"，就再也回不去了。</li>
+</ol>
+
+<p>终端里的光标在闪烁。这一次，等你输入的不是命令，是想法。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.firecrawl.dev/blog/why-clis-are-better-for-agents" target="_blank">Why CLIs Are Better for AI Coding Agents Than IDEs - Firecrawl</a></li>
+    <li><a href="https://vld-bc.com/blog/cli-agents-new-standard-ai-coding" target="_blank">CLI Agents: The New Standard of AI Coding</a></li>
+    <li><a href="https://inventivehq.com/blog/cli-vs-ide-vs-cloud-ai-coding" target="_blank">CLI vs IDE Extension vs Cloud: Which AI Coding Interface is Best? - InventiveHQ</a></li>
+    <li><a href="https://dev.to/forgecode/cli-vs-ide-coding-agents-choose-the-right-one-for-10x-productivity-5gkc" target="_blank">CLI vs IDE Coding Agents: Choose the Right One for 10x Productivity - DEV Community</a></li>
+    <li><a href="https://zhuanlan.zhihu.com/p/1999804779141030200" target="_blank">「从夯到拉」2026年AI编程工具全景测评 - 知乎</a></li>
+    <li><a href="https://www.tembo.io/blog/coding-cli-tools-comparison" target="_blank">The 2026 Guide to Coding CLI Tools: 15 AI Agents Compared - Tembo</a></li>
+    <li><a href="https://www.sitepoint.com/claude-code-deep-dive-into-the-agentic-cli-workflow/" target="_blank">Claude Code: Deep Dive into the Agentic CLI Workflow - SitePoint</a></li>
+    <li><a href="https://developers.openai.com/codex/cli" target="_blank">Codex CLI - OpenAI Developers</a></li>
+    <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-cli-open-source-ai-agent/" target="_blank">Google announces Gemini CLI: your open-source AI agent - Google Blog</a></li>
+    <li><a href="https://kau.sh/blog/ai-programming/" target="_blank">AI Programming Paradigms: A Timeline - Kaushik Gopal</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
