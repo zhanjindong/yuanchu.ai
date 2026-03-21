@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-11-21
 title: "Synology DSM Git Server配置"
 description: "Synology DSM Git Server配置"
 categories: [articles]

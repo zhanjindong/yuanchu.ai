@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2014-11-29
 title: "简单聊下Unicode和UTF-8"
 description: "简单聊下Unicode和UTF-8"
 categories: [notes]

@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2014-09-21
 title: "再谈对协变和逆变的理解"
 description: "再谈对协变和逆变的理解"
 categories: [articles]

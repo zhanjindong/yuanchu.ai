@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2014-03-08
 title: "C#的Task和Java的Future"
 description: "C#的Task和Java的Future"
 categories: [articles]

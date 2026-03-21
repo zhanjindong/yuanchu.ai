@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2016-07-08
 title: "关于SVN代码提交粒度和频率的思考"
 description: "关于SVN代码提交粒度和频率的思考"
 categories: [notes]

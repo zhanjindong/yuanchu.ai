@@ -1,6 +1,8 @@
 ---
 layout: default
 title: "OpenTeam 快速开始"
+author: "Jackie Zhan"
+date: 2026-02-15
 ---
 
 # OpenTeam 快速开始

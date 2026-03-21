@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-10
 title: "Java并发包源码学习之AQS框架（一）概述"
 description: "Java并发包源码学习之AQS框架（一）概述"
 categories: [articles]

@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-01-20
 title: "聊下并发和Tomcat线程数（错误更正）"
 description: "聊下并发和Tomcat线程数（错误更正）"
 categories: [articles]

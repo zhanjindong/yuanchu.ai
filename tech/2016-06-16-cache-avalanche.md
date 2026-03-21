@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2016-06-16
 title: "本地缓存的雪崩预防"
 description: "本地缓存的雪崩预防"
 categories: [notes]

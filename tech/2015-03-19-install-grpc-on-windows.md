@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-19
 title: "Windows 下编译 gRPC"
 description: "Windows 下编译 gRPC"
 categories: [notes]

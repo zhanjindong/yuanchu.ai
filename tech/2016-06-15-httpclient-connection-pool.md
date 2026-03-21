@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2016-06-15
 title: "HttpClient连接池的连接保持、超时和失效机制"
 description: "HttpClient连接池的连接保持、超时和失效机制"
 categories: [articles]

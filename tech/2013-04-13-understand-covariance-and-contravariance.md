@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2013-04-13
 title: "对协变和逆变的简单理解"
 description: "对协变和逆变的简单理解"
 categories: [articles]

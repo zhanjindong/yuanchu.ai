@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-02-06
 title: "一道Twitter面试题"
 description: "一道Twitter面试题"
 categories: [notes]

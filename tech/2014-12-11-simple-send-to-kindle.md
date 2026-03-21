@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2014-12-11
 title: "开源一个小工具：一键将网页内容推送到Kindle"
 description: "开源一个小工具：一键将网页内容推送到Kindle"
 categories: [articles]

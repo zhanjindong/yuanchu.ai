@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-05-08
 title: "HTTP协议头部与Keep-Alive模式详解"
 description: "HTTP协议头部与Keep-Alive模式详解"
 categories: [转载]

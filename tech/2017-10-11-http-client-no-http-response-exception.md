@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2017-10-11
 title: "HttpClient NoHttpResponseException问题排查"
 description: "HttpClient NoHttpResponseException问题排查"
 categories: [articles]

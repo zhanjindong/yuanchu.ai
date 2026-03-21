@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-30
 title: "Java并发包源码学习之线程池（一）ThreadPoolExecutor源码分析"
 description: "Java并发包源码学习之线程池（一）ThreadPoolExecutor源码分析"
 categories: [articles]

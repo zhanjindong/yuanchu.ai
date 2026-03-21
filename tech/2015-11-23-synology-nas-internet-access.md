@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-11-23
 title: "Synology NAS 外部访问"
 description: "Synology NAS 外部访问"
 categories: [articles]

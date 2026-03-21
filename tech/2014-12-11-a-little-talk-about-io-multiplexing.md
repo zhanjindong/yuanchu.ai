@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2014-12-11
 title: "简单聊下IO复用"
 description: "简单聊下IO复用"
 categories: [articles]

@@ -31,6 +31,29 @@
         }
         .back:hover { color: #1a1a1a; }
         .back::before { content: '← '; }
+        .article-header {
+            margin-bottom: 50px;
+        }
+        .article-header .article-title {
+            font-size: 36px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            line-height: 1.4;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+        .article-header .article-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: rgba(0,0,0,0.4);
+        }
+        .article-header .article-meta .author::before {
+            content: '✎ ';
+        }
+        .article-header .article-meta .date::before {
+            content: '⏱ ';
+        }
         .article-content {
             line-height: 1.9;
             font-size: 16px;
@@ -146,6 +169,23 @@
         .article-content em {
             color: rgba(0,0,0,0.6);
         }
+        /* Rouge syntax highlighting - GitHub-like theme */
+        .highlight { background: #f6f8fa; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; padding: 16px; margin: 20px 0; overflow-x: auto; }
+        .highlight pre { background: transparent; border: none; padding: 0; margin: 0; }
+        .highlight .c, .highlight .cd, .highlight .cm, .highlight .c1, .highlight .cs { color: #6a737d; font-style: italic; } /* comments */
+        .highlight .k, .highlight .kc, .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt { color: #d73a49; font-weight: 600; } /* keywords */
+        .highlight .s, .highlight .sb, .highlight .sc, .highlight .sd, .highlight .s2, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx, .highlight .s1, .highlight .ss { color: #032f62; } /* strings */
+        .highlight .n, .highlight .na, .highlight .nb, .highlight .nc, .highlight .nd, .highlight .ni, .highlight .ne, .highlight .nf, .highlight .nl, .highlight .nn, .highlight .no, .highlight .nt, .highlight .nv { color: #24292e; } /* names */
+        .highlight .nc, .highlight .nd { color: #6f42c1; } /* class names, decorators */
+        .highlight .nf, .highlight .fm { color: #6f42c1; } /* function names */
+        .highlight .nt { color: #22863a; } /* tags */
+        .highlight .na { color: #6f42c1; } /* attributes */
+        .highlight .mi, .highlight .mf, .highlight .mh, .highlight .mo, .highlight .il { color: #005cc5; } /* numbers */
+        .highlight .o, .highlight .ow { color: #d73a49; } /* operators */
+        .highlight .p { color: #24292e; } /* punctuation */
+        .highlight .gd { color: #b31d28; background: #ffeef0; } /* diff deleted */
+        .highlight .gi { color: #22863a; background: #f0fff4; } /* diff inserted */
+        .highlight .err { color: #b31d28; }
         footer {
             margin-top: 100px;
             padding-top: 40px;
@@ -159,6 +199,15 @@
 <body>
     <div class="content">
         <a href="{{ '/tech/index.html' | relative_url }}" class="back">BACK</a>
+        {% if page.title %}
+        <header class="article-header">
+            <h1 class="article-title">{{ page.title }}</h1>
+            <div class="article-meta">
+                {% if page.author %}<span class="author">{{ page.author }}</span>{% endif %}
+                {% if page.date %}<span class="date">{{ page.date | date: "%Y-%m-%d" }}</span>{% endif %}
+            </div>
+        </header>
+        {% endif %}
         <div class="article-content">
             {{ content }}
         </div>

@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-09
 title: "新年新技术:HTTP/2"
 description: "新年新技术:HTTP/2"
 categories: [notes]

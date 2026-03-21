@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-11
 title: "Java并发包源码学习之AQS框架（二）CLH lock queue和自旋锁"
 description: "Java并发包源码学习之AQS框架（二）CLH lock queue和自旋锁"
 categories: [articles]

@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2016-03-02
 title: "JVM内存调优相关的一些笔记（杂）"
 description: "JVM内存调优相关的一些笔记（杂）"
 categories: [notes]

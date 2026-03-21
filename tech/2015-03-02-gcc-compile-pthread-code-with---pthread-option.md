@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-02
 title: "GCC编译pthread代码需要跟-pthread选项"
 description: "GCC编译pthread代码需要跟-pthread选项"
 categories: [notes]

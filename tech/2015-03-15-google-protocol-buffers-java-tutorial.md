@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2015-03-15
 title: "Google Protocol Buffer 简单介绍"
 description: "Google Protocol Buffer 简单介绍"
 categories: [notes]

@@ -1,6 +1,8 @@
 ---
 layout: default
 title: "OpenTeam：用 Claude Code 构建多 Agent 协作开发团队的架构与实现"
+author: "Jackie Zhan"
+date: 2026-02-15
 ---
 
 # OpenTeam：用 Claude Code 构建多 Agent 协作开发团队的架构与实现

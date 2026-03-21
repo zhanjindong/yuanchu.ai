@@ -1,5 +1,7 @@
 ---
 layout: default
+author: "Jindong Zhan"
+date: 2013-09-01
 title: "可惜Java中没有yield return"
 description: "可惜Java中没有yield return"
 categories: [articles]
