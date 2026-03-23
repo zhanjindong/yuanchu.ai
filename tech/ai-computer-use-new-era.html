@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Computer Use：AI 从"会聊天"到"会操作电脑"，一个新时代正在开启 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI Agent</span>
+    <span class="tag">Computer Use</span>
+    <span class="tag">人机交互</span>
+  </div>
+  <h1>Computer Use：AI 从"会聊天"到"会操作电脑"，一个新时代正在开启</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-23</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、到底什么是 Computer Use？</a>
+  <a href="#s2">二、三巨头的三条路线：谁在操作你的电脑？</a>
+  <a href="#s3">三、为什么 Computer Use 比 API 更"炸裂"</a>
+  <a href="#s4">四、没那么美好：五个你必须知道的坑</a>
+  <a href="#s5">五、普通开发者现在能做什么</a>
+  <a href="#s6">六、总结与展望</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>你打开电脑，点开浏览器，登录后台，找到那张表格，复制几个数据，粘贴到另一个系统里，再点三次"确认"。</p>
+
+<p>整个过程不超过 5 分钟。但你每天要重复 20 遍。</p>
+
+<p>你可能想过："这种事，AI 能帮我干吗？"</p>
+
+<p>过去的答案是：<strong>不行</strong>。AI 能帮你写文案、改代码、做翻译，但一涉及"操作电脑"——点鼠标、填表单、切窗口——它就两手一摊。因为它只会"说话"，不会"动手"。</p>
+
+<p>但 2026 年 3 月，事情变了。</p>
+
+<p>OpenAI 的 GPT-5.4 首次将"操作电脑"的能力<strong>直接烧进了模型权重</strong>。Anthropic 的 Claude Cowork 已经能在你的 Mac 桌面上自主打开文件、编辑文档、运行命令。Google 的 Project Mariner 甚至可以同时操作 10 个浏览器标签页。</p>
+
+<p>这不是未来。这是正在发生的事。</p>
+
+<p>今天我想跟你聊聊这个变化——AI 是怎么学会"操作电脑"的，三巨头各走了什么路线，以及这件事为什么可能比 ChatGPT 诞生那一刻更具颠覆性。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 什么是 Computer Use ==================== -->
+<h2 id="s1">一、到底什么是 Computer Use？</h2>
+
+<p>先说一个你一定能理解的比方。</p>
+
+<p>传统的 AI 助手，像一个<strong>只会打电话的秘书</strong>。你问他"明天天气怎么样"，他帮你查完告诉你。但如果你说"帮我把这个文件从 A 系统导出来，转换格式后上传到 B 系统"——他做不到。因为他没有手，碰不到你的电脑。</p>
+
+<p>Computer Use 的突破在于：<strong>这个秘书现在坐在了你的电脑前</strong>。他能看到屏幕上的一切，能移动鼠标，能敲键盘，能像人一样操作任何软件。</p>
+
+<p>技术上，这个过程是一个不断循环的"感知-决策-行动"环：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+    <!-- Step 1: 截图 -->
+    <rect class="node-rect-blue" x="20" y="55" width="130" height="50"/>
+    <text class="node-label" x="85" y="73">截取屏幕</text>
+    <text class="node-sublabel" x="85" y="92">Screenshot</text>
+    <!-- Arrow 1→2 -->
+    <line class="arrow-line-blue" x1="155" y1="80" x2="200" y2="80"/>
+    <!-- Step 2: 识别 -->
+    <rect class="node-rect-purple" x="205" y="55" width="130" height="50"/>
+    <text class="node-label" x="270" y="73">视觉理解</text>
+    <text class="node-sublabel" x="270" y="92">识别 UI 元素</text>
+    <!-- Arrow 2→3 -->
+    <line class="arrow-line-blue" x1="340" y1="80" x2="385" y2="80"/>
+    <!-- Step 3: 决策 -->
+    <rect class="node-rect-amber" x="390" y="55" width="130" height="50"/>
+    <text class="node-label" x="455" y="73">推理决策</text>
+    <text class="node-sublabel" x="455" y="92">下一步做什么</text>
+    <!-- Arrow 3→4 -->
+    <line class="arrow-line-blue" x1="525" y1="80" x2="570" y2="80"/>
+    <!-- Step 4: 执行 -->
+    <rect class="node-rect-green" x="575" y="55" width="110" height="50"/>
+    <text class="node-label" x="630" y="73">执行操作</text>
+    <text class="node-sublabel" x="630" y="92">点击/输入</text>
+    <!-- Loop arrow back -->
+    <path d="M630,110 L630,140 L85,140 L85,110" class="arrow-line" fill="none"/>
+    <text class="arrow-label" x="360" y="155">循环直到任务完成</text>
+  </svg>
+  <div class="diagram-caption">Computer Use 的核心循环：截图 → 识别 → 决策 → 执行 → 再截图</div>
+</div>
+
+<p>每一轮循环，AI 都会：</p>
+<ol>
+  <li><strong>截取当前屏幕</strong>——看到你看到的一切</li>
+  <li><strong>用视觉模型识别 UI 元素</strong>——按钮在哪、输入框在哪、文字写了什么</li>
+  <li><strong>推理下一步该做什么</strong>——根据任务目标决定动作</li>
+  <li><strong>执行操作</strong>——点击坐标 (x, y)、输入文本、滚动页面</li>
+</ol>
+
+<p>然后重新截屏，看看操作结果对不对，再决定下一步。</p>
+
+<p>听起来简单？但这里有一个关键突破：<strong>GPT-5.4 把"看屏幕"和"做决策"合并成了同一次推理</strong>。以前需要先调用视觉模型识别界面，再把结果传给语言模型做决策——两步变一步。就像一个人看到红灯不需要先"识别红灯"再"决定停车"，而是看到就停。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话理解</div>
+  Computer Use = 给 AI 装上了"眼睛"和"手"。它能看到你的屏幕，像真人一样操作任何软件——不需要 API，不需要插件，只要是人能操作的，它就能操作。
+</div>
+
+<p><strong>GUI 就是新的 API。</strong> 这句话值得你停下来想 10 秒钟。过去我们让 AI 调用工具，必须通过 API 接口。现在，AI 直接"看"界面、"用"界面。这意味着世界上每一个有界面的软件，突然都变成了 AI 可以调用的"工具"。</p>
+
+<p>但问题来了：这条路，三家巨头走出了三种完全不同的风格。</p>
+
+<!-- ==================== SECTION: 三巨头对比 ==================== -->
+<h2 id="s2">二、三巨头的三条路线：谁在操作你的电脑？</h2>
+
+<p>如果把 AI 操作电脑比作"请助手帮你干活"，那 Anthropic、OpenAI 和 Google 请的是三种完全不同性格的助手。</p>
+
+<h3>Anthropic Claude：谨慎的管家</h3>
+
+<p>Anthropic 的路线是<strong>桌面级</strong>。Claude Cowork 直接运行在你的 Mac 上，能操作整个操作系统——不只是浏览器，还有 Finder、终端、各种本地应用。</p>
+
+<p>但 Claude 有个鲜明的特点：<strong>它会在关键操作前停下来问你</strong>。要删文件？先问。要发邮件？先确认。这不是技术限制，而是设计哲学。Anthropic 把安全放在了能力前面。</p>
+
+<p>数据说话：Claude 在 OSWorld 基准测试上从 2024 年底的不到 15% 飙升到了现在的 72.5%。Anthropic 还在今年 2 月收购了 Vercept，一家专注计算机视觉的创业公司，显然是在加码这个方向。</p>
+
+<h3>OpenAI：自主的员工</h3>
+
+<p>OpenAI 走了两条路。一条是 <strong>Operator</strong>——一个在云端浏览器里运行的 AI Agent，专注于 Web 任务。另一条更激进：<strong>GPT-5.4 直接把 Computer Use 烧进了模型</strong>。</p>
+
+<p>GPT-5.4 的 Computer Use 不是一个外挂工具，而是模型的<strong>原生能力</strong>。它在 OSWorld 上拿到了 75.0% 的成绩——这个数字的意义在于，它<strong>首次超过了人类专家的 72.4%</strong>。</p>
+
+<p>更重要的是风格差异：GPT-5.4 更倾向于<strong>自主完成整个任务链</strong>，中间不暂停、不请示。适合后台自动化，但也意味着出错时你可能来不及拦。</p>
+
+<h3>Google：多面手</h3>
+
+<p>Google 的 Project Mariner 做了一件别人没做的事：<strong>同时操作多个任务</strong>。演示中，它可以同时在 10 个浏览器标签页中工作——一边帮你比价，一边帮你填表，一边帮你回邮件。</p>
+
+<p>在 WebVoyager 基准测试上，OpenAI 的 CUA 拿了 87%，Mariner 拿了 83.5%。差距不大，但 Mariner 的多任务并行能力是独一份的。</p>
+
+<table>
+<thead>
+<tr><th>产品</th><th>类型</th><th>核心优势</th><th>基准测试</th><th>风格</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Claude Cowork</strong></td><td>桌面级</td><td>全系统控制，安全优先</td><td>OSWorld 72.5%</td><td>谨慎管家</td></tr>
+<tr><td><strong>GPT-5.4</strong></td><td>原生集成</td><td>感知决策一体化，超越人类</td><td>OSWorld 75.0%</td><td>自主员工</td></tr>
+<tr><td><strong>Operator (CUA)</strong></td><td>云端浏览器</td><td>Web 任务王者</td><td>WebVoyager 87%</td><td>专项专家</td></tr>
+<tr><td><strong>Project Mariner</strong></td><td>多平台</td><td>多任务并行</td><td>WebVoyager 83.5%</td><td>多面手</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-info">
+  <div class="callout-title">你知道吗？</div>
+  微软也在布局。2026 年 3 月，微软推出了 Copilot Cowork——但有意思的是，它底层用的不是自家模型，而是 Anthropic 的 Claude。这可能是微软在这个赛道上最务实的选择。
+</div>
+
+<p>三家的路线差异，本质上是对一个问题的不同回答：<strong>你想让 AI 拥有多大的自主权？</strong></p>
+
+<p>Claude 说"我帮你干，但大事你做主"；GPT-5.4 说"你告诉我目标，过程别管"；Mariner 说"你有 10 件事要干？我同时开工"。</p>
+
+<p><strong>不是谁更强的问题，是谁更适合你的场景的问题。</strong></p>
+
+<p>但不管选哪家，一个更根本的问题浮出水面：为什么这件事如此重要？</p>
+
+<!-- ==================== SECTION: 为什么比 API 更炸裂 ==================== -->
+<h2 id="s3">三、为什么 Computer Use 比 API 更"炸裂"</h2>
+
+<p>你可能会想：AI 通过 API 调用工具不是已经很厉害了吗？MCP 协议、Function Calling、各种插件……Computer Use 有什么特别的？</p>
+
+<p>我给你讲一个真实的场景。</p>
+
+<p>一家制造业企业，用了 15 年的 ERP 系统，供应商早就倒闭了。这个系统没有 API，没有导出接口，唯一的交互方式就是一个 Windows 桌面程序。员工每天要在这个老系统和新的 CRM 之间手动搬数据，一搬就是 2 小时。</p>
+
+<p>传统自动化（RPA）能帮忙吗？能，但代价高昂。RPA 靠的是"录制操作脚本"——界面稍一改动，脚本就崩。维护一个 RPA 流程的成本，有时比雇一个人还贵。</p>
+
+<p>API 能帮忙吗？根本没有 API。</p>
+
+<p><strong>Computer Use 能帮忙。</strong></p>
+
+<p>因为 AI 不是通过脚本操作界面，而是<strong>像人一样"看"界面</strong>。按钮换了位置？没关系，它能找到。菜单改了名字？没关系，它能读。弹了个新窗口？没关系，它能理解。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左侧：传统方式 -->
+    <rect class="group-box" x="10" y="10" width="220" height="200"/>
+    <text class="group-label" x="25" y="32">传统方式</text>
+    <rect class="node-rect" x="35" y="50" width="170" height="36"/>
+    <text class="node-label" x="120" y="68">API 集成</text>
+    <rect class="node-rect" x="35" y="100" width="170" height="36"/>
+    <text class="node-label" x="120" y="118">RPA 脚本</text>
+    <rect class="node-rect-red" x="35" y="155" width="170" height="36"/>
+    <text class="node-label" x="120" y="173">没有接口？卡住</text>
+
+    <!-- 中间 VS -->
+    <text class="node-label" x="350" y="110" style="font-size:18px;fill:#94a3b8;">VS</text>
+
+    <!-- 右侧：Computer Use -->
+    <rect class="group-box" x="470" y="10" width="220" height="200"/>
+    <text class="group-label" x="485" y="32">Computer Use</text>
+    <rect class="node-rect-green" x="495" y="50" width="170" height="36"/>
+    <text class="node-label" x="580" y="68">看到界面就能用</text>
+    <rect class="node-rect-green" x="495" y="100" width="170" height="36"/>
+    <text class="node-label" x="580" y="118">界面变了也能适应</text>
+    <rect class="node-rect-green" x="495" y="155" width="170" height="36"/>
+    <text class="node-label" x="580" y="173">无需任何接口</text>
+  </svg>
+  <div class="diagram-caption">传统集成 vs Computer Use：从"需要接口"到"看到就能用"</div>
+</div>
+
+<p>打个比方：<strong>API 就像给不同语言的人配翻译，但前提是对方愿意说话。Computer Use 就像派了一个能看懂任何语言的人，直接去帮你操作，不管对方配不配合。</strong></p>
+
+<p>这意味着什么？</p>
+
+<p>Gartner 预测，到 2026 年底，40% 的企业应用将内置 AI Agent。但真正的变革不在新应用——而在那些<strong>几十年不变的老系统</strong>。全球企业 IT 系统中，超过 70% 是没有现代 API 的"遗留系统"。Computer Use 第一次让 AI 能够触达这些系统。</p>
+
+<p>换句话说：<strong>当 GUI 变成万能接口，API 就不再是唯一的选择。</strong></p>
+
+<p>听起来很美好，对吧？但我必须给你泼一盆冷水。</p>
+
+<!-- ==================== SECTION: 五个坑 ==================== -->
+<h2 id="s4">四、没那么美好：五个你必须知道的坑</h2>
+
+<p>如果你看完前面三章，已经兴奋地想把所有工作都交给 AI 了——请等一等。</p>
+
+<p>Computer Use 目前还远不是一个"设置好就不用管"的技术。以下五个坑，你必须了解。</p>
+
+<h3>坑 1：多米诺骨牌效应</h3>
+
+<p>AI 操作电脑是一个<strong>多步骤的链式任务</strong>。每一步的错误都会传递到下一步。</p>
+
+<p>假设一个 20 步的任务，每一步成功率 95%。你可能觉得挺高了？但算一下：0.95 的 20 次方 = 35.8%。<strong>整个任务的成功率只有 36%。</strong></p>
+
+<p>这就像多米诺骨牌——第 3 块倒错了方向，后面 17 块全完。这也是为什么目前的基准测试普遍在 70%-80% 的区间，离"放心用"还有距离。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误区</div>
+  "单步成功率 95% = 整体任务很靠谱"。错。长链任务中，错误会指数级累积。这是 Computer Use 当前最大的技术瓶颈。
+</div>
+
+<h3>坑 2：CAPTCHA 是一堵墙</h3>
+
+<p>AI 无法解决 CAPTCHA 验证码。每当遇到"请证明你是人类"的弹窗，Agent 就会卡住，只能等你来帮忙。</p>
+
+<p>更尴尬的是，越来越多的网站把"频繁自动操作"视为异常行为，直接触发风控。AI 操作得越快，越容易被当成机器人——这确实有点讽刺。</p>
+
+<h3>坑 3：成本不一定划算</h3>
+
+<p>每次"看屏幕"都需要调用视觉模型处理高分辨率截图。一个 20 步的任务可能需要 20+ 次截图分析，消耗大量 token。</p>
+
+<p>对于那些"人做 30 秒就完成"的简单任务，用 Computer Use 可能反而更贵。这项技术的经济拐点在于<strong>重复性高、步骤多、人工成本高</strong>的场景。</p>
+
+<h3>坑 4：安全是一个严肃问题</h3>
+
+<p>你正在给 AI <strong>完整的电脑控制权</strong>。这意味着：</p>
+<ul>
+  <li>恶意 prompt 可能诱导 AI 访问不该访问的页面</li>
+  <li>网页中的隐藏指令可能劫持 Agent 的行为（prompt injection）</li>
+  <li>敏感数据可能在截图分析过程中被泄露</li>
+</ul>
+
+<p>Palo Alto Networks 的研究团队指出：AI Agent 面临的安全威胁不是传统的病毒或木马，而是<strong>"通过语言来攻击的新型漏洞"</strong>。一个伪装成正常网页的恶意页面，可能通过页面上的隐藏文字指令，让你的 AI Agent 做出完全出乎意料的操作。</p>
+
+<h3>坑 5：界面变了，AI 也会懵</h3>
+
+<p>虽然 Computer Use 比 RPA 更能适应界面变化，但它也不是万能的。一个大版本的 UI 改版——比如按钮从左边挪到了右边，或者整个交互流程重新设计——仍然可能让 AI 短暂"懵圈"。</p>
+
+<p>好消息是，AI 比 RPA 恢复得快得多。RPA 脚本改界面就"死"，AI 通常"愣一下"就能适应。但"愣一下"在关键操作（比如支付确认）里，可能就够出事了。</p>
+
+<p><strong>AI 能操作电脑，不等于你能放心让它操作。至少现在还不行。</strong></p>
+
+<p>那么，作为一个普通开发者或技术人，你现在能做什么？</p>
+
+<!-- ==================== SECTION: 普通开发者能做什么 ==================== -->
+<h2 id="s5">五、普通开发者现在能做什么</h2>
+
+<p>说了这么多，你可能最想知道的是：<strong>我今天就能用上吗？怎么用？</strong></p>
+
+<p>答案是：能。而且门槛比你想的低得多。</p>
+
+<h3>最容易上手：Claude Cowork</h3>
+
+<p>如果你是 Mac 用户，打开 Claude Desktop 应用，你已经可以使用 Cowork 模式了。它能帮你：</p>
+<ul>
+  <li>在本地文件系统中读取、编辑、整理文件</li>
+  <li>运行终端命令</li>
+  <li>操作桌面应用</li>
+</ul>
+
+<p>适合场景：<strong>重复性文件处理、数据搬运、批量操作</strong>。比如"把这个文件夹里所有 CSV 按日期重命名并移到归档目录"——以前你要写脚本，现在你说一句话。</p>
+
+<h3>Web 自动化：OpenAI Operator</h3>
+
+<p>如果你的任务主要在浏览器里完成——比价、填表、抓取信息——Operator 是更好的选择。它运行在云端沙盒里，安全隔离做得更好。</p>
+
+<h3>开发者 API 接入</h3>
+
+<p>如果你想在自己的产品里集成 Computer Use 能力，Anthropic 和 OpenAI 都提供了 API。核心流程大概是这样的：</p>
+
+<pre><code class="language-python"># 伪代码：Computer Use 的核心循环
+while not task_completed:
+    screenshot = capture_screen()        # 截取屏幕
+    action = model.analyze(              # AI 分析并决策
+        image=screenshot,
+        task="在 CRM 中找到客户 A 的记录并导出"
+    )
+    execute(action)                      # 执行操作（点击/输入）
+    task_completed = check_result()      # 检查是否完成</code></pre>
+
+<p>关键在第 3 行：<strong>你不需要告诉 AI "点击坐标 (340, 520)"，只需要告诉它任务目标</strong>。AI 自己看屏幕、找元素、做决策。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">最佳实践</div>
+  从<strong>低风险、高重复</strong>的任务开始。比如"每天从 3 个网站抓取竞品价格"或"把 Notion 里的会议记录同步到飞书"。不要一上来就让 AI 帮你操作银行账户。
+</div>
+
+<p>我的建议很具体：</p>
+<ol>
+  <li><strong>今天就试</strong>：打开 Claude Desktop，试一次 Cowork。给它一个简单任务，感受一下"指挥 AI 操作电脑"是什么体验。你对这项技术的直觉，比读十篇文章都有用。</li>
+  <li><strong>列一个"我每天重复做的事"清单</strong>：然后从中挑出最无聊、最机械的那件，试试能不能交给 AI。</li>
+</ol>
+
+<p>从"自己干"到"指挥 AI 干"，中间只差一次尝试。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">六、总结与展望</h2>
+
+<p>最后，回顾几个核心观点：</p>
+
+<ul>
+  <li><strong>Computer Use 的本质</strong>：不是让 AI "更聪明"，而是让 AI "长出了手"。从只能对话，到能操作任何有界面的软件。</li>
+  <li><strong>三条路线</strong>：Claude 做谨慎管家，GPT-5.4 做自主员工，Mariner 做多面手。没有谁更好，只有谁更适合你的场景。</li>
+  <li><strong>真正的颠覆</strong>：不在于替代 API，而在于覆盖了 API 覆盖不到的 70%——那些没有接口的遗留系统。</li>
+  <li><strong>现实的挑战</strong>：错误累积、安全风险、成本效益——这项技术还在"能用但需盯着"的阶段。</li>
+  <li><strong>趋势不可逆</strong>：OSWorld 成绩从 15% 到 75%，只用了一年半。按这个速度，2027 年我们可能就不需要讨论"能不能放心用"了。</li>
+</ul>
+
+<p><strong>我认为</strong>，Computer Use 是 AI Agent 真正"落地"的最关键拼图。过去两年我们谈了太多 Agent 的概念，但 Agent 要真正干活，就必须能操作人类的工具。现在，它终于可以了。</p>
+
+<p>这不是渐进式的改进。这是一个新品类的诞生——<strong>AI 不再是"对话伙伴"，而是"数字员工"</strong>。</p>
+
+<p>键盘和鼠标已经等了 40 年。<br>
+它们终于等到了一个不需要休息的主人。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://o-mega.ai/articles/agentic-computer-use-the-ultimate-deep-guide-2026" target="_blank">Agentic Computer Use: Ultimate Deep Guide 2026 - o-mega.ai</a></li>
+    <li><a href="https://openai.com/index/computer-using-agent/" target="_blank">Computer-Using Agent - OpenAI</a></li>
+    <li><a href="https://openai.com/index/introducing-operator/" target="_blank">Introducing Operator - OpenAI</a></li>
+    <li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool" target="_blank">Computer Use Tool - Anthropic Claude API Docs</a></li>
+    <li><a href="https://www.anthropic.com/news/acquires-vercept" target="_blank">Anthropic Acquires Vercept - Anthropic</a></li>
+    <li><a href="https://help.apiyi.com/en/gpt-5-4-computer-use-native-agent-openclaw-api-guide-en.html" target="_blank">GPT-5.4 Native Computer Use Capability - Apiyi.com</a></li>
+    <li><a href="https://research.aimultiple.com/ai-agents/" target="_blank">AI Agents: Operator vs Browser Use vs Project Mariner - AIMultiple</a></li>
+    <li><a href="https://unit42.paloaltonetworks.com/agentic-ai-threats/" target="_blank">AI Agents Are Here. So Are the Threats - Palo Alto Networks Unit 42</a></li>
+    <li><a href="https://winbuzzer.com/2026/03/10/microsoft-copilot-cowork-anthropic-claude-m365-agent-xcxwbn/" target="_blank">Microsoft Launches Copilot Cowork, Powered by Anthropic's Claude - WinBuzzer</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
