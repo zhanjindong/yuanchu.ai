@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>稀疏注意力：9B 参数击败 120B 的秘密，藏在"不看"里 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">LLM</span>
+    <span class="tag">Sparse Attention</span>
+    <span class="tag">开源模型</span>
+  </div>
+  <h1>稀疏注意力：9B 参数击败 120B 的秘密，藏在"不看"里</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-24</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">为什么"堆参数"的路走到头了？</a>
+  <a href="#s2">稀疏注意力到底在干什么？</a>
+  <a href="#s3">NSA vs MoBA：两条路，同一个终点？</a>
+  <a href="#s4">9B 凭什么打赢 120B？</a>
+  <a href="#s5">这对你意味着什么？</a>
+  <a href="#s6">写在最后</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+
+<p>2025 年 2 月 15 日，DeepSeek 团队在 arXiv 上传了一篇论文，标题有点拗口：<em>Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention</em>。</p>
+
+<p>没有发布会，没有 Twitter 上的狂欢，甚至连 Hacker News 首页都没上。论文的核心想法听起来也不性感——"让模型在推理时少看一些 token"。</p>
+
+<p>六个月后，这篇论文拿了 ACL 2025 最佳论文奖。</p>
+
+<p>又过了半年，到了 2026 年 3 月，一件更离谱的事情发生了：阿里发布的 Qwen3.5-9B，一个只有 90 亿参数的模型，在 GPQA Diamond 等多项权威基准上打赢了 OpenAI 的 GPT-OSS-120B——后者的参数量是它的 13 倍。</p>
+
+<p>9B 打赢 120B。这不是段子，是 benchmark 白纸黑字写着的。</p>
+
+<p>这到底是怎么发生的？答案藏在一个反直觉的洞察里：<strong>模型变强的关键，不是学会"看更多"，而是学会"不看"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 为什么"堆参数"的路走到头了？ ==================== -->
+<h2 id="s1">为什么"堆参数"的路走到头了？</h2>
+
+<p>要理解稀疏注意力为什么重要，你得先理解传统注意力机制有多"笨"。</p>
+
+<p>Transformer 的核心是自注意力机制（Self-Attention）。简单说，模型在处理每一个词的时候，会"回头看"前面所有的词，计算自己跟每个词的关联度。</p>
+
+<p>听起来很合理对吧？但问题出在"所有"两个字上。</p>
+
+<p>如果你的输入是 1000 个 token，每个 token 要跟其他 999 个做一次计算，总共大约 100 万次。这还行。</p>
+
+<p>但如果输入是 10000 个 token 呢？1 亿次。</p>
+
+<p>100000 个 token？100 亿次。</p>
+
+<p>这就是所谓的 <strong>O(L²) 复杂度</strong>——计算量随着序列长度的平方增长。你把输入长度翻一倍，计算量翻四倍。</p>
+
+<p>打个比方：你要在一个图书馆里找一句话。全注意力的做法是——翻遍图书馆里的每一本书、每一页、每一行。不管这本书是关于量子物理还是意大利菜谱，你都老老实实看一遍。</p>
+
+<p>效率低吗？极低。但过去几年，大家的解决方案是什么？</p>
+
+<p><strong>买更大的图书馆。</strong></p>
+
+<p>GPU 不够？加卡。内存不够？换 H100。训练太慢？申请更多算力预算。</p>
+
+<p>这就是"大力出奇迹"（Scaling Law）的逻辑。它确实管用——GPT-4 比 GPT-3 强，GPT-5 比 GPT-4 强。但到了 2025 年，这条路开始碰壁。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  DeepSeek-V3 的完整训练成本约 590 万美元，用的是 FP8 混合精度训练 + Multi-Head Latent Attention（MLA）节省 93.3% 的 KV Cache。同期，据估算 GPT-5 的训练成本超过 2 亿美元。成本差了 30 多倍，但 V3 的性能在多项基准上已经逼近 GPT-5。这说明什么？<strong>烧钱堆算力的边际收益正在急剧下降。</strong>
+</div>
+
+<p>有意思的是，最先意识到这个问题的，不是 OpenAI，而是预算有限的中国团队。</p>
+
+<p>他们被迫回答一个问题：如果我买不起 10 万张 H100，有没有办法用更少的计算做到同样好？</p>
+
+<p>答案是有的。但不是"算得更快"，而是"算得更少"。</p>
+
+<p><strong>算力不是问题，浪费算力才是。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 稀疏注意力到底在干什么？ ==================== -->
+<h2 id="s2">稀疏注意力到底在干什么？</h2>
+
+<p>回到图书馆的比方。</p>
+
+<p>全注意力是翻遍所有书。稀疏注意力呢？<strong>先看目录，再翻重点章节。</strong></p>
+
+<p>具体怎么做？核心思路就三步：</p>
+
+<p><strong>第一步，粗筛。</strong>不逐个 token 比较，而是把 token 按"块"分组，先用一个轻量级的打分器（比如 DeepSeek 的 Lightning Indexer）快速给每个块打分，找出"大概率有用"的区域。</p>
+
+<p><strong>第二步，精选。</strong>在粗筛出来的块里，再精确选出最相关的 top-k 个 token。</p>
+
+<p><strong>第三步，补充局部上下文。</strong>用一个小的滑动窗口保留当前位置附近的 token，确保不丢失局部语境。</p>
+
+<p>原来需要看 10 万个 token 的计算，现在只看 2048 个最相关的 + 附近几百个。计算量直接从 O(L²) 降到 O(L·k)，其中 k 远小于 L。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人第一反应是："少看 token 不会丢信息吗？"反直觉的是，答案是"不会，甚至可能更好"。研究发现，全注意力中大量的 token 交互实际上是噪音——模型在做无用功。去掉这些噪音后，信号反而更清晰。NSA 论文的实验显示，在 9 项主要基准中有 7 项，稀疏注意力的表现<strong>优于</strong>全注意力。
+</div>
+
+<p>这个发现几乎是反常识的。</p>
+
+<p>想想看：你在一场会议上，如果同时听 20 个人说话，你大概率什么都记不住。但如果你只专注听 3 个最关键的发言者，你反而能抓住核心信息。</p>
+
+<p>大模型也是一样。看得多不等于看得准。</p>
+
+<p>从性能数据上看，效果非常惊人：</p>
+
+<table>
+<thead>
+<tr><th>指标</th><th>全注意力</th><th>NSA 稀疏注意力</th><th>提升</th></tr>
+</thead>
+<tbody>
+<tr><td>64K 上下文解码速度</td><td>1x</td><td>11.6x</td><td>提速 11.6 倍</td></tr>
+<tr><td>训练前向传播（64K）</td><td>1x</td><td>9.0x</td><td>提速 9 倍</td></tr>
+<tr><td>训练反向传播（64K）</td><td>1x</td><td>6.0x</td><td>提速 6 倍</td></tr>
+</tbody>
+</table>
+
+<p>64K 上下文长度下解码速度快了近 12 倍。这不是"微调式改善"，这是代际级的效率跃迁。</p>
+
+<p><strong>最强的注意力，是知道什么不值得注意。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: NSA vs MoBA ==================== -->
+<h2 id="s3">NSA vs MoBA：两条路，同一个终点？</h2>
+
+<p>稀疏注意力这条赛道上，有两个最耀眼的名字：DeepSeek 的 <strong>NSA</strong>（Native Sparse Attention）和月之暗面（Kimi）的 <strong>MoBA</strong>（Mixture of Block Attention）。</p>
+
+<p>有趣的是，两篇论文几乎同时发表——2025 年 2 月中旬前后，梁文锋和杨植麟的团队"撞题"了。</p>
+
+<p>这种撞题本身就说明问题：聪明人在同一时间想到了同一个方向，说明这个方向大概率是对的。</p>
+
+<p>但两个方案的路线截然不同。</p>
+
+<h3>NSA：三路并行的"精英小队"</h3>
+
+<p>DeepSeek 的 NSA 把注意力拆成三条并行路径：</p>
+
+<!-- NSA 架构层次图 -->
+<div class="diagram">
+  <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Query 入口 -->
+    <rect class="node-rect-blue" x="20" y="120" width="100" height="40"/>
+    <text class="node-label" x="70" y="140">Query</text>
+
+    <!-- 三条路径 -->
+    <line class="arrow-line-blue" x1="120" y1="130" x2="220" y2="50"/>
+    <line class="arrow-line-blue" x1="120" y1="140" x2="220" y2="140"/>
+    <line class="arrow-line-blue" x1="120" y1="150" x2="220" y2="230"/>
+
+    <!-- 压缩注意力 -->
+    <rect class="node-rect-green" x="220" y="30" width="180" height="40"/>
+    <text class="node-label" x="310" y="44">压缩注意力</text>
+    <text class="node-sublabel" x="310" y="60">粗粒度全局模式</text>
+
+    <!-- 选择注意力 -->
+    <rect class="node-rect-purple" x="220" y="120" width="180" height="40"/>
+    <text class="node-label" x="310" y="134">选择注意力</text>
+    <text class="node-sublabel" x="310" y="150">细粒度关键 token</text>
+
+    <!-- 滑动窗口 -->
+    <rect class="node-rect-amber" x="220" y="210" width="180" height="40"/>
+    <text class="node-label" x="310" y="224">滑动窗口</text>
+    <text class="node-sublabel" x="310" y="240">局部上下文</text>
+
+    <!-- 汇合 -->
+    <line class="arrow-line" x1="400" y1="50" x2="500" y2="130"/>
+    <line class="arrow-line" x1="400" y1="140" x2="500" y2="140"/>
+    <line class="arrow-line" x1="400" y1="230" x2="500" y2="150"/>
+
+    <!-- 输出 -->
+    <rect class="node-rect-red" x="500" y="120" width="160" height="40"/>
+    <text class="node-label" x="580" y="140">融合输出</text>
+  </svg>
+  <div class="diagram-caption">NSA 三路并行架构：压缩捕全局、选择抓关键、滑动窗口保局部</div>
+</div>
+
+<p><strong>压缩注意力</strong>负责"鸟瞰全局"，把 token 块压缩成粗粒度的摘要，快速扫描整体趋势。</p>
+
+<p><strong>选择注意力</strong>负责"精准狙击"，通过 Lightning Indexer 挑出最关键的 token，做细粒度计算。</p>
+
+<p><strong>滑动窗口</strong>负责"近处盯梢"，保留当前位置附近的 token，维持局部连贯性。</p>
+
+<p>三路结果最终融合。用人话说：一个助手帮你看大纲，一个助手帮你查关键段落，一个助手盯着你正在读的那一页。三个人的效率远超一个人翻遍全书。</p>
+
+<h3>MoBA：注意力界的 MoE</h3>
+
+<p>Kimi 的思路完全不同。MoBA 把"混合专家"（MoE）的理念搬到了注意力机制上。</p>
+
+<p>做法是：把所有 token 分成固定大小的"块"（block），每个 query token 像路由器一样，自动选择跟自己最相关的几个块来做注意力计算。其他块直接跳过。</p>
+
+<p>打个比方：NSA 是三个各有专长的助手分头干活，MoBA 是一个聪明的调度员——你问什么问题，它直接把你路由到最相关的"知识区域"。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  MoBA 有一个特别优雅的设计：它可以在全注意力和稀疏注意力之间<strong>无缝切换</strong>。当路由器选择了所有块时，它就退化为全注意力；选择少量块时，就是稀疏模式。这意味着模型可以自己学习"什么时候需要看全局，什么时候只看局部"，而不是人为硬编码。据 Kimi 团队披露，MoBA 处理 100 万 token 长文本的速度提升 6.5 倍，1000 万 token 提升 16 倍。
+</div>
+
+<p>两个方案孰优孰劣？说实话，目前没有定论。NSA 在硬件对齐和训练效率上更极致，MoBA 在灵活性和长文本处理上更优雅。</p>
+
+<p>但更重要的不是谁赢，而是一个事实：两条路都通向同一个结论——<strong>全注意力的时代正在结束。</strong></p>
+
+<p>技术竞争最精彩的不是谁赢，而是殊途同归。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 9B 凭什么打赢 120B？ ==================== -->
+<h2 id="s4">9B 凭什么打赢 120B？</h2>
+
+<p>聊完原理，说点让人兴奋的。</p>
+
+<p>2026 年 3 月，阿里发布了 Qwen3.5 Small 系列，其中 9B 参数的版本在多项基准上击败了 OpenAI 的 GPT-OSS-120B。</p>
+
+<p>这里有一个插曲值得一提。GPT-OSS-120B 是 OpenAI 少见的开源尝试——120B 参数，规格不低。结果被一个参数量只有它 1/13 的模型赢了。</p>
+
+<p>看看具体数据：</p>
+
+<table>
+<thead>
+<tr><th>基准测试</th><th>Qwen3.5-9B</th><th>GPT-OSS-120B</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>MMLU-Pro</td><td>82.5</td><td>80.8</td><td>9B 胜</td></tr>
+<tr><td>GPQA Diamond</td><td>81.7</td><td>80.1</td><td>9B 胜</td></tr>
+<tr><td>MMMLU（多语言）</td><td>81.2</td><td>78.2</td><td>9B 胜</td></tr>
+<tr><td>Video-MME</td><td>84.5</td><td>—</td><td>超越 Gemini 2.5 Flash</td></tr>
+</tbody>
+</table>
+
+<p>GPQA Diamond 是博士级别的科学推理基准。一个 9B 模型在这上面拿 81.7，超过了一个 120B 模型的 80.1。</p>
+
+<p>这就像一个 60 公斤级的拳击手打赢了一个 100 公斤的对手。你第一反应是"不可能"，但仔细想想，拳击场上这种事经常发生。</p>
+
+<p>关键从来不是谁更重，而是谁的出拳更精准、谁的体能分配更聪明。</p>
+
+<p>Qwen3.5-9B 的"精准"来自哪里？几个关键技术要素的叠加：</p>
+
+<ul>
+<li><strong>原生多模态</strong>：从训练第一天起就同时处理文本、图像和视频，不是后期拼接</li>
+<li><strong>高质量数据 + 大规模强化学习</strong>：数据质量 > 数据数量的逻辑被推到了极致</li>
+<li><strong>架构效率</strong>：在注意力和参数利用率上做了大量优化，每个参数都"物尽其用"</li>
+</ul>
+
+<p>当然，公平地说，GPT-OSS-120B 在数学竞赛（HMMT）和代码生成（LiveCodeBench）上仍然领先。大模型并非一无是处。</p>
+
+<p>但趋势已经很清楚了：<strong>参数数量不再是决定性因素。</strong></p>
+
+<p>这让我想起一个冷知识：人的大脑有约 860 亿个神经元，但在任意时刻，只有极少数在活跃放电。如果所有神经元同时全力运转，你不会变得更聪明——你会癫痫发作。</p>
+
+<p>大模型也在学习同样的道理：不是每个参数都需要在每次推理时全力开火。</p>
+
+<p><strong>未来的 AI 竞争，不是比谁更大，而是比谁更聪明地"偷懒"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 这对你意味着什么？ ==================== -->
+<h2 id="s5">这对你意味着什么？</h2>
+
+<p>如果你是 AI 开发者，稀疏注意力和小模型崛起这件事，会在三个层面影响你的日常。</p>
+
+<h3>模型选型的逻辑变了</h3>
+
+<p>以前选模型的思路是"能用最大的就用最大的，预算不够再降级"。</p>
+
+<p>现在的思路应该是：<strong>先看任务需求，再选最高效的。</strong>对于知识密集型任务（问答、文档分析），9B 级别的开源模型已经够用，而且延迟更低、成本更低。只有复杂推理和高难度代码生成，才需要动用百亿以上参数的模型。</p>
+
+<p>一个实际的例子：用 Qwen3.5-9B 做文档 QA，效果不输 GPT-5 系列，但推理成本可能只有后者的 1/50。</p>
+
+<h3>部署门槛断崖式下降</h3>
+
+<p>120B 模型需要多张 A100/H100 才能跑起来。9B 模型呢？单张消费级显卡就行。量化后甚至可以在 MacBook 上跑。</p>
+
+<p>这意味着"本地部署大模型"从极客玩具变成了生产选项。对数据安全敏感的企业，终于不用在"模型能力"和"数据不出域"之间做痛苦取舍。</p>
+
+<h3>端侧 AI 的大门真的打开了</h3>
+
+<p>Qwen3.5 系列最小的模型只有 0.8B 参数，却是原生多模态的——能处理文本、图像和视频。0.8B 意味着什么？意味着它可以跑在你的手机上。</p>
+
+<p>手机上跑多模态 AI，不是"demo 级别的玩具"，而是"生产级别的能力"。这在一年前还不可想象。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  当 9B 模型的知识能力追平 120B 时，闭源 API 的定价锚点会发生什么变化？如果开源模型持续以这个速度追赶，到 2026 年底，"为什么我还要为每个 token 付费？"将成为越来越多开发者的真实问题。这不是技术问题，是商业模式问题。
+</div>
+
+<p><strong>开发者最大的杠杆，不是更贵的 API，而是更聪明的模型选择。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 写在最后 ==================== -->
+<h2 id="s6">写在最后</h2>
+
+<p>从 2025 年 2 月的一篇论文，到 2026 年 3 月小模型全面逆袭，稀疏注意力用了一年时间从学术论文变成了产业现实。</p>
+
+<p>这场效率革命的本质是什么？是大模型终于学会了一件人类早就知道的事：<strong>注意力是稀缺资源，不要浪费在不重要的事情上。</strong></p>
+
+<p>我做两个预测，给自己设个 deadline：</p>
+
+<p><strong>预测一</strong>：2026 年底之前，主流开源模型（DeepSeek、Qwen、Llama）将在 80% 以上的通用基准上追平或超越闭源模型。稀疏注意力 + MoE + 高质量合成数据，三驾马车会让"开源不如闭源"彻底变成历史。</p>
+
+<p><strong>预测二</strong>：2027 年上半年，至少 3 款旗舰手机会将 10B 级别的本地大模型作为系统级能力内置——不是"AI 助手"这种玩具，而是真正能理解上下文、处理多模态信息的"端侧智能"。</p>
+
+<p>半年后回来看看，我说得对不对。</p>
+
+<p>大模型的下半场，赢家不是最大的，是最快学会"偷懒"的。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/abs/2502.11089" target="_blank">Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention — DeepSeek-AI, arXiv 2025</a></li>
+    <li><a href="https://magazine.sebastianraschka.com/p/technical-deepseek" target="_blank">A Technical Tour of the DeepSeek Models from V3 to V3.2 — Sebastian Raschka</a></li>
+    <li><a href="https://platform.moonshot.cn/blog/posts/moba" target="_blank">MoBA：面向长文本大模型的混合块注意力机制 — 月之暗面</a></li>
+    <li><a href="https://venturebeat.com/technology/alibabas-small-open-source-qwen3-5-9b-beats-openais-gpt-oss-120b-and-can-run" target="_blank">Alibaba's small, open source Qwen3.5-9B beats OpenAI's gpt-oss-120B — VentureBeat</a></li>
+    <li><a href="https://lmsys.org/blog/2025-09-29-deepseek-V32/" target="_blank">SGLang Day 0 Support for DeepSeek-V3.2 with Sparse Attention — LMSYS Org</a></li>
+    <li><a href="https://cmr.berkeley.edu/2026/01/the-coming-disruption-how-open-source-ai-will-challenge-closed-model-giants/" target="_blank">The Coming Disruption: How Open-Source AI Will Challenge Closed-Model Giants — California Management Review</a></li>
+    <li><a href="https://www.zhihu.com/question/12696635711" target="_blank">如何评价 Kimi 开源的稀疏注意力框架 MoBA？ — 知乎</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
