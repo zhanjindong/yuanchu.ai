@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>大模型 API 设计实战指南：从第一个 Endpoint 到生产级服务 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">LLM</span>
+    <span class="tag">API Design</span>
+    <span class="tag">Backend</span>
+  </div>
+  <h1>大模型 API 设计实战指南：从第一个 Endpoint 到生产级服务</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-25</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">Endpoint 该怎么设计？</a>
+  <a href="#s2">请求和响应长什么样？</a>
+  <a href="#s3">流式输出到底怎么回事？</a>
+  <a href="#s4">出错了怎么办？</a>
+  <a href="#s5">认证和限流怎么做？</a>
+  <a href="#s6">写在最后：你的挑战</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周，一个做后端的朋友给我发消息："我们公司要把自己微调的模型包成 API 对外提供，老板让我设计接口。我看了一圈 OpenAI、Anthropic、Google 的文档……越看越懵。"</p>
+
+<p>我问他："你哪里懵？"</p>
+
+<p>他说："每家的接口都不一样，endpoint 路径不同、响应格式不同、流式输出的实现也不同。我到底该参考谁的？还是说，我自己随便设计一套？"</p>
+
+<p>"随便设计"这四个字，让我打了个冷战。</p>
+
+<p>因为我见过太多"随便设计"的 LLM API 了——endpoint 命名混乱、响应格式前后不一致、流式输出只测了 happy path、错误码全是 500。上线三个月后，对接的开发者骂娘，维护的工程师想跑路。</p>
+
+<p>API 设计这件事，看起来简单——不就是定几个接口嘛？但实际上，<strong>大模型 API 和传统 REST API 有本质区别</strong>。传统 API 是"请求-响应"，一问一答，干脆利落。大模型 API 是"请求-流"，你问一句，它可能吐 2000 个 token，耗时 30 秒，中间还可能出错。</p>
+
+<p>这篇文章，我把过去踩过的坑、看过的最佳实践，浓缩成 6 个核心问题。每个问题，我都会告诉你"业界怎么做"、"为什么这么做"、以及"你该怎么做"。</p>
+
+<hr>
+
+<!-- ==================== SECTION: Endpoint 设计 ==================== -->
+<h2 id="s1">Endpoint 该怎么设计？</h2>
+
+<p>先聊最基础的：你的 API 路径长什么样？</p>
+
+<p>很多人觉得这是个小事。不就是 <code>/api/chat</code> 或者 <code>/v1/completions</code> 嘛？随便写一个就行。</p>
+
+<p>但如果你观察过 OpenAI、Anthropic、Google 这三家的 endpoint，你会发现一个有意思的现象——<strong>它们不约而同地遵守了同一套设计哲学</strong>，但在具体实现上各有取舍。</p>
+
+<p>先看三家的核心 endpoint：</p>
+
+<table>
+<thead>
+<tr><th>厂商</th><th>Endpoint</th><th>设计风格</th></tr>
+</thead>
+<tbody>
+<tr><td>OpenAI</td><td><code>/v1/chat/completions</code></td><td>动作导向（completions）</td></tr>
+<tr><td>Anthropic</td><td><code>/v1/messages</code></td><td>资源导向（messages）</td></tr>
+<tr><td>Google</td><td><code>/v1/models/{model}:generateContent</code></td><td>RPC 风格</td></tr>
+</tbody>
+</table>
+
+<p>看到了吗？三种完全不同的命名风格。</p>
+
+<p>OpenAI 的 <code>/chat/completions</code> 暗示"你给我一段对话，我给你补全"。这是从 GPT-3 时代的 <code>/completions</code> 演化来的，加了 <code>/chat</code> 前缀来区分多轮对话场景。</p>
+
+<p>Anthropic 的 <code>/messages</code> 更简洁，把交互抽象成"消息"。你发消息，我回消息。很符合 RESTful 的资源思维——message 是一个名词，POST 就是创建一条新消息。</p>
+
+<p>Google 的 <code>:generateContent</code> 则是典型的 gRPC 风格——在资源路径后面用冒号加动词，表示"对这个 model 执行 generateContent 操作"。</p>
+
+<p>那你该选哪种？</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战建议</div>
+  如果你的 API 面向开发者，<strong>优先选资源导向</strong>（如 <code>/v1/messages</code> 或 <code>/v1/chat/completions</code>）。原因很简单：绝大多数开发者最熟悉 REST 风格，学习成本最低。Google 的 RPC 风格虽然技术上没问题，但对不熟悉 gRPC 的人来说，看到 <code>:generateContent</code> 会愣一下。
+</div>
+
+<p>但不管你选哪种风格，有三条铁律必须遵守：</p>
+
+<p><strong>第一，版本号放在路径里。</strong>用 <code>/v1/</code>、<code>/v2/</code>，不要用 header 传版本。原因是：开发者调试的时候，curl 一行命令就能看到版本，不用翻 header。三家巨头全部用了路径版本号，这不是巧合。</p>
+
+<p><strong>第二，endpoint 的命名要能"自解释"。</strong>看到路径就知道这个接口干什么。<code>/v1/chat/completions</code> 一看就知道是"对话补全"，<code>/v1/embeddings</code> 一看就知道是"向量化"。如果你的 endpoint 叫 <code>/v1/process</code>，对不起，没人知道你在 process 什么。</p>
+
+<p><strong>第三，模型选择放在请求体里，不要放在路径里。</strong>OpenAI 和 Anthropic 都是在 body 里传 <code>"model": "gpt-4o"</code>，而不是 <code>/v1/models/gpt-4o/completions</code>。为什么？因为当你有 50 个模型的时候，路径里放模型名会让 API 文档变成一场噩梦。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  有一个反例值得说。Google 把模型名放在了路径里：<code>/v1/models/{model}:generateContent</code>。这导致每次换模型都要改 URL，而不是改 body 里的一个字段。对于做模型 A/B 测试的团队来说，这种设计会让代码里充满字符串拼接。
+</div>
+
+<p>关于 endpoint 的数量，我的建议是：<strong>一开始做少、做精，后面再加</strong>。一个最小可用的 LLM API，只需要三个 endpoint：</p>
+
+<ul>
+  <li><code>POST /v1/messages</code> — 核心对话接口（支持流式和非流式）</li>
+  <li><code>GET /v1/models</code> — 列出可用模型</li>
+  <li><code>GET /v1/models/{id}</code> — 查看单个模型详情</li>
+</ul>
+
+<p>三个接口，覆盖 90% 的使用场景。其他的 embeddings、images、audio，等需求明确了再加。</p>
+
+<p><strong>好的 endpoint 设计就像门牌号：你看一眼就知道这扇门后面是什么，不需要敲门问。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 请求和响应 ==================== -->
+<h2 id="s2">请求和响应长什么样？</h2>
+
+<p>endpoint 定好了，下一个问题：请求体和响应体该怎么设计？</p>
+
+<p>先看请求体。大模型 API 的请求体，核心只有两样东西：<strong>消息列表</strong>和<strong>生成参数</strong>。</p>
+
+<p>打个比方：你去餐厅点菜。消息列表是你的点菜单——"先来个凉菜，再来个红烧肉，最后上汤"。生成参数是你的偏好——"少盐、微辣、快点上"。</p>
+
+<p>一个典型的请求体长这样：</p>
+
+<pre><code class="language-json">{
+  "model": "your-model-v1",
+  "messages": [
+    {"role": "system", "content": "你是一个专业的技术顾问。"},
+    {"role": "user", "content": "解释一下什么是 RAG？"}
+  ],
+  "max_tokens": 1024,
+  "temperature": 0.7,
+  "stream": false
+}</code></pre>
+
+<p>这里的关键设计决策是 <code>messages</code> 数组的结构。每条消息有 <code>role</code> 和 <code>content</code> 两个字段。<code>role</code> 通常是 <code>system</code>、<code>user</code>、<code>assistant</code> 三选一。</p>
+
+<p>为什么要用数组而不是单个字符串？因为大模型的对话是<strong>多轮</strong>的。你需要把整个对话历史塞进来，模型才能"记住"之前聊了什么。这不是传统 API 的"无状态请求"，而是"带上下文的请求"。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  传统 API 是无状态的——每个请求独立，服务器不记得你是谁。大模型 API 虽然也是无状态的（服务器不保存会话），但它通过让客户端<strong>每次都带上完整对话历史</strong>来实现"有记忆"的效果。这意味着随着对话轮数增加，请求体会越来越大。这是你设计 API 时必须考虑的——你需要设置 <code>max_tokens</code> 上限，或者提供对话摘要能力。
+</div>
+
+<p>再看响应体。这是最容易"设计出分歧"的地方。</p>
+
+<p>一个好的非流式响应应该包含四层信息：</p>
+
+<pre><code class="language-json">{
+  "id": "msg_01XFDUDYJgAACzvnptvVoYEL",
+  "type": "message",
+  "model": "your-model-v1",
+  "content": [
+    {
+      "type": "text",
+      "text": "RAG 全称 Retrieval-Augmented Generation..."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 42,
+    "output_tokens": 256
+  }
+}</code></pre>
+
+<p><strong>第一层：身份信息</strong>——<code>id</code> 和 <code>model</code>。每个响应必须有唯一 ID，方便后续排查问题。别小看这个 ID，当你的用户说"我昨天那个请求结果不对"时，有 ID 就能精确定位，没 ID 就只能大海捞针。</p>
+
+<p><strong>第二层：内容本体</strong>——<code>content</code> 数组。注意，这里是数组而不是字符串。为什么？因为大模型的输出不一定只有文本。它可能同时返回文本和工具调用（function call），用数组可以自然地承载多种内容类型。</p>
+
+<p><strong>第三层：停止原因</strong>——<code>stop_reason</code>。告诉调用者"模型为什么停了"。是自然结束（<code>end_turn</code>）？是达到了 token 上限（<code>max_tokens</code>）？还是触发了内容过滤（<code>content_filter</code>）？这个字段看似不起眼，但在生产环境里极其重要——如果用户发现回答被截断，你需要知道是因为模型说完了，还是因为 token 不够。</p>
+
+<p><strong>第四层：用量统计</strong>——<code>usage</code>。输入多少 token、输出多少 token。这是计费的基础，也是成本优化的抓手。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人设计响应时只返回 <code>{"text": "..."}</code>，一个字段搞定。这在 demo 阶段没问题，但一到生产环境就炸了。你会发现：运维问你"这个请求花了多少 token？"——没有 usage 字段，答不上来。客户说"回答被截了"——没有 stop_reason，判断不了原因。所以，<strong>响应体从第一天就该设计完整</strong>，不要等出了问题再补字段。
+</div>
+
+<p><strong>响应格式是 API 的脸面。用户每天看最多的，不是你的文档，而是你返回的 JSON。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 流式输出 ==================== -->
+<h2 id="s3">流式输出到底怎么回事？</h2>
+
+<p>如果说前两个问题是"基本功"，那流式输出就是大模型 API 设计的"灵魂考验"。</p>
+
+<p>为什么这么说？因为传统 API 几乎不需要流式输出——一个 GET 请求，几毫秒就返回了，没必要"一点一点吐"。但大模型不一样。一次生成可能花 10-30 秒。如果让用户干等 30 秒再看到结果，体验会极其糟糕。</p>
+
+<p>打个比方：非流式输出就像从水龙头接了一桶水再端给你，你要等到桶装满；流式输出就像直接把水龙头对着你的杯子，水一出来你就能喝上第一口。</p>
+
+<p>在技术上，业界的共识是：<strong>用 Server-Sent Events（SSE）实现流式输出</strong>。</p>
+
+<p>SSE 的本质很简单：服务器返回一个 <code>Content-Type: text/event-stream</code> 的响应，然后在这个长连接里不断地发送"事件"。每个事件以 <code>data:</code> 开头，事件之间用两个换行符 <code>\n\n</code> 分隔。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Client -->
+    <rect class="node-rect-blue" x="20" y="80" width="130" height="45" rx="8" ry="8"/>
+    <text class="node-label" x="85" y="103">Client</text>
+    <!-- Arrow 1: POST -->
+    <line class="arrow-line-blue" x1="155" y1="92" x2="290" y2="92"/>
+    <text class="arrow-label" x="222" y="82">POST /v1/messages</text>
+    <text class="arrow-label" x="222" y="66">stream: true</text>
+    <!-- Server -->
+    <rect class="node-rect-green" x="295" y="80" width="130" height="45" rx="8" ry="8"/>
+    <text class="node-label" x="360" y="103">Server</text>
+    <!-- Arrow 2: SSE Stream -->
+    <line class="arrow-line" x1="430" y1="103" x2="530" y2="103"/>
+    <text class="arrow-label" x="480" y="93">text/event-stream</text>
+    <!-- Event blocks -->
+    <rect class="node-rect-amber" x="535" y="20" width="150" height="30" rx="6" ry="6"/>
+    <text class="node-label" x="610" y="35" style="font-size:11px;">data: {"delta":"RAG"}</text>
+    <rect class="node-rect-amber" x="535" y="60" width="150" height="30" rx="6" ry="6"/>
+    <text class="node-label" x="610" y="75" style="font-size:11px;">data: {"delta":"是"}</text>
+    <rect class="node-rect-amber" x="535" y="100" width="150" height="30" rx="6" ry="6"/>
+    <text class="node-label" x="610" y="115" style="font-size:11px;">data: {"delta":"一种"}</text>
+    <rect class="node-rect-amber" x="535" y="140" width="150" height="30" rx="6" ry="6"/>
+    <text class="node-label" x="610" y="155" style="font-size:11px;">data: {"delta":"..."}</text>
+    <rect class="node-rect-red" x="535" y="175" width="150" height="20" rx="6" ry="6"/>
+    <text class="node-label" x="610" y="185" style="font-size:10px;">data: [DONE]</text>
+  </svg>
+  <div class="diagram-caption">SSE 流式输出：客户端发起请求后，服务器通过长连接逐块推送生成结果</div>
+</div>
+
+<p>为什么选 SSE 而不是 WebSocket？</p>
+
+<p>因为 LLM 的流式输出是<strong>单向</strong>的——服务器往客户端推数据，客户端不需要在流的过程中往回发消息。SSE 天然就是单向的，比 WebSocket 简单得多。而且 SSE 走的是标准 HTTP，能穿透几乎所有的代理、CDN 和负载均衡器。WebSocket 在企业网络里经常被防火墙拦截。</p>
+
+<p>现在，来看看三家巨头的流式输出格式有什么不同：</p>
+
+<h3>OpenAI：简洁的 data-only 风格</h3>
+
+<pre><code class="language-text">data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"你"},"index":0}]}
+
+data: {"id":"chatcmpl-123","choices":[{"delta":{"content":"好"},"index":0}]}
+
+data: [DONE]</code></pre>
+
+<p>每行一个 <code>data:</code>，里面是 JSON，增量内容在 <code>delta.content</code> 里。结束时发一个 <code>data: [DONE]</code>。简单粗暴，好解析。</p>
+
+<h3>Anthropic：语义化的 event + data 风格</h3>
+
+<pre><code class="language-text">event: message_start
+data: {"type":"message_start","message":{"id":"msg_01...","model":"claude-opus-4-6"}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"你"}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"好"}}
+
+event: message_stop
+data: {"type":"message_stop"}</code></pre>
+
+<p>Anthropic 多了 <code>event:</code> 行，每个事件都有明确的语义类型：<code>message_start</code>、<code>content_block_delta</code>、<code>message_stop</code>。还会穿插 <code>ping</code> 事件保持连接。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">对比一下</div>
+  OpenAI 的风格是"你解析 JSON，自己判断是不是结束"；Anthropic 的风格是"我用事件类型告诉你现在到哪个阶段了"。前者更简洁，后者更易读。如果你是从零设计，我推荐 Anthropic 的方式——<strong>显式优于隐式</strong>。当你的流包含文本、工具调用、思考过程等多种内容类型时，语义化事件会让客户端的解析逻辑清晰很多。
+</div>
+
+<p>关于客户端怎么消费 SSE 流，有一个关键的坑要提醒你：<strong>浏览器原生的 EventSource API 用不了</strong>。</p>
+
+<p>为什么？因为 <code>EventSource</code> 只支持 GET 请求，而 LLM API 全部用的是 POST（因为请求体太大了，放不进 URL 参数）。所以你需要用 <code>fetch</code> + <code>ReadableStream</code> 来手动解析：</p>
+
+<pre><code class="language-javascript">const response = await fetch('/v1/messages', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ model: 'your-model', messages: [...], stream: true })
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const chunk = decoder.decode(value, { stream: true });
+  // 解析 SSE 格式，提取 data: 行
+  for (const line of chunk.split('\n')) {
+    if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+      const json = JSON.parse(line.slice(6));
+      process(json); // 处理增量内容
+    }
+  }
+}</code></pre>
+
+<p>关键在第 10 行：<code>decoder.decode(value, { stream: true })</code>。<code>stream: true</code> 参数告诉 TextDecoder 不要在多字节字符的边界处截断——中文字符是 3 个字节的 UTF-8，如果 chunk 恰好在中间切开，不加这个参数就会出乱码。</p>
+
+<p>还有一个容易忽略的问题：<strong>网络 chunk 和 SSE 消息不是一一对应的</strong>。一个网络 chunk 可能包含半条 SSE 消息，也可能包含好几条。所以你必须做缓冲——把 chunk 累积起来，遇到 <code>\n\n</code> 才处理一条完整消息。</p>
+
+<p><strong>流式输出是大模型 API 的灵魂。做对了，用户感觉你的模型"反应飞快"；做错了，用户觉得你的服务"不稳定"。差别只在毫秒之间。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 错误处理 ==================== -->
+<h2 id="s4">出错了怎么办？</h2>
+
+<p>如果你觉得前面的内容都是"设计时就能想好的"，那错误处理就是那种"上线后才知道有多重要的"。</p>
+
+<p>我先说一个很多人没想到的问题：<strong>大模型 API 的错误处理比传统 API 复杂两倍</strong>。为什么？因为你有两种完全不同的错误场景：</p>
+
+<ul>
+  <li><strong>非流式错误</strong>：请求打过来，还没开始生成，就出错了（参数不对、模型不存在、余额不足）</li>
+  <li><strong>流中错误</strong>：请求已经在流式返回了，生成到一半，突然出错了（GPU OOM、推理超时、内容安全拦截）</li>
+</ul>
+
+<p>第一种好处理，跟传统 API 一样——返回一个错误 JSON 和对应的 HTTP 状态码就行。</p>
+
+<p>第二种才是真正头疼的。因为 HTTP 状态码（200 OK）在流开始时已经发了，你<strong>不可能回头改状态码</strong>。这就好比餐厅服务员已经开始上菜了，上到第三道发现后厨着火了——你总不能假装前三道菜没上过吧？</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg">
+    <!-- 非流式错误 -->
+    <rect class="group-box" x="10" y="10" width="320" height="100"/>
+    <text class="group-label" x="25" y="30">非流式错误（标准处理）</text>
+    <rect class="node-rect-blue" x="30" y="45" width="100" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="80" y="63">请求</text>
+    <line class="arrow-line" x1="135" y1="63" x2="190" y2="63"/>
+    <rect class="node-rect-red" x="195" y="45" width="120" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="255" y="63" style="font-size:11px;">HTTP 400/429/500</text>
+    <!-- 流中错误 -->
+    <rect class="group-box" x="10" y="125" width="680" height="95"/>
+    <text class="group-label" x="25" y="145">流中错误（特殊处理）</text>
+    <rect class="node-rect-blue" x="30" y="160" width="80" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="70" y="178">请求</text>
+    <line class="arrow-line-blue" x1="115" y1="178" x2="155" y2="178"/>
+    <rect class="node-rect-green" x="160" y="160" width="80" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="200" y="178" style="font-size:11px;">HTTP 200</text>
+    <line class="arrow-line" x1="245" y1="178" x2="285" y2="178"/>
+    <rect class="node-rect-amber" x="290" y="160" width="100" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="340" y="178" style="font-size:11px;">chunk 1, 2, 3...</text>
+    <line class="arrow-line" x1="395" y1="178" x2="445" y2="178"/>
+    <text class="arrow-label" x="420" y="168" style="fill:#ef4444;">出错!</text>
+    <rect class="node-rect-red" x="450" y="160" width="120" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="510" y="178" style="font-size:11px;">error event</text>
+    <line class="arrow-line" x1="575" y1="178" x2="615" y2="178"/>
+    <rect class="node-rect-gray" x="620" y="160" width="55" height="35" rx="6" ry="6"/>
+    <text class="node-label" x="648" y="178" style="font-size:11px;">关闭流</text>
+  </svg>
+  <div class="diagram-caption">两种错误场景：非流式错误可以用 HTTP 状态码，流中错误只能通过事件通知</div>
+</div>
+
+<p>怎么处理流中错误？答案是：<strong>在流里发一个 error 事件</strong>。</p>
+
+<pre><code class="language-text">event: content_block_delta
+data: {"delta":{"text":"RAG 的核心原理是"}}
+
+event: error
+data: {"type":"error","error":{"type":"server_error","message":"Internal inference timeout"}}</code></pre>
+
+<p>客户端收到 <code>error</code> 事件后，需要做三件事：</p>
+
+<ol>
+  <li><strong>保存已接收的部分内容</strong>——用户已经看到一部分回答了，直接丢掉体验很差</li>
+  <li><strong>展示错误提示</strong>——告诉用户"生成中断了"，而不是默默停住</li>
+  <li><strong>决定是否重试</strong>——如果是超时，可以重试；如果是内容过滤，重试也没用</li>
+</ol>
+
+<p>说到错误码设计，我给你一套经过生产验证的错误分类体系：</p>
+
+<table>
+<thead>
+<tr><th>HTTP 状态码</th><th>错误类型</th><th>含义</th><th>客户端应对</th></tr>
+</thead>
+<tbody>
+<tr><td>400</td><td><code>invalid_request</code></td><td>参数有误</td><td>检查请求体</td></tr>
+<tr><td>401</td><td><code>authentication_error</code></td><td>认证失败</td><td>检查 API Key</td></tr>
+<tr><td>403</td><td><code>permission_error</code></td><td>无权限访问该模型</td><td>联系管理员</td></tr>
+<tr><td>429</td><td><code>rate_limit_error</code></td><td>请求太频繁</td><td>指数退避重试</td></tr>
+<tr><td>500</td><td><code>server_error</code></td><td>服务器内部错误</td><td>稍后重试</td></tr>
+<tr><td>529</td><td><code>overloaded</code></td><td>服务过载</td><td>等待后重试</td></tr>
+</tbody>
+</table>
+
+<p>每个错误响应的 JSON 结构应该是统一的：</p>
+
+<pre><code class="language-json">{
+  "type": "error",
+  "error": {
+    "type": "rate_limit_error",
+    "message": "Request rate limit exceeded. Please retry after 30 seconds.",
+    "retry_after": 30
+  }
+}</code></pre>
+
+<p>注意两个关键设计：</p>
+
+<p>一是 <code>message</code> 字段必须<strong>人话化</strong>。不要写 <code>"ERR_RATE_LIMIT_EXCEEDED"</code>，要写 <code>"Request rate limit exceeded. Please retry after 30 seconds."</code>。开发者调试的时候，看到前者要去查文档，看到后者直接就知道该怎么做。</p>
+
+<p>二是对于 429 错误，最好在 HTTP header 里返回 <code>Retry-After</code> 字段，并在 body 里也给出 <code>retry_after</code>。这样不管客户端解析 header 还是 body，都能拿到重试间隔。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  Anthropic 的 API 在 429 响应里不仅告诉你"被限流了"，还告诉你具体是哪个维度被限了（请求数 / 输入 token 数 / 输出 token 数）。这个设计非常贴心——开发者可以据此决定是减少请求频率，还是缩短 prompt 长度。如果你的 API 也有多维限流，强烈建议把具体的限流维度写进错误信息里。
+</div>
+
+<p><strong>错误处理见真功夫。用户不会因为你的 API 从不出错而感激你，但会因为你的 API 出错时"说人话"而信任你。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 认证和限流 ==================== -->
+<h2 id="s5">认证和限流怎么做？</h2>
+
+<p>聊完了接口本身，最后聊聊"护城河"——认证和限流。</p>
+
+<p>这部分看起来不性感，但如果搞砸了，后果比前面所有问题加起来都严重。认证出问题，数据泄漏；限流出问题，服务雪崩。</p>
+
+<h3>认证：API Key 就够了吗？</h3>
+
+<p>短回答：对于大多数场景，够了。</p>
+
+<p>长回答：看场景。</p>
+
+<p>OpenAI、Anthropic、Google 这三家，全部用的是 Bearer Token 方式的 API Key 认证：</p>
+
+<pre><code class="language-bash">curl https://api.example.com/v1/messages \
+  -H "Authorization: Bearer sk-your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"your-model","messages":[...]}'</code></pre>
+
+<p>API Key 放在 <code>Authorization</code> header 里，不要放在 URL 参数里。为什么？因为 URL 会被记录在浏览器历史、代理日志、CDN 缓存里，而 header 通常不会。</p>
+
+<p>但 API Key 只解决了"你是谁"的问题，没解决"你能干什么"。如果你的 API 面向多租户（不同客户有不同模型访问权限、不同配额），你需要在 Key 背后做一层权限映射：</p>
+
+<ul>
+  <li>哪些模型可以调用？</li>
+  <li>每天 / 每月的 token 配额是多少？</li>
+  <li>是否允许使用流式输出？</li>
+  <li>是否允许使用某些高级功能（如 function calling）？</li>
+</ul>
+
+<p>这些信息存在你的后端，Key 只是查找这些信息的"钥匙"。</p>
+
+<h3>限流：不是惩罚，是保护</h3>
+
+<p>大模型推理的成本极高——一次请求可能占用 GPU 好几秒。如果不做限流，一个不小心写了死循环的客户端就能把你的服务打挂。</p>
+
+<p>限流设计的关键是：<strong>不要只看请求数，要看 token 数</strong>。</p>
+
+<p>为什么？因为大模型 API 不像传统 API——一个请求的成本差异巨大。一个"你好"的请求消耗 10 token，一个带 20 轮对话历史的请求可能消耗 10 万 token。如果你只限制"每分钟 100 个请求"，那一个恶意用户可以用 100 个超长请求把你的 GPU 吃光。</p>
+
+<p>业界最佳实践是<strong>双维度限流</strong>：</p>
+
+<ul>
+  <li><strong>请求数限流</strong>：每分钟不超过 N 次请求（RPM，Requests Per Minute）</li>
+  <li><strong>Token 数限流</strong>：每分钟不超过 M 个 token（TPM，Tokens Per Minute）</li>
+</ul>
+
+<p>两个维度取更严的那个。</p>
+
+<p>限流信息应该通过 HTTP header 透传给客户端：</p>
+
+<pre><code class="language-text">HTTP/1.1 200 OK
+X-RateLimit-Limit-Requests: 100
+X-RateLimit-Limit-Tokens: 100000
+X-RateLimit-Remaining-Requests: 87
+X-RateLimit-Remaining-Tokens: 64250
+X-RateLimit-Reset-Requests: 2026-03-25T10:00:30Z
+X-RateLimit-Reset-Tokens: 2026-03-25T10:00:15Z</code></pre>
+
+<p>这六个 header 告诉客户端：你的配额是多少、还剩多少、什么时候重置。客户端拿到这些信息后，可以在本地做"预判"——如果剩余配额不足，主动降速或排队，而不是硬怼到 429。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  一个被严重低估的设计技巧：<strong>渐进式限流</strong>。不要在客户端一碰到限额就直接返回 429。可以在接近限额时（比如剩余 10%），先在响应 header 里加一个 <code>X-RateLimit-Warning: approaching_limit</code>，让客户端有时间优雅降级。等真正超限了再返回 429。这就像高速公路——先用信号灯提醒"前方拥堵"，而不是直接拉栏杆不让走。
+</div>
+
+<p>最后一个经常被忽略的问题：<strong>超时设计</strong>。</p>
+
+<p>大模型生成的时间不确定——可能 1 秒就完成，也可能 60 秒还没完。你需要设置合理的超时：</p>
+
+<ul>
+  <li><strong>连接超时</strong>：5-10 秒。如果服务器 10 秒内没有返回第一个字节，大概率是服务挂了</li>
+  <li><strong>首 token 超时（TTFT）</strong>：生产级 API 的 P95 TTFT 应该控制在 500ms 以内</li>
+  <li><strong>总超时</strong>：根据 <code>max_tokens</code> 动态计算。一般每个 token 的生成时间在 20-50ms，所以 1024 token 的总超时可以设为 60 秒</li>
+</ul>
+
+<p><strong>限流不是在惩罚用户，而是在保护所有用户。一个好的限流系统，让 99% 的用户完全无感，只在那 1% 异常流量出现时才亮红灯。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">写在最后：你的挑战</h2>
+
+<p>回到开头我朋友问的那个问题："我该参考谁的设计？"</p>
+
+<p>现在你应该有答案了。不是"参考谁的"，而是理解每个设计决策背后的<strong>为什么</strong>。</p>
+
+<p>Endpoint 用资源导向命名，因为开发者最熟悉。响应体分四层设计，因为每层都有不同的消费者。流式用 SSE 而不是 WebSocket，因为大模型的流是单向的。错误处理要区分流前和流中，因为 HTTP 状态码一旦发出就不能修改。限流要看 token 不是请求数，因为一个请求的成本差距可以达到万倍。</p>
+
+<p>每一条看起来都不复杂，但组合在一起，就是"专业"和"随便"的分水岭。</p>
+
+<p>现在，给你一个挑战：</p>
+
+<p><strong>今天回去，找一个你正在用的 LLM API（OpenAI、Anthropic、任何一个都行），做三件事：</strong></p>
+
+<ol>
+  <li>发一个流式请求，打印出原始的 SSE 事件流，仔细看每个 chunk 的格式</li>
+  <li>故意发一个错误请求（比如传一个不存在的模型名），看看错误响应长什么样</li>
+  <li>把响应 header 全部打印出来，找到限流相关的 header，算算你还有多少配额</li>
+</ol>
+
+<p>做完这三件事，你会对 LLM API 的设计有一个全新的体感。</p>
+
+<p>纸上学来终觉浅。看十篇文章，不如自己抓一次包。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://developers.openai.com/api/docs/guides/streaming-responses" target="_blank">OpenAI - Streaming API Responses</a></li>
+    <li><a href="https://til.simonwillison.net/llms/streaming-llm-apis" target="_blank">Simon Willison - How Streaming LLM APIs Work</a></li>
+    <li><a href="https://platform.claude.com/docs/en/api/openai-sdk" target="_blank">Anthropic - OpenAI SDK Compatibility</a></li>
+    <li><a href="https://dev.to/abhinav__ap/from-waiting-to-streaming-how-to-handle-llm-responses-like-a-pro-especially-with-json-2lgh" target="_blank">From Waiting to Streaming: How to Handle LLM Responses Like a Pro</a></li>
+    <li><a href="https://www.speakeasy.com/api-design/rate-limiting" target="_blank">Rate Limiting Best Practices in REST API Design</a></li>
+    <li><a href="https://www.gravitee.io/blog/designing-apis-for-llm-apps" target="_blank">Designing APIs for LLM Apps: Build Scalable and AI-Ready Interfaces</a></li>
+    <li><a href="https://apidog.com/blog/stream-llm-responses-using-sse/" target="_blank">How to Stream LLM Responses Using Server-Sent Events (SSE)</a></li>
+    <li><a href="https://developers.openai.com/api/docs/guides/rate-limits" target="_blank">OpenAI - Rate Limits Guide</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
