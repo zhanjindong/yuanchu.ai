@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>递归语言模型（RLM）：当大模型学会"自己管理记忆" - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">LLM</span>
+    <span class="tag">RLM</span>
+    <span class="tag">长上下文</span>
+    <span class="tag">Agent</span>
+  </div>
+  <h1>递归语言模型（RLM）：当大模型学会"自己管理记忆"</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-26</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">为什么"更长的上下文窗口"解决不了问题？</a>
+  <a href="#s2">RLM 到底是怎么工作的？</a>
+  <a href="#s3">和 RAG、长上下文模型比，RLM 赢在哪？</a>
+  <a href="#s4">数据怎么说？</a>
+  <a href="#s5">这对开发者意味着什么？</a>
+  <a href="#s6">写在最后：两个预测</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+
+<p>2025 年 10 月，MIT 博士生 Alex Zhang 发了一篇博客，标题朴素得像一篇课程笔记：<em>"Recursive Language Models"</em>。</p>
+
+<p>没有发布会，没有 demo 视频，没有任何营销噱头。</p>
+
+<p>四个月后，AI 研究机构 Prime Intellect 在官网用加粗字体写下一句话：<strong>"Recursive Language Models: the paradigm of 2026."</strong></p>
+
+<p>2026 年的范式。这是一个很重的词。</p>
+
+<p>过去两年，整个行业都在做同一件事——把上下文窗口做得更大。4K、32K、128K、1M……各家模型的上下文长度像军备竞赛一样疯狂膨胀。</p>
+
+<p>但 RLM 提出了一个完全不同的问题：<strong>如果不是给模型更多的记忆，而是教模型管理自己的记忆呢？</strong></p>
+
+<p>这个问题的答案，可能会改变你对大模型能力边界的理解。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">为什么"更长的上下文窗口"解决不了问题？</h2>
+
+<p>你一定见过各家模型发布时的宣传语：</p>
+
+<p>"支持 100 万 token 上下文！"</p>
+
+<p>"200 万 token 超长窗口！"</p>
+
+<p>听起来很厉害。但我问你一个问题：你真的用过 100 万 token 的上下文吗？</p>
+
+<p>如果你试过，你大概率遇到过一个让人抓狂的现象——<strong>上下文腐烂（Context Rot）</strong>。</p>
+
+<p>简单说就是：你把一本书丢进去让模型分析，模型对开头几页和最后几页记得清清楚楚，中间几百页？基本是一团模糊。</p>
+
+<p>这不是某一家模型的 bug，而是 Transformer 架构的结构性问题。注意力机制在处理超长序列时，注意力权重会被"稀释"——要关注的东西太多，结果什么都关注不好。</p>
+
+<p>打个比方：上下文窗口就像你的书桌。</p>
+
+<p>4K token 是一张小课桌，放几张 A4 纸刚好。128K 是一张大办公桌，能摊开好几份文件。1M token？那是一张乒乓球台大小的桌子。</p>
+
+<p>但问题来了——<strong>桌子再大，你同一时间也只有两只手。</strong>你不可能同时翻阅桌上所有文件。桌子越大，找东西反而越慢，遗漏反而越多。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "上下文窗口越大，模型能力越强"——这是 2024 年最大的认知误区之一。上下文窗口是容量，不是能力。一个人能扛 200 斤，不代表他能同时搬运 200 件不同的东西。模型能"装下" 100 万 token，不代表它能"理解" 100 万 token。
+</div>
+
+<p>更实际的问题是成本。处理 100 万 token 的输入，光 API 费用就够让你的 CFO 心跳加速。更不用说延迟——等模型读完这些内容再回复，你的咖啡都凉了。</p>
+
+<p>所以，整个行业走到了一个岔路口：是继续把桌子做大，还是换一种完全不同的思路？</p>
+
+<p><strong>RLM 选择了后者——不是给你更大的桌子，而是给你一个会整理桌面的助手。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">RLM 到底是怎么工作的？</h2>
+
+<p>RLM 的核心思想用一句话概括：<strong>让模型从"被动接收上下文"变成"主动管理上下文"。</strong></p>
+
+<p>传统模式下，你把所有内容塞进 prompt，模型被迫一次性消化所有信息。这就像把一本 500 页的书一口气怼到你面前说"现在回答我的问题"。</p>
+
+<p>RLM 的做法完全不同。它建立了一个三层架构：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- 主模型区域 -->
+    <rect class="group-box" x="10" y="10" width="220" height="130"/>
+    <text class="group-label" x="25" y="35">主模型 (Root LLM)</text>
+    <rect class="node-rect-blue" x="35" y="55" width="170" height="40"/>
+    <text class="node-label" x="120" y="75">精简上下文</text>
+    <rect class="node-rect-blue" x="35" y="105" width="170" height="25"/>
+    <text class="node-sublabel" x="120" y="118">只看系统提示 + 指令</text>
+
+    <!-- 箭头：主模型 → Python REPL -->
+    <line class="arrow-line-blue" x1="235" y1="80" x2="290" y2="80"/>
+    <text class="arrow-label" x="262" y="70">写代码</text>
+
+    <!-- Python REPL 区域 -->
+    <rect class="group-box" x="295" y="10" width="195" height="130"/>
+    <text class="group-label" x="310" y="35">Python REPL</text>
+    <rect class="node-rect-green" x="315" y="55" width="155" height="40"/>
+    <text class="node-label" x="393" y="75">数据存储 &amp; 处理</text>
+    <rect class="node-rect-green" x="315" y="105" width="155" height="25"/>
+    <text class="node-sublabel" x="393" y="118">numpy / scipy / sympy</text>
+
+    <!-- 箭头：Python REPL → Sub-LLMs -->
+    <line class="arrow-line-blue" x1="495" y1="80" x2="530" y2="80"/>
+    <text class="arrow-label" x="512" y="70">调用</text>
+
+    <!-- Sub-LLMs 区域 -->
+    <rect class="group-box" x="535" y="10" width="155" height="130"/>
+    <text class="group-label" x="550" y="35">子模型 (Sub-LLMs)</text>
+    <rect class="node-rect-purple" x="555" y="55" width="115" height="30"/>
+    <text class="node-label" x="613" y="70">分析子任务A</text>
+    <rect class="node-rect-purple" x="555" y="95" width="115" height="30"/>
+    <text class="node-label" x="613" y="110">分析子任务B</text>
+
+    <!-- 数据流：输入数据 -->
+    <rect class="node-rect-amber" x="35" y="180" width="170" height="40"/>
+    <text class="node-label" x="120" y="200">原始输入 (150万字符)</text>
+
+    <!-- 箭头：输入 → REPL -->
+    <line class="arrow-line" x1="210" y1="200" x2="310" y2="200"/>
+    <text class="arrow-label" x="260" y="190">加载为变量</text>
+
+    <!-- REPL 中的数据 -->
+    <rect class="node-rect-green" x="315" y="180" width="155" height="40"/>
+    <text class="node-label" x="393" y="195">data = "..."</text>
+    <text class="node-sublabel" x="393" y="210">主模型看不到</text>
+
+    <!-- 结果汇总 -->
+    <rect class="node-rect-amber" x="315" y="260" width="375" height="40"/>
+    <text class="node-label" x="503" y="275">answer["content"] → 迭代精炼 → answer["ready"] = True</text>
+    <text class="node-sublabel" x="503" y="292">最终答案</text>
+
+    <!-- 箭头：Sub-LLMs → 结果 -->
+    <line class="arrow-line" x1="613" y1="130" x2="613" y2="255"/>
+    <text class="arrow-label" x="650" y="195">汇总结果</text>
+
+    <!-- 箭头：REPL → 结果 -->
+    <line class="arrow-line" x1="393" y1="225" x2="393" y2="255"/>
+  </svg>
+  <div class="diagram-caption">RLM 三层架构：主模型保持精简上下文，通过 Python REPL 操作数据，派遣子模型处理子任务</div>
+</div>
+
+<p>看这张图，关键在三个角色的分工：</p>
+
+<p><strong>主模型（Root LLM）</strong>——它是"项目经理"。它的上下文里只有系统提示和任务指令，绝对不会被原始数据淹没。它的工作是：想清楚该怎么拆解任务，然后写代码去执行。</p>
+
+<p><strong>Python REPL</strong>——它是"工作台"。所有原始数据都被加载到这里，作为一个 Python 变量存在。主模型通过写代码来切片、筛选、处理这些数据。</p>
+
+<p><strong>子模型（Sub-LLMs）</strong>——它们是"实习生"。主模型通过一个叫 <code>llm_batch()</code> 的函数，可以并行派出多个子模型，让它们各自分析一小块数据，然后把结果汇总。</p>
+
+<p>这里有一个极其精妙的设计：<strong>原始数据对主模型完全不可见。</strong></p>
+
+<p>听起来反直觉对不对？你要分析的数据，模型居然"看不到"？</p>
+
+<p>但这恰恰是 RLM 的天才之处。主模型不需要"看到"所有数据，它只需要知道数据在哪、怎么操作它。就像一个优秀的 CEO 不需要亲自读完公司所有的财报细节——他需要知道该问哪些问题，该派谁去调查。</p>
+
+<p>来看一段简化的工作流程：</p>
+
+<pre><code class="language-python"># 主模型生成的代码（自动执行）
+
+# 1. 切片：把 150 万字符的文档按章节拆分
+chapters = data.split("## ")
+
+# 2. 派遣子模型并行分析每个章节
+results = llm_batch([
+    {"prompt": f"总结这章的核心论点：{ch[:8000]}"}
+    for ch in chapters
+])
+
+# 3. 汇总结果，更新答案
+answer["content"] = synthesize(results)
+answer["ready"] = True</code></pre>
+
+<p>关键在第 5 行：<code>llm_batch()</code>。这个函数会并行启动多个子模型实例，每个实例只处理一小块数据。子模型可以使用搜索工具、文件读取等能力，但这些工具对主模型不开放——这防止了主模型的上下文被工具输出撑爆。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  传统 LLM 的思路是"给模型一双更大的眼睛"——让它一次看更多内容。RLM 的思路是"给模型一双手和一个团队"——让它自己决定看什么、怎么看、派谁去看。这不是量变，是质变。
+</div>
+
+<p><strong>不是给模型更多信息，而是给模型管理信息的能力。这是 RLM 最根本的范式转移。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">和 RAG、长上下文模型比，RLM 赢在哪？</h2>
+
+<p>你可能会想：这跟 RAG 有什么区别？不也是"不把所有东西塞进去，而是按需检索"吗？</p>
+
+<p>好问题。但区别比你想的要大得多。</p>
+
+<p>RAG 就像一个图书馆的检索系统。你问一个问题，系统根据关键词帮你找到最相关的几段文字，然后把这些文字塞进模型的上下文。</p>
+
+<p>问题在哪？<strong>RAG 是"被动检索"——它只能根据你的问题去找答案，而且每次只能找固定几段。</strong>如果答案分散在 20 个不同的段落里，或者需要先理解 A 才能找到 B，RAG 就力不从心了。</p>
+
+<p>RLM 不一样。它是"主动探索"。</p>
+
+<p>打个比方：</p>
+
+<ul>
+  <li><strong>RAG</strong> 像你让图书管理员帮你找几本书。管理员根据你说的关键词，拿回来几本。如果关键词不够精确，或者你其实需要的是跨越多本书的信息，管理员帮不了你。</li>
+  <li><strong>RLM</strong> 像你派了一个研究助理去图书馆。他会自己翻目录、读摘要、决定哪些章节值得深读、把多本书的信息交叉比对，最后给你一份研究报告。</li>
+</ul>
+
+<p>差距一目了然。</p>
+
+<p>再看另一个维度：和"暴力扩展上下文窗口"相比呢？</p>
+
+<blockquote>
+"更好的注意力机制延缓了上下文腐烂，但上下文折叠让模型能主动管理上下文，突破真正的极限。两者都需要，但后者才是根本。"<br>
+—— Prime Intellect 研究团队
+</blockquote>
+
+<p>有意思的是，Prime Intellect 的研究者并不认为 RLM 和长上下文技术是对立的。他们的观点是：长上下文技术（包括稀疏注意力等）让模型在有限窗口内表现更好，而 RLM 让模型能处理远超任何窗口大小的输入。</p>
+
+<p>这就好比——更好的发动机让车跑得更快，但如果你要从北京到纽约，你需要的不是更快的车，而是飞机。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  RLM 的设计哲学和 Richard Sutton 著名的 "The Bitter Lesson" 高度一致——与其给模型硬编码更多能力，不如给模型学习的空间和工具，让它自己学会解决问题。上下文管理不应该是架构的责任，而应该是模型的技能。
+</div>
+
+<p><strong>RAG 是检索，RLM 是研究。检索给你答案片段，研究给你完整认知。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">数据怎么说？</h2>
+
+<p>理论说得再漂亮，最终还是要看数据。</p>
+
+<p>Prime Intellect 团队在四个不同场景下测试了 RLM，结果很有意思——不是全面碾压，而是"有的场景大幅领先，有的场景反而不如传统方案"。</p>
+
+<p>这种诚实的呈现方式，反而让我更信服。</p>
+
+<table>
+<thead>
+<tr><th>测试场景</th><th>传统 LLM</th><th>RLM</th><th>提升</th></tr>
+</thead>
+<tbody>
+<tr><td>CodeQA（代码理解）</td><td>24%</td><td>62%</td><td><strong>+158%</strong></td></tr>
+<tr><td>Oolong（长文档聚合）</td><td>35%</td><td>75%</td><td><strong>+114%</strong></td></tr>
+<tr><td>DeepDive（深度研究）</td><td>45%</td><td>70%</td><td><strong>+56%</strong></td></tr>
+<tr><td>Math-Python（数学推理）</td><td>—</td><td>更低</td><td>-15~25%</td></tr>
+</tbody>
+</table>
+
+<p>先看亮点。CodeQA 场景下，GPT-5 的基线准确率只有 24%——因为代码仓库太大，远超上下文窗口，模型根本没法完整理解。而 RLM 版本达到了 62%，几乎是 2.6 倍的提升。</p>
+
+<p>怎么做到的？RLM 模型自己写代码去遍历文件结构、读取关键文件、把分析工作分派给子模型。它不需要"看到"整个代码仓库，它用代码去"探索"代码仓库。</p>
+
+<p>Oolong 场景更直观——这是一个长文档聚合任务，输入大约 150 万字符。传统 LLM 直接拒绝处理（超出上下文窗口），或者勉强处理后丢失大量信息。RLM 的准确率从 35% 跳到了 75%。</p>
+
+<p>但 Math-Python 场景拉了胯，RLM 比标准 LLM 低了 15-25%。</p>
+
+<p>为什么？</p>
+
+<p>因为数学推理本身不需要管理大量外部信息——问题和所有需要的信息都在题目里。给这类任务加上"上下文管理"的架构，反而增加了不必要的开销。就像让一个人做口算题，你非要给他配一个秘书和一间办公室，反而把简单的事搞复杂了。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  研究者坦承：当前的模型对 RLM 架构的利用"很差"（poor usage of the scaffolding）。这些模型没有专门针对 RLM 模式做过训练，相当于你给了一个人一套专业工具，但没教他怎么用。未来通过强化学习训练模型更好地使用 RLM 架构，性能还有巨大的提升空间。
+</div>
+
+<p>这里有一个关于效率的数据也值得注意：RLM 模式下，主模型消耗的 token 减少了 2-3 倍，但由于子模型的调用，总 token 消耗会增加。延迟增加了 40-80%。</p>
+
+<p>这是一个经典的"时间换质量"的权衡。对于实时对话场景，RLM 显然不适合。但对于深度分析、长文档理解、代码仓库探索这类"慢思考"任务，多花 40% 的时间换来 100%+ 的准确率提升，这笔账太划算了。</p>
+
+<p><strong>RLM 不是银弹。它是一把狙击枪——在对的场景下精准致命，用错地方反而碍手碍脚。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">这对开发者意味着什么？</h2>
+
+<p>如果你是做 AI 应用的开发者，RLM 的出现意味着你需要重新审视一些根深蒂固的假设。</p>
+
+<p><strong>假设一："上下文越长越好，我需要选上下文窗口最大的模型。"</strong></p>
+
+<p>不一定。对于复杂的长输入任务，与其选一个 200 万 token 窗口的模型然后把所有东西都塞进去，不如设计一个 RLM 式的架构，用普通窗口的模型反而能得到更好的结果。</p>
+
+<p><strong>假设二："RAG 是处理大量文档的最佳方案。"</strong></p>
+
+<p>对于简单的"查找特定信息"任务，RAG 仍然是最经济高效的选择。但如果你的任务需要跨文档推理、信息综合、多步分析——RLM 的思路值得尝试。</p>
+
+<p><strong>假设三："AI 应用的瓶颈是模型的能力。"</strong></p>
+
+<p>RLM 的启示是：很多时候瓶颈不是模型的能力，而是我们使用模型的方式。同样的模型，换一种架构，性能可以翻倍。</p>
+
+<p>有一个有趣的花絮值得分享。RLM 的论文最早诞生在 MIT 的一个课程项目中——Alex Zhang 在研究如何让 LLM 处理超长输入时，灵感来自操作系统的内存管理。操作系统不会把所有数据都加载到内存里，而是用虚拟内存按需加载。RLM 本质上是给大模型实现了一套"虚拟上下文"系统。</p>
+
+<p>这个类比精准得让人拍大腿——整个计算机科学的历史，就是在反复解决"有限资源处理无限需求"的问题。从磁盘到内存到 CPU 缓存，每一层都有自己的"上下文管理"策略。大模型走到今天，终于也到了需要这套管理机制的阶段。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  Prime Intellect 已经开源了 RLMEnv 环境，并集成到了他们的验证器栈中。如果你想动手试试，可以从他们的 GitHub 仓库开始。目前支持 DeepDive、Oolong、Math-Python 和 Verbatim-Copy 四个评测环境。
+</div>
+
+<p><strong>真正厉害的不是让模型"记住更多"，而是让模型"学会忘记不重要的、聚焦重要的"。这才是智能。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">写在最后：两个预测</h2>
+
+<p>聊到这里，让我把 RLM 的核心洞察串起来：</p>
+
+<p>它不是又一个"长上下文优化技术"。它是一次交互范式的转变——从"把信息塞给模型"到"让模型自己获取信息"。从被动到主动，从接收者到管理者。</p>
+
+<p>这个转变的意义，不亚于操作系统从"一次加载全部程序"到"虚拟内存按需加载"。</p>
+
+<p>所以，我做两个预测，给自己设个 deadline：</p>
+
+<p><strong>预测一：2026 年底之前，至少两家主流模型提供商（OpenAI、Anthropic、Google 中的至少两家）会在 API 中原生支持 RLM 式的"递归调用"能力。</strong>不一定叫 RLM 这个名字，但核心机制——模型自主管理上下文、派遣子模型、通过代码操作数据——会成为标准功能。</p>
+
+<p><strong>预测二：2027 年 Q1 之前，"上下文管理"会像"Prompt Engineering"一样，成为 AI 开发者的一项必备技能。</strong>现在我们讨论"怎么写好 prompt"，到时候会讨论"怎么设计上下文管理策略"。</p>
+
+<p>上下文窗口的军备竞赛不会停。但赢家不是窗口最大的那个，而是最会管理窗口的那个。</p>
+
+<p>半年后回来看看，我说得对不对。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.primeintellect.ai/blog/rlm" target="_blank">Prime Intellect - Recursive Language Models: the paradigm of 2026</a></li>
+    <li><a href="https://introl.com/blog/recursive-language-models-rlm-context-management-2026" target="_blank">Introl - Recursive Language Models: RLM Context Management 2026</a></li>
+    <li><a href="https://github.com/alexzhang13/rlm" target="_blank">GitHub - alexzhang13/rlm: General plug-and-play inference library for RLMs</a></li>
+    <li><a href="https://www.marktechpost.com/2026/01/02/recursive-language-models-rlms-from-mits-blueprint-to-prime-intellects-rlmenv-for-long-horizon-llm-agents/" target="_blank">MarkTechPost - Recursive Language Models: From MIT's Blueprint to Prime Intellect's RLMEnv</a></li>
+    <li><a href="https://medium.com/@vinodpolinati/recursive-language-models-could-this-be-the-real-fix-for-long-context-ai-in-2026-070328df9329" target="_blank">Medium - Recursive Language Models: Could This Be the Real Fix for Long-Context AI?</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
