@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>推测解码：让大模型推理快 3 倍的"草稿纸"魔法 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">LLM</span>
+    <span class="tag">推理优化</span>
+    <span class="tag">Speculative Decoding</span>
+  </div>
+  <h1>推测解码：让大模型推理快 3 倍的"草稿纸"魔法</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-03-28</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">为什么你的 GPU 在"摸鱼"？</a>
+  <a href="#s2">推测解码到底是怎么回事？</a>
+  <a href="#s3">凭什么能做到质量零损失？</a>
+  <a href="#s4">从 Medusa 到 EAGLE-3：草稿模型在进化</a>
+  <a href="#s5">Intel 的突破：打破词表壁垒</a>
+  <a href="#s6">实战落地：今天就能用的工具链</a>
+  <a href="#s7">尾声：两个预测</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+
+<p>10%。</p>
+
+<p>这是大模型在逐 token 生成时，GPU 算力的<strong>实际利用率</strong>。</p>
+
+<p>你没看错。你花几万块买的 H100，或者每小时烧好几美元租的云端显卡，在大模型推理的时候，有将近 90% 的算力是闲置的。</p>
+
+<p>这就好比你请了一位年薪百万的顶级专家。结果他每天 90% 的时间不是在思考，而是在<strong>等电梯</strong>。</p>
+
+<p>等什么？等数据从显存搬到计算单元。这个过程叫"访存"（memory access），它才是大模型推理真正的瓶颈——不是算力不够，而是数据搬运太慢。</p>
+
+<p>2022 年，Google 的研究团队想到了一个绝妙的办法：既然大模型生成一个 token 和生成五个 token 花的时间差不多（因为瓶颈在访存，不在计算），那为什么不让一个小模型先猜五个 token，然后让大模型一口气验证？</p>
+
+<p>这个想法叫做<strong>推测解码</strong>（Speculative Decoding）。它在 2026 年已经从论文走进了每一个主流推理框架。</p>
+
+<p>接下来，我带你搞懂三件事：它为什么有效、它凭什么零损失、以及你今天就能怎么用。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 为什么 GPU 在摸鱼 ==================== -->
+<h2 id="s1">为什么你的 GPU 在"摸鱼"？</h2>
+
+<p>要理解推测解码为什么有效，你得先理解一个违反直觉的事实：<strong>大模型推理的瓶颈不是计算，而是搬运</strong>。</p>
+
+<p>你可以把 GPU 想象成一个超级快的厨师。他切菜、翻炒、装盘的速度快到惊人。但问题是，食材全锁在一个巨大的冰库里，每次只能用一辆小推车运出来。厨师刀已经举起来了，食材还在路上。</p>
+
+<p>这就是 GPU 推理的真实处境。现代 GPU（比如 H100）的算力是每秒千万亿次浮点运算（PFLOPS 级别），但显存带宽只有 3.35 TB/s。对于一个 70B 参数的模型，每生成一个 token，就需要把几乎<strong>所有模型权重</strong>从显存读一遍。</p>
+
+<p>这意味着什么？</p>
+
+<p>意味着不管你让大模型验证 1 个 token 还是 5 个 token，时间几乎一样。因为瓶颈在"把权重从显存搬到计算单元"这一步，而不是"拿到权重后做了多少计算"。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  Google 的原始论文测量发现：Transformer 推理时每从显存读取一个字节，只执行了<strong>不到 10 次</strong>浮点运算。而现代 GPU 的设计比例是每字节几百次运算。这意味着超过 90% 的算力在空转。
+</div>
+
+<p>标准的自回归生成（autoregressive generation）是怎么工作的？大模型一次只生成一个 token，然后把这个 token 加到输入序列里，再生成下一个 token。一个字一个字地蹦。</p>
+
+<p>每蹦一个字，都要把整个模型权重读一遍。</p>
+
+<p>这就像你去食堂打饭，每次只能打一个菜，打完要重新排队。明明你已经知道要吃什么了，但食堂规定：一次只能打一个菜。</p>
+
+<p>有人看着这个局面，问了一个关键问题：<strong>能不能一次打五个菜？</strong></p>
+
+<p>答案是：大模型自己不行，但可以找个"帮手"。这就是推测解码的起点。</p>
+
+<p><strong>GPU 不是不够快，是不够忙。推测解码要做的，就是让 GPU 忙起来。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 推测解码怎么回事 ==================== -->
+<h2 id="s2">推测解码到底是怎么回事？</h2>
+
+<p>推测解码的核心思路，用一句话概括：</p>
+
+<p><strong>让小模型打草稿，让大模型审批。</strong></p>
+
+<p>想象你是一家公司的 CEO。你的时间很贵，每个决策都需要你亲自做。但你发现，80% 的决策其实你的实习生也能做对。</p>
+
+<p>于是你换了一个工作方式：让实习生先把一批决策草案写好，你花 5 分钟通篇浏览一遍，对的就签字，错的再改。</p>
+
+<p>这比你一个一个地做决策快多了。因为你"浏览"的速度远快于"从头思考"的速度。</p>
+
+<p>推测解码的流程，就三步：</p>
+
+<h3>第一步：小模型快速打草稿</h3>
+
+<p>一个参数量小得多的"草稿模型"（Draft Model），快速生成 K 个候选 token。比如你让 Llama 70B 做推理，草稿模型可能是 Llama 8B，甚至更小。</p>
+
+<p>小模型生成速度飞快——因为它模型小，权重读取快。</p>
+
+<h3>第二步：大模型一口气验证</h3>
+
+<p>大模型拿到这 K 个候选 token，在<strong>一次前向传播</strong>中同时验证所有 token 的概率分布。</p>
+
+<p>关键来了：验证 K 个 token 和验证 1 个 token 花的时间几乎一样。因为瓶颈在读权重，不在算数。</p>
+
+<h3>第三步：接受或拒绝</h3>
+
+<p>大模型逐个检查草稿 token：如果这个 token 的概率符合大模型自己的分布，接受；如果不符合，拒绝，并从该位置开始用大模型自己的分布重新采样。</p>
+
+<!-- SVG 流程图 -->
+<div class="diagram">
+  <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 草稿模型 -->
+    <rect class="node-rect-blue" x="20" y="70" width="130" height="50"/>
+    <text class="node-label" x="85" y="90">草稿模型</text>
+    <text class="node-sublabel" x="85" y="107">(小而快)</text>
+
+    <!-- 箭头1 -->
+    <line class="arrow-line-blue" x1="155" y1="95" x2="225" y2="95"/>
+    <text class="arrow-label" x="190" y="82">生成 K 个 token</text>
+
+    <!-- 候选 tokens -->
+    <rect class="node-rect-amber" x="230" y="70" width="130" height="50"/>
+    <text class="node-label" x="295" y="90">候选 Token</text>
+    <text class="node-sublabel" x="295" y="107">t₁ t₂ t₃ t₄ t₅</text>
+
+    <!-- 箭头2 -->
+    <line class="arrow-line-blue" x1="365" y1="95" x2="435" y2="95"/>
+    <text class="arrow-label" x="400" y="82">并行验证</text>
+
+    <!-- 大模型 -->
+    <rect class="node-rect-green" x="440" y="70" width="130" height="50"/>
+    <text class="node-label" x="505" y="90">目标模型</text>
+    <text class="node-sublabel" x="505" y="107">(大而准)</text>
+
+    <!-- 箭头3 -->
+    <line class="arrow-line" x1="575" y1="95" x2="620" y2="95"/>
+
+    <!-- 结果 -->
+    <rect class="node-rect-purple" x="625" y="60" width="80" height="70"/>
+    <text class="node-label" x="665" y="85">接受</text>
+    <text class="node-sublabel" x="665" y="105">或拒绝</text>
+  </svg>
+  <div class="diagram-caption">推测解码三步流程：草稿→验证→接受/拒绝</div>
+</div>
+
+<p>来看个具体例子。假设输入是"法国的首都是"：</p>
+
+<p>小模型快速生成 5 个 token：<code>巴黎，一座美丽的</code>。耗时 50ms。</p>
+
+<p>大模型一次性验证这 5 个 token。发现前 4 个都 OK，但第 5 个 token 它更倾向于生成"著名"而不是"美丽"。于是接受前 4 个，拒绝第 5 个，从"著名"继续。耗时 200ms。</p>
+
+<p>结果：250ms 生成了 5 个 token。如果走传统自回归？5 × 200ms = 1000ms。<strong>快了 4 倍</strong>。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  推测解码和"用小模型替代大模型"是完全不同的事。小模型只负责<strong>猜</strong>，大模型负责<strong>判</strong>。最终输出的每一个 token，都经过了大模型的严格验证。质量零妥协。
+</div>
+
+<p>这里有个美妙的不对称性：小模型猜错了，代价很小——大模型只是多做了一次正常的生成。小模型猜对了，收益很大——省掉了好几次大模型的前向传播。</p>
+
+<p><strong>让小模型跑腿，让大模型拍板。这就是推测解码的全部哲学。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 质量零损失 ==================== -->
+<h2 id="s3">凭什么能做到质量零损失？</h2>
+
+<p>到这里你可能会想：小模型猜，大模型验，听起来是近似方法吧？输出质量多少会打折扣？</p>
+
+<p>反直觉的答案是：<strong>完全零损失</strong>。不是"差不多一样好"，是数学上严格证明的"分布完全一致"。</p>
+
+<p>这是推测解码最让人拍案叫绝的地方。</p>
+
+<p>它用的数学工具叫<strong>拒绝采样</strong>（Rejection Sampling）。这个技巧来自统计学，已经有几十年历史了。核心逻辑是这样的：</p>
+
+<p>对于小模型生成的每个 token，用大模型计算它在当前位置的真实概率 P<sub>target</sub>，同时拿到小模型给出的概率 P<sub>draft</sub>。然后做一个判断：</p>
+
+<ul>
+  <li>如果 P<sub>target</sub> ≥ P<sub>draft</sub>：直接接受。</li>
+  <li>如果 P<sub>target</sub> < P<sub>draft</sub>：以概率 P<sub>target</sub> / P<sub>draft</sub> 接受，否则拒绝。</li>
+</ul>
+
+<p>一旦某个 token 被拒绝，后续所有草稿 token 都被丢弃，大模型从拒绝位置按自己的分布重新采样。</p>
+
+<p>这个机制有一个优美的数学性质：<strong>无论草稿模型多差，最终输出的 token 序列服从的概率分布，都和大模型独立生成时完全相同</strong>。</p>
+
+<p>打个比方。你去参加开卷考试，允许翻笔记。笔记里的答案有些是对的，有些是错的。但考试规则是：每个答案你都要自己验一遍，算对了才写上去，算不对就自己重做。</p>
+
+<p>最终你交的卷子，和你不看笔记独立做出来的，<strong>答案分布完全一样</strong>。唯一的区别是速度更快——因为"验证"比"从零思考"快得多。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为推测解码是一种"模型蒸馏"或"近似推理"。错了。推测解码<strong>不改变模型</strong>，不改变权重，不改变输出分布。它改变的是<strong>计算调度</strong>——用巧妙的并行策略让同样的数学计算跑得更快。这就是为什么它能和量化、剪枝等技术叠加使用，效果相互正交。
+</div>
+
+<p>这带来了一个重要的实践意义：你可以放心地在生产环境使用推测解码，不需要做额外的质量评估。因为它在数学上保证了输出与原始模型<strong>完全等价</strong>。</p>
+
+<p><strong>不是近似，是精确等价。这一点让推测解码从众多加速技巧中脱颖而出。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 技术进化 ==================== -->
+<h2 id="s4">从 Medusa 到 EAGLE-3：草稿模型在进化</h2>
+
+<p>推测解码的核心瓶颈是什么？是草稿模型的<strong>准确率</strong>。</p>
+
+<p>小模型猜得越准，大模型接受的 token 越多，加速比越高。猜得不准，大模型频繁拒绝，推测解码就退化成了普通的自回归生成，白白浪费了运行小模型的时间。</p>
+
+<p>所以过去两年，整个领域都在围绕一个问题发力：<strong>怎么让草稿模型更准、更快？</strong></p>
+
+<p>这场进化经历了三个阶段，每一步都有意思。</p>
+
+<h3>第一阶段：独立草稿模型</h3>
+
+<p>最早的做法最朴素：找一个同系列的小模型当草稿模型。用 Llama 70B 做推理？那就用 Llama 8B 当草稿。</p>
+
+<p>好处是简单直接。坏处也明显：你需要额外加载一个模型，占用显存；而且小模型和大模型的"想法"未必一致——小模型的概率分布和大模型差异越大，草稿被拒绝的概率越高。</p>
+
+<p>这就像你找了一个外部的翻译来帮你起草文件。他不了解你的思维习惯，经常猜错你想说什么。</p>
+
+<h3>第二阶段：Medusa——给大模型装"多个脑袋"</h3>
+
+<p>2023 年底，一种叫 Medusa 的方法横空出世。它的思路很巧妙：别用外部小模型了，直接在大模型头上<strong>加几个额外的预测头</strong>（Medusa Heads）。</p>
+
+<p>第一个头预测下一个 token，第二个头预测下下个 token，第三个头预测下下下个……这些头共享大模型的主干特征，只是最后一层不同。</p>
+
+<p>好比给你的大脑装了几条平行的思考通道。每条通道负责预测不同位置的 token，然后同时输出草稿。</p>
+
+<p>好处是不需要额外的模型，显存开销极小。坏处是需要对大模型做轻量级训练来安装这些"头"，而且每个头是独立预测的，缺少 token 之间的上下文关联。</p>
+
+<!-- 呼吸点：趣闻 -->
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  Medusa 这个名字来自希腊神话中的美杜莎——一个长着多条蛇头的怪物。每条蛇头独立行动，就像 Medusa 架构中的每个预测头独立生成不同位置的 token。命名者的文学素养可见一斑。
+</div>
+
+<h3>第三阶段：EAGLE 家族——让草稿模型"住进"大模型脑子里</h3>
+
+<p>2024 到 2025 年，EAGLE（Extrapolation Algorithm for Greater Language-model Efficiency）系列把草稿模型的设计推向了新高度。</p>
+
+<p>EAGLE 的核心洞察是：<strong>与其从大模型外部猜测，不如直接利用大模型内部的隐藏层特征来做草稿</strong>。它在大模型的中间层插入一个轻量的"EAGLE Head"，只有 1-2 层 Transformer，就能基于大模型的内部表示来预测后续 token。</p>
+
+<p>到了最新的 EAGLE-3，进化更彻底：</p>
+
+<ul>
+  <li><strong>多层特征融合</strong>：不只看大模型的顶层，而是融合低、中、高层的语义特征，生成更准确的草稿</li>
+  <li><strong>动态草稿树</strong>：不是生成一条线性的草稿序列，而是生成一棵<strong>草稿树</strong>，同时探索多条可能的续写路径</li>
+  <li><strong>自适应置信度</strong>：当草稿模型对自己的预测不自信时，提前停止生成，避免浪费验证时间</li>
+</ul>
+
+<p>效果如何？EAGLE-3 在 Llama 3.3 70B 上实现了 <strong>4-6 倍</strong>的加速。而且因为草稿模型直接利用了大模型的内部特征，准确率远高于外部小模型。</p>
+
+<p>再往前一步，2026 年 3 月 AWS 发布的 <strong>P-EAGLE</strong>，更是解决了 EAGLE 系列的最后一个瓶颈：原本 EAGLE 需要逐个生成草稿 token（虽然每个很快），P-EAGLE 把这个过程改成了<strong>一次前向传播生成所有 K 个草稿 token</strong>，在 NVIDIA B200 上比标准 EAGLE-3 又快了 1.69 倍。</p>
+
+<table>
+<thead>
+<tr><th>方案</th><th>草稿来源</th><th>加速比</th><th>额外显存</th></tr>
+</thead>
+<tbody>
+<tr><td>独立草稿模型</td><td>外部小模型</td><td>2-3x</td><td>需加载小模型</td></tr>
+<tr><td>Medusa</td><td>额外预测头</td><td>2-3x</td><td>极小</td></tr>
+<tr><td>EAGLE-3</td><td>内部特征融合</td><td>4-6x</td><td>极小</td></tr>
+<tr><td>P-EAGLE</td><td>并行内部特征</td><td>5-8x</td><td>极小</td></tr>
+</tbody>
+</table>
+
+<p><strong>最好的草稿模型，不在大模型之外，而是住在大模型自己的脑子里。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Intel 突破 ==================== -->
+<h2 id="s5">Intel 的突破：打破词表壁垒</h2>
+
+<p>前面说的方案，不管是独立草稿模型还是 EAGLE，有一个共同的限制：草稿模型和目标模型通常需要<strong>共享同一套词表</strong>（vocabulary）。</p>
+
+<p>这意味着什么？意味着你只能用 Llama 家族的小模型给 Llama 大模型当草稿，不能用 Qwen 的小模型给 Llama 当草稿。模型是"门当户对"的。</p>
+
+<p>这个限制在实际部署中非常恼人。假设你手上有一个效果特别好的 3B 小模型，但它的词表跟你的目标大模型不一样——抱歉，不能用。</p>
+
+<p>2025 年年中，Intel Labs 和以色列 Weizmann 研究所在 ICML 上发表了一项研究，彻底解决了这个问题。</p>
+
+<p>他们提出了三种新算法，核心思路是：<strong>把推测解码从词表对齐中解耦出来</strong>。不管草稿模型和目标模型的 tokenizer 是否相同，不管它们是不是同一个公司开发的，都能配对使用。</p>
+
+<p>效果：跨词表推测解码依然能实现最高 <strong>2.8 倍</strong>的推理加速，输出质量完全无损。</p>
+
+<p>打个比方。过去的推测解码像 Apple 的 Lightning 接口——只有苹果自家的线能用。Intel 做的事，是把它变成了 <strong>USB-C</strong>——任何厂家的草稿模型都能给任何厂家的大模型当助手。</p>
+
+<blockquote>
+这些算法已经集成到 Hugging Face Transformers 开源库中，数百万开发者可以开箱即用。<br>
+—— Intel Newsroom, 2025
+</blockquote>
+
+<p>这个突破的战略意义不亚于技术意义。它意味着：</p>
+
+<ul>
+  <li><strong>社区可以分工</strong>：有人专门训练高质量的小型草稿模型，有人专门做大模型，两边独立演进</li>
+  <li><strong>硬件选择更灵活</strong>：草稿模型可以跑在 CPU 上，大模型跑在 GPU 上，甚至分布在不同节点</li>
+  <li><strong>生态繁荣</strong>：当"任何小模型 + 任何大模型"的组合都能工作，创新空间呈指数级增长</li>
+</ul>
+
+<p><strong>当任何小模型都能给任何大模型当助手，推测解码才算真正成年。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 实战落地 ==================== -->
+<h2 id="s6">实战落地：今天就能用的工具链</h2>
+
+<p>说了这么多原理，你可能最关心的问题是：我今天就能用吗？</p>
+
+<p>答案是：<strong>能，而且非常简单</strong>。</p>
+
+<p>2026 年，推测解码已经内置在所有主流推理框架中。你不需要自己实现算法，只需要改几行配置。</p>
+
+<p>以最流行的 vLLM 为例（当前稳定版 v0.17.1，2026 年 3 月发布），启用推测解码只需要在启动参数里指定草稿模型：</p>
+
+<pre><code class="language-bash"># 使用 vLLM 启用推测解码
+python -m vllm.entrypoints.openai.api_server \
+  --model meta-llama/Llama-3.3-70B \
+  --speculative-model meta-llama/Llama-3.2-3B \
+  --num-speculative-tokens 5</code></pre>
+
+<p>关键在第二行和第三行：<code>--speculative-model</code> 指定草稿模型，<code>--num-speculative-tokens</code> 指定每次猜几个 token。就这么简单。</p>
+
+<p>如果你想用 EAGLE-3 头而不是独立草稿模型：</p>
+
+<pre><code class="language-bash"># 使用 EAGLE-3 头做推测解码
+python -m vllm.entrypoints.openai.api_server \
+  --model meta-llama/Llama-3.3-70B \
+  --speculative-model eagle3-llama70b-head \
+  --speculative-method eagle</code></pre>
+
+<div class="callout callout-tip">
+  <div class="callout-title">踩坑记录</div>
+  推测解码在<strong>低并发</strong>场景下收益最大（单请求延迟降低 2-3 倍），但在高并发场景下，由于 GPU 本身已经因为大 batch 而利用率较高，推测解码的额外开销反而可能拖慢速度。经验法则：并发数 ≤ 8 时大胆开启，超过 32 时建议跑 benchmark 再决定。
+</div>
+
+<p>除了 vLLM，其他框架的支持情况：</p>
+
+<ul>
+  <li><strong>TensorRT-LLM</strong>：支持推测解码，在单请求场景下实现 3.6 倍吞吐提升。适合已在 NVIDIA 生态中的团队</li>
+  <li><strong>SGLang</strong>：在中等并发下性能略优于 vLLM，推测解码支持完善</li>
+  <li><strong>Hugging Face Transformers</strong>：通过 <code>assistant_model</code> 参数直接启用，最适合快速原型验证</li>
+  <li><strong>LM Studio / Ollama</strong>：本地推理工具也已支持，适合个人开发者在消费级 GPU 上加速</li>
+</ul>
+
+<p><strong>推测解码已经不是前沿技术，而是基础设施。你今天不用，不是因为它不成熟，而是因为你还不知道。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s7">尾声：两个预测</h2>
+
+<p>回顾一下推测解码的故事线：</p>
+
+<p>2022 年，Google 发现 GPU 推理时 90% 的算力在空转，提出"让小模型打草稿、大模型审批"的思路。</p>
+
+<p>2023-2024 年，Medusa 和 EAGLE 把草稿模型从"外部助手"变成了"内部器官"，加速比从 2-3 倍提升到 4-6 倍。</p>
+
+<p>2025 年，Intel 打破词表壁垒，让跨模型家族的推测解码成为现实。</p>
+
+<p>2026 年，vLLM、TensorRT-LLM、SGLang 等所有主流框架已原生集成推测解码，从论文变成了一行配置。</p>
+
+<p>这条技术演进线告诉我们一件事：<strong>AI 推理优化的下一个 10 倍提升，大概率不来自更大的模型或更贵的硬件，而是来自更聪明的计算调度</strong>。推测解码就是这个方向上最漂亮的证明。</p>
+
+<p>基于此，我做两个预测，给自己设个 deadline：</p>
+
+<p><strong>预测一</strong>：2026 年底之前，推测解码将成为所有商用 LLM API 的<strong>默认</strong>推理策略（而不是可选项）。Google 的 AI Overviews 已经在用了，OpenAI 和 Anthropic 跟进只是时间问题。</p>
+
+<p><strong>预测二</strong>：2027 年 Q2 之前，会出现专门为"做草稿"而训练的<strong>草稿模型赛道</strong>——就像今天有专门做 embedding 的模型一样，会有团队专门优化"在推测解码中当草稿"这个目标函数。</p>
+
+<p>半年后回来看看，我说得对不对。</p>
+
+<p>在那之前，如果你正在部署大模型推理服务，推测解码是你今天就应该打开的开关。不改模型，不改输出，一行配置，速度翻倍。</p>
+
+<p>这种好事，不用白不用。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://research.google/blog/looking-back-at-speculative-decoding/" target="_blank">Google Research - Looking Back at Speculative Decoding</a></li>
+    <li><a href="https://developer.nvidia.com/blog/an-introduction-to-speculative-decoding-for-reducing-latency-in-ai-inference/" target="_blank">NVIDIA - An Introduction to Speculative Decoding for Reducing Latency in AI Inference</a></li>
+    <li><a href="https://newsroom.intel.com/artificial-intelligence/intel-weizmann-institute-speed-ai-with-speculative-decoding-advance" target="_blank">Intel Newsroom - Intel and Weizmann Institute Speed AI with Speculative Decoding Advance</a></li>
+    <li><a href="https://pytorch.org/blog/hitchhikers-guide-speculative-decoding/" target="_blank">PyTorch - A Hitchhiker's Guide to Speculative Decoding</a></li>
+    <li><a href="https://github.com/SafeAILab/EAGLE" target="_blank">SafeAILab - EAGLE: Official Implementation (ICML'24, EMNLP'24, NeurIPS'25)</a></li>
+    <li><a href="https://aws.amazon.com/blogs/machine-learning/p-eagle-faster-llm-inference-with-parallel-speculative-decoding-in-vllm/" target="_blank">AWS - P-EAGLE: Faster LLM Inference with Parallel Speculative Decoding in vLLM</a></li>
+    <li><a href="https://bentoml.com/llm/inference-optimization/speculative-decoding" target="_blank">BentoML - LLM Inference Handbook: Speculative Decoding</a></li>
+    <li><a href="https://developer.nvidia.com/blog/tensorrt-llm-speculative-decoding-boosts-inference-throughput-by-up-to-3-6x/" target="_blank">NVIDIA - TensorRT-LLM Speculative Decoding Boosts Inference Throughput by up to 3.6x</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
