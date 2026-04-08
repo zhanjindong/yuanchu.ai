@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>大模型部署性能优化：从"跑得动"到"跑得好"的实战全景 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">LLM</span>
+    <span class="tag">推理优化</span>
+    <span class="tag">GPU部署</span>
+  </div>
+  <h1>大模型部署性能优化：从"跑得动"到"跑得好"的实战全景</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-08</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">为什么你的 GPU 在"摸鱼"？</a>
+  <a href="#s2">量化：4 位精度如何跑出 16 位的效果？</a>
+  <a href="#s3">推理引擎怎么选？vLLM、SGLang、TensorRT-LLM 实战对比</a>
+  <a href="#s4">内存才是真正的战场？</a>
+  <a href="#s5">Prefill-Decode 分离：生产环境的架构杀手锏？</a>
+  <a href="#s6">你的下一步</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p><strong>30%。</strong></p>
+
+<p>这是 Anyscale 在 2026 年初发布的一份报告里，统计到的企业级 GPU 集群平均利用率。</p>
+
+<p>你没看错。一块 H100 每小时租金 2-4 美元，一天就是 50-100 美元。但其中 70% 的时间，它在发呆。</p>
+
+<p>更扎心的是，这不是小公司的问题。报告里调研的大部分是有专业 MLOps 团队的中大型企业。他们买了最贵的卡，用了最热门的框架，跑了最流行的模型——然后 GPU 的大半时间在等数据、等内存、等调度。</p>
+
+<p>问题出在哪？</p>
+
+<p>不是硬件不够好，是<strong>部署方式不对</strong>。大模型推理是一套精密的流水线，每个环节都可能成为瓶颈。量化方案选错了，浪费内存；推理引擎没调好，浪费算力；架构设计没跟上，浪费钱。</p>
+
+<p>今天我就把这条链路从头到尾拆一遍。不讲论文，不堆术语，就聊你明天就能用上的东西。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 为什么你的GPU在"摸鱼"？ ==================== -->
+<h2 id="s1">为什么你的 GPU 在"摸鱼"？</h2>
+
+<p>要搞清楚优化方向，你得先理解大模型推理到底在干嘛。</p>
+
+<p>打个比方：大模型生成文字，就像一个厨师做菜。整个过程分两步：</p>
+
+<p><strong>第一步，备料（Prefill）</strong>：把你输入的所有 token 一次性"消化"掉，生成一个巨大的中间状态——叫 KV Cache。这一步是<strong>计算密集型</strong>的，GPU 的算力跑满，很爽。</p>
+
+<p><strong>第二步，炒菜（Decode）</strong>：一个 token 一个 token 地往外蹦。每生成一个字，都要回去查一遍 KV Cache。这一步是<strong>内存密集型</strong>的，GPU 的计算单元大部分时间在等数据从显存搬过来。</p>
+
+<p>问题就在这里：备料用的是算力，炒菜用的是带宽。两个阶段对硬件的需求完全不同，但你让同一块 GPU 干两件事。</p>
+
+<p>就像让一个厨师又切菜又掂锅——他不可能同时高效地做这两件事。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg">
+    <!-- Prefill 阶段 -->
+    <rect class="group-box" x="10" y="10" width="310" height="160"/>
+    <text class="group-label" x="25" y="32">Prefill 阶段（备料）</text>
+    <rect class="node-rect-blue" x="30" y="55" width="120" height="45"/>
+    <text class="node-label" x="90" y="73">用户输入</text>
+    <text class="node-sublabel" x="90" y="90">N 个 token</text>
+    <line class="arrow-line-blue" x1="155" y1="78" x2="185" y2="78"/>
+    <rect class="node-rect-blue" x="190" y="55" width="120" height="45"/>
+    <text class="node-label" x="250" y="73">并行计算</text>
+    <text class="node-sublabel" x="250" y="90">GPU 算力跑满</text>
+    <rect class="node-rect-green" x="100" y="115" width="140" height="40"/>
+    <text class="node-label" x="170" y="135">→ 生成 KV Cache</text>
+
+    <!-- 箭头 -->
+    <line class="arrow-line" x1="330" y1="78" x2="370" y2="78"/>
+
+    <!-- Decode 阶段 -->
+    <rect class="group-box" x="375" y="10" width="310" height="160"/>
+    <text class="group-label" x="390" y="32">Decode 阶段（炒菜）</text>
+    <rect class="node-rect-amber" x="395" y="55" width="120" height="45"/>
+    <text class="node-label" x="455" y="73">逐 token 生成</text>
+    <text class="node-sublabel" x="455" y="90">一个接一个</text>
+    <line class="arrow-line" x1="520" y1="78" x2="550" y2="78"/>
+    <rect class="node-rect-red" x="555" y="55" width="120" height="45"/>
+    <text class="node-label" x="615" y="73">等内存读取</text>
+    <text class="node-sublabel" x="615" y="90">GPU 算力闲置</text>
+    <rect class="node-rect-amber" x="440" y="115" width="170" height="40"/>
+    <text class="node-label" x="525" y="135">→ 瓶颈在内存带宽</text>
+  </svg>
+  <div class="diagram-caption">大模型推理的两个阶段：Prefill 是计算密集型，Decode 是内存密集型</div>
+</div>
+
+<p>更要命的是，在实际的在线服务中，Decode 阶段占了整个推理时间的 <strong>80%-95%</strong>。也就是说，你的 GPU 大部分时间处于"有力气没地方使"的状态。</p>
+
+<p>理解了这一点，后面的所有优化就有了方向：<strong>要么减少内存占用（量化），要么提高内存利用效率（KV Cache 优化），要么把两个阶段拆开各自优化（Prefill-Decode 分离）。</strong></p>
+
+<p><strong>GPU 不是不够快，是你喂不饱它。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 量化 ==================== -->
+<h2 id="s2">量化：4 位精度如何跑出 16 位的效果？</h2>
+
+<p>如果只能选一招来优化部署成本，我选量化。没有之一。</p>
+
+<p>量化是什么？简单说，就是把模型的"体重"降下来。</p>
+
+<p>你拍了一张 RAW 格式的照片，50MB。转成 JPEG，2MB。画质损失了多少？肉眼几乎看不出来。量化干的就是同样的事——把模型权重从 16 位浮点数（FP16）压缩到 8 位、4 位、甚至 3 位整数。</p>
+
+<p>效果有多猛？一个 70B 参数的模型，FP16 下需要 140GB 显存，两块 A100（80GB）才装得下。4 位量化之后？<strong>35GB</strong>，一块 H100 绑绑有余，甚至一块消费级 RTX 5090（32GB）都能勉强跑起来。</p>
+
+<p>内存省了 75%，推理成本直接砍到四分之一。</p>
+
+<p>但量化方案不止一种。2026 年主流的三个方案——GPTQ、AWQ、GGUF——各有各的脾气。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为"量化 = 精度下降"。实际上，现代量化技术通过"对重要权重差异化处理"，可以在 4 位精度下保留 95%-99% 的原始模型能力。如果你不是在做需要极致精度的数学推理，量化后的模型表现几乎与原始模型无异。
+</div>
+
+<h3>三大量化方案怎么选？</h3>
+
+<p><strong>GPTQ</strong>：GPU 部署的老牌选择。它用少量校准数据做"后训练量化"，不需要重新训练模型。优势是对 NVIDIA GPU 优化最成熟，生态最完善，vLLM 和 TensorRT-LLM 都原生支持。缺点是量化过程需要几个小时，且只针对 GPU 优化，CPU 跑不动。</p>
+
+<p><strong>AWQ</strong>（Activation-aware Weight Quantization）：MIT 提出的"聪明量化"。核心思想是——权重并不同等重要。它只保护 1% 的关键权重，其余大胆压缩。结果？比 GPTQ 快 1.45 倍，精度还更好。如果你在意代码生成或创意写作的质量，AWQ 是更好的选择。</p>
+
+<p><strong>GGUF</strong>：消费级硬件的救星。它是 llama.cpp 生态的原生格式，CPU 推理效率极高，也支持 GPU 加速。Ollama 用的就是 GGUF。如果你在本地笔记本上跑模型，或者用的是 Mac，GGUF 是唯一合理选择。</p>
+
+<table>
+<thead>
+<tr><th>方案</th><th>最佳场景</th><th>精度保留</th><th>推荐硬件</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>GPTQ</strong></td><td>NVIDIA GPU 生产部署</td><td>~95%</td><td>A100 / H100</td></tr>
+<tr><td><strong>AWQ</strong></td><td>高质量 GPU 推理</td><td>~97%</td><td>A100 / H100 / RTX 5090</td></tr>
+<tr><td><strong>GGUF</strong></td><td>本地 / CPU / Mac 部署</td><td>~92%（Q4_K_M）</td><td>任意 CPU+GPU</td></tr>
+</tbody>
+</table>
+
+<p>实际操作中，一行命令就能完成量化部署：</p>
+
+<pre><code class="language-bash"># 用 Ollama 拉取 GGUF 量化模型，本地直接跑
+ollama run qwen3:32b-q4_K_M
+
+# 用 vLLM 加载 AWQ 量化模型，启动 API 服务
+vllm serve Qwen/Qwen3-32B-AWQ --quantization awq</code></pre>
+
+<p>一个选型建议：<strong>先试 AWQ</strong>。它在精度和速度之间的平衡点目前是最好的。如果你的场景是本地开发或边缘部署，换 GGUF Q4_K_M。只有当你需要极致吞吐量、且模型长期不更换时，才考虑 GPTQ + TensorRT-LLM 的组合。</p>
+
+<p><strong>量化不是偷工减料，是聪明的断舍离。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 推理引擎怎么选 ==================== -->
+<h2 id="s3">推理引擎怎么选？vLLM、SGLang、TensorRT-LLM 实战对比</h2>
+
+<p>量化解决了"装不下"的问题。接下来的问题是——装下之后，怎么跑得快？</p>
+
+<p>这就轮到推理引擎登场了。</p>
+
+<p>2026 年的推理引擎生态，三足鼎立：vLLM、SGLang、TensorRT-LLM。选错引擎，就像在高速公路上骑自行车——硬件再好也白搭。</p>
+
+<p>但这里有个坑：很多评测文章只看"每秒 token 数"这个指标，然后告诉你"XX 引擎最快"。</p>
+
+<p>这是错的。</p>
+
+<p>推理引擎的选择，取决于你的<strong>工作负载特征</strong>，不是峰值跑分。就像选交通工具——高铁最快，但你家到公司 3 公里，骑电动车才是最优解。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  在 H100 上跑 Llama 3 70B 的 2026 年实测数据：SGLang 和 LMDeploy 均达到 ~16,200 tokens/sec，vLLM 为 ~12,500 tokens/sec。但在 DeepSeek V3 的 MLA 架构上，SGLang 反超所有对手，达到 vLLM 的 3.1 倍。引擎和模型架构的适配度，比引擎本身的"快慢"重要得多。
+</div>
+
+<p><strong>vLLM</strong>：最稳的全能选手。PagedAttention 技术让它的显存管理极其高效（浪费率从 60-80% 降到 4% 以下）。社区最大，模型支持最全，API 兼容 OpenAI 格式。如果你不确定选什么，选它不会错。</p>
+
+<p><strong>SGLang</strong>：前缀缓存之王。它的 RadixAttention 把 KV Cache 组织成一棵基数树，重复前缀只算一次。如果你的场景是 RAG、多轮对话、或者 system prompt 很长——SGLang 能给你 <strong>6.4 倍</strong>的吞吐提升。这不是优化，这是降维打击。</p>
+
+<p><strong>TensorRT-LLM</strong>：NVIDIA 的亲儿子。底层直接调用 CUDA kernel，针对 NVIDIA GPU 做了极致的算子融合和内存优化。在高并发场景下，吞吐量比 vLLM 高 30-50%。代价是：编译时间长、模型更新麻烦、只能跑在 NVIDIA 卡上。</p>
+
+<p>说个真实的踩坑故事。我见过一个团队，选了 TensorRT-LLM 部署一个 RAG 服务。跑分确实快。但每次模型更新都要重新编译 2-3 小时，而他们的模型每周都在迭代。一个月后，他们换回了 vLLM——因为"快"不只是推理速度，还有迭代速度。</p>
+
+<p>我的建议很简单：</p>
+
+<ul>
+<li><strong>通用场景、快速迭代</strong> → vLLM（10 分钟跑起来，模型随时换）</li>
+<li><strong>RAG / 多轮对话 / 长 system prompt</strong> → SGLang（前缀缓存带来质变）</li>
+<li><strong>单一模型长期部署、极致吞吐</strong> → TensorRT-LLM（编译一次，跑一年）</li>
+</ul>
+
+<p><strong>选引擎不是选最快的，是选最适合你路况的。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 内存才是真正的战场 ==================== -->
+<h2 id="s4">内存才是真正的战场？</h2>
+
+<p>你可能注意到了，前面几乎每个优化都跟"内存"有关。量化是压缩内存占用，引擎优化是减少内存浪费，选 GPU 要看的也是显存带宽而不是算力。</p>
+
+<p>这不是巧合。2026 年大模型推理的核心瓶颈，就是<strong>内存</strong>。</p>
+
+<p>为什么？因为 Decode 阶段每生成一个 token，都要把整个 KV Cache 从显存读一遍。一个 70B 模型处理 4K 上下文，KV Cache 就有几十 GB。GPU 的计算速度是够的——但显存带宽跟不上。</p>
+
+<p>打个比方：你是一个读书极快的人（GPU 算力），但书架在隔壁房间（显存）。你每读一页都要跑一趟隔壁取书。你的读书速度再快，也被"跑腿"的时间卡死了。</p>
+
+<p>这就是所谓的<strong>"内存墙"（Memory Wall）</strong>。</p>
+
+<p>怎么破？三板斧：</p>
+
+<h3>第一斧：PagedAttention——让书架不浪费空间</h3>
+
+<p>传统做法是给每个请求预分配一大块连续显存。问题是，你不知道用户会说多长的话，所以只能按最大长度分配。结果？60-80% 的显存被白白占着。</p>
+
+<p>vLLM 的 PagedAttention 借鉴了操作系统的虚拟内存管理——把 KV Cache 切成小页（page），按需分配，用完回收。就像图书馆不再给每个读者包一整面书架，而是按需分配格子。</p>
+
+<p>效果：显存浪费率从 60-80% 降到 <strong>4% 以下</strong>，同样的 GPU 能同时服务的请求数翻了好几倍。</p>
+
+<h3>第二斧：FlashAttention——让取书的路更短</h3>
+
+<p>FlashAttention 的思路完全不同：既然搬数据慢，那就<strong>少搬</strong>。它重新设计了注意力计算的顺序，让数据尽量留在 GPU 的高速缓存（SRAM）里，减少对慢速显存（HBM）的访问。</p>
+
+<p>FlashAttention 4 已经进入 SGLang 等主流引擎，配合最新的 Blackwell 架构 GPU，inter-token 延迟（ITL）下降 29-69%。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战建议</div>
+  如果你用 Ollama 本地跑模型，记得设置 <code>OLLAMA_FLASH_ATTENTION=1</code> 环境变量开启 Flash Attention。这一个配置就能让推理速度提升 20-30%，完全免费。
+</div>
+
+<h3>第三斧：KV Cache 压缩——让书变薄</h3>
+
+<p>Google 今年发布的 TurboQuant 把 KV Cache 压缩到 <strong>3 比特</strong>，内存占用直降 6 倍，而且<strong>零精度损失</strong>——不需要重新训练，不需要微调，直接在推理时压缩。</p>
+
+<p>这意味着什么？原来一块 H100（80GB）只能处理 4K 上下文的请求，压缩后能处理 24K。同样的硬件，上下文窗口翻了 6 倍。</p>
+
+<p><strong>大模型推理的瓶颈，从来不在算力，在内存带宽。谁能把数据搬运做到极致，谁就能把 GPU 的潜力榨干。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Prefill-Decode 分离 ==================== -->
+<h2 id="s5">Prefill-Decode 分离：生产环境的架构杀手锏？</h2>
+
+<p>前面聊的都是单卡或单节点级别的优化。如果你的服务已经到了多卡、多节点的规模，还有一个更根本的架构优化——<strong>把 Prefill 和 Decode 拆开部署</strong>。</p>
+
+<p>回到厨房的比方。之前是一个厨师又切菜又炒菜。现在，你请两个人：一个专门备料，一个专门炒菜。备料的人用大砧板（算力高的 GPU），炒菜的人用快灶台（带宽高的 GPU）。</p>
+
+<p>这就是 <strong>Prefill-Decode Disaggregation</strong>（预填充-解码分离）。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 传统架构 -->
+    <rect class="group-box" x="10" y="10" width="220" height="180"/>
+    <text class="group-label" x="25" y="32">传统架构</text>
+    <rect class="node-rect-amber" x="35" y="55" width="170" height="55"/>
+    <text class="node-label" x="120" y="75">单个 GPU</text>
+    <text class="node-sublabel" x="120" y="95">Prefill + Decode 混跑</text>
+    <text class="node-sublabel" x="120" y="155" style="fill:#ef4444;font-weight:600">互相干扰 → 延迟尖刺</text>
+
+    <!-- VS -->
+    <text class="node-label" x="270" y="100" style="font-size:18px;fill:#94a3b8;">VS</text>
+
+    <!-- 分离架构 -->
+    <rect class="group-box" x="310" y="10" width="400" height="180"/>
+    <text class="group-label" x="325" y="32">分离架构</text>
+    <rect class="node-rect-blue" x="335" y="55" width="150" height="55"/>
+    <text class="node-label" x="410" y="75">Prefill 节点</text>
+    <text class="node-sublabel" x="410" y="95">算力优先型 GPU</text>
+    <line class="arrow-line-blue" x1="490" y1="82" x2="530" y2="82"/>
+    <text class="arrow-label" x="510" y="72">KV 传输</text>
+    <rect class="node-rect-green" x="535" y="55" width="150" height="55"/>
+    <text class="node-label" x="610" y="75">Decode 节点</text>
+    <text class="node-sublabel" x="610" y="95">带宽优先型 GPU</text>
+    <text class="node-sublabel" x="510" y="155" style="fill:#10b981;font-weight:600">各司其职 → 延迟稳定</text>
+  </svg>
+  <div class="diagram-caption">传统混合部署 vs Prefill-Decode 分离架构</div>
+</div>
+
+<p>为什么要分？因为在传统的连续批处理（Continuous Batching）中，一个新请求的 Prefill 会"插队"到正在 Decode 的请求前面。Prefill 是计算密集型的，可能占用 GPU 几百毫秒。这段时间里，所有正在等 Decode 的请求都被堵住了——用户感知到的就是"卡了一下"。</p>
+
+<p>分离之后，Prefill 节点随便算多久，都不会影响 Decode 节点稳定输出。用户看到的 token 流是匀速的，体验质感完全不同。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  LMSYS 团队用分离架构部署 DeepSeek-R1，成本降到了 DeepSeek 官方 API 的 <strong>五分之一</strong>。vLLM 的分离模式已经在 Meta 和 Hugging Face 的生产环境中跑通。这不再是实验性特性，而是 2026 年大规模 LLM 服务的默认架构。
+</div>
+
+<p>当然，分离架构也不是银弹。Prefill 节点算完后，需要把 KV Cache 通过网络传给 Decode 节点，这引入了新的网络延迟。如果你的请求量不大（比如日均 QPS 个位数），分离架构带来的复杂度可能得不偿失。</p>
+
+<p>一个简单的判断标准：<strong>当你的单卡 GPU 利用率已经超过 60%，且用户开始抱怨"有时候很快有时候很慢"时</strong>——是时候考虑分离架构了。</p>
+
+<p><strong>拆开干，才能一起快。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">你的下一步</h2>
+
+<p>一句话总结今天的全部内容：大模型部署优化不是一招鲜，而是一条从模型到架构的<strong>优化流水线</strong>。每一层独立生效，叠加起来可以降低 80% 的推理成本。</p>
+
+<p>今天回去，试一件事：</p>
+
+<p>找一个你正在用的大模型（不管是 API 还是自部署的），跑一个简单的基准测试。记录三个数字：</p>
+
+<ol>
+<li><strong>首 token 延迟</strong>（Time to First Token, TTFT）——用户按下回车到看到第一个字的时间</li>
+<li><strong>token 间延迟</strong>（Inter-Token Latency, ITL）——每个字之间的间隔</li>
+<li><strong>每百万 token 成本</strong>——不管是 API 账单还是 GPU 租金均摊</li>
+</ol>
+
+<p>然后对照这张清单，看看哪一层你还没做：</p>
+
+<ul>
+<li><strong>模型层</strong>：是否做了量化？AWQ / GGUF Q4_K_M 是起手式</li>
+<li><strong>引擎层</strong>：是否用了合适的推理引擎？RAG 场景一定要试 SGLang</li>
+<li><strong>内存层</strong>：FlashAttention 开了没？KV Cache 压缩用了没？</li>
+<li><strong>架构层</strong>：QPS 上来之后，是否考虑了 Prefill-Decode 分离？</li>
+</ul>
+
+<p>如果四层你都做了——恭喜，你的 GPU 利用率大概率已经在 70% 以上了。</p>
+
+<p>如果一层都没做——也恭喜，因为你有巨大的优化空间，每一步都能看到立竿见影的效果。</p>
+
+<p><strong>大模型时代，算力是租来的，但效率是工程师挣出来的。</strong></p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anyscale.com/blog/gpu-in-efficiency-in-ai-workloads" target="_blank">GPU (In)efficiency in AI Workloads - Anyscale</a></li>
+    <li><a href="https://www.morphllm.com/llm-inference-optimization" target="_blank">LLM Inference Optimization: Cut Cost & Latency at Every Layer - Morph</a></li>
+    <li><a href="https://www.yottalabs.ai/post/best-llm-inference-engines-in-2026-vllm-tensorrt-llm-tgi-and-sglang-compared" target="_blank">Best LLM Inference Engines in 2026 - Yotta Labs</a></li>
+    <li><a href="https://particula.tech/blog/sglang-vs-vllm-inference-engine-comparison" target="_blank">SGLang vs vLLM in 2026: Benchmarks and Architecture - Particula</a></li>
+    <li><a href="https://blog.premai.io/llm-quantization-guide-gguf-vs-awq-vs-gptq-vs-bitsandbytes-compared-2026/" target="_blank">LLM Quantization Guide: GGUF vs AWQ vs GPTQ - Prem AI</a></li>
+    <li><a href="https://www.starkinsider.com/2026/03/google-turboquant-llm-compression-less-memory.html" target="_blank">Google's TurboQuant: The Unsexy AI Breakthrough Worth Watching - Stark Insider</a></li>
+    <li><a href="https://groundy.com/articles/prefill-decode-disaggregation-the-architecture-shift-redefining-llm-serving-at-scale/" target="_blank">Prefill-Decode Disaggregation: Redefining LLM Serving at Scale - Groundy</a></li>
+    <li><a href="https://www.yottalabs.ai/post/fastest-llm-inference-in-2026-gpu-speed-throughput-and-cost-compared" target="_blank">Fastest LLM Inference in 2026: GPU Speed, Throughput, and Cost - Yotta Labs</a></li>
+    <li><a href="https://dasroot.net/posts/2026/01/local-llm-deployment-ollama-llama.cpp/" target="_blank">Local LLM Deployment with Ollama and llama.cpp - DasRoot</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
