@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>从零手搓一个 AI 编程助手：当你理解了 Claude Code 的 50 行核心代码 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI Agent</span>
+    <span class="tag">AI 编程</span>
+    <span class="tag">架构设计</span>
+  </div>
+  <h1>从零手搓一个 AI 编程助手：当你理解了 Claude Code 的 50 行核心代码</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-09</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一个 AI 编程助手的本质是什么？</a>
+  <a href="#s2">架构长什么样？</a>
+  <a href="#s3">Agent Loop 怎么转起来？</a>
+  <a href="#s4">工具系统怎么设计？</a>
+  <a href="#s5">文件编辑这个硬骨头怎么啃？</a>
+  <a href="#s6">上下文爆了怎么办？</a>
+  <a href="#s7">现在，轮到你了</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>做一个思想实验：如果明天 Claude Code 停服了，你的工作会怎样？</p>
+
+<p>不只是 Claude Code。假设 Cursor、Copilot、Windsurf——所有 AI 编程工具，同时消失 24 小时。</p>
+
+<p>如果你的第一反应是"那我回去手写呗，也没什么"——说明你还没真正依赖这些工具。但如果你停顿了一下，心里开始盘算哪些任务会被卡住——恭喜你，你已经是 AI 编程时代的原住民了。</p>
+
+<p>但这个思想实验的重点不是让你焦虑。重点是：<strong>如果这些工具突然都不能用了，你有能力自己搓一个吗？</strong></p>
+
+<p>答案可能比你想象的要乐观。因为 Claude Code、Codex CLI、Aider 这些看起来很神奇的工具，它们的核心架构惊人地简单。Braintrust 的工程团队总结得好：最成功的 AI Agent，本质上就是<strong>一个 while 循环加一堆工具调用</strong>。没有 DAG，没有分类器，没有 RAG。</p>
+
+<p>今天我就来带你拆解这个 while 循环，从架构到实现，从核心组件到踩坑记录。读完这篇文章，你不一定能造出下一个 Claude Code，但你一定能理解它为什么能工作，以及——自己动手搓一个够用的版本。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 一个 AI 编程助手的本质是什么？ ==================== -->
+<h2 id="s1">一个 AI 编程助手的本质是什么？</h2>
+
+<p>在开始写代码之前，我们先搞清楚一件事：AI 编程助手跟 ChatGPT 那种聊天机器人，到底有什么本质区别？</p>
+
+<p>ChatGPT 是一个<strong>问答系统</strong>：你问一句，它答一句。即使聊了很多轮，它本质上还是在"回答问题"。</p>
+
+<p>但 Claude Code 不一样。你说"帮我把这个项目的测试覆盖率从 60% 提到 85%"，它会：</p>
+
+<ol>
+  <li>先搜索项目里所有的测试文件，理解现有测试结构</li>
+  <li>跑一遍测试，看哪些模块覆盖率低</li>
+  <li>读源码，理解没被覆盖的逻辑分支</li>
+  <li>写新测试，一个文件一个文件地补</li>
+  <li>跑测试验证，失败了就改，直到通过</li>
+</ol>
+
+<p>发现区别了吗？它不是在"回答问题"，它是在<strong>执行任务</strong>。它会规划、行动、观察结果、然后调整策略。这个"规划—行动—观察"的循环，就是 AI Agent 的核心范式，学术界叫它 <strong>ReAct（Reasoning + Acting）</strong>。</p>
+
+<p>打个比方：ChatGPT 像一个顾问——你问它怎么做，它给你建议，但活儿还是你干。Claude Code 像一个实习生——你告诉它目标，它自己去查资料、写代码、跑测试、改 bug，直到把活儿干完。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  聊天机器人的核心是 <code>input → output</code>，一来一回。AI 编程助手的核心是 <code>while (没完成) { 思考 → 行动 → 观察 }</code>，一个持续运转的循环。这个循环有多少行代码？答案是：大约 50 行。真正的复杂度不在循环本身，而在循环里调用的那些工具。
+</div>
+
+<p>用一个公式概括：</p>
+
+<p><strong>AI 编程助手 = LLM + 工具系统 + Agent Loop + 上下文管理</strong></p>
+
+<p>LLM 提供"大脑"，工具系统提供"手脚"，Agent Loop 让大脑指挥手脚干活，上下文管理确保大脑不会忘掉关键信息。就这四样东西，排列组合一下，你就能做出一个 AI 编程助手。</p>
+
+<p><strong>50 行代码就是全部秘密。剩下的几万行，都是在让这 50 行跑得更稳、更快、更安全。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 架构长什么样？ ==================== -->
+<h2 id="s2">架构长什么样？</h2>
+
+<p>知道了本质，接下来看架构。一个 AI 编程助手从用户输入到最终输出，要经过哪些环节？</p>
+
+<p>我画了一张图，这是几乎所有主流 AI 编程助手共享的架构模式：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- 用户层 -->
+    <rect class="node-rect-blue" x="280" y="10" width="160" height="40"/>
+    <text class="node-label" x="360" y="30">用户输入（终端）</text>
+
+    <!-- 箭头：用户 → CLI 解析 -->
+    <line class="arrow-line-blue" x1="360" y1="50" x2="360" y2="75"/>
+
+    <!-- CLI 解析层 -->
+    <rect class="node-rect" x="250" y="75" width="220" height="40"/>
+    <text class="node-label" x="360" y="95">CLI 解析 + 权限检查</text>
+
+    <!-- 箭头：CLI → Agent Loop -->
+    <line class="arrow-line-blue" x1="360" y1="115" x2="360" y2="140"/>
+
+    <!-- Agent Loop（核心） -->
+    <rect class="node-rect-amber" x="220" y="140" width="280" height="50"/>
+    <text class="node-label" x="360" y="158" style="font-size:15px;">Agent Loop（核心循环）</text>
+    <text class="node-sublabel" x="360" y="178">while (有工具调用) { LLM → 工具 → 结果 }</text>
+
+    <!-- 左分支：LLM API -->
+    <line class="arrow-line" x1="270" y1="190" x2="120" y2="230"/>
+    <rect class="node-rect-purple" x="30" y="230" width="180" height="40"/>
+    <text class="node-label" x="120" y="250">LLM API（大脑）</text>
+
+    <!-- 右分支：工具系统 -->
+    <line class="arrow-line" x1="450" y1="190" x2="600" y2="230"/>
+    <rect class="node-rect-green" x="510" y="230" width="180" height="40"/>
+    <text class="node-label" x="600" y="250">工具系统（手脚）</text>
+
+    <!-- 工具子节点 -->
+    <rect class="node-rect-gray" x="510" y="282" width="55" height="28"/>
+    <text class="node-sublabel" x="537" y="296">Read</text>
+    <rect class="node-rect-gray" x="573" y="282" width="55" height="28"/>
+    <text class="node-sublabel" x="600" y="296">Edit</text>
+    <rect class="node-rect-gray" x="636" y="282" width="55" height="28"/>
+    <text class="node-sublabel" x="663" y="296">Bash</text>
+
+    <!-- 中间：上下文管理 -->
+    <line class="arrow-line" x1="360" y1="190" x2="360" y2="230"/>
+    <rect class="node-rect-red" x="270" y="230" width="180" height="40"/>
+    <text class="node-label" x="360" y="250">上下文管理</text>
+    <text class="node-sublabel" x="360" y="286">消息历史 / 压缩 / 记忆</text>
+  </svg>
+  <div class="diagram-caption">AI 编程助手核心架构：Agent Loop 是调度中枢，连接 LLM、工具系统和上下文管理</div>
+</div>
+
+<p>这个架构看起来简单，但每一层都有讲究。让我逐层拆解：</p>
+
+<p><strong>第一层：终端 UI。</strong>用户在命令行里输入指令，看到 AI 的思考过程和操作结果。Claude Code 用的是 React + Ink（没错，React 不只能写网页，还能写终端 UI），实现了流式输出、语法高亮、diff 展示等功能。但如果你自己搓，一个简单的 readline 就够了。</p>
+
+<p><strong>第二层：CLI 解析 + 权限检查。</strong>解析用户命令，检查安全权限。比如用户要执行 <code>rm -rf /</code>，这一层要拦住它。Claude Code 有一套完整的 Shell AST 解析器，能在执行前分析命令的危险程度。</p>
+
+<p><strong>第三层：Agent Loop。</strong>这是整个系统的心脏，后面会详细展开。</p>
+
+<p><strong>第四层：LLM API + 工具系统 + 上下文管理。</strong>Agent Loop 调度的三个核心资源——大模型负责思考，工具负责执行，上下文管理负责记忆。</p>
+
+<p>有意思的是，这个架构跟 Unix 的设计哲学惊人地相似：每一层做一件事，通过简单的接口串联。没有花哨的微服务，没有复杂的消息队列。一条管道，从头到尾。</p>
+
+<p><strong>AI 编程助手的竞争力，不是 AI 多聪明，而是管道多顺畅。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Agent Loop 怎么转起来？ ==================== -->
+<h2 id="s3">Agent Loop 怎么转起来？</h2>
+
+<p>好，到了最核心的部分。Agent Loop 到底是怎么工作的？</p>
+
+<p>我先给你看代码，再解释。这是一个可以工作的 Agent Loop，用 Python 写的，20 多行：</p>
+
+<pre><code class="language-python">import anthropic
+
+client = anthropic.Anthropic()
+messages = []
+tools = [read_tool, edit_tool, bash_tool, grep_tool]  # 工具定义
+
+def agent_loop(user_input: str):
+    messages.append({"role": "user", "content": user_input})
+
+    while True:
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            system="你是一个编程助手，可以读写文件、执行命令。",
+            messages=messages,
+            tools=tools,
+            max_tokens=4096,
+        )
+        messages.append({"role": "assistant", "content": response.content})
+
+        # 如果没有工具调用，说明任务完成
+        if response.stop_reason == "end_turn":
+            return response.content
+
+        # 执行所有工具调用，把结果喂回去
+        for block in response.content:
+            if block.type == "tool_use":
+                result = execute_tool(block.name, block.input)
+                messages.append({
+                    "role": "user",
+                    "content": [{"type": "tool_result",
+                                 "tool_use_id": block.id,
+                                 "content": result}]
+                })</code></pre>
+
+<p>关键在第 12 行到第 15 行。模型返回的 <code>stop_reason</code> 有两种情况：如果是 <code>end_turn</code>，说明模型觉得活儿干完了，可以停下来跟你汇报了；如果是 <code>tool_use</code>，说明模型还需要调用工具——读个文件、跑个命令——拿到结果后再继续思考。</p>
+
+<p>打个比方：这就像一个厨师做菜的过程。</p>
+
+<p>厨师（LLM）看了菜谱（你的需求），心想"我先看看冰箱里有什么食材"（调用 Read 工具读文件）。看完之后发现缺点盐（发现一个 bug），于是"去柜子里拿盐"（调用 Edit 工具修改代码）。加完盐之后"尝一口看看咸淡"（调用 Bash 工具跑测试）。测试没过——"还差点味精"——继续调整。直到尝一口觉得"好了，可以上菜了"——返回 <code>end_turn</code>。</p>
+
+<p>整个过程就是一个<strong>思考 → 行动 → 观察 → 再思考</strong>的循环，直到模型认为任务完成。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 思考 -->
+    <rect class="node-rect-purple" x="30" y="70" width="130" height="50"/>
+    <text class="node-label" x="95" y="88">LLM 思考</text>
+    <text class="node-sublabel" x="95" y="108">"我需要读这个文件"</text>
+
+    <!-- 箭头：思考 → 行动 -->
+    <line class="arrow-line-blue" x1="160" y1="95" x2="200" y2="95"/>
+    <text class="arrow-label" x="180" y="85">tool_use</text>
+
+    <!-- 行动 -->
+    <rect class="node-rect-green" x="200" y="70" width="130" height="50"/>
+    <text class="node-label" x="265" y="88">执行工具</text>
+    <text class="node-sublabel" x="265" y="108">read("src/app.py")</text>
+
+    <!-- 箭头：行动 → 观察 -->
+    <line class="arrow-line-blue" x1="330" y1="95" x2="370" y2="95"/>
+    <text class="arrow-label" x="350" y="85">result</text>
+
+    <!-- 观察 -->
+    <rect class="node-rect-amber" x="370" y="70" width="130" height="50"/>
+    <text class="node-label" x="435" y="88">喂回结果</text>
+    <text class="node-sublabel" x="435" y="108">文件内容 → messages</text>
+
+    <!-- 箭头：观察 → 判断 -->
+    <line class="arrow-line-blue" x1="500" y1="95" x2="540" y2="95"/>
+
+    <!-- 判断 -->
+    <rect class="node-rect-blue" x="540" y="70" width="120" height="50"/>
+    <text class="node-label" x="600" y="88">还需要行动？</text>
+    <text class="node-sublabel" x="600" y="108">检查 stop_reason</text>
+
+    <!-- 回环箭头 -->
+    <path class="arrow-line" d="M 600 120 L 600 160 L 95 160 L 95 120" fill="none"/>
+    <text class="arrow-label" x="350" y="155">是 → 继续循环</text>
+
+    <!-- 退出箭头 -->
+    <line class="arrow-line" x1="600" y1="120" x2="600" y2="180"/>
+    <text class="arrow-label" x="640" y="175">否 → 返回</text>
+  </svg>
+  <div class="diagram-caption">Agent Loop 的 ReAct 循环：思考 → 行动 → 观察 → 判断，直到任务完成</div>
+</div>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  一个关键的实现细节：你<strong>必须</strong>先把模型返回的 assistant 消息（包含 tool_use）追加到消息历史，<strong>然后</strong>再追加工具执行的结果。顺序反了，API 会报错。这是很多人第一次写 Agent Loop 踩的第一个坑。
+</div>
+
+<p>你可能会问：就这么简单？那为什么 Claude Code 有几万行代码？</p>
+
+<p>因为这个 while 循环只是骨架。要让它在真实场景中可靠地工作，你还需要处理一大堆"脏活"：</p>
+
+<ul>
+  <li><strong>安全控制：</strong>设置最大循环次数（通常 15-25 次），防止 Agent 陷入死循环烧掉你的 API 额度</li>
+  <li><strong>错误处理：</strong>区分可重试的错误（429 限流、500 服务器错误）和致命错误（401 认证失败），用指数退避策略重试</li>
+  <li><strong>循环检测：</strong>对每次工具调用的名称和结果做哈希，发现重复模式就强制终止，避免"Ralph Wiggum 漂移"——Agent 看起来在忙，实际上在兜圈子</li>
+  <li><strong>流式输出：</strong>用户不想盯着空白屏幕等 30 秒，你需要把模型的思考过程实时流到终端上</li>
+  <li><strong>费用控制：</strong>设置单次会话的花费上限（比如 2 美元），超过就停下来问用户要不要继续</li>
+</ul>
+
+<p><strong>让模型"做事 + 看结果"，比只让它"想清楚再说"更有效。这就是 Agent 范式的核心洞察。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 工具系统怎么设计？ ==================== -->
+<h2 id="s4">工具系统怎么设计？</h2>
+
+<p>Agent Loop 是心脏，工具系统就是四肢。一个 AI 编程助手到底需要哪些工具？</p>
+
+<p>你可能以为越多越好。100 个工具覆盖所有场景，多全面！</p>
+
+<p>错了。反直觉的是：<strong>少而精的工具远胜大而全的军火库。</strong></p>
+
+<p>原因很简单——当你给模型 100 个工具的描述，光工具定义就要吃掉几千个 token，模型还要在 100 个选项里做选择，出错概率大增。Steve Kinney 的建议很精辟：<strong>如果一个人类工程师都分不清该用哪个工具，AI 也做不到。</strong></p>
+
+<p>Claude Code 的做法值得学习。它只有 8 个核心工具：</p>
+
+<table>
+<thead>
+<tr><th>工具</th><th>职责</th><th>为什么需要它</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Read</strong></td><td>读文件</td><td>理解代码的第一步</td></tr>
+<tr><td><strong>Edit</strong></td><td>编辑文件</td><td>精确修改，不重写整个文件</td></tr>
+<tr><td><strong>Write</strong></td><td>创建新文件</td><td>只在需要新文件时使用</td></tr>
+<tr><td><strong>Bash</strong></td><td>执行 shell 命令</td><td>万能适配器——跑测试、装依赖、查 git 日志</td></tr>
+<tr><td><strong>Grep</strong></td><td>搜索文件内容</td><td>在大项目里快速定位代码</td></tr>
+<tr><td><strong>Glob</strong></td><td>搜索文件路径</td><td>找到特定文件名模式的文件</td></tr>
+<tr><td><strong>Task</strong></td><td>启动子 Agent</td><td>复杂任务拆分给子进程</td></tr>
+<tr><td><strong>TodoWrite</strong></td><td>管理任务清单</td><td>跟踪多步骤任务的进度</td></tr>
+</tbody>
+</table>
+
+<p>8 个工具，覆盖了 99% 的编程场景。注意 Bash 工具——它是一个"万能适配器"。你不需要专门做一个"运行测试"工具、一个"安装依赖"工具、一个"查看 git 日志"工具。一个 Bash 工具，全搞定。</p>
+
+<p>那工具的接口长什么样？每个工具本质上就是一个函数，对外暴露三样东西：<strong>名字、描述、参数 schema</strong>。</p>
+
+<pre><code class="language-python"># 工具定义示例（Anthropic Tool Use 格式）
+read_tool = {
+    "name": "read_file",
+    "description": "读取指定路径的文件内容。返回带行号的文件内容。",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "file_path": {
+                "type": "string",
+                "description": "文件的绝对路径"
+            },
+            "offset": {
+                "type": "integer",
+                "description": "从第几行开始读（可选）"
+            },
+            "limit": {
+                "type": "integer",
+                "description": "最多读几行（可选）"
+            }
+        },
+        "required": ["file_path"]
+    }
+}</code></pre>
+
+<p>关键在 <code>description</code>。这不是写给人看的文档——这是写给模型看的指令。模型靠这段描述来决定什么时候调用这个工具、传什么参数。写得越精确，模型用得越准。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  一个具体的 <code>notify_customer</code> 工具，比一个通用的 <code>send_message</code> 工具好用 10 倍。因为前者的描述告诉模型"这是用来通知客户的"，模型立刻知道什么场景该用它。后者呢？"发消息给某人"——发给谁？用什么渠道？什么格式？模型一脸懵。<strong>工具描述的精确度，直接决定了 Agent 的智商。</strong>
+</div>
+
+<p>再分享一个设计原则：<strong>工具返回错误字符串，不要抛异常。</strong></p>
+
+<p>比如用户要读一个不存在的文件，不要让程序崩溃，而是返回 <code>"Error: 文件 /foo/bar.py 不存在"</code>。这样模型能看到错误信息，自己调整策略——"哦，文件名可能拼错了，让我 grep 搜一下"。如果你直接抛异常，整个 Agent Loop 就断了。</p>
+
+<p><strong>少而精的工具，加上精确的描述，胜过大而全的军火库。这是工具设计的第一性原理。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 文件编辑这个硬骨头怎么啃？ ==================== -->
+<h2 id="s5">文件编辑这个硬骨头怎么啃？</h2>
+
+<p>工具系统里，最难的工具是哪个？</p>
+
+<p>不是 Bash（执行命令很直接），不是 Read（读文件谁不会），而是<strong>文件编辑</strong>。</p>
+
+<p>这件事的难度远超你的想象。2026 年初，Can Boluk 发了一篇论文叫《The Harness Problem》，核心发现是：<strong>只改变编辑格式（不换模型），编码性能平均提升 8%。</strong>换句话说，你用什么方式让 AI 修改文件，比你用什么 AI 模型更影响成功率。</p>
+
+<p>为什么文件编辑这么难？因为大模型是文本生成器，它不是 IDE。它不能"移动光标到第 47 行，选中第 3 个单词，替换为另一个"。它只能输出一段文字来描述"我想做什么改动"。然后，你的代码要根据这段描述，精确地修改文件。</p>
+
+<p>这就像让一个外科医生不能亲自动手，只能对着电话口述"把第三根肋骨旁边那条血管缝合一下"——手术能不能成功，完全取决于<strong>你的口述格式够不够精确，以及接电话那边的人能不能准确理解</strong>。</p>
+
+<p>目前业界有五种主流的编辑策略，各有优劣：</p>
+
+<h3>策略一：整文件重写</h3>
+
+<p>最暴力的方式——让模型输出修改后的完整文件。优点是简单粗暴，不存在"匹配不上"的问题。缺点？一个 500 行的文件，你只改了第 42 行的一个变量名，模型要把 500 行全输出一遍。浪费 token 不说，还经常"手抖"改了不该改的地方。</p>
+
+<h3>策略二：Search/Replace 块</h3>
+
+<p>这是 Aider 和 Claude Code 的方案。模型输出一对"搜索/替换"块：</p>
+
+<pre><code class="language-text"><<<<<<< SEARCH
+def calculate_total(items):
+    return sum(item.price for item in items)
+=======
+def calculate_total(items):
+    tax_rate = 0.08
+    subtotal = sum(item.price for item in items)
+    return subtotal * (1 + tax_rate)
+>>>>>>> REPLACE</code></pre>
+
+<p>你的代码在文件里搜索 SEARCH 块的内容，找到后替换成 REPLACE 块的内容。直觉上很好理解，对吧？</p>
+
+<p>但坑在哪？<strong>模型必须完全精确地复现原文。</strong>多一个空格、少一个缩进，搜索就匹配不上。所以实际实现时，你需要一套级联匹配策略：先精确匹配，失败了就忽略空白符匹配，再失败就保留缩进匹配，最后兜底用模糊匹配（Levenshtein 距离）。</p>
+
+<h3>策略三：Unified Diff</h3>
+
+<p>标准的 diff 格式，程序员都熟悉。但让模型生成格式正确的 diff 出奇地难——行号经常出错，上下文行也容易对不上。</p>
+
+<h3>策略四：LLM 辅助应用</h3>
+
+<p>Cursor 和 OpenHands 的方案——分两步走。第一步：大模型生成一个"改动草稿"（不需要格式精确）；第二步：一个专门训练的小模型（Fast Apply Model）负责把草稿精确地合并到文件里。</p>
+
+<p>这有点像：大模型是主任医师，负责决策"这个地方要改"；小模型是手术机器人，负责精确执行。各司其职。</p>
+
+<h3>策略五：Hashline 编辑（2026 年新秀）</h3>
+
+<p>给每行代码加一个内容哈希前缀，让模型"看到"行锚点。比如 <code>47:a3f2| def main():</code>。这让模型能精确定位要修改的位置，不需要复现原文。效果惊人：某些模型的编辑成功率从 6.7% 直接跳到 68.3%。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人觉得"用最强的模型就行了，编辑格式无所谓"。数据不支持这个观点。Can Boluk 的研究表明，编辑格式的选择对成功率的影响，跟模型选择同一量级。如果你在搓自己的编程助手，<strong>先把编辑格式选对，再考虑用什么模型。</strong>
+</div>
+
+<p>如果你是第一次搓，我的建议是从 Search/Replace 开始，加一套三级模糊匹配。投入产出比最高。</p>
+
+<p><strong>编辑格式的选择，比模型选择更影响成功率。这可能是 AI 编程领域最反直觉的结论。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 上下文爆了怎么办？ ==================== -->
+<h2 id="s6">上下文爆了怎么办？</h2>
+
+<p>到目前为止，你已经有了 Agent Loop、工具系统、文件编辑方案。看起来可以开工了。</p>
+
+<p>但还有一个隐藏 boss：<strong>上下文窗口</strong>。</p>
+
+<p>你可能知道大模型有一个"上下文窗口"——就是它一次能"看到"的文本量。Claude 的上下文窗口是 200K token，GPT-4.1 是 1M token。听起来很大对吧？</p>
+
+<p>但你算算一个真实的 Agent 会话消耗多少 token。Anthropic 的数据显示：<strong>工具返回的结果占了总 token 量的 67.6%</strong>，而系统提示词只占 3.4%。也就是说，每次 Read 一个文件、每次 Bash 执行一个命令，返回的结果都在疯狂吃你的上下文。</p>
+
+<p>一个复杂的编程任务——比如"把这个项目从 JavaScript 迁移到 TypeScript"——可能需要读几十个文件，跑几十次命令。用不了多久，200K 的上下文就塞满了。</p>
+
+<p>打个比方：上下文窗口就像会议室的白板。一开始白板是空的，你在上面写需求、画架构、贴便签。但白板面积有限，写着写着就满了。这时候你有两个选择：要么换一块更大的白板（更大的上下文窗口，但贵），要么把不重要的内容擦掉，在旁边写个摘要（上下文压缩）。</p>
+
+<p>AI 编程助手选的是第二种。这就是<strong>上下文压缩（Compaction）</strong>。</p>
+
+<p>压缩策略的核心思路是：<strong>最近几轮对话保持原文，更早的内容压缩成摘要。</strong>就像会议纪要——你不需要逐字记录"张三说了什么、李四反驳了什么"，只需要记录"讨论结果是用方案 B，原因是性能更好"。</p>
+
+<p>具体实现上，当上下文使用量超过 70% 时触发压缩：</p>
+
+<pre><code class="language-python">def maybe_compact(messages, max_tokens):
+    used = count_tokens(messages)
+    if used < max_tokens * 0.7:
+        return messages  # 还没满，不用压缩
+
+    # 保留最近 N 轮完整对话
+    recent = messages[-10:]
+    older = messages[:-10]
+
+    # 用 LLM 把旧对话压缩成摘要
+    summary = llm_summarize(older, prompt="""
+        总结之前的对话，保留：
+        1. 用户的原始需求
+        2. 已完成的修改和文件列表
+        3. 遇到的错误和解决方案
+        4. 当前进度和下一步计划
+        丢弃：具体的文件内容、命令输出等细节。
+    """)
+
+    return [{"role": "user", "content": summary}] + recent</code></pre>
+
+<p>关键在第 12-17 行的 prompt。你要告诉压缩用的 LLM：哪些信息必须保留（需求、进度、决策），哪些可以丢弃（文件内容、命令输出）。这其实就是在做信息的"优先级排序"。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">延伸思考</div>
+  上下文压缩还有一个反直觉的好处：它不只是"节省空间"，还能<strong>提升模型表现</strong>。因为当上下文里塞满了几十个文件的内容和命令输出时，模型容易"迷路"——学术界叫它"上下文漂移（Context Drift）"。压缩掉噪音，留下关键信息，反而让模型更聚焦。有时候，<strong>让 AI 忘掉一些东西，比让它记住一切更有效。</strong>
+</div>
+
+<p>除了压缩，还有两个常用的上下文管理手段：</p>
+
+<p><strong>分页读取：</strong>不要一次读完整个文件。Read 工具支持 <code>offset</code> 和 <code>limit</code> 参数，一次只读 200 行。这就像看书时只翻到你需要的那一页，而不是把整本书塞进工作记忆里。</p>
+
+<p><strong>子 Agent 隔离：</strong>对于复杂任务，Claude Code 会把子任务派给一个独立的子 Agent。子 Agent 有自己的上下文窗口，完成后只返回一个精简的总结。这就像"你去调研一下这个问题，回来给我一页纸的报告"，而不是"你去调研，把所有原始资料都搬回来"。</p>
+
+<p><strong>最好的上下文管理，不是让模型记住一切，而是让它忘掉该忘的。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s7">现在，轮到你了</h2>
+
+<p>回到开头那个思想实验：如果所有 AI 编程工具都停服了，你能自己搓一个吗？</p>
+
+<p>读完这篇文章，你已经知道了答案的骨架：</p>
+
+<ul>
+  <li><strong>核心是一个 while 循环</strong>——思考、行动、观察，周而复始</li>
+  <li><strong>工具系统贵精不贵多</strong>——8 个工具覆盖 99% 的场景</li>
+  <li><strong>文件编辑是最大的技术难点</strong>——编辑格式的选择比模型选择更重要</li>
+  <li><strong>上下文管理决定了能跑多远</strong>——该忘的信息要果断丢掉</li>
+  <li><strong>安全控制不能省</strong>——最大迭代次数、费用上限、循环检测，一个都不能少</li>
+</ul>
+
+<p>现在给你一个挑战：</p>
+
+<p><strong>今天回去，用 50 行代码实现一个最小的 Agent Loop。</strong></p>
+
+<p>就用上面那段 Python 代码作为起点，加上两个工具：一个 Read（读文件），一个 Bash（执行命令）。然后对它说："读一下当前目录的 README，告诉我这个项目是干什么的。"</p>
+
+<p>如果它能正确完成——恭喜，你已经手搓出了一个 AI 编程助手的胚胎。接下来要做的，就是一点点加工具、一点点加安全控制、一点点优化上下文管理。</p>
+
+<p>如果它失败了——更好。记录下它卡在哪里，这就是你需要解决的下一个问题。而解决问题的过程，才是你真正理解这项技术的开始。</p>
+
+<p>Claude Code 不是魔法。它只是一个 while 循环，加上足够多的细节处理。</p>
+
+<p>而细节这种东西——只要你愿意动手，就一定能搞定。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.braintrust.dev/blog/agent-while-loop" target="_blank">The Canonical Agent Architecture: A While Loop with Tools - Braintrust</a></li>
+    <li><a href="https://stevekinney.com/writing/agent-loops" target="_blank">The Anatomy of an Agent Loop - Steve Kinney</a></li>
+    <li><a href="https://fabianhertwig.com/blog/coding-assistants-file-edits/" target="_blank">Code Surgery: How AI Assistants Make Precise Edits to Your Files - Fabian Hertwig</a></li>
+    <li><a href="https://code.claude.com/docs/en/how-claude-code-works" target="_blank">How Claude Code Works - Anthropic</a></li>
+    <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank">Effective Context Engineering for AI Agents - Anthropic</a></li>
+    <li><a href="https://www.morphllm.com/edit-formats/diff-format-explained" target="_blank">Diff Format Explained: Search-Replace Blocks & AI Code Editing Limits - Morph</a></li>
+    <li><a href="https://zainhas.github.io/blog/2026/inside-claude-code-architecture/" target="_blank">Inside Claude Code: An Architecture Deep Dive - Zain Hasan</a></li>
+    <li><a href="https://www.morphllm.com/build-your-own-coding-agent" target="_blank">How to Build Your Own AI Coding Agent from Scratch - Morph</a></li>
+    <li><a href="https://martinfowler.com/articles/build-own-coding-agent.html" target="_blank">Building Your Own CLI Coding Agent with Pydantic-AI - Martin Fowler</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
