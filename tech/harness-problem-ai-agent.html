@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Harness Problem：为什么你的 AI Agent 只能演示，不能上线？ - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI Agent</span>
+    <span class="tag">Harness Engineering</span>
+    <span class="tag">可靠性工程</span>
+  </div>
+  <h1>Harness Problem：为什么你的 AI Agent 只能演示，不能上线？</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-09</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">什么是 Harness Problem？</a>
+  <a href="#s2">36% 的数学诅咒：可靠性为什么会"塌方"？</a>
+  <a href="#s3">Context Rot：Agent 为什么越跑越笨？</a>
+  <a href="#s4">CAR 框架：给 Agent 装上缰绳、马鞍和赛道</a>
+  <a href="#s5">五个关键工程模式：Harness 的解药</a>
+  <a href="#s6">写在最后：三个没有答案的问题</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上个月，一个做 AI 产品的朋友跟我吐槽："我们的 Agent 演示的时候惊艳全场，客户当场就说要签单。结果部署到生产环境，第一天就出了三个事故。"</p>
+
+<p>我问他："什么样的事故？"</p>
+
+<p>他说："Agent 执行到第 15 步的时候，忘了第 3 步定下的约束条件，直接把客户的测试数据写进了生产数据库。"</p>
+
+<p>我说："那你的 Harness 是怎么设计的？"</p>
+
+<p>他愣了一下："什么是 Harness？"</p>
+
+<p>这个反应，我在过去几个月里见过不下十次。几乎每个 Agent 创业团队都在疯狂优化 prompt、挑选模型、调整温度参数，但很少有人认真想过：<strong>模型之外的那些东西，才是决定 Agent 能不能上线的关键。</strong></p>
+
+<p>这就是 Harness Problem——2026 年 AI Agent 领域最核心、也最被低估的挑战。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 什么是 Harness Problem ==================== -->
+<h2 id="s1">什么是 Harness Problem？</h2>
+
+<p>先说一个你可能没想到的类比。</p>
+
+<p>如果把 AI 模型比作一匹千里马，那 Harness（直译"马具"）就是套在马身上的缰绳、马鞍和笼头。千里马再强，没有缰绳它只会乱跑；没有马鞍，骑手坐都坐不稳。</p>
+
+<p>在 AI Agent 的语境里，<strong>Harness 指的是模型之外的所有基础设施</strong>：上下文管理、状态持久化、工具调度、验证循环、人类审批流程、错误恢复机制……这些东西加在一起，才构成一个"能上生产"的 Agent 系统。</p>
+
+<p>Philipp Schmid（Hugging Face 技术负责人）用了一个更精确的类比：</p>
+
+<ul>
+<li><strong>模型 = CPU</strong>（算力核心）</li>
+<li><strong>上下文窗口 = 内存</strong>（易失性工作记忆）</li>
+<li><strong>Harness = 操作系统</strong>（调度、管理、容错）</li>
+<li><strong>Agent = 应用程序</strong>（面向用户的功能）</li>
+</ul>
+
+<p>你什么时候见过有人买了一颗顶级 CPU，不装操作系统就直接拿去跑业务的？</p>
+
+<p>但这恰恰是今天大多数 Agent 团队在做的事情——他们花 90% 的精力选模型、调 prompt，却只用 10% 的精力去搭建 Harness。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "用更强的模型就能解决 Agent 不靠谱的问题。"——不能。Anthropic 自己的实验证明，即使是 Opus 4.5 这样的前沿模型，没有好的 Harness，给它一个"克隆 claude.ai"的任务，它照样会翻车：要么试图一口气做完所有事，要么做到一半就宣布"完成了"。<strong>模型的能力是天花板，Harness 的质量决定你能碰到天花板的几成。</strong>
+</div>
+
+<p>所以，Harness Problem 的本质是：<strong>Agent 从"能演示"到"能上线"之间的鸿沟，不是模型能力的问题，而是模型之外所有工程的问题。</strong></p>
+
+<p>一句话：模型是发动机，Harness 是整辆车。发动机再猛，没有底盘、刹车和方向盘，你哪儿也去不了。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 36% 的数学诅咒 ==================== -->
+<h2 id="s2">36% 的数学诅咒：可靠性为什么会"塌方"？</h2>
+
+<p>你可能会说，模型不是已经很强了吗？单步成功率 95%，这不是 A+ 的成绩吗？</p>
+
+<p>对，但 Agent 不是考试，不是做一道题就交卷。Agent 是做一套卷子——而且每道题的答案会影响下一道题的题目。</p>
+
+<p>做一道数学题：</p>
+
+<p>假设 Agent 每一步的成功率是 95%。5 步之后，端到端成功率是多少？</p>
+
+<p><code>0.95 × 0.95 × 0.95 × 0.95 × 0.95 = 77%</code></p>
+
+<p>还行？那 10 步呢？</p>
+
+<p><code>0.95^10 = 60%</code></p>
+
+<p>20 步呢？</p>
+
+<p><code>0.95^20 = 36%</code></p>
+
+<p><strong>36%。</strong>一个每步成功率高达 95% 的 Agent，执行 20 步之后，有将近三分之二的概率会出错。</p>
+
+<p>这就是"可靠性复合衰减"——复利的反面。爱因斯坦说复利是世界第八大奇迹，那复合衰减就是工程师的第一大噩梦。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- 坐标轴 -->
+    <line x1="80" y1="240" x2="660" y2="240" stroke="#e2e8f0" stroke-width="1.5"/>
+    <line x1="80" y1="240" x2="80" y2="30" stroke="#e2e8f0" stroke-width="1.5"/>
+    <!-- Y轴标签 -->
+    <text class="node-sublabel" x="70" y="240" text-anchor="end">0%</text>
+    <text class="node-sublabel" x="70" y="190" text-anchor="end">25%</text>
+    <text class="node-sublabel" x="70" y="140" text-anchor="end">50%</text>
+    <text class="node-sublabel" x="70" y="90" text-anchor="end">75%</text>
+    <text class="node-sublabel" x="70" y="40" text-anchor="end">100%</text>
+    <!-- X轴标签 -->
+    <text class="node-sublabel" x="80" y="258">0</text>
+    <text class="node-sublabel" x="196" y="258">5</text>
+    <text class="node-sublabel" x="312" y="258">10</text>
+    <text class="node-sublabel" x="428" y="258">15</text>
+    <text class="node-sublabel" x="544" y="258">20</text>
+    <text class="node-sublabel" x="370" y="278" font-weight="600">执行步数</text>
+    <!-- 网格线 -->
+    <line x1="80" y1="190" x2="660" y2="190" stroke="#f1f5f9" stroke-width="1"/>
+    <line x1="80" y1="140" x2="660" y2="140" stroke="#f1f5f9" stroke-width="1"/>
+    <line x1="80" y1="90" x2="660" y2="90" stroke="#f1f5f9" stroke-width="1"/>
+    <line x1="80" y1="40" x2="660" y2="40" stroke="#f1f5f9" stroke-width="1"/>
+    <!-- 99% 曲线（绿色） -->
+    <polyline fill="none" stroke="#10b981" stroke-width="2.5" points="80,40 196,50 312,60 428,71 544,82"/>
+    <text x="555" y="78" font-size="11" fill="#10b981" font-weight="600">99%/步</text>
+    <!-- 95% 曲线（蓝色） -->
+    <polyline fill="none" stroke="#3b82f6" stroke-width="2.5" points="80,40 196,86 312,120 428,147 544,168"/>
+    <text x="555" y="164" font-size="11" fill="#3b82f6" font-weight="600">95%/步</text>
+    <!-- 90% 曲线（红色） -->
+    <polyline fill="none" stroke="#ef4444" stroke-width="2.5" points="80,40 196,122 312,172 428,202 544,220"/>
+    <text x="555" y="216" font-size="11" fill="#ef4444" font-weight="600">90%/步</text>
+    <!-- 标注 36% -->
+    <circle cx="544" cy="168" r="4" fill="#3b82f6"/>
+    <line x1="544" y1="168" x2="544" y2="240" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="544" y="155" font-size="12" fill="#3b82f6" font-weight="700" text-anchor="middle">36%</text>
+  </svg>
+  <div class="diagram-caption">可靠性复合衰减：单步成功率 vs 端到端成功率</div>
+</div>
+
+<p>更可怕的是，Agent 的失败不像程序崩溃那样"哐"一声。它经常是"软失败"——Agent 觉得自己做对了，自信满满地把错误结果交给你。你看着输出觉得"嗯，挺像回事"，直到三天后发现数据全是错的。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  Aakash Gupta 在研究中发现：使用相同模型的两个团队，仅因为 Harness 质量不同，任务完成率可以相差 60% vs 98%。模型一样，差距却是天壤之别。这说明什么？<strong>模型是商品，Harness 才是护城河。</strong>
+</div>
+
+<p>但问题来了：Harness 到底需要解决什么？为什么简单地"加个重试"不够？</p>
+
+<p>答案藏在一个更深层的概念里——Context Rot。</p>
+
+<hr>
+
+<!-- ==================== SECTION: Context Rot ==================== -->
+<h2 id="s3">Context Rot：Agent 为什么越跑越笨？</h2>
+
+<p>你有没有过这样的体验？跟 ChatGPT 聊到第 50 条消息的时候，它突然"忘了"你前面说的某个关键约束，开始自说自话？</p>
+
+<p>这不是你的错觉。这个现象有一个正式的名字：<strong>Context Rot（上下文腐烂）</strong>。</p>
+
+<p>打个比方：想象你在参加一场开卷考试。一开始，桌上只有教材和笔记，你翻到哪页都很清楚。但随着考试进行，你不断从各种地方查资料，打印的论文、同学传来的小纸条、自己的草稿纸——桌子上越堆越多。</p>
+
+<p>到最后，你要找一个关键公式，必须在一堆废纸里翻半天。有时候你翻到的还是一个两小时前就已经被你推翻的错误版本。</p>
+
+<p>Agent 面对的就是这个困境。</p>
+
+<p>在一个长时间运行的任务里，Agent 的上下文窗口会逐渐堆满：中间调试输出、过期的文件版本、失败的工具调用结果、走不通的探索分支……<strong>噪声堆积的速度远远快于有效信号。</strong></p>
+
+<p>研究者发现了一个叫"Lost in the Middle"的效应：当上下文变长时，模型会系统性地忽视中间部分的信息，只关注开头和结尾。这意味着你在第 5 步设定的关键约束，到了第 15 步可能已经被"埋"在上下文的中间地带，模型根本看不到了。</p>
+
+<blockquote>
+"即使信息在技术上仍然存在于上下文窗口中，模型也无法找到它。上下文窗口更大只能推迟腐烂，但不能消除它。"<br>
+—— Understanding AI, 《Context Rot: The Emerging Challenge》
+</blockquote>
+
+<p>你可能会想：那用 100 万 token 的超长上下文窗口呢？</p>
+
+<p>答案是：有帮助，但远远不够。更大的上下文窗口像是给你一张更大的桌子——但如果你不整理桌面，桌子再大也会被废纸淹没。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  <strong>上下文窗口大</strong> ≠ <strong>上下文质量好</strong>。Harness 的核心使命之一，就是"策展"上下文——确保模型看到的每一个 token 都是当前最相关的信息，而不是过期的噪声。这不是模型能自己做到的事，必须由外部工程来保证。
+</div>
+
+<p>Agent 不是变笨了，是被自己的记忆淹没了。</p>
+
+<p>那么，好的 Harness 应该长什么样？有没有一个系统性的框架来思考这个问题？</p>
+
+<hr>
+
+<!-- ==================== SECTION: CAR 框架 ==================== -->
+<h2 id="s4">CAR 框架：给 Agent 装上缰绳、马鞍和赛道</h2>
+
+<p>Martin Fowler 的团队提出了一个极其优雅的框架来理解 Harness 的结构：<strong>CAR 框架</strong>——Control、Agency、Runtime。</p>
+
+<p>还是用赛马的比方来解释：</p>
+
+<ul>
+<li><strong>Control（控制）= 缰绳</strong>：定义 Agent 不能做什么。包括约束规范（AGENTS.md）、代码检查器（linter）、测试门禁、权限边界</li>
+<li><strong>Agency（代理能力）= 马鞍和马镫</strong>：定义 Agent 能用什么工具。包括 MCP 服务器、子 Agent、API 接口</li>
+<li><strong>Runtime（运行时）= 赛道</strong>：定义 Agent 怎么跑。包括生命周期钩子、重试策略、回滚机制、状态持久化</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- 中心模型节点 -->
+    <rect class="node-rect-blue" x="280" y="130" width="160" height="60"/>
+    <text class="node-label" x="360" y="153">AI Model</text>
+    <text class="node-sublabel" x="360" y="172">LLM / 推理引擎</text>
+    <!-- Control 组 -->
+    <rect class="group-box" x="15" y="15" width="200" height="290"/>
+    <text class="group-label" x="30" y="38">CONTROL（控制层）</text>
+    <rect class="node-rect-red" x="35" y="55" width="160" height="36"/>
+    <text class="node-label" x="115" y="73">约束规范</text>
+    <rect class="node-rect-red" x="35" y="105" width="160" height="36"/>
+    <text class="node-label" x="115" y="123">Linter / 测试</text>
+    <rect class="node-rect-red" x="35" y="155" width="160" height="36"/>
+    <text class="node-label" x="115" y="173">权限边界</text>
+    <rect class="node-rect-red" x="35" y="205" width="160" height="36"/>
+    <text class="node-label" x="115" y="223">审批流程</text>
+    <rect class="node-rect-red" x="35" y="255" width="160" height="36"/>
+    <text class="node-label" x="115" y="273">前馈 Guide</text>
+    <!-- Agency 组 -->
+    <rect class="group-box" x="505" y="15" width="200" height="290"/>
+    <text class="group-label" x="520" y="38">AGENCY（代理层）</text>
+    <rect class="node-rect-green" x="525" y="55" width="160" height="36"/>
+    <text class="node-label" x="605" y="73">MCP Server</text>
+    <rect class="node-rect-green" x="525" y="105" width="160" height="36"/>
+    <text class="node-label" x="605" y="123">子 Agent</text>
+    <rect class="node-rect-green" x="525" y="155" width="160" height="36"/>
+    <text class="node-label" x="605" y="173">工具 / API</text>
+    <rect class="node-rect-green" x="525" y="205" width="160" height="36"/>
+    <text class="node-label" x="605" y="223">文件系统</text>
+    <rect class="node-rect-green" x="525" y="255" width="160" height="36"/>
+    <text class="node-label" x="605" y="273">外部服务</text>
+    <!-- Runtime 底层 -->
+    <rect class="node-rect-purple" x="240" y="230" width="240" height="60"/>
+    <text class="node-label" x="360" y="253">RUNTIME（运行时）</text>
+    <text class="node-sublabel" x="360" y="272">钩子 · 重试 · 回滚 · 状态持久化</text>
+    <!-- 箭头 -->
+    <line class="arrow-line" x1="200" y1="160" x2="275" y2="160"/>
+    <line class="arrow-line" x1="445" y1="160" x2="520" y2="160"/>
+    <line class="arrow-line" x1="360" y1="195" x2="360" y2="225"/>
+    <text class="arrow-label" x="237" y="150">约束</text>
+    <text class="arrow-label" x="483" y="150">调用</text>
+  </svg>
+  <div class="diagram-caption">CAR 框架：Control（控制）+ Agency（代理能力）+ Runtime（运行时）</div>
+</div>
+
+<p>Martin Fowler 团队进一步把 Control 层拆成了两种机制，这是我觉得最有洞见的部分：</p>
+
+<p><strong>前馈控制（Guide）</strong>：在 Agent 行动之前，告诉它什么能做、什么不能做。就像你给新入职的实习生一份 SOP 手册——他还没开始干活，你就先把规矩立好。</p>
+
+<p><strong>反馈控制（Sensor）</strong>：在 Agent 行动之后，检查它做得对不对。就像代码里的单元测试——不是阻止你犯错，而是在你犯错后立刻告诉你。</p>
+
+<table>
+<thead>
+<tr><th>控制类型</th><th>时机</th><th>方式</th><th>例子</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>前馈（Guide）</strong></td><td>行动前</td><td>规范、约束、Prompt 注入</td><td>AGENTS.md、系统提示词、权限白名单</td></tr>
+<tr><td><strong>反馈（Sensor）</strong></td><td>行动后</td><td>检查、测试、AI 审查</td><td>Linter、集成测试、代码审查 Agent</td></tr>
+</tbody>
+</table>
+
+<p>有意思的是，这跟传统软件工程的"左移质量"思路完全一致：<strong>能在编译期抓住的错误，就别等到运行时；能在 Agent 动手之前预防的问题，就别等它搞砸了再修。</strong></p>
+
+<p>Manus（一个知名的 Agent 产品）在六个月内重构了五次 Harness。LangChain 的 Deep Research Agent 在一年内重写了三次架构。Vercel 则走了另一个极端——砍掉了 80% 的工具，反而让 Agent 跑得更快、更稳。</p>
+
+<p>这些案例说明一件事：好的 Harness 不是一次性设计出来的，它是"活"的，需要跟 Agent 一起进化。</p>
+
+<p>好的 Harness 不是限制 Agent，而是让它跑得更远。就像好的赛道不是缩短赛程，而是让赛马全力奔跑时不会摔断腿。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 五个关键工程模式 ==================== -->
+<h2 id="s5">五个关键工程模式：Harness 的解药</h2>
+
+<p>理解了问题，接下来聊解法。我从目前行业实践中提炼了五个最关键的工程模式，每一个都经过了生产验证。</p>
+
+<h3>模式一：验证循环（Verification Loop）</h3>
+
+<p>这是 Harness 工程中<strong>投入产出比最高的一个模式</strong>。</p>
+
+<p>原理很简单：Agent 每完成一步操作，不要直接执行下一步，而是先过一道验证门。这道门可以是确定性的（运行测试）、也可以是推理性的（用另一个 AI 审查）。</p>
+
+<pre><code class="language-python"># 验证循环的核心逻辑
+def agent_step_with_verification(task, state):
+    # 1. Agent 执行一步
+    result = agent.execute(task, state)
+
+    # 2. 确定性验证：跑测试、跑 linter
+    test_ok = run_tests(result)
+    lint_ok = run_linter(result)
+
+    # 3. 如果验证失败，把错误信息喂回给 Agent
+    if not (test_ok and lint_ok):
+        return agent.fix(result, get_errors())
+
+    # 4. 验证通过，提交状态，进入下一步
+    commit_state(result)
+    return result</code></pre>
+
+<p>关键在第 3 行和第 7 行之间：<strong>每一步都有"刹车"</strong>。这能把软失败在传播之前就拦截下来，避免错误沿着执行链一路放大。</p>
+
+<p>Anthropic 的实验发现，当 Agent 被明确要求"像人类用户一样通过浏览器自动化工具做端到端测试"时，完成质量出现了质的飞跃。不是让 Agent 自己判断"我做对了"，而是让外部系统来验证。</p>
+
+<h3>模式二：子 Agent 架构（Sub-Agent Isolation）</h3>
+
+<p>还记得 Context Rot 吗？子 Agent 是解决它最直接的手段。</p>
+
+<p>想象你是一个项目经理。如果你亲自去做每一件事——调研、写代码、测试、写文档——你的大脑很快就会被细节淹没。</p>
+
+<p>聪明的做法是什么？委派。让调研员去调研，开发者去写代码，测试员去测试。每个人完成后，只给你一份简洁的报告。你的脑子里始终只有"全局概况"，不会被任何一个子任务的细节污染。</p>
+
+<p>子 Agent 架构干的就是这件事：主 Agent 负责编排和决策，脏活累活委派给专门的子 Agent。子 Agent 的上下文是隔离的——它的调试噪声、中间结果、失败回溯，全部留在自己的上下文里，不会"传染"给主 Agent。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">实战案例</div>
+  Anthropic 的多 Agent 研究系统使用了这个架构，在研究任务上比单 Agent 性能提升了 90.2%。不是因为用了更强的模型，而是因为每个子 Agent 都有干净的上下文——不会被其他任务的噪声干扰。
+</div>
+
+<h3>模式三：JIT 上下文检索（Just-In-Time Retrieval）</h3>
+
+<p>Claude Code 用的就是这个策略：不预加载所有信息，而是在需要的时候才去获取。</p>
+
+<p>这跟传统软件中的"懒加载"是一个思路。你不需要把整个数据库都加载到内存里，你只需要在用到某条记录的时候才去查。对 Agent 来说，你不需要在第 1 步就把项目的全部代码、全部文档、全部历史记录塞进上下文——在 Agent 真正需要某个文件的时候再读取它就好。</p>
+
+<p>简单，但有效。因为它从源头控制了上下文的膨胀速度。</p>
+
+<h3>模式四：状态外化（State Externalization）</h3>
+
+<p>上下文窗口是"易失"的——一旦超出长度被截断，或者开启新的会话，之前的信息就丢了。</p>
+
+<p>解决方案：<strong>把关键状态写到上下文之外</strong>。</p>
+
+<p>Anthropic 的 Harness 设计用了一个巧妙的做法：让 Agent 把进度写入 <code>claude-progress.txt</code> 文件，每完成一个功能就用描述性的 git commit 记录状态。这样，即使开启一个全新的上下文窗口，Agent 读一下进度文件和 git log，就能快速重建工作状态。</p>
+
+<p>这不是什么高科技——每个靠谱的人类软件工程师每天都在做这件事：写 commit message、更新 TODO、记录决策。<strong>Harness 工程的本质，就是把人类工程师的隐性经验，变成 Agent 能遵循的显性规则。</strong></p>
+
+<h3>模式五：增量执行 + 干净状态（Incremental + Clean State）</h3>
+
+<p>Anthropic 在构建 claude.ai 克隆的实验中发现，Agent 最常见的失败模式是"试图一口气做完所有事"。</p>
+
+<p>解法是：强制 Agent 每次只做一个功能，做完之后代码必须处于"可合入主分支"的状态——没有重大 bug、代码整洁、文档齐全。</p>
+
+<p>这跟软件开发中的"小步提交"原则如出一辙。你不会让一个工程师闷头写三天再提交一个 2000 行的大 PR。你会要求他每天提交，每次 PR 只做一件事。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">延伸思考</div>
+  如果你仔细看这五个模式，会发现它们没有一个是"AI 原生"的——验证循环是 CI/CD、子 Agent 是微服务、JIT 是懒加载、状态外化是数据库、增量执行是敏捷开发。<strong>Harness 工程不是发明新轮子，而是把软件工程几十年的老智慧，适配到 Agent 这个新物种上。</strong>
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">写在最后：三个没有答案的问题</h2>
+
+<p>写到这里，核心洞察可以浓缩成一句话：<strong>2025 年是 Agent 的元年，2026 年是 Harness 的元年。建 Agent 是序章，建 Harness 才是正文。</strong></p>
+
+<p>但聊到这里，有三个问题我还没有答案，也不确定行业什么时候能给出答案：</p>
+
+<p><strong>第一，Harness 会不会被模型本身吞掉？</strong></p>
+
+<p>随着模型上下文窗口越来越长、推理能力越来越强，今天需要 Harness 解决的问题（比如 Context Rot），会不会在下一代模型中自然消失？如果 Context Rot 是个工程问题而非架构缺陷，那模型进化也许能解决它。但如果它是 Transformer 注意力机制的内在局限，那 Harness 就是永远的刚需。</p>
+
+<p><strong>第二，当 Agent 能自主调用 100+ 工具时，信任边界谁来画？</strong></p>
+
+<p>今天的 Harness 主要靠人类预设权限白名单。但当 Agent 能力越来越强、自主性越来越高时，这种"硬编码"的信任模型还能 scale 吗？OpenID Foundation 已经在探讨"递归委托"的治理框架——但从论文到落地，还有很长的路。</p>
+
+<p><strong>第三，Harness 工程师会成为一个独立岗位吗？</strong></p>
+
+<p>Martin Fowler 的文章用了"Harness Engineering"这个术语。这暗示它可能从"Agent 开发的一个环节"升级为"一个独立的工程学科"。就像 DevOps 从"开发附带做的运维工作"变成了一个独立职业。如果 Agent 成为软件开发的主力军，那负责"管好 Agent"的人，可能会比"构建 Agent"的人更稀缺。</p>
+
+<p>我不知道这三个问题的答案。但我知道一件事：<strong>在未来 12 个月里，谁先把 Harness 做好，谁就能在 AI Agent 的落地竞赛中领先整整一个身位。</strong></p>
+
+<p>因为在这个赛道上，瓶颈已经不是"马跑多快"，而是"缰绳够不够好"。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Anthropic - Effective Harnesses for Long-Running Agents</a></li>
+    <li><a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank">Martin Fowler - Harness Engineering for Coding Agent Users</a></li>
+    <li><a href="https://www.philschmid.de/agent-harness-2026" target="_blank">Philipp Schmid - The Importance of Agent Harness in 2026</a></li>
+    <li><a href="https://aakashgupta.medium.com/2025-was-agents-2026-is-agent-harnesses-heres-why-that-changes-everything-073e9877655e" target="_blank">Aakash Gupta - 2025 Was Agents, 2026 Is Agent Harnesses</a></li>
+    <li><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank">Anthropic - Harness Design for Long-Running Application Development</a></li>
+    <li><a href="https://redis.io/blog/context-rot/" target="_blank">Redis - Context Rot Explained (And How to Prevent It)</a></li>
+    <li><a href="https://www.mindstudio.ai/blog/reliability-compounding-problem-ai-agent-stacks" target="_blank">MindStudio - The Reliability Compounding Problem in AI Agent Stacks</a></li>
+    <li><a href="https://parallel.ai/articles/what-is-an-agent-harness" target="_blank">Parallel AI - What Is an Agent Harness in the Context of LLMs</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
