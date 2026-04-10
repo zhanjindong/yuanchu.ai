@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude Managed Agents：当 AI Agent 有了自己的"操作系统" - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Agent</span>
+    <span class="tag">Claude</span>
+    <span class="tag">基础设施</span>
+  </div>
+  <h1>Claude Managed Agents：当 AI Agent 有了自己的"操作系统"</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-10</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">Agent 上线为什么这么难？</a>
+  <a href="#s2">"脑"和"手"为什么要分开？</a>
+  <a href="#s3">崩溃了怎么办？</a>
+  <a href="#s4">凭证安全怎么保证？</a>
+  <a href="#s5">开发者要写多少代码？</a>
+  <a href="#s6">跟 OpenAI、跟自建方案怎么选？</a>
+  <a href="#s7">Agent 基础设施的 "AWS 时刻"</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>2026 年 4 月 8 日，Anthropic 发了一篇博客，标题是 <em>"Claude Managed Agents: get to production 10x faster"</em>。</p>
+
+<p>没有发布会，没有 CEO 站台演讲，甚至没有一个演示视频。就这么安安静静地上线了一个公测。</p>
+
+<p>但如果你在过去半年里尝试过把任何一个 AI Agent 从 Demo 搬到生产环境，你就会知道——这可能是 2026 年到目前为止，对开发者影响最大的一次发布。</p>
+
+<p>为什么？</p>
+
+<p>因为 Anthropic 做了一件所有 Agent 开发者梦寐以求、却没人愿意自己干的事：<strong>它把 Agent 的"操作系统"给你包好了。</strong></p>
+
+<p>你不用再操心沙箱怎么隔离、崩溃了怎么恢复、凭证怎么不泄漏。你只需要告诉它：我的 Agent 要干什么。</p>
+
+<p>听起来太美好了？让我一层一层拆给你看。</p>
+
+<hr>
+
+<!-- ==================== SECTION: Agent 上线为什么这么难？ ==================== -->
+<h2 id="s1">Agent 上线为什么这么难？</h2>
+
+<p>你一定见过这样的 Demo：有人录了一段 30 秒的视频，Agent 自动写代码、自动跑测试、自动部署，流畅得像魔法。</p>
+
+<p>然后你兴冲冲地去复现，发现——</p>
+
+<p>Agent 需要一个沙箱来跑代码，但你得自己搭容器编排。Agent 需要访问 GitHub，但 OAuth token 不能暴露给生成的代码。Agent 跑到一半崩了，所有上下文全丢，得从头来。Agent 要调外部 API，但权限控制、速率限制、错误重试全得你写。</p>
+
+<p>这就是业界臭名昭著的 <strong>Harness Problem</strong>——Agent 的"智能"部分（大模型推理）可能只占你 10% 的工作量，剩下 90% 全是基础设施：执行环境、状态管理、安全隔离、故障恢复。</p>
+
+<p>打个比方：大模型是发动机，Agent 是整辆车。发动机再牛，没有底盘、刹车、转向系统，你也没法上路。而大多数团队花在"造底盘"上的时间，比调模型的时间长 10 倍。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为 Agent 开发的难点在 Prompt Engineering 或模型选择。实际上，模型能力早已"够用"了。真正卡脖子的是基础设施——沙箱隔离、状态持久化、凭证管理、崩溃恢复。这些东西不性感，但缺一个就上不了线。
+</div>
+
+<p>Notion、Rakuten、Asana 这些公司能把 Agent 用到生产里，不是因为它们的 Prompt 写得比你好。而是因为它们有专门的基础设施团队，花了几个月时间把这些"脏活累活"全干了。</p>
+
+<p>Anthropic 的判断是：这些活，不应该每个团队都重复造一遍。</p>
+
+<p><strong>90% 的 Agent 死在了从 Demo 到生产的路上，不是因为不够聪明，而是因为没有路。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: "脑"和"手"为什么要分开？ ==================== -->
+<h2 id="s2">"脑"和"手"为什么要分开？</h2>
+
+<p>Managed Agents 的核心架构，可以用六个字概括：<strong>脑手分离，会话持久</strong>。</p>
+
+<p>具体来说，Anthropic 把一个 Agent 拆成了三个独立的组件：</p>
+
+<ul>
+  <li><strong>Brain（脑）</strong>：Claude 模型 + Harness 循环。负责思考、决策、生成工具调用指令</li>
+  <li><strong>Hands（手）</strong>：一次性沙箱容器。负责执行代码、读写文件、调用外部 API</li>
+  <li><strong>Session（会话）</strong>：一条只追加的事件日志。记录 Agent 做过的每一件事</li>
+</ul>
+
+<p>这三个组件互相独立，不共享进程，不共享内存，甚至不需要同时存在。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- Brain Group -->
+    <rect class="group-box" x="10" y="10" width="180" height="200"/>
+    <text class="group-label" x="24" y="32">Brain 🧠</text>
+    <rect class="node-rect-blue" x="30" y="50" width="140" height="44"/>
+    <text class="node-label" x="100" y="66">Claude 模型</text>
+    <text class="node-sublabel" x="100" y="82">推理 &amp; 决策</text>
+    <rect class="node-rect-blue" x="30" y="115" width="140" height="44"/>
+    <text class="node-label" x="100" y="131">Harness</text>
+    <text class="node-sublabel" x="100" y="147">循环 &amp; 路由</text>
+
+    <!-- Arrows Brain → Hands -->
+    <line class="arrow-line-blue" x1="190" y1="72" x2="260" y2="72"/>
+    <text class="arrow-label" x="225" y="62">execute()</text>
+    <line class="arrow-line" x1="190" y1="137" x2="260" y2="137"/>
+    <text class="arrow-label" x="225" y="127">provision()</text>
+
+    <!-- Hands Group -->
+    <rect class="group-box" x="260" y="10" width="180" height="200"/>
+    <text class="group-label" x="274" y="32">Hands ✋</text>
+    <rect class="node-rect-green" x="280" y="50" width="140" height="44"/>
+    <text class="node-label" x="350" y="66">沙箱容器</text>
+    <text class="node-sublabel" x="350" y="82">代码执行</text>
+    <rect class="node-rect-green" x="280" y="115" width="140" height="44"/>
+    <text class="node-label" x="350" y="131">MCP 工具</text>
+    <text class="node-sublabel" x="350" y="147">外部服务调用</text>
+
+    <!-- Arrow → Session -->
+    <line class="arrow-line-blue" x1="440" y1="72" x2="510" y2="72"/>
+    <text class="arrow-label" x="475" y="62">emitEvent()</text>
+    <line class="arrow-line" x1="440" y1="137" x2="510" y2="137"/>
+    <text class="arrow-label" x="475" y="127">emitEvent()</text>
+
+    <!-- Session Group -->
+    <rect class="group-box" x="510" y="10" width="180" height="200"/>
+    <text class="group-label" x="524" y="32">Session 📝</text>
+    <rect class="node-rect-purple" x="530" y="50" width="140" height="44"/>
+    <text class="node-label" x="600" y="66">事件日志</text>
+    <text class="node-sublabel" x="600" y="82">只追加 &amp; 持久化</text>
+    <rect class="node-rect-purple" x="530" y="115" width="140" height="44"/>
+    <text class="node-label" x="600" y="131">getEvents()</text>
+    <text class="node-sublabel" x="600" y="147">任意位置读取</text>
+  </svg>
+  <div class="diagram-caption">Managed Agents "脑手分离"三层架构</div>
+</div>
+
+<p>你可能会问：为什么非要分开？放在一起不是更简单吗？</p>
+
+<p>Anthropic 工程团队在博客里用了一个精彩的类比：<strong>这就像操作系统里的 <code>read()</code> 命令</strong>。</p>
+
+<p>1970 年代，<code>read()</code> 读的是磁盘包。2026 年，<code>read()</code> 读的是 NVMe SSD。硬件换了无数代，但接口从没变过。抽象比实现更长寿。</p>
+
+<p>Managed Agents 的 Harness 对所有工具都只暴露一个接口：</p>
+
+<pre><code class="language-javascript">// 无论是容器执行、MCP 工具还是外部 API，统一接口
+execute(name, input) → string</code></pre>
+
+<p>容器可以随时销毁重建，模型可以换代升级，MCP 工具可以增删——但这个接口不变。</p>
+
+<p>这带来了一个极其重要的实际好处：<strong>性能飙升</strong>。因为"脑"不需要等"手"准备好才开始工作。Anthropic 的内部测试数据显示，这种解耦让 p50 首 token 延迟降低了约 60%，p95 更是降低了超过 90%。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  传统 Agent 架构是"脑手一体"——模型推理和代码执行跑在同一个进程里。Managed Agents 是"脑手分离"——Brain 是无状态服务，Hands 是一次性容器，Session 是独立存储。三者解耦意味着任何一层都可以独立扩展、独立故障、独立替换。
+</div>
+
+<p><strong>好的架构不是让你跑得更快，而是让你摔倒了能立刻爬起来。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 崩溃了怎么办？ ==================== -->
+<h2 id="s3">崩溃了怎么办？</h2>
+
+<p>Agent 跟传统应用有一个本质区别：它是<strong>长时运行</strong>的。</p>
+
+<p>一个普通 API 调用，几百毫秒就结束了。但一个 Agent 任务——比如"帮我把这个仓库从 JavaScript 迁移到 TypeScript"——可能要跑几十分钟，甚至几个小时。中间要调用几十上百次工具。</p>
+
+<p>跑这么久，崩溃是必然的。网络抖动、容器 OOM、模型超时……问题不是"会不会崩"，而是"崩了之后能不能接着来"。</p>
+
+<p>这就是 Session 日志存在的意义。</p>
+
+<p>想象你在打一个 RPG 游戏。如果游戏只有一个存档槽，而且存在内存里——断电就全丢。但如果游戏每走一步都自动存盘到硬盘上，断电后重新开机，你还在同一个位置。</p>
+
+<p>Managed Agents 的 Session 就是这个"自动存盘"。每一次工具调用的输入输出、每一次模型的思考过程，都会实时写入一条只追加的事件流。这个事件流存在 Brain 和 Hands 之外，独立持久化。</p>
+
+<p>所以当 Harness 崩溃时，恢复只需要一行：</p>
+
+<pre><code class="language-javascript">// Harness 崩溃后，新实例接管
+wake(sessionId)
+
+// 读取事件流，从上次中断处继续
+const events = getEvents(sessionId, { from: lastProcessedIndex })</code></pre>
+
+<p>新的 Harness 实例调用 <code>wake(sessionId)</code>，从事件流里读取上下文，直接从断点继续。不丢状态，不重复执行。</p>
+
+<blockquote>
+"Because the session log sits outside the harness, nothing in the harness needs to survive a crash."<br>
+—— Anthropic Engineering Blog
+</blockquote>
+
+<p>这句话是整个架构的灵魂：<strong>因为状态不在进程里，所以进程不需要"活着"</strong>。</p>
+
+<p>有意思的是，这个设计跟分布式系统里的"事件溯源"（Event Sourcing）如出一辙。Kafka 能做到消费者挂了换一个接着消费，就是因为 offset 存在消费者之外。Managed Agents 的 Session 日志，本质上就是 Agent 世界的 Kafka。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  Anthropic 内部测试发现，在长时任务中，Agent 的故障恢复能力直接影响任务成功率。有了 Session 日志 + 自动恢复，复杂文件生成任务的成功率比标准 Prompt 循环高出最多 10 个百分点。对于跑几十分钟的任务来说，这个差距是巨大的。
+</div>
+
+<p><strong>你不需要 Agent 永不崩溃。你需要的是，崩溃了跟没崩溃一样。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 凭证安全怎么保证？ ==================== -->
+<h2 id="s4">凭证安全怎么保证？</h2>
+
+<p>如果说前面讲的是"怎么让 Agent 跑得稳"，这一节要讲的是"怎么让 Agent 跑得安全"。</p>
+
+<p>Agent 最让安全工程师头疼的一点是：它会<strong>生成并执行代码</strong>。</p>
+
+<p>想想这个场景：你的 Agent 需要访问 GitHub 来提交 PR。它需要一个 OAuth token。但 Agent 同时也在沙箱里执行自己生成的代码。如果 token 暴露在沙箱环境变量里，那 Agent 生成的任何代码都能读到这个 token。</p>
+
+<p>这不是假设场景。Prompt 注入攻击已经证明，大模型可以被诱导执行恶意指令。如果被注入的代码能拿到你的 GitHub token……后果你可以想象。</p>
+
+<p>Managed Agents 的解法很干脆：<strong>凭证永远不进沙箱</strong>。</p>
+
+<p>打个比方：你住酒店，前台帮你办入住。你的房间（沙箱）里有床有桌子有 Wi-Fi，但没有前台的电脑系统。你要订外卖（调外部 API），得打电话给前台，前台帮你下单。你永远拿不到前台的登录密码。</p>
+
+<p>具体实现上，Anthropic 做了三层隔离：</p>
+
+<ul>
+  <li><strong>Git 凭证</strong>：用于初始化沙箱环境（比如 clone 仓库），但凭证只在宿主机层面使用，沙箱内的代码看不到</li>
+  <li><strong>OAuth token</strong>：存储在独立的安全保险库（Vault）中，通过一个专门的代理服务访问。Agent 调用 MCP 工具时，代理拿着会话级别的 token 去保险库换真正的凭证，然后代替 Agent 发起请求</li>
+  <li><strong>Harness 本身</strong>：也不持有任何凭证。Harness 只是一个"路由器"，把 Agent 的工具调用请求转发给对应的执行层</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Agent Sandbox -->
+    <rect class="node-rect-amber" x="20" y="75" width="130" height="50"/>
+    <text class="node-label" x="85" y="94">Agent 沙箱</text>
+    <text class="node-sublabel" x="85" y="110">无凭证 🔒</text>
+
+    <!-- Arrow to Proxy -->
+    <line class="arrow-line-blue" x1="150" y1="100" x2="230" y2="100"/>
+    <text class="arrow-label" x="190" y="88">session token</text>
+
+    <!-- MCP Proxy -->
+    <rect class="node-rect-blue" x="230" y="75" width="130" height="50"/>
+    <text class="node-label" x="295" y="94">MCP 代理</text>
+    <text class="node-sublabel" x="295" y="110">请求转发</text>
+
+    <!-- Arrow to Vault -->
+    <line class="arrow-line-blue" x1="360" y1="85" x2="440" y2="52"/>
+    <text class="arrow-label" x="410" y="58">换取凭证</text>
+
+    <!-- Vault -->
+    <rect class="node-rect-red" x="440" y="25" width="130" height="50"/>
+    <text class="node-label" x="505" y="44">安全保险库</text>
+    <text class="node-sublabel" x="505" y="60">OAuth / API Key</text>
+
+    <!-- Arrow to External -->
+    <line class="arrow-line" x1="360" y1="115" x2="440" y2="148"/>
+    <text class="arrow-label" x="410" y="142">真实请求</text>
+
+    <!-- External Service -->
+    <rect class="node-rect-green" x="440" y="125" width="130" height="50"/>
+    <text class="node-label" x="505" y="144">外部服务</text>
+    <text class="node-sublabel" x="505" y="160">GitHub / Slack…</text>
+  </svg>
+  <div class="diagram-caption">凭证隔离架构：Agent 沙箱永远接触不到真实凭证</div>
+</div>
+
+<p>注意这个设计的精妙之处：不光沙箱拿不到凭证，<strong>连 Harness 也拿不到</strong>。整个链路中，只有 MCP 代理在那一瞬间持有凭证，用完即弃。</p>
+
+<p>这意味着即使 Agent 被 Prompt 注入攻击成功了——它生成的恶意代码也拿不到任何有价值的凭证。沙箱里能看到的，只有一个会话级别的临时 token，离开这个会话就失效。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  Sentry 在接入 Managed Agents 时，把他们的调试 Agent 和代码修复 Agent 配对使用。整个过程中，Agent 可以读 Sentry 的错误日志、写 PR 到 GitHub，但凭证管理完全由平台托管。Sentry 的工程团队表示，原本需要几个月搭建的安全基础设施，现在几周就搞定了。
+</div>
+
+<p><strong>安全的最高境界不是"严防死守"，而是"根本就碰不到"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 开发者要写多少代码？ ==================== -->
+<h2 id="s5">开发者要写多少代码？</h2>
+
+<p>说了这么多架构，你可能最关心一个问题：用 Managed Agents 到底有多简单？</p>
+
+<p>答案是：四步。</p>
+
+<p><strong>第一步：定义 Agent。</strong>告诉平台你的 Agent 用什么模型、什么 System Prompt、能调哪些工具、连哪些 MCP Server。</p>
+
+<p><strong>第二步：配置 Environment。</strong>选一个容器模板——要装 Python 还是 Node.js？要不要网络访问？要挂载哪些文件？</p>
+
+<p><strong>第三步：启动 Session。</strong>把 Agent 和 Environment 关联起来，开始执行任务。</p>
+
+<p><strong>第四步：发送事件，流式接收结果。</strong>通过 SSE（Server-Sent Events）实时获取 Agent 的每一步动态，中途还能插话引导方向。</p>
+
+<p>用 Python SDK 写出来，核心代码大概长这样：</p>
+
+<pre><code class="language-python">import anthropic
+
+client = anthropic.Anthropic()
+
+# 1. 创建 Agent
+agent = client.beta.managed_agents.agents.create(
+    model="claude-sonnet-4-6",
+    system="你是一个代码审查助手，专注于发现安全漏洞",
+    tools=["bash", "file_read", "file_write", "web_search"],
+)
+
+# 2. 创建 Session 并发送任务
+session = client.beta.managed_agents.sessions.create(agent_id=agent.id)
+
+# 3. 流式接收 Agent 的执行过程
+for event in client.beta.managed_agents.sessions.stream(
+    session_id=session.id,
+    message="审查 /repo/src 目录下所有 Python 文件的 SQL 注入风险"
+):
+    print(event)  # 实时看到 Agent 的每一步操作</code></pre>
+
+<p>就这么多。没有容器编排，没有工具调用路由，没有崩溃恢复逻辑，没有凭证管理代码。</p>
+
+<p>如果你之前自己搭过 Agent 基础设施，你会知道光是"容器编排 + 状态持久化"就得写几千行代码。现在这些全被平台吃掉了。</p>
+
+<p>这就像从自己买服务器装系统，变成了用 AWS Lambda——你只管写业务逻辑，底层的事有人替你操心。</p>
+
+<p>当然，这种便利不是免费的。Managed Agents 的定价是：<strong>标准 API token 费用 + 每 Session 小时 $0.08 的运行时费用</strong>。注意，空闲等待时间不计费，只有 Agent 实际在"干活"的时间才收费。</p>
+
+<table>
+<thead>
+<tr><th>费用项</th><th>价格</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>模型推理</td><td>标准 API 价格</td><td>按 token 计费，跟直接调 API 一样</td></tr>
+<tr><td>运行时</td><td>$0.08 / Session 小时</td><td>仅活跃时间，空闲不计费</td></tr>
+<tr><td>Web 搜索</td><td>$10 / 1000 次搜索</td><td>可选功能</td></tr>
+</tbody>
+</table>
+
+<p>$0.08 一小时是什么概念？比你买一杯咖啡便宜得多，但它帮你省掉的是一整个 DevOps 团队几个月的基础设施工作。</p>
+
+<p><strong>从"自己造车"到"叫一辆车"——你定义目的地，平台负责把你送到。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 跟 OpenAI、跟自建方案怎么选？ ==================== -->
+<h2 id="s6">跟 OpenAI、跟自建方案怎么选？</h2>
+
+<p>你可能在想：OpenAI 不也有 Agents SDK 吗？我自己用 LangGraph 搭一套不行吗？</p>
+
+<p>好问题。让我帮你理清楚这三条路的本质区别。</p>
+
+<p><strong>OpenAI Agents SDK</strong> 是一个开源框架——它给你零件和图纸，房子你自己盖。它的优势是灵活：你可以换 LLM、可以自定义一切、可以跑在自己的服务器上。但代价是，沙箱、状态管理、安全隔离这些基础设施，还是得你自己搞。</p>
+
+<p><strong>Claude Managed Agents</strong> 是一个托管服务——它给你一栋精装修的房子，拎包入住。你牺牲了一些灵活性（只能用 Claude 模型，跑在 Anthropic 的基础设施上），换来的是几乎零基础设施成本。</p>
+
+<p><strong>自建方案</strong>（LangGraph / CrewAI / 自研）是——你从买地皮开始。完全自由，但你需要的工程能力和时间投入也是最大的。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">对比一下</div>
+  一个简单的判断框架：如果你的 Agent 用例明确、且用 Claude 模型效果好，选 Managed Agents 最省心。如果你需要多模型切换或完全自主可控，OpenAI Agents SDK 或自建方案更合适。如果你的团队有 5 人以上的 Agent 基础设施经验，自建可能性价比最高。大多数团队？不到 5 人。
+</div>
+
+<p>还有一个容易被忽略的点：<strong>MCP 生态</strong>。</p>
+
+<p>如果你已经为 Claude Code 或 Claude Desktop 开发过 MCP Server，那这些 Server 可以几乎无改动地接入 Managed Agents。这意味着你之前在 MCP 上的投入不会浪费——反而成了你选择 Managed Agents 的加速器。</p>
+
+<p>Rakuten 的案例就很说明问题：他们在产品、销售、市场、财务四个部门各部署了一个 Agent，对接 Slack 和 Teams。每个 Agent 从定义到上线，只用了<strong>一周</strong>。如果是自建方案，你光把 Slack OAuth 和沙箱隔离调通，可能就要一周。</p>
+
+<p><strong>选择的核心不是"哪个技术更好"，而是"你愿意为灵活性付出多少基础设施成本"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Agent 基础设施的 "AWS 时刻" ==================== -->
+<h2 id="s7">Agent 基础设施的 "AWS 时刻"</h2>
+
+<p>回头看这整件事，Managed Agents 的意义远不止"Anthropic 发了个新产品"。</p>
+
+<p>它代表的是一个信号：<strong>AI Agent 正在从"应用层竞争"进入"基础设施层竞争"</strong>。</p>
+
+<p>2006 年，AWS 推出 EC2 和 S3 时，所有人都在争论"该自建机房还是用云"。20 年后，这个争论的答案已经很清楚了。不是每个公司都需要自己的机房，也不是每个 Agent 开发者都需要自己搭沙箱。</p>
+
+<p>Managed Agents 做的事，本质上就是 Agent 世界的 "EC2"——把执行环境标准化、托管化，让开发者只关心"Agent 要干什么"，而不是"Agent 怎么跑起来"。</p>
+
+<p>但这件事也有它的另一面。当你的 Agent 跑在别人的基础设施上时，你就依赖了这个平台的可用性、定价策略和技术方向。这跟当年上云的顾虑一模一样。</p>
+
+<p>我做两个预测，给自己设个验证期：</p>
+
+<p><strong>预测一：2026 年底之前，OpenAI 和 Google 都会推出类似的 Agent 托管服务。</strong>不是"SDK"，而是"托管"——帮你跑 Agent、帮你管状态、帮你做安全隔离。Managed Agents 打响了第一枪，但这个战场不会只有 Anthropic 一家。</p>
+
+<p><strong>预测二：2027 年 Q2 之前，"Agent Infrastructure"会成为独立的融资赛道。</strong>就像 2015 年"容器编排"从 DevOps 里独立出来一样，Agent 的执行环境、状态管理、安全隔离会催生一批专门的创业公司。</p>
+
+<p>回到你身边的选择。如果你正在做 Agent 相关的项目，我建议你今天就去试试 Managed Agents 的公测。不是因为它一定是最终答案，而是因为——用过托管服务之后，你才会真正理解，你之前在基础设施上花的那些时间，有多少是"不必要的"。</p>
+
+<p>Agent 的竞争，正在从"谁的 Prompt 更巧妙"，转向"谁的基础设施更扎实"。</p>
+
+<p><strong>这不是预言。这是已经开始的事实。</strong></p>
+
+<p>半年后回来看看，我说得对不对。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anthropic.com/engineering/managed-agents" target="_blank">Scaling Managed Agents: Decoupling the brain from the hands — Anthropic Engineering</a></li>
+    <li><a href="https://claude.com/blog/claude-managed-agents" target="_blank">Claude Managed Agents: get to production 10x faster — Anthropic</a></li>
+    <li><a href="https://platform.claude.com/docs/en/managed-agents/overview" target="_blank">Claude Managed Agents overview — Claude API Docs</a></li>
+    <li><a href="https://thenewstack.io/with-claude-managed-agents-anthropic-wants-to-run-your-ai-agents-for-you/" target="_blank">With Claude Managed Agents, Anthropic wants to run your AI agents for you — The New Stack</a></li>
+    <li><a href="https://siliconangle.com/2026/04/08/anthropic-launches-claude-managed-agents-speed-ai-agent-development/" target="_blank">Anthropic launches Claude Managed Agents to speed up AI agent development — SiliconANGLE</a></li>
+    <li><a href="https://www.theregister.com/2026/04/09/anthropic_offers_to_host_ai/" target="_blank">Anthropic will let your agents sleep on its couch — The Register</a></li>
+    <li><a href="https://composio.dev/content/claude-agents-sdk-vs-openai-agents-sdk-vs-google-adk" target="_blank">Claude Agents SDK vs. OpenAI Agents SDK vs. Google ADK — Composio</a></li>
+    <li><a href="https://www.anthropic.com/research/building-effective-agents" target="_blank">Building Effective AI Agents — Anthropic Research</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
