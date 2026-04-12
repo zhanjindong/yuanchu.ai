@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Microsoft Agent Framework 1.0：微软终于把两个"亲儿子"合二为一了 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI Agent</span>
+    <span class="tag">Microsoft</span>
+    <span class="tag">Multi-Agent</span>
+  </div>
+  <h1>Microsoft Agent Framework 1.0：微软终于把两个"亲儿子"合二为一了</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-11</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">到底解决了什么问题？</a>
+  <a href="#s2">架构长什么样？</a>
+  <a href="#s3">五种编排模式怎么选？</a>
+  <a href="#s4">代码写起来什么感觉？</a>
+  <a href="#s5">老项目怎么迁移？</a>
+  <a href="#s6">我的预测</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个朋友发消息问我："我要做一个多 Agent 的客服系统，你说我该用 Semantic Kernel 还是 AutoGen？"</p>
+
+<p>我反问他："你觉得选老婆和选老公有什么区别？"</p>
+
+<p>他愣了一下："啥意思？"</p>
+
+<p>"意思是，这俩都是微软的。你在微软的两个团队之间做选择，选错了就得重写。这不是技术问题，这是政治问题。"</p>
+
+<p>他沉默了三秒，回了一个字："操。"</p>
+
+<p>好消息是，2026 年 4 月 3 日，微软终于解决了这个让无数开发者头疼的"选择困难症"——正式发布了 <strong>Microsoft Agent Framework 1.0</strong>，把 Semantic Kernel 的企业级底座和 AutoGen 的多 Agent 编排能力，合进了一个统一框架。</p>
+
+<p>坏消息是，如果你已经选了边站了队，现在得学怎么迁移了。</p>
+
+<p>但别急。今天我不打算给你一个干巴巴的 API 文档导读。我想跟你聊清楚三件事：这个框架到底解决了什么"真问题"？它的架构设计背后藏着什么取舍？你手上的老项目该怎么平滑过渡？</p>
+
+<hr>
+
+<!-- ==================== SECTION: 到底解决了什么问题？ ==================== -->
+<h2 id="s1">到底解决了什么问题？</h2>
+
+<p>要理解 Agent Framework 的价值，你得先理解它之前的"乱局"。</p>
+
+<p>2023 年，微软推出了 <strong>Semantic Kernel</strong>（简称 SK）。这是一个企业级的 AI 编排 SDK，强项是什么？连接器多、可观测性强、合规性好。你要接 Azure OpenAI？有。接 SharePoint？有。接 Oracle 数据库？也有。它就像一辆沃尔沃——安全、稳重、什么功能都有，但你总觉得开起来少了点什么。</p>
+
+<p>几乎同一时间，微软研究院（MSR）推出了 <strong>AutoGen</strong>。这家伙完全不同。它的核心理念是"让多个 Agent 像一个团队一样协作"——你可以让一个 Agent 写代码，另一个 Agent 审查代码，第三个 Agent 跑测试。听起来是不是很酷？它就像一辆改装赛车——性能炸裂，但安全气囊不一定有。</p>
+
+<p>问题来了。</p>
+
+<p>如果你是一个企业开发者，需要同时满足"多 Agent 协作"和"企业合规"两个需求，你该选谁？</p>
+
+<p>选 SK？多 Agent 编排能力弱，你得自己拼装。选 AutoGen？企业级功能缺失，你得自己补课。两个都用？恭喜你，你现在维护两套互不兼容的依赖。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为 Semantic Kernel 和 AutoGen 是"竞品关系"。不是的。它们更像是同一个问题的两个"半成品解法"——SK 解决了"如何安全地调用 AI"，AutoGen 解决了"如何让多个 AI 协作"。单独用哪个都行，但要做一个生产级的多 Agent 系统，你需要把两个拼起来。而拼装的过程，就是痛苦的过程。
+</div>
+
+<p>打个比方：你要组建一支足球队。SK 给你提供了世界一流的球场、更衣室、医疗团队和转播合同。AutoGen 给你提供了一套战术体系——433、352、前场紧逼。但球员在哪？球衣统一了吗？教练组谁说了算？这些问题，两边都不管。</p>
+
+<p>Agent Framework 1.0 做的事情，就是<strong>把球场和战术合进一个俱乐部</strong>。一套 API，一个依赖，一份文档。</p>
+
+<p><strong>最痛苦的选择，不是 A 或 B，而是"为什么不能两个都要"。现在，微软终于给出了"都要"的答案。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 架构长什么样？ ==================== -->
+<h2 id="s2">架构长什么样？</h2>
+
+<p>我知道你可能已经在想：说了半天，它到底长什么样？</p>
+
+<p>Agent Framework 的架构可以用"四根柱子撑一座房子"来理解。微软官方叫它"四大支柱"，我给你翻译成人话。</p>
+
+<h3>第一根柱子：开放标准</h3>
+
+<p>框架原生支持两个协议——<strong>MCP（Model Context Protocol）</strong>和 <strong>A2A（Agent-to-Agent）</strong>。</p>
+
+<p>MCP 你可能已经熟悉了，它解决的是"Agent 怎么发现和调用外部工具"的问题。A2A 解决的是"不同框架的 Agent 怎么互相对话"的问题。</p>
+
+<p>这意味着什么？你用 Agent Framework 写的 Agent，可以跟 LangChain 写的 Agent、CrewAI 写的 Agent 对话。不需要胶水代码，不需要适配层。就像 HTTP 让所有网站互通一样，MCP + A2A 让所有 Agent 互通。</p>
+
+<h3>第二根柱子：研究到生产的管道</h3>
+
+<p>这根柱子来自 AutoGen 的基因。框架支持两种编排模式：<strong>确定性工作流</strong>（适合业务逻辑，步骤固定）和<strong>动态 LLM 编排</strong>（适合开放性问题，让模型自己决定下一步）。</p>
+
+<p>反直觉的是，大部分生产系统需要的是<strong>两者混合</strong>。比如一个客服系统：接入和路由是确定性的（按规则分配），但具体回答客户问题是动态的（让 LLM 自由发挥）。Agent Framework 让你在同一个系统里混用两种模式，不用切换框架。</p>
+
+<h3>第三根柱子：可扩展的社区设计</h3>
+
+<p>100% 开源，MIT 协议。Agent 的定义可以用 <strong>YAML 声明式配置</strong>——你把 Agent 的指令、工具、记忆配置写成一个 YAML 文件，版本控制，CI/CD 直接部署。</p>
+
+<h3>第四根柱子：企业级生产能力</h3>
+
+<p>这根柱子来自 Semantic Kernel 的基因。OpenTelemetry 全链路追踪、Azure VNet 网络隔离、Human-in-the-Loop 人工审批、长时间运行的工作流支持暂停/恢复。</p>
+
+<p>这些功能听起来不性感，但它们是"能不能上生产"和"只能做 Demo"的分界线。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Semantic Kernel 组 -->
+    <rect class="group-box" x="10" y="10" width="220" height="290"/>
+    <text class="group-label" x="25" y="35">Semantic Kernel 基因</text>
+    <rect class="node-rect-blue" x="30" y="55" width="180" height="36"/>
+    <text class="node-label" x="120" y="73">服务连接器</text>
+    <rect class="node-rect-blue" x="30" y="105" width="180" height="36"/>
+    <text class="node-label" x="120" y="123">可插拔记忆</text>
+    <rect class="node-rect-blue" x="30" y="155" width="180" height="36"/>
+    <text class="node-label" x="120" y="173">中间件管道</text>
+    <rect class="node-rect-blue" x="30" y="205" width="180" height="36"/>
+    <text class="node-label" x="120" y="223">企业合规 &amp; 可观测</text>
+    <rect class="node-rect-blue" x="30" y="255" width="180" height="36"/>
+    <text class="node-label" x="120" y="273">OpenTelemetry</text>
+
+    <!-- AutoGen 组 -->
+    <rect class="group-box" x="490" y="10" width="220" height="290"/>
+    <text class="group-label" x="505" y="35">AutoGen 基因</text>
+    <rect class="node-rect-purple" x="510" y="55" width="180" height="36"/>
+    <text class="node-label" x="600" y="73">Sequential 编排</text>
+    <rect class="node-rect-purple" x="510" y="105" width="180" height="36"/>
+    <text class="node-label" x="600" y="123">Concurrent 编排</text>
+    <rect class="node-rect-purple" x="510" y="155" width="180" height="36"/>
+    <text class="node-label" x="600" y="173">Handoff 编排</text>
+    <rect class="node-rect-purple" x="510" y="205" width="180" height="36"/>
+    <text class="node-label" x="600" y="223">Group Chat 编排</text>
+    <rect class="node-rect-purple" x="510" y="255" width="180" height="36"/>
+    <text class="node-label" x="600" y="273">Magentic-One</text>
+
+    <!-- 中间统一层 -->
+    <rect class="node-rect-green" x="270" y="90" width="180" height="50"/>
+    <text class="node-label" x="360" y="110">Agent Framework</text>
+    <text class="node-sublabel" x="360" y="128">统一 API 层</text>
+
+    <!-- 协议支持 -->
+    <rect class="node-rect-amber" x="290" y="180" width="60" height="32"/>
+    <text class="node-label" x="320" y="196" style="font-size:11px">MCP</text>
+    <rect class="node-rect-amber" x="370" y="180" width="60" height="32"/>
+    <text class="node-label" x="400" y="196" style="font-size:11px">A2A</text>
+
+    <!-- 底部运行时 -->
+    <rect class="node-rect-gray" x="270" y="250" width="180" height="40"/>
+    <text class="node-label" x="360" y="265">.NET &amp; Python</text>
+    <text class="node-sublabel" x="360" y="282">MIT 开源</text>
+
+    <!-- 箭头 -->
+    <line class="arrow-line-blue" x1="215" y1="115" x2="265" y2="115"/>
+    <line class="arrow-line-blue" x1="455" y1="115" x2="485" y2="115"/>
+    <line class="arrow-line" x1="360" y1="145" x2="360" y2="175"/>
+    <line class="arrow-line" x1="360" y1="217" x2="360" y2="245"/>
+  </svg>
+  <div class="diagram-caption">Agent Framework 1.0 架构：Semantic Kernel + AutoGen 双基因融合</div>
+</div>
+
+<p>有意思的是，这个架构设计背后有一个隐含的哲学：<strong>不要发明新轮子，而是把两个旧轮子装到同一辆车上</strong>。SK 的连接器体系完整保留，AutoGen 的编排模式完整保留，中间加了一层统一的 Agent 抽象。</p>
+
+<p><strong>好的框架不是功能多，而是选择少。Agent Framework 最大的贡献，不是新增了什么能力，而是消灭了一个选择。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 五种编排模式怎么选？ ==================== -->
+<h2 id="s3">五种编排模式怎么选？</h2>
+
+<p>Agent Framework 继承了 AutoGen 的五种多 Agent 编排模式。这五种模式听起来很多，但其实每种都对应一个非常具体的业务场景。</p>
+
+<p>我用"快递公司"来打比方。</p>
+
+<p><strong>Sequential（顺序执行）</strong>——流水线模式。包裹从分拣→打包→称重→贴单，一个接一个。适合步骤固定、上一步输出是下一步输入的场景。比如：文档翻译（翻译 → 审校 → 排版）、数据处理管道。</p>
+
+<p><strong>Concurrent（并发执行）</strong>——群发模式。同一个包裹信息同时发给多个部门：风控检查、库存检查、地址验证，三个并行跑，最后汇总结果。适合互不依赖的子任务需要同时执行的场景。</p>
+
+<p><strong>Handoff（移交模式）</strong>——转接电话。客户打进来，先到前台 Agent，发现是技术问题就转给技术支持 Agent，发现需要退款就转给财务 Agent。每次只有一个 Agent 在工作，但能根据上下文"转给对的人"。</p>
+
+<p><strong>Group Chat（群聊模式）</strong>——多方会议。几个 Agent 在同一个"聊天室"里讨论，各自发言，互相看到对方的回复，最后达成共识。适合需要多视角分析的场景，比如代码评审（架构师 + 安全专家 + 性能专家一起讨论）。</p>
+
+<p><strong>Magentic-One（磁力编排）</strong>——这是微软研究院的看家本领。一个"经理 Agent"坐镇中央，根据任务动态分配工作给"专家 Agent"。经理看了看任务，说"这个需要先搜索网页，再写代码，最后验证结果"，然后把子任务分给不同的 Agent。它最接近人类团队的协作方式。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  Sequential 和 Concurrent 是<strong>确定性编排</strong>——你在代码里定义好流程，Agent 按流程走。Handoff、Group Chat 和 Magentic-One 是<strong>动态编排</strong>——LLM 在运行时决定下一步做什么。前者像工厂流水线，后者像创业团队的头脑风暴。大部分生产系统是两者混合：外层用确定性编排保证流程可控，内层用动态编排处理不确定的子问题。
+</div>
+
+<p>最关键的是，这五种模式都支持四个企业必需的特性：<strong>流式输出</strong>（streaming）、<strong>检查点</strong>（checkpointing）、<strong>人工审批</strong>（human-in-the-loop）、<strong>暂停/恢复</strong>（pause/resume）。</p>
+
+<p>这四个特性听起来不起眼，但少了任何一个，你的多 Agent 系统就上不了生产。没有检查点？一次网络抖动就全部重来。没有人工审批？Agent 自己决定给客户退一万块？没有暂停恢复？一个耗时 2 小时的工作流，中间断了就全白费。</p>
+
+<p>说到这里，我想讲一个小故事当做呼吸。2024 年底，AutoGen 团队在微软内部做了一次演示。他们用 Magentic-One 模式完成了一个端到端的任务：给定一个 GitHub issue，Agent 自动搜索代码库、定位 bug、编写修复补丁、跑测试、提交 PR。全程零人工干预。据说在场的一位 VP 看完后说了一句话："OK，但它能回滚吗？"</p>
+
+<p>整个团队沉默了五秒。</p>
+
+<p>这就是为什么 Agent Framework 1.0 的 checkpointing 机制不是"锦上添花"，而是"没有它就不敢上线"。</p>
+
+<p><strong>没有最好的编排模式，只有最匹配的业务场景。而最终决定你能不能上生产的，不是编排有多花哨，而是出了问题能不能兜住。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 代码写起来什么感觉？ ==================== -->
+<h2 id="s4">代码写起来什么感觉？</h2>
+
+<p>聊了这么多架构，你可能已经不耐烦了——"别废话了，给我看代码。"</p>
+
+<p>好，先看最简单的 Python 版本，创建一个 Agent 只需要 7 行：</p>
+
+<pre><code class="language-python">from agent_framework import Agent
+from agent_framework.foundry import FoundryChatClient
+
+agent = Agent(
+    client=FoundryChatClient(
+        project_endpoint="https://your-project.services.ai.azure.com",
+        model="gpt-5.3",
+    ),
+    name="CodeReviewer",
+    instructions="你是一个资深代码审查员，关注安全性和性能。"
+)
+
+response = await agent.run("Review this PR: ...")</code></pre>
+
+<p>关键在 <code>client</code> 参数。它接受任何实现了 <code>IChatClient</code> 接口的对象。这意味着你把 <code>FoundryChatClient</code> 换成 <code>AnthropicChatClient</code> 或 <code>OllamaChatClient</code>，其余代码一行不改。</p>
+
+<p>再看 C# 版本，更简洁：</p>
+
+<pre><code class="language-csharp">AIAgent agent = new OpenAIClient("your-api-key")
+    .GetChatClient("gpt-4o-mini")
+    .AsIChatClient()
+    .CreateAIAgent(
+        instructions: "You are a senior .NET architect.");
+
+var response = await agent.RunAsync(
+    "Design a retry policy for transient SQL failures.");</code></pre>
+
+<p>注意这个 <code>AsIChatClient()</code> 方法——它来自 <code>Microsoft.Extensions.AI</code>，是微软新出的统一 AI 抽象层。所有 AI 服务提供商只要实现这一个接口，就能被 Agent Framework 使用。这跟 Java 的 JDBC 一个思路：你写的代码不依赖具体数据库，只依赖接口。</p>
+
+<p>但真正让我兴奋的，是<strong>声明式 YAML 配置</strong>。</p>
+
+<p>你可以把 Agent 的完整定义写成一个 YAML 文件：</p>
+
+<pre><code class="language-yaml">name: CustomerSupportAgent
+model: gpt-5.3
+instructions: |
+  你是一个电商客服 Agent。
+  遇到退款问题时，先核实订单号，再查询退款政策。
+  金额超过 500 元的退款需要转交人工审批。
+tools:
+  - mcp://order-service/query_order
+  - mcp://refund-service/process_refund
+memory:
+  provider: redis
+  ttl: 3600
+orchestration:
+  pattern: handoff
+  targets:
+    - TechnicalSupportAgent
+    - RefundApprovalAgent</code></pre>
+
+<p>这个 YAML 做了什么？定义了一个客服 Agent，指定了它能调用的工具（通过 MCP 协议连接外部服务）、记忆方式（Redis，1 小时过期）、以及编排模式（Handoff，可以转交给技术支持或退款审批 Agent）。</p>
+
+<p>整个 Agent 的定义，变成了一个可以 <code>git commit</code>、可以 code review、可以 CI/CD 部署的配置文件。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  声明式 YAML 配置的真正价值，不是"少写代码"。而是它改变了 Agent 的<strong>治理模式</strong>。想象一下：你的公司有 50 个 Agent 在生产环境运行。如果每个 Agent 的行为定义在代码里，你需要读代码才能知道它能干什么。如果定义在 YAML 里，产品经理、安全团队、合规团队都能直接读懂——"这个 Agent 能访问什么数据？能做什么操作？在什么条件下会转人工？"Agent 的治理，从"代码审查"降维到了"配置审查"。
+</div>
+
+<p><strong>当 Agent 的定义变成 YAML，部署就变成了 git push，审计就变成了 git diff。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 老项目怎么迁移？ ==================== -->
+<h2 id="s5">老项目怎么迁移？</h2>
+
+<p>如果你已经在用 Semantic Kernel 或 AutoGen，这可能是你最关心的问题。</p>
+
+<p>好消息：微软明确承诺，两个老项目<strong>不会被废弃</strong>。它们会继续维护，但"大部分新投入会集中在 Agent Framework"。翻译成大白话：不会断你的粮，但新菜都在新饭馆。</p>
+
+<p>迁移路径其实比想象中平滑。</p>
+
+<p><strong>如果你是 Semantic Kernel 用户：</strong></p>
+
+<p>核心变化是把 <code>Kernel</code> + <code>Plugin</code> 模式替换成 <code>Agent</code> + <code>Tool</code> 模式。命名空间从 <code>Microsoft.SemanticKernel.*</code> 迁移到 <code>Microsoft.Extensions.AI.*</code>。但底层的连接器（OpenAI、Azure、Anthropic 等）完全复用，不需要重写。</p>
+
+<p>打个比方：这就像把手动挡车换成自动挡。方向盘还是那个方向盘，油门刹车还在那，只是你不用踩离合了。</p>
+
+<p><strong>如果你是 AutoGen 用户：</strong></p>
+
+<p>核心变化是把 <code>AssistantAgent</code> 映射到 <code>ChatAgent</code>，把 <code>FunctionTool</code> 包装器改成 <code>@ai_function</code> 装饰器，事件驱动的 API 切换到类型化的 Graph-based Workflow API。</p>
+
+<p>这个改动稍大一些，但微软提供了逐步迁移的 Codemod 工具和详细的迁移指南。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  迁移时最容易踩的坑：AutoGen 的 <code>GroupChat</code> 默认是"所有 Agent 都能看到所有消息"，而 Agent Framework 的 Group Chat 默认有消息过滤机制。如果你迁移后发现 Agent 突然"失忆"了，不是 bug，是新框架的消息可见性规则变了。查一下 YAML 里的 <code>message_visibility</code> 配置。
+</div>
+
+<table>
+<thead>
+<tr><th>迁移维度</th><th>Semantic Kernel → AF</th><th>AutoGen → AF</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>核心改动量</strong></td><td>小（命名空间 + 抽象层）</td><td>中（API 范式变化）</td></tr>
+<tr><td><strong>连接器复用</strong></td><td>100% 复用</td><td>需要适配</td></tr>
+<tr><td><strong>编排逻辑</strong></td><td>新增多 Agent 能力</td><td>API 变化，模式保留</td></tr>
+<tr><td><strong>工具支持</strong></td><td>Plugin → Tool 映射</td><td>FunctionTool → @ai_function</td></tr>
+<tr><td><strong>预计迁移时间</strong></td><td>1-2 天（小项目）</td><td>3-5 天（中型项目）</td></tr>
+</tbody>
+</table>
+
+<p><strong>迁移的最高境界是"你感觉不到在迁移"。Agent Framework 没有做到这一步，但它做到了第二高的境界——"搬家不用扔家具"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 我的预测 ==================== -->
+<h2 id="s6">我的预测</h2>
+
+<p>聊到这里，技术细节已经讲得差不多了。最后我想做三个预测，给自己设个 deadline。</p>
+
+<p><strong>预测一：2026 年底之前，Agent Framework 会成为企业多 Agent 开发的事实标准。</strong></p>
+
+<p>不是因为它技术最强——LangGraph、CrewAI 在某些维度上各有优势。而是因为微软手里有企业市场的"核武器"：Azure、Office 365、GitHub、VS Code。当你的 Agent 可以一键接入 SharePoint 文档、Teams 消息、Outlook 邮件时，其他框架在企业市场就没戏了。</p>
+
+<p>这跟当年 .NET 打赢 Java EE 的逻辑一样：不是技术打赢的，是生态打赢的。</p>
+
+<p><strong>预测二：2027 年 Q1 之前，"Agent 定义即配置"会成为行业共识。</strong></p>
+
+<p>Agent Framework 的 YAML 声明式定义，会被其他框架效仿。因为一旦 Agent 的行为可以被"配置化"，整个 Agent 的开发、部署、治理、审计流程就可以复用 DevOps 的成熟工具链。这是一个比"多 Agent 编排"更深远的范式变化。</p>
+
+<p><strong>预测三：Semantic Kernel 和 AutoGen 会在 2027 年进入"维护模式"。</strong></p>
+
+<p>微软嘴上说"不会废弃"，但行动上已经很清楚了——Agent Framework 的 GitHub 仓库每周 commit 数量是 SK 和 AutoGen 之和的三倍。人才和资源都在往新框架聚集。一年后回头看，老项目大概率变成"接受 bug fix，不接受新 feature"的状态。</p>
+
+<p>如果你正在启动一个新的 AI Agent 项目，我的建议很简单：<strong>直接用 Agent Framework 1.0</strong>。</p>
+
+<p>如果你有 SK 或 AutoGen 的存量项目，不用急着迁移。等业务需要新功能（比如 A2A 跨框架协作、或者 Magentic-One 编排）时，顺便迁。</p>
+
+<p>如果你既不用微软技术栈，也不打算用——也建议你了解一下它的架构设计。因为"多模型连接器 + 多编排模式 + 声明式配置 + 协议互操作"这套组合，迟早会成为所有 Agent 框架的标配。</p>
+
+<p>半年后回来看看，我说得对不对。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://devblogs.microsoft.com/agent-framework/microsoft-agent-framework-version-1-0/" target="_blank">Microsoft Agent Framework Version 1.0 - Microsoft DevBlogs</a></li>
+    <li><a href="https://devblogs.microsoft.com/foundry/introducing-microsoft-agent-framework-the-open-source-engine-for-agentic-ai-apps/" target="_blank">Introducing Microsoft Agent Framework: The Open-Source Engine for Agentic AI Apps</a></li>
+    <li><a href="https://visualstudiomagazine.com/articles/2026/04/06/microsoft-ships-production-ready-agent-framework-1-0-for-net-and-python.aspx" target="_blank">Microsoft Ships Production-Ready Agent Framework 1.0 - Visual Studio Magazine</a></li>
+    <li><a href="https://startdebugging.net/2026/04/microsoft-agent-framework-1-0-ai-agents-in-csharp/" target="_blank">Microsoft Agent Framework 1.0: Building AI Agents in Pure C#</a></li>
+    <li><a href="https://devblogs.microsoft.com/semantic-kernel/semantic-kernel-and-microsoft-agent-framework/" target="_blank">Semantic Kernel and Microsoft Agent Framework - Microsoft DevBlogs</a></li>
+    <li><a href="https://jangwook.net/en/blog/en/microsoft-agent-framework-ga-production-strategy/" target="_blank">Microsoft Agent Framework GA: Production Adoption Strategy</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
