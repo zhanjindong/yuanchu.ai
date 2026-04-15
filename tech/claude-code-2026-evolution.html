@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude Code 2026 大更新：从终端助手到云端开发平台 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Claude Code</span>
+    <span class="tag">AI 编程</span>
+    <span class="tag">开发者工具</span>
+  </div>
+  <h1>Claude Code 2026 大更新：从终端助手到云端开发平台</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-15</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">Auto Mode：为什么你可以"放手"了？</a>
+  <a href="#s2">Routines：开发者什么时候不用盯着屏幕了？</a>
+  <a href="#s3">桌面重设计：一个窗口能干多少事？</a>
+  <a href="#s4">底层变了什么？Managed Agents 的解耦架构</a>
+  <a href="#s5">竞品在干什么？三足鼎立的 AI 编程格局</a>
+  <a href="#s6">你的下一步</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>2025 年 10 月，Claude Code 刚发布时，它是一个安静的终端工具。你在命令行里打一句话，它帮你改几行代码。大多数人的评价是："挺好用，但跟在 ChatGPT 里贴代码也差不多。"</p>
+
+<p>六个月后，2026 年 4 月 14 日，Anthropic 一口气推了三个大更新：Routines 云端自动化、Auto Mode 智能权限、桌面多会话重设计。一夜之间，Claude Code 从"终端里的 AI 助手"变成了一个你可以关上笔记本、它还在替你干活的<strong>云端开发平台</strong>。</p>
+
+<p>当时没多少人注意到这件事的分量。但如果你把这三个更新连起来看，你会发现 Anthropic 做的不是功能迭代——它在重新定义"AI 编程"这件事的边界。</p>
+
+<p>不是"帮你写代码"，而是"替你完成任务"。</p>
+
+<p>不是"你问一句它答一句"，而是"你定一个目标，它自己跑到底"。</p>
+
+<p>这中间的差距有多大？今天我们一层一层拆开看。</p>
+
+<hr>
+
+<!-- ==================== SECTION: Auto Mode ==================== -->
+<h2 id="s1">Auto Mode：为什么你可以"放手"了？</h2>
+
+<p>在聊 Auto Mode 之前，我想先说一个你大概率遇到过的场景。</p>
+
+<p>你用 Claude Code 做一个跨文件重构。它改了第一个文件，弹出权限确认——你点"允许"。改了第二个文件，又弹——你再点。跑一个测试命令，弹——你再点。改第三个文件……</p>
+
+<p>十几分钟的任务，你花了一半时间在点"允许"。</p>
+
+<p>你心里想：能不能别问我了，直接干？</p>
+
+<p>Claude Code 之前确实有一个选项叫 <code>--dangerously-skip-permissions</code>。名字已经告诉你了——<strong>dangerous</strong>。它直接关掉所有安全检查，AI 想干什么就干什么。删文件？行。跑 <code>curl | bash</code>？行。推代码到 main 分支？也行。</p>
+
+<p>这就是一个两难：要么你每分钟按三次"允许"，要么你完全放弃安全底线。</p>
+
+<p>Auto Mode 就是来解这个死结的。</p>
+
+<h3>双层分类器：一个会思考的门卫</h3>
+
+<p>Auto Mode 的核心不是"跳过权限"，而是用一个 <strong>AI 分类器</strong>替你做权限决策。你可以把它想象成公司里的合规审查部门——不是每个采购单都需要 CEO 签字，但超过一定金额的、涉及敏感供应商的，合规部门会自动拦住。</p>
+
+<p>具体来说，Auto Mode 有两层防线：</p>
+
+<p><strong>第一层：输入扫描。</strong>在 AI 读取任何外部内容（文件、网页、命令输出）之前，一个服务端的 prompt injection 探测器会先扫描一遍。如果发现内容里藏着试图劫持 AI 行为的指令，直接拦截，根本不让它进入上下文。</p>
+
+<p><strong>第二层：输出分类。</strong>每当 Claude Code 想执行一个操作——删文件、跑命令、写代码——一个运行在 Sonnet 4.6 上的分类器会审查这个操作。先做一个快速的单 token 判断（"该不该拦？"），如果触发警觉，再做一轮完整的链式推理（"为什么要拦？"）。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 输入层 -->
+    <rect class="group-box" x="10" y="10" width="220" height="180"/>
+    <text class="group-label" x="24" y="32">输入防线</text>
+    <rect class="node-rect-blue" x="30" y="50" width="180" height="36"/>
+    <text class="node-label" x="120" y="68">文件 / 网页 / 命令输出</text>
+    <rect class="node-rect-amber" x="30" y="110" width="180" height="36"/>
+    <text class="node-label" x="120" y="128">Injection 探测器</text>
+    <line class="arrow-line" x1="120" y1="86" x2="120" y2="110"/>
+    <!-- 箭头到中间 -->
+    <line class="arrow-line-blue" x1="230" y1="128" x2="280" y2="128"/>
+    <!-- Claude Code -->
+    <rect class="node-rect-green" x="280" y="60" width="140" height="80"/>
+    <text class="node-label" x="350" y="92">Claude Code</text>
+    <text class="node-sublabel" x="350" y="112">执行操作</text>
+    <!-- 箭头到输出层 -->
+    <line class="arrow-line-blue" x1="420" y1="100" x2="480" y2="100"/>
+    <!-- 输出层 -->
+    <rect class="group-box" x="480" y="10" width="230" height="180"/>
+    <text class="group-label" x="494" y="32">输出防线</text>
+    <rect class="node-rect-purple" x="500" y="50" width="190" height="36"/>
+    <text class="node-label" x="595" y="68">快速单 Token 过滤</text>
+    <rect class="node-rect-red" x="500" y="110" width="190" height="36"/>
+    <text class="node-label" x="595" y="128">链式推理分析</text>
+    <line class="arrow-line" x1="595" y1="86" x2="595" y2="110"/>
+    <text class="arrow-label" x="595" y="160">触发时启动</text>
+  </svg>
+  <div class="diagram-caption">Auto Mode 双层安全分类器架构</div>
+</div>
+
+<p>更聪明的是它的"刹车机制"。如果分类器连续拦截同一个操作 3 次，或者一个会话内总共拦截了 20 次，Auto Mode 会自动暂停，退回到手动确认模式。就像一辆车发现 ABS 频繁触发，会提醒你：路况不对，请接管方向盘。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  Auto Mode 不是"关闭权限检查"。它是用一个 AI 裁判替代了人工裁判。有些操作——比如 <code>curl | bash</code>、<code>git push --force main</code>、生产环境部署——是<strong>硬编码拦截</strong>的，即使 AI 分类器认为没问题也不会放行。这是底线，不是配置项。
+</div>
+
+<p>Auto Mode 最适合什么场景？<strong>长时间、仓库范围内的重构工作</strong>。多文件改动、依赖升级、测试修复循环——这些任务节奏快、操作密集但风险可控。你开启 Auto Mode，Claude Code 自己跑，你去喝杯咖啡回来看结果就行。</p>
+
+<p><strong>最好的权限管理不是锁门，是装一个会思考的门卫。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Routines ==================== -->
+<h2 id="s2">Routines：开发者什么时候不用盯着屏幕了？</h2>
+
+<p>Auto Mode 解决了"人在电脑前但不想一直按确认"的问题。但还有一个更大的问题：你不在电脑前怎么办？</p>
+
+<p>你提了一个 PR，CI 跑失败了。你在通勤路上。你在开会。你在睡觉。</p>
+
+<p>以前的做法是：等你回到电脑前，看报错，改代码，重新提交。一个 CI 失败可能要等你几个小时才能修。</p>
+
+<p>Routines 改变了这件事。</p>
+
+<h3>从 cron job 到 AI 管家</h3>
+
+<p>Routines 是 Claude Code 的云端自动化功能，2026 年 4 月 14 日作为研究预览版发布。它的核心理念很简单：<strong>你定义一个任务，Claude Code 在 Anthropic 的云基础设施上运行它，你的笔记本电脑可以关机。</strong></p>
+
+<p>听起来像 cron job？不，差别大了去了。cron job 是"每天凌晨 3 点执行这个脚本"，它是机械的、确定性的。Routines 是"当 CI 挂了，帮我看看什么问题，能修就修，修完自动提交"——它是<strong>有判断力</strong>的。</p>
+
+<p>打个比方：cron job 像闹钟，定时响；Routines 像一个靠谱的实习生，你把一件事交给他，他自己判断怎么做，做完了告诉你。</p>
+
+<p>Routines 有三种触发方式：</p>
+
+<ul>
+  <li><strong>定时触发</strong>：按固定频率运行，比如每天扫描一次依赖安全漏洞</li>
+  <li><strong>API 触发</strong>：通过 API 调用启动，适合集成到现有 CI/CD 流程</li>
+  <li><strong>GitHub 事件触发</strong>：PR 创建、CI 失败、Issue 评论等事件自动触发</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">实战案例</div>
+  一个最典型的用法：配置一个 Routine 监听 GitHub PR。当 CI 失败时，它自动拉取代码、分析失败原因、尝试修复、推送修复 commit。你在手机上收到通知："CI 已修复，PR 已更新。"你点开看一眼 diff，没问题就合并。整个过程你没碰键盘。
+</div>
+
+<p>不同订阅档位的 Routines 配额也不一样：Pro 用户每天 5 次，Max 用户 15 次，Team/Enterprise 25 次。对于大多数个人开发者来说，5 次足够覆盖最常见的场景。</p>
+
+<p>但这里有一个容易被忽视的深层变化。</p>
+
+<p>当你的 AI 编程助手能<strong>在你不在的时候独立工作</strong>，"工作"这件事的含义就变了。以前是"你在电脑前的时间 = 你的产出"。现在是"你设定了多少个好的 Routine = 你的产出倍增器"。</p>
+
+<p><strong>当 AI 能在你睡觉时替你修 bug，工作本身就被重新定义了。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 桌面重设计 ==================== -->
+<h2 id="s3">桌面重设计：一个窗口能干多少事？</h2>
+
+<p>如果你在 2025 年底用过 Claude Code，你对它的界面印象大概是：一个黑乎乎的终端窗口，一行一行地跟你对话。简洁？确实。但也单调。</p>
+
+<p>2026 年 4 月的桌面重设计，彻底改变了这个画面。</p>
+
+<h3>从单线程到多核处理器</h3>
+
+<p>新版 Claude Code 桌面端最大的变化是<strong>多会话并行</strong>。你可以在一个窗口里同时开多个 Claude 会话——一个在重构后端代码，一个在写前端组件，一个在跑测试。左边一个侧边栏统一管理所有会话，按状态、项目或环境分类筛选。</p>
+
+<p>这就像从单核 CPU 升级到了多核处理器。以前你一次只能给 Claude 分配一件事，做完了再分配下一件。现在你可以同时启动三四个任务，让它们并行推进。</p>
+
+<p>但多会话只是第一步。真正让我觉得"这不像终端工具了"的，是整个工作区的重新设计：</p>
+
+<ul>
+  <li><strong>集成终端</strong>：不用再另开一个 Terminal 窗口跑测试和构建，直接在 Claude Code 里跑</li>
+  <li><strong>文件编辑器</strong>：在应用内直接查看和编辑代码文件，不用跳到 VS Code</li>
+  <li><strong>Diff 查看器</strong>：重写后速度更快，大文件 diff 不再卡顿</li>
+  <li><strong>预览面板</strong>：HTML 文件、PDF 文件直接在应用内预览，还能跑本地服务器实时预览</li>
+  <li><strong>拖拽布局</strong>：所有面板都可以拖拽排列，你喜欢终端在右边、聊天在左边？随便拖</li>
+</ul>
+
+<p>还有一个小功能，用过之后就回不去了：<code>Ctrl + ;</code>（Mac 上是 <code>Cmd + ;</code>）随时唤起一个侧边聊天。你在做重构，突然想问一个 API 的用法，不用打断主任务，开一个侧边聊天问完了继续。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  三种显示模式让你控制信息密度：<strong>Verbose</strong> 模式展示 Claude 的所有工具调用细节（适合学习和调试）；<strong>Normal</strong> 模式是日常使用的平衡点；<strong>Summary</strong> 模式只显示最终结果（适合批量任务）。你可以随时在三个模式间切换，不影响 Claude 的工作。
+</div>
+
+<p>有意思的是，这个重设计的方向跟 Cursor 越来越像了——都在往"全功能 AI IDE"的方向走。但它们的出发点不同：Cursor 是从 VS Code 往 AI 方向走，Claude Code 是从 AI Agent 往 IDE 方向走。殊途同归，但基因不同。</p>
+
+<p><strong>不是窗口多了，是你的注意力终于被正确分配了。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 底层架构 ==================== -->
+<h2 id="s4">底层变了什么？Managed Agents 的解耦架构</h2>
+
+<p>前面聊的都是你能看到的功能。但真正让这些功能成为可能的，是底层架构的一次大手术。</p>
+
+<p>Anthropic 的工程团队在 2026 年 3 月发了一篇技术博客，标题是"Scaling Managed Agents: Decoupling the brain from..."——解耦大脑。这篇文章揭示了 Claude Code 底层正在发生的一个范式转移。</p>
+
+<h3>从"宠物"到"牲畜"</h3>
+
+<p>如果你做过运维，你可能听过一个经典比喻：服务器分两种——"宠物"和"牲畜"。宠物有名字，生病了你得精心照料；牲畜有编号，一头病了直接换一头。云计算的核心理念就是把服务器从宠物变成牲畜。</p>
+
+<p>以前的 Claude Code 架构更像"宠物"——AI 模型、执行环境、会话状态全绑在一个进程里。一旦进程挂了，所有东西都没了。</p>
+
+<p>新架构把这个进程拆成了四个独立组件：</p>
+
+<p><strong>Harness（大脑）</strong>：调用 Claude 模型、路由工具调用。它是<strong>无状态</strong>的——每次只处理一步，做完就可以被替换。这意味着如果 Harness 崩溃了，可以立刻拉一个新的起来，从上次的位置继续。</p>
+
+<p><strong>Session（记忆）</strong>：一个只追加、不修改的事件日志。所有发生过的事——用户消息、模型推理、工具调用、执行结果——都记录在这里。Harness 崩溃后恢复靠的就是这个日志。</p>
+
+<p><strong>Sandbox（手）</strong>：代码执行的隔离环境。Claude 在 Sandbox 里运行命令、读写文件，但 Sandbox 无法访问宿主系统或其他 Agent。这是安全的物理边界。</p>
+
+<p><strong>Orchestrator（调度员）</strong>：监控 Harness 的健康状态。如果 Harness 无响应，Orchestrator 自动起一个新的。它还负责按需创建 Sandbox，减少了约 60% 的首次响应延迟。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Orchestrator 外框 -->
+    <rect class="group-box" x="10" y="10" width="680" height="260"/>
+    <text class="group-label" x="24" y="32">Orchestrator 调度层</text>
+    <!-- Harness -->
+    <rect class="node-rect-blue" x="40" y="60" width="160" height="60"/>
+    <text class="node-label" x="120" y="82">Harness</text>
+    <text class="node-sublabel" x="120" y="102">无状态 · 可替换</text>
+    <!-- Session -->
+    <rect class="node-rect-green" x="270" y="60" width="160" height="60"/>
+    <text class="node-label" x="350" y="82">Session</text>
+    <text class="node-sublabel" x="350" y="102">只追加 · 持久化</text>
+    <!-- 箭头 Harness -> Session -->
+    <line class="arrow-line-blue" x1="200" y1="90" x2="270" y2="90"/>
+    <text class="arrow-label" x="235" y="80">读/写事件</text>
+    <!-- Sandbox 1 -->
+    <rect class="node-rect-purple" x="40" y="170" width="140" height="60"/>
+    <text class="node-label" x="110" y="192">Sandbox A</text>
+    <text class="node-sublabel" x="110" y="212">代码执行</text>
+    <!-- Sandbox 2 -->
+    <rect class="node-rect-purple" x="210" y="170" width="140" height="60"/>
+    <text class="node-label" x="280" y="192">Sandbox B</text>
+    <text class="node-sublabel" x="280" y="212">工具调用</text>
+    <!-- Sandbox 3 -->
+    <rect class="node-rect-purple" x="380" y="170" width="140" height="60"/>
+    <text class="node-label" x="450" y="192">Sandbox C</text>
+    <text class="node-sublabel" x="450" y="212">MCP Server</text>
+    <!-- 箭头 Harness -> Sandboxes -->
+    <line class="arrow-line" x1="100" y1="120" x2="100" y2="170"/>
+    <line class="arrow-line" x1="140" y1="120" x2="280" y2="170"/>
+    <line class="arrow-line" x1="160" y1="120" x2="450" y2="170"/>
+    <!-- Claude Model -->
+    <rect class="node-rect-amber" x="500" y="60" width="160" height="60"/>
+    <text class="node-label" x="580" y="82">Claude Model</text>
+    <text class="node-sublabel" x="580" y="102">Opus 4.6 · 1M ctx</text>
+    <!-- 箭头 Harness -> Model -->
+    <line class="arrow-line-blue" x1="200" y1="80" x2="500" y2="80"/>
+    <text class="arrow-label" x="350" y="55">推理请求</text>
+    <!-- 恢复标注 -->
+    <rect class="node-rect-red" x="540" y="190" width="120" height="40"/>
+    <text class="node-label" x="600" y="210">故障恢复</text>
+    <line class="arrow-line" x1="600" y1="190" x2="600" y2="120"/>
+    <text class="arrow-label" x="654" y="158">自动替换</text>
+  </svg>
+  <div class="diagram-caption">Managed Agents 解耦架构：Harness + Session + Sandbox + Orchestrator</div>
+</div>
+
+<p>这个架构最精妙的地方在于 Harness 和 Sandbox 的解耦。以前一个 Agent 就是一个容器——大脑和手绑在一起。现在大脑可以连接多只手（多个 Sandbox），也可以随时被替换。Anthropic 内部称之为"一个大脑，多只手"。</p>
+
+<blockquote>
+"Claude Code is one specific harness implementation — an excellent harness that we use widely."<br>
+—— Anthropic 工程博客
+</blockquote>
+
+<p>换句话说，Claude Code 本身只是这个架构上的一个实例。Managed Agents 是一个更通用的元架构，未来可以承载各种不同类型的 Agent harness。</p>
+
+<p><strong>有状态是负担，无状态是自由。这句话在 Web 开发里说了十年，现在终于在 AI Agent 领域也应验了。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 竞品对比 ==================== -->
+<h2 id="s5">竞品在干什么？三足鼎立的 AI 编程格局</h2>
+
+<p>聊了这么多 Claude Code 的更新，你可能会问：那 Cursor 和 GitHub Copilot 呢？它们在干嘛？</p>
+
+<p>2026 年的 AI 编程市场，已经形成了非常清晰的三足鼎立格局，但三家打的<strong>完全不是同一场仗</strong>。</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>Claude Code</th><th>Cursor</th><th>GitHub Copilot</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>形态</strong></td><td>终端 Agent + 桌面端</td><td>独立 AI IDE</td><td>多 IDE 扩展</td></tr>
+<tr><td><strong>交互模式</strong></td><td>自主执行任务</td><td>协作编辑</td><td>自动补全 + 聊天</td></tr>
+<tr><td><strong>上下文</strong></td><td>100 万 token（~3 万行代码）</td><td>中等窗口 + 索引</td><td>较小窗口</td></tr>
+<tr><td><strong>定价</strong></td><td>$20-200/月</td><td>$20/月</td><td>$10/月</td></tr>
+<tr><td><strong>核心优势</strong></td><td>复杂任务的深度理解</td><td>日常编码的流畅体验</td><td>企业合规 + 生态</td></tr>
+</tbody>
+</table>
+
+<p>你发现了吗？这三家的差异不在于"谁更聪明"，而在于<strong>交互范式</strong>的根本不同。</p>
+
+<p>GitHub Copilot 是<strong>反应式</strong>的——你打字，它补全。像一个跟在你身后的助手，你走到哪它跟到哪。</p>
+
+<p>Cursor 是<strong>协作式</strong>的——你和 AI 在同一个编辑器里并肩工作。你改一段，它改一段，来回迭代。像一个坐在你旁边的同事。</p>
+
+<p>Claude Code 是<strong>委托式</strong>的——你描述一个目标，它自己规划步骤、执行、验证。像一个你信任的外包团队。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  真实世界里，大多数高效开发者并不只用一个工具。最常见的组合是：日常编码用 Cursor（流畅、快速），复杂重构或跨文件任务用 Claude Code（深度、自主）。这就像你有一把瑞士军刀和一台电锯——切面包用军刀，伐树用电锯。
+</div>
+
+<p>但有一点值得特别注意：Claude Code 正在从"CLI 工具"往"全功能平台"扩展（桌面重设计 + Routines），而 Cursor 也在往"更自主"的方向走。两者正在互相侵入对方的领地。</p>
+
+<p>2026 年底之前，我判断会有一个明确的交叉点：Cursor 会加入类似 Routines 的云端自动化功能，Claude Code 的编辑体验会进一步逼近传统 IDE。到那个时候，真正的差异化将不再是功能，而是<strong>底层模型的能力天花板</strong>。</p>
+
+<p>而在这个维度上，Claude Opus 4.6 的 100 万 token 上下文窗口——相当于一次性加载约 3 万行代码——目前没有对手。</p>
+
+<p><strong>工具之争的终局，不是功能之争，是工作流之争。谁定义了开发者的日常习惯，谁就赢了。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">你的下一步</h2>
+
+<p>聊到这里，让我把这篇文章浓缩成一句话：Claude Code 在 2026 年 Q1 完成了从"终端聊天工具"到"云端开发平台"的跃迁。Auto Mode 让你可以放手，Routines 让你可以离开，桌面重设计让你可以并行。三者合力，指向同一个方向——<strong>让开发者从"操作者"变成"指挥官"</strong>。</p>
+
+<p>这不是未来的趋势。这是已经发生的事实。</p>
+
+<p>所以，我给你一个具体的挑战：</p>
+
+<p><strong>今天回去，打开 Claude Code，把你手头最烦的一个任务——不是最简单的，而是你一直拖着没做的那个——用一句话描述给它。</strong></p>
+
+<p>不要拆步骤。不要写伪代码。就像跟一个能力很强的同事说："帮我把这个搞定。"</p>
+
+<p>然后观察两件事：</p>
+
+<ol>
+  <li>它能走到哪一步才卡住？——这就是当前 AI 编程的<strong>真实能力边界</strong>，比任何评测都准。</li>
+  <li>它走对的那些步骤，你自己要花多少时间？——这就是你的<strong>效率杠杆倍数</strong>，比任何广告都真实。</li>
+</ol>
+
+<p>如果它替你省了两小时——恭喜，你找到了自己的杠杆点。</p>
+
+<p>如果它搞砸了——记录下它搞砸的那个环节。半年后再试一次。AI 工具进化的速度，可能比你想象的快得多。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://claude.com/blog/auto-mode" target="_blank">Auto mode for Claude Code - Anthropic Blog</a></li>
+    <li><a href="https://9to5mac.com/2026/04/14/anthropic-adds-repeatable-routines-feature-to-claude-code-heres-how-it-works/" target="_blank">Anthropic adds routines to redesigned Claude Code - 9to5Mac</a></li>
+    <li><a href="https://claude.com/blog/claude-code-desktop-redesign" target="_blank">Redesigning Claude Code on desktop for parallel agents - Claude Blog</a></li>
+    <li><a href="https://www.anthropic.com/engineering/managed-agents" target="_blank">Scaling Managed Agents: Decoupling the brain - Anthropic Engineering</a></li>
+    <li><a href="https://www.anthropic.com/engineering/claude-code-auto-mode" target="_blank">Claude Code auto mode: a safer way to skip permissions - Anthropic</a></li>
+    <li><a href="https://www.builder.io/blog/claude-code-updates" target="_blank">Every Claude Code Update From March 2026, Explained - Builder.io</a></li>
+    <li><a href="https://code.claude.com/docs/en/changelog" target="_blank">Changelog - Claude Code Docs</a></li>
+    <li><a href="https://siliconangle.com/2026/04/14/anthropics-claude-code-gets-automated-routines-desktop-makeover/" target="_blank">Anthropic's Claude Code gets automated 'routines' and a desktop makeover - SiliconANGLE</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
