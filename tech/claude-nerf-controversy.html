@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude "降智"风波：你的 AI 变笨了，还是有人偷偷拧小了水龙头？ - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Claude</span>
+    <span class="tag">Anthropic</span>
+    <span class="tag">AI 争议</span>
+  </div>
+  <h1>Claude "降智"风波：你的 AI 变笨了，还是有人偷偷拧小了水龙头？</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-20</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">"降智"到底是一种什么感受？</a>
+  <a href="#s2">AMD 的 23 万次调用，揭开了什么？</a>
+  <a href="#s3">三个"静悄悄"的改动：不是菜变了，是盘子变小了</a>
+  <a href="#s4">官方回应为什么没人买账？</a>
+  <a href="#s5">订阅制 AI 的不可能三角</a>
+  <a href="#s6">你该怎么办？</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个同事发消息问我："你有没有觉得 Claude 最近变笨了？"</p>
+
+<p>我反问他："怎么个笨法？"</p>
+
+<p>他说："以前让它改个 bug，它会先看完相关代码再动手。现在呢？直接上来就改，改完一跑，到处报错。就像一个实习生，以前还认真做笔记，现在直接拍脑袋。"</p>
+
+<p>我说："你不是一个人。"</p>
+
+<p>过去两个月，Twitter、GitHub、Reddit 上，关于"Claude 变笨了"的讨论像潮水一样涌来。有人说是幻觉，有人说是阴谋，有人甩出了 23 万次 API 调用的数据分析。</p>
+
+<p>到底发生了什么？今天我们来一层一层揭开这个谜。</p>
+
+<hr>
+
+<!-- ==================== SECTION: "降智"到底是一种什么感受？ ==================== -->
+<h2 id="s1">"降智"到底是一种什么感受？</h2>
+
+<p>先说清楚"降智"是什么。</p>
+
+<p>它不是 Claude 不能用了，也不是它开始胡说八道。而是一种更微妙的退化——<strong>它变"浅"了</strong>。</p>
+
+<p>以前你让 Claude Code 帮你重构一个模块，它会先花时间读完所有相关文件，理清依赖关系，然后给你一个深思熟虑的方案。现在呢？它看两眼就动手，改完之后你发现它漏掉了三个关联文件。</p>
+
+<p>打个比方：你去找一个老中医看病。以前他望闻问切，把脉五分钟，开方子考虑各种禁忌。突然有一天，他摸了一下你的手腕，两秒钟就开方子了。药还是那些药，但你心里犯嘀咕——这个方子，他真的"想过"吗？</p>
+
+<p>用户的体感非常统一：</p>
+
+<ul>
+  <li><strong>思考变浅了</strong>：复杂问题不再深入推理，直接给出"最简修复"</li>
+  <li><strong>研究变少了</strong>：改代码之前读的文件数量大幅减少</li>
+  <li><strong>指令跟随变差了</strong>：不再严格遵守 CLAUDE.md 里的规则</li>
+  <li><strong>循环变多了</strong>：陷入"试错-报错-再试"的死循环，而不是一步到位</li>
+</ul>
+
+<p>如果只有一两个人这么说，可能是错觉。但当 Twitter 上每天都有开发者晒出"before vs after"的对比截图时，你就知道这不是心理作用了。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "降智"不是说模型的参数被删了、权重被改了。模型本身可能一点没变。问题出在模型和你之间那层"看不见的手"——运行时配置层。你付的钱没变，水压却变了。
+</div>
+
+<p>但"感觉变笨了"是一回事，"真的变笨了"是另一回事。有没有人拿数据说话？</p>
+
+<p>还真有。而且来头不小。</p>
+
+<!-- ==================== SECTION: AMD 的 23 万次调用 ==================== -->
+<h2 id="s2">AMD 的 23 万次调用，揭开了什么？</h2>
+
+<p>2026 年 4 月 2 日，一个名叫 Stella Laurenzo 的人在 GitHub 上发了一篇长帖。</p>
+
+<p>她不是普通用户——她是 <strong>AMD AI 组的高级总监</strong>，负责 AI 编译器和开发工具。换句话说，她自己就是做 AI 底层基础设施的。</p>
+
+<p>她做了一件大多数人做不到的事：<strong>把自己几个月的 Claude Code 使用记录全部导出来，做了一次完整的逆向审计</strong>。</p>
+
+<p>数据量是这样的：</p>
+
+<ul>
+  <li><strong>6,852 个</strong>会话文件</li>
+  <li><strong>17,871 个</strong>思考块（thinking blocks）</li>
+  <li><strong>234,760 次</strong>工具调用</li>
+</ul>
+
+<p>她算了一笔账：按标准 API 价格，这些用量每月值 <strong>42,121 美元</strong>。而她的订阅费？<strong>每月 400 美元</strong>。一个 122 倍的差距。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  Laurenzo 的分析显示：2026 年 1 月，Claude Code 在修改代码之前平均会读取 <strong>6.6 个文件</strong>。到了 3 月底，这个数字跌到了 <strong>2 个</strong>。降幅超过 70%。模型从"先研究再动手"的工程师，退化成了"先改再说"的实习生。
+</div>
+
+<p>更关键的发现是：这种退化不是渐进式的，而是<strong>阶梯式的</strong>。每一次跳变，都对应着 Anthropic 在后台做的一次配置修改。</p>
+
+<p>数据不会撒谎。但数据需要有人会读。Laurenzo 读出了三个关键的时间节点。</p>
+
+<p>这就是故事真正精彩的地方。</p>
+
+<!-- ==================== SECTION: 三个"静悄悄"的改动 ==================== -->
+<h2 id="s3">三个"静悄悄"的改动：不是菜变了，是盘子变小了</h2>
+
+<p>Laurenzo 的分析指出了三个精确的日期，每个日期对应 Anthropic 的一次"静默更新"：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- Timeline -->
+    <line x1="60" y1="110" x2="660" y2="110" stroke="#e2e8f0" stroke-width="2"/>
+
+    <!-- Node 1: Feb 9 -->
+    <circle cx="140" cy="110" r="8" fill="#3b82f6"/>
+    <rect class="node-rect-blue" x="60" y="130" width="160" height="70"/>
+    <text class="node-label" x="140" y="152">2月9日</text>
+    <text class="node-sublabel" x="140" y="172">引入 Adaptive Thinking</text>
+    <text class="node-sublabel" x="140" y="188">模型自行决定思考时长</text>
+
+    <!-- Node 2: Mar 3 -->
+    <circle cx="370" cy="110" r="8" fill="#f59e0b"/>
+    <rect class="node-rect-amber" x="290" y="20" width="160" height="70"/>
+    <text class="node-label" x="370" y="42">3月3日</text>
+    <text class="node-sublabel" x="370" y="62">默认 effort: high → medium</text>
+    <text class="node-sublabel" x="370" y="78">推理深度被腰斩</text>
+
+    <!-- Node 3: Mar 5 -->
+    <circle cx="560" cy="110" r="8" fill="#ef4444"/>
+    <rect class="node-rect-red" x="480" y="130" width="160" height="70"/>
+    <text class="node-label" x="560" y="152">3月5日</text>
+    <text class="node-sublabel" x="560" y="172">隐藏 thinking 输出</text>
+    <text class="node-sublabel" x="560" y="188">用户无法察觉思考过程</text>
+  </svg>
+  <div class="diagram-caption">Anthropic 在 2026 年 2-3 月的三次"静默更新"时间线</div>
+</div>
+
+<p>我来逐个拆解。</p>
+
+<h3>第一刀：Adaptive Thinking（2 月 9 日）</h3>
+
+<p>这个改动的意思是：模型不再对每个问题投入同样的思考力度，而是<strong>自己判断这个问题需要想多久</strong>。</p>
+
+<p>听起来很合理对吧？简单问题少想，复杂问题多想，省时省钱。</p>
+
+<p>问题在于：模型对"这个问题有多复杂"的判断，<strong>经常是错的</strong>。</p>
+
+<p>很多资深工程师的任务，表面上看起来简单——"帮我重构一下这个函数"。但实际上，这个函数可能牵扯到五个模块的依赖、三个边界条件和一个历史遗留 bug。模型看了一眼觉得"哦，就改个函数嘛"，分配了最低思考预算，甚至在某些回合直接分配了<strong>零思考预算</strong>。</p>
+
+<p>打个比方：你让一个医生看病，他现在有权自己决定要不要做检查。感冒？不检查了，直接开药。问题是，有些"看起来像感冒"的病，可能是肺炎。</p>
+
+<h3>第二刀：默认 Effort 从 High 降到 Medium（3 月 3 日）</h3>
+
+<p>这一刀才是真正的"降智元凶"。</p>
+
+<p>Anthropic 的 Claude Code 有一个 <code>effort</code> 参数，控制模型每次回答时的推理深度。之前默认是 <code>high</code>，3 月 3 日被改成了 <code>medium</code>。</p>
+
+<p>这就像你去自助餐厅，以前盘子是大盘，现在换成了小碟子。食物还是那些食物，但你每次能拿的量少了一半。吃完一碟你可以再去拿，但大多数人不会——因为你甚至<strong>不知道盘子变小了</strong>。</p>
+
+<h3>第三刀：隐藏思考过程（3 月 5 日）</h3>
+
+<p>Anthropic 添加了一个名为 <code>redact-thinking-2026-02-12</code> 的 HTTP 头，让 Claude Code 不再将思考过程返回到本地日志中。</p>
+
+<p>官方说法是：这只是一个 UI 优化，减少延迟，"不影响思考本身"。</p>
+
+<p>但结果是：用户失去了验证模型是否在认真思考的唯一窗口。你再也看不到模型有没有在"想"，只能看到它的输出。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  这三个改动都不是模型层面的变化——Claude Opus 4.6 的参数和权重没有被修改。真正变的是模型和用户之间那层<strong>运行时配置</strong>。不是厨师换了，是餐厅偷偷把火调小了。
+</div>
+
+<p>三刀下去，效果叠加：模型自己决定少想，默认参数又把思考上限压低，最后你连它在不在想都看不到了。</p>
+
+<p>完美的"隐形降级"。</p>
+
+<p>但 Anthropic 不这么认为。</p>
+
+<!-- ==================== SECTION: 官方回应为什么没人买账？ ==================== -->
+<h2 id="s4">官方回应为什么没人买账？</h2>
+
+<p>Laurenzo 的帖子发出后，Claude Code 的负责人 Boris Cherny 亲自下场回应了。</p>
+
+<p>Cherny 的核心论点是：</p>
+
+<blockquote>
+"我们没有削弱模型。我们只是根据用户反馈，调低了默认的努力程度。很多用户之前抱怨 Claude 消耗 Token 太多、太慢。你随时可以通过 /effort high 调回来。"<br>
+—— Boris Cherny, Claude Code 负责人
+</blockquote>
+
+<p>技术上说，这段话<strong>没有错</strong>。</p>
+
+<p>但用户不买账。原因有三：</p>
+
+<p><strong>第一，没有人告诉用户。</strong>这三个改动没有出现在任何显著的 release notes 中。一个直接影响产品核心体验的参数变更，就这么静悄悄地上线了。你投诉网速变慢了，运营商说"我们调了你的套餐，但你可以打电话改回来"——问题是，你根本不知道套餐被改了。</p>
+
+<p><strong>第二，"你可以调回来"是一个伪解决方案。</strong>大多数用户根本不知道 <code>/effort</code> 这个命令的存在。知道的人也不知道默认值被改了。让用户自己去挖配置项来恢复原有体验，这不叫"用户可以选择"，这叫"把责任推给用户"。</p>
+
+<p><strong>第三，这打破了 Anthropic 的品牌承诺。</strong>Anthropic 一直以来的定位是"最透明、最注重安全"的 AI 公司。当你的核心差异化是"我们比 OpenAI 更值得信任"时，一次隐蔽的性能缩水，杀伤力比竞争对手做同样的事大十倍。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  据 Fortune 报道，Anthropic 近期估值已达 3800 亿美元，正在筹备 IPO。年化收入 300 亿美元。在这个节骨眼上爆发信任危机，时机不能更糟。OpenAI 的收入负责人甚至公开暗示，Anthropic "在算力储备上犯了战略失误"。
+</div>
+
+<p>Cherny 后来做了让步：承诺为 Teams 和 Enterprise 用户将默认 effort 恢复为 high。但对 Pro 和 Max 用户——也就是最广泛的付费群体——没有任何变化。</p>
+
+<p>信任一旦裂开，用户会拿放大镜看你的每一个细节。</p>
+
+<p>但如果我们跳出情绪，冷静想一个问题：<strong>Anthropic 为什么要这么做？</strong>他们疯了吗？得罪用户对他们有什么好处？</p>
+
+<p>答案藏在一道数学题里。</p>
+
+<!-- ==================== SECTION: 订阅制 AI 的不可能三角 ==================== -->
+<h2 id="s5">订阅制 AI 的不可能三角</h2>
+
+<p>还记得 Laurenzo 算的那笔账吗？她每月付 400 美元，实际用了价值 42,121 美元的算力。122 倍。</p>
+
+<p>这不是个例。有报道指出，一个 200 美元/月的 Claude Max 订阅用户，可能跑出价值 1,000 到 5,000 美元的计算任务。</p>
+
+<p>这就是订阅制 AI 的根本困境。</p>
+
+<p>想象一下你开了一家健身房。你卖 200 元/月的会员卡，赌的是大多数人办了卡不怎么来。前三年确实如此。然后突然有一天，所有会员都开始每天来练三小时，而且每个人都要用最贵的器械。</p>
+
+<p>你怎么办？</p>
+
+<p>你有三个选择：</p>
+
+<ol>
+  <li><strong>涨价</strong>——但用户会跑</li>
+  <li><strong>扩容</strong>——但 GPU 不是一夜之间长出来的</li>
+  <li><strong>偷偷降低服务质量</strong>——把跑步机的最高速度从 20 调到 15</li>
+</ol>
+
+<p>Anthropic 选了第三条路。或者更准确地说，他们选了第三条路，<strong>但不承认</strong>。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Triangle -->
+    <polygon points="350,30 100,250 600,250" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+
+    <!-- Top vertex: Quality -->
+    <rect class="node-rect-blue" x="280" y="10" width="140" height="44"/>
+    <text class="node-label" x="350" y="32">推理质量</text>
+
+    <!-- Bottom-left vertex: Price -->
+    <rect class="node-rect-green" x="30" y="234" width="140" height="44"/>
+    <text class="node-label" x="100" y="256">订阅价格</text>
+
+    <!-- Bottom-right vertex: Scale -->
+    <rect class="node-rect-purple" x="530" y="234" width="140" height="44"/>
+    <text class="node-label" x="600" y="256">用户规模</text>
+
+    <!-- Center label -->
+    <text x="350" y="170" text-anchor="middle" font-size="14" fill="#ef4444" font-weight="600">最多选两个</text>
+
+    <!-- Edge labels -->
+    <text class="arrow-label" x="200" y="130">低价 + 好质量</text>
+    <text class="arrow-label" x="200" y="148">= 服务不了多少人</text>
+    <text class="arrow-label" x="500" y="130">好质量 + 多用户</text>
+    <text class="arrow-label" x="500" y="148">= 必须涨价</text>
+    <text class="arrow-label" x="350" y="264">低价 + 多用户</text>
+    <text class="arrow-label" x="350" y="280">= 只能降质量</text>
+  </svg>
+  <div class="diagram-caption">订阅制 AI 的"不可能三角"：推理质量、订阅价格、用户规模——最多选两个</div>
+</div>
+
+<p>事实上，Anthropic 不是唯一面临这个困境的公司。</p>
+
+<p>2026 年 3 月底，Anthropic 公开调整了 Claude 的使用额度——高峰时段（太平洋时间早 5 点到 11 点），所有订阅层级的 5 小时会话配额都会加速消耗。影响了约 7% 的用户。</p>
+
+<p>更激进的是，Anthropic 直接封禁了通过第三方代理（如 OpenClaw）无限调用 Claude 的路径，把这些用户推向按量付费。</p>
+
+<p>有一个独立监测网站叫 "AI Stupid Level"，专门追踪各家 AI 模型的实时性能波动。它的存在本身就说明了一个问题：<strong>用户已经不信任 AI 公司对自家产品质量的自我评估了</strong>。</p>
+
+<p>所有包月 AI 的噩梦，不是用户不来，而是用户真的用起来了。</p>
+
+<!-- ==================== SECTION: 你该怎么办？ ==================== -->
+<h2 id="s6">你该怎么办？</h2>
+
+<p>讲到这里，回到最实际的问题：作为用户，你能做什么？</p>
+
+<h3>立刻能做的三件事</h3>
+
+<p><strong>第一，手动调高 effort 级别。</strong>在 Claude Code 中输入 <code>/effort high</code> 或 <code>/effort max</code>。这个设置是"粘性"的，会持续到下次会话。这一步能恢复大部分被"缩水"的推理深度。</p>
+
+<pre><code class="language-bash"># 在 Claude Code 中设置最大推理深度
+/effort max
+
+# 或者通过环境变量禁用 adaptive thinking
+export CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1</code></pre>
+
+<p><strong>第二，在提示词中显式要求深度思考。</strong>告诉 Claude "先列出所有相关文件，再制定修改方案，最后再动手"。这会让模型的自适应机制把更多预算分配给推理。</p>
+
+<p><strong>第三，不要把鸡蛋放在一个篮子里。</strong>如果你的工作流对 AI 编程助手有强依赖，确保你对 Cursor、GitHub Copilot 或 Windsurf 有基本的熟悉度。不是说要换，而是要有 Plan B。</p>
+
+<hr>
+
+<p>现在，让我们退一步，看看这场争议的全貌。</p>
+
+<p>关于"AI 公司是否应该在订阅框架内静默调整服务质量"，技术圈有两派泾渭分明的声音：</p>
+
+<p><strong>"务实派"说：</strong>这是正常的产品运营。没有哪家 SaaS 公司不做资源调度。Netflix 在高峰期降码率，AWS 在过载时限流，这些都是行业惯例。Anthropic 需要在成本和体验之间找平衡，而且他们提供了手动覆盖的选项。用户要做的只是学会调参数。</p>
+
+<p><strong>"信任派"说：</strong>AI 不是流媒体。视频降码率你眼睛看得出来，但推理深度的缩水，用户可能几周后才从线上 bug 里发现。更重要的是，Anthropic 是靠"我们比竞争对手更透明"起家的。如果你的品牌就是信任，那隐蔽的降级就是最大的品牌自杀。至少，改之前发个通知，这不过分吧？</p>
+
+<p><strong>我的立场：我站"信任派"，但带一个前提条件。</strong></p>
+
+<p>我理解 Anthropic 的成本压力是真实的。122 倍的成本倒挂，任何公司都扛不住。但解决成本问题的方式，应该是公开调价或分级服务，而不是在暗处拧水龙头。</p>
+
+<p>你可以把自助餐改成限量供应，但你得在门口挂个牌子。</p>
+
+<p>这场风波给所有 AI 从业者提了一个醒：<strong>当 AI 成为工作流的基础设施，它的可靠性就不再是"体验问题"，而是"信任问题"</strong>。而信任，是这个行业最稀缺、也最脆弱的资产。</p>
+
+<p>与其抱怨 AI 变笨了，不如想想——你的工作流，有没有 Plan B？</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://yage.ai/share/claude-code-runtime-regression-en-20260407.html" target="_blank">The Claude Code Nerf: An Invisible, Unilateral Downgrade at the Runtime Layer</a></li>
+    <li><a href="https://fortune.com/2026/04/14/anthropic-claude-performance-decline-user-complaints-backlash-lack-of-transparency-accusations-compute-crunch/" target="_blank">Anthropic faces user backlash over reported performance issues with its Claude AI chatbot - Fortune</a></li>
+    <li><a href="https://www.theregister.com/2026/04/06/anthropic_claude_code_dumber_lazier_amd_ai_director/" target="_blank">Claude Code has become dumber, lazier: AMD director - The Register</a></li>
+    <li><a href="https://blog.csdn.net/csdnnews/article/details/159932729" target="_blank">Claude 越更越废？AMD AI 负责人甩出 23 万次调用记录 - CSDN</a></li>
+    <li><a href="https://www.36kr.com/p/3767261832446727" target="_blank">Claude 又又又又降智了，只有它自己不知道 - 36氪</a></li>
+    <li><a href="https://www.implicator.ai/claudes-rate-limits-arent-a-capacity-problem-theyre-a-math-problem/" target="_blank">Claude Rate Limits Expose AI Subscription Pricing Crisis - Implicator</a></li>
+    <li><a href="https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking" target="_blank">Adaptive thinking - Claude API Docs</a></li>
+    <li><a href="https://www.axios.com/2026/04/16/anthropic-claude-power-user-complaints" target="_blank">Anthropic's AI downgrade stings power users - Axios</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
