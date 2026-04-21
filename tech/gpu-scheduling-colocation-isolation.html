@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GPU 算力调度：白天推理、晚上训练，一块卡怎么掰成两半用？ - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">GPU 调度</span>
+    <span class="tag">Kubernetes</span>
+    <span class="tag">混部隔离</span>
+  </div>
+  <h1>GPU 算力调度：白天推理、晚上训练，一块卡怎么掰成两半用？</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-21</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">为什么你的 GPU 集群有一半在"睡觉"？</a>
+  <a href="#s2">Kubernetes 怎么把一块 GPU 掰成几份？</a>
+  <a href="#s3">混部隔离：最难啃的骨头</a>
+  <a href="#s4">朝夕调度：白天推理，晚上训练</a>
+  <a href="#s5">推理和训练的调度，到底差在哪？</a>
+  <a href="#s6">未来：GPU 调度会像电网一样自动</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>做一个思想实验。</p>
+
+<p>假设你是一家 AI 公司的 CTO，公司刚花 2000 万采购了一批 A100 GPU。财务总监走过来问你："这批卡的利用率是多少？"</p>
+
+<p>你看了看监控面板，沉默了。</p>
+
+<p>55%。</p>
+
+<p>也就是说，将近一半的算力，正在空转。这不是你一家的问题——业界调研数据显示，<strong>大多数 GPU 集群的平均利用率在 55%-65% 之间</strong>。OpenAI 自己都承认，即便有六个月的训练任务积压，他们的集群仍有 43% 的时间处于闲置状态。</p>
+
+<p>2000 万的 GPU，有 800 多万在"睡觉"。</p>
+
+<p>问题出在哪？不是 GPU 不够用，是<strong>用法不对</strong>。白天，推理服务忙得冒烟；凌晨，推理请求断崖式下跌，GPU 却不知道该干嘛。训练任务呢？排在队列里等着，因为调度器不敢把它塞进正在跑推理的卡里。</p>
+
+<p>这篇文章，我想跟你聊聊怎么让 GPU 集群从"半梦半醒"变成"全年无休"——从 Kubernetes 分时调度到混部隔离，从朝夕潮汐策略到推理训练的调度差异，一套组合拳打下来，利用率从 55% 拉到 85% 以上，不是梦。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 为什么你的 GPU 集群有一半在"睡觉"？ ==================== -->
+<h2 id="s1">为什么你的 GPU 集群有一半在"睡觉"？</h2>
+
+<p>要回答这个问题，你得先搞明白一件事：<strong>推理和训练，根本不是一类工作负载。</strong></p>
+
+<p>打个比方。推理服务就像医院的急诊室——7×24 小时在线，随时可能来病人，每个病人要求"快"，10 毫秒给结果，100 毫秒就算超时。但急诊室有个特点：忙闲不均。白天人满为患，凌晨三点可能空无一人。</p>
+
+<p>训练任务呢？更像住院部。病人住进来，少则几天、多则几周，不着急出院，但要求<strong>病房稳定</strong>——你不能把人半夜赶出去腾床位。训练任务要的是持续、大块的计算资源，动辄跑几天甚至几周，中途被打断代价极高。</p>
+
+<p>矛盾就来了：</p>
+
+<ul>
+<li>推理服务白天吃满 GPU，晚上空着</li>
+<li>训练任务想要整块 GPU 跑个三天三夜，但白天抢不到资源</li>
+<li>调度器左右为难——给训练吧，推理来了怎么办？不给训练吧，晚上卡闲着也是闲着</li>
+</ul>
+
+<p>这就好比一条高速公路，早高峰堵得水泄不通，凌晨空空荡荡。你不可能把公路拆了重建，但你可以<strong>让它在不同时间段服务不同的车流</strong>。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  根据行业调研，在超过 2000 张 GPU 的集群中，94.1% 的低调用频率模型占用了 17.7% 的 GPU 资源，却仅处理 1.35% 的请求。换句话说，大量 GPU 被"占着茅坑不拉屎"的冷模型霸占着。
+</div>
+
+<p>所以问题的本质不是"GPU 不够"，而是<strong>调度策略跟不上工作负载的节奏</strong>。推理和训练像两个生物钟完全不同的室友，你得学会让他们分时使用同一张床。</p>
+
+<p><strong>不是 GPU 不够用，是你的调度器还活在"一人一卡"的石器时代。</strong></p>
+
+<p>那 Kubernetes 有什么招？</p>
+
+<hr>
+
+<!-- ==================== SECTION: Kubernetes 怎么把一块 GPU 掰成几份？ ==================== -->
+<h2 id="s2">Kubernetes 怎么把一块 GPU 掰成几份？</h2>
+
+<p>传统 Kubernetes 调度 GPU 的方式简单粗暴——一个 Pod 申请 <code>nvidia.com/gpu: 1</code>，就独占一整块卡。哪怕你的推理服务只用了 20% 的显存和 10% 的算力，剩下的也白白浪费。</p>
+
+<p>这就像你去住酒店，只想睡个午觉，前台说"不好意思，最少租一晚"。</p>
+
+<p>好消息是，2025-2026 年，GPU 的"分时出租"能力有了质的飞跃。目前主流的方案有三种：</p>
+
+<h3>方案一：Time-Slicing（时间片轮转）</h3>
+
+<p>最简单的共享方式。多个 Pod 轮流使用同一块 GPU，每个 Pod 分到一个"时间片"。就像大学里的自习室——没有固定座位，谁来了谁坐，到点换人。</p>
+
+<p>NVIDIA Device Plugin 原生支持这种模式，配置极其简单：</p>
+
+<pre><code class="language-yaml"># NVIDIA Device Plugin 时间片配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nvidia-device-plugin
+data:
+  config: |
+    sharing:
+      timeSlicing:
+        replicas: 4    # 一块卡虚拟成 4 份
+        failRequestsGreaterThanOne: false</code></pre>
+
+<p>关键在 <code>replicas: 4</code> 这一行——它把一块物理 GPU "复制"成 4 个逻辑设备，Kubernetes 调度器就能把 4 个 Pod 塞进同一块卡了。</p>
+
+<p>但 Time-Slicing 有个致命缺陷：<strong>没有隔离</strong>。四个 Pod 共享显存和算力，一个 Pod 吃光了显存，其他三个直接 OOM。这就好比合租公寓不锁门——和平时期岁月静好，一旦有个室友半夜打游戏外放，全楼遭殃。</p>
+
+<h3>方案二：MIG（多实例 GPU）</h3>
+
+<p>NVIDIA 从 A100 开始支持的硬件级分区技术。它能把一块 GPU 在<strong>物理层面</strong>切成最多 7 个独立实例，每个实例有自己专属的 SM（流处理器）和显存。</p>
+
+<p>这就不是合租公寓了，这是<strong>把一栋别墅改成了 7 套独立公寓</strong>，每套有独立的水电表、独立的入户门。隔壁炒菜你闻不到味道。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 物理 GPU -->
+    <rect class="group-box" x="10" y="10" width="680" height="180"/>
+    <text class="group-label" x="24" y="32">物理 GPU（A100 80GB）</text>
+    <!-- MIG 实例 -->
+    <rect class="node-rect-blue" x="30" y="55" width="130" height="55"/>
+    <text class="node-label" x="95" y="73">MIG 1g.10gb</text>
+    <text class="node-sublabel" x="95" y="93">推理服务 A</text>
+    <rect class="node-rect-blue" x="170" y="55" width="130" height="55"/>
+    <text class="node-label" x="235" y="73">MIG 1g.10gb</text>
+    <text class="node-sublabel" x="235" y="93">推理服务 B</text>
+    <rect class="node-rect-green" x="310" y="55" width="130" height="55"/>
+    <text class="node-label" x="375" y="73">MIG 2g.20gb</text>
+    <text class="node-sublabel" x="375" y="93">微调任务</text>
+    <rect class="node-rect-purple" x="450" y="55" width="230" height="55"/>
+    <text class="node-label" x="565" y="73">MIG 4g.40gb</text>
+    <text class="node-sublabel" x="565" y="93">训练任务</text>
+    <!-- 隔离标记 -->
+    <text class="node-sublabel" x="350" y="145">每个实例拥有独立的 SM 和显存，硬件级隔离</text>
+  </svg>
+  <div class="diagram-caption">MIG 将一块 A100 切分为多个隔离实例，支持不同粒度的工作负载混部</div>
+</div>
+
+<p>缺点也明显：粒度不够灵活（只能按固定 profile 切分），而且只有 Ampere 及以上架构才支持。</p>
+
+<h3>方案三：KAI Scheduler（NVIDIA 2025 开源）</h3>
+
+<p>2025 年 1 月，NVIDIA 开源了 KAI（Kubernetes AI）Scheduler。它做了一件 Kubernetes 原生调度器做不到的事——<strong>分数级 GPU 分配</strong>。</p>
+
+<p>你可以这样写：</p>
+
+<pre><code class="language-yaml">resources:
+  requests:
+    nvidia.com/gpu: "0.25"  # 只要 1/4 块卡</code></pre>
+
+<p>0.25 块卡、0.5 块卡、2000MiB 显存——随你定。KAI 还支持层级队列、拓扑感知调度和基于时间的公平共享（time-based fairshare），追踪历史 GPU 使用量来分配超额资源。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  Time-Slicing 是"大家轮着用，不管你用多少"；MIG 是"物理切开，各管各的"；KAI 是"逻辑切分 + 智能调度，按需分配"。三者不是互斥关系——KAI 可以和 MIG、Time-Slicing 搭配使用。
+</div>
+
+<p><strong>调度的本质不是"公平分配"，而是"把对的资源在对的时间给对的任务"。</strong></p>
+
+<p>但分完蛋糕还有一个更棘手的问题——怎么保证一个人吃蛋糕时不会喷另一个人一脸奶油？</p>
+
+<hr>
+
+<!-- ==================== SECTION: 混部隔离：最难啃的骨头 ==================== -->
+<h2 id="s3">混部隔离：最难啃的骨头</h2>
+
+<p>如果说 GPU 共享是"让两个人住同一间房"，那混部隔离就是"确保一个人打呼噜时另一个人还能睡着"。</p>
+
+<p>这是整个 GPU 调度领域<strong>最难的问题</strong>，没有之一。</p>
+
+<p>为什么难？因为 GPU 和 CPU 不一样。CPU 有成熟的 cgroup 机制，Linux 内核天然支持进程级资源隔离。但 GPU 是一个"黑盒"——它有自己的内存管理、自己的调度器、自己的执行引擎，操作系统对它的控制力远不如 CPU。</p>
+
+<p>让我用一个真实踩坑故事来说明这有多危险。</p>
+
+<h3>NVIDIA MPS 的"连坐"噩梦</h3>
+
+<p>NVIDIA MPS（Multi-Process Service）是一种让多个 CUDA 进程共享 GPU 的技术。它的原理是把多个进程的 GPU kernel 合并到同一个 CUDA Context 里执行，减少上下文切换开销。</p>
+
+<p>听起来很美好，但有一个致命问题：<strong>进程间错误传播</strong>。</p>
+
+<p>当一个进程在执行 GPU kernel 时出错退出，共享同一个 IPC 和 UVM 的其他进程也会被连带退出。一个 Pod 崩溃，整块卡上的所有 Pod 一起殉葬。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  MPS 的"连坐"机制意味着：在生产环境中，如果一个推理服务因为输入异常触发了 GPU 错误，同卡上运行的训练任务也会被终止。训练进度如果没有及时 checkpoint，几小时的计算就白费了。<strong>这不是性能问题，这是生产事故。</strong>
+</div>
+
+<p>所以，混部隔离的核心挑战可以总结为三个层次：</p>
+
+<h3>第一层：显存隔离</h3>
+
+<p>最基本的隔离。推理服务 A 申请了 10GB 显存，训练任务 B 申请了 30GB，两者不能互相侵占。MIG 在硬件层面做到了这一点，Time-Slicing 做不到。腾讯的 qGPU 和开源项目 HAMi 则通过 GPU 虚拟化在软件层面实现了显存配额管理。</p>
+
+<h3>第二层：算力隔离</h3>
+
+<p>比显存更难。即使显存隔离了，两个任务仍然在争抢 SM（流处理器）。MPS 的策略是"贪心调度"——尽可能多地把 kernel 塞进 GPU，最大化利用率。但这也意味着：<strong>延迟敏感的推理任务在排队等待</strong>，因为 GPU 正在忙训练任务的大 batch 计算。</p>
+
+<p>USENIX ATC 2025 的一篇论文提出了"快速上下文切换"方案——当推理请求到来时，可以在微秒级别暂停训练 batch、切换到推理模式、完成推理后再切回来。类似于 CPU 的中断机制，但在 GPU 上实现起来要难得多。</p>
+
+<h3>第三层：故障隔离</h3>
+
+<p>也就是 MPS 踩的那个坑。MIG 通过硬件分区彻底解决了这个问题——每个 MIG 实例有独立的 ECC 错误隔离和独立的 CUDA Context，一个实例崩溃不影响其他实例。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- 标题 -->
+    <text class="node-label" x="350" y="20">三种 GPU 共享方案的隔离能力对比</text>
+    <!-- Time-Slicing -->
+    <rect class="node-rect-red" x="20" y="45" width="200" height="170"/>
+    <text class="node-label" x="120" y="68">Time-Slicing</text>
+    <text class="node-sublabel" x="120" y="95">显存隔离：无</text>
+    <text class="node-sublabel" x="120" y="115">算力隔离：无</text>
+    <text class="node-sublabel" x="120" y="135">故障隔离：无</text>
+    <text class="node-sublabel" x="120" y="165">适合：开发/测试</text>
+    <text class="node-sublabel" x="120" y="185">不适合生产混部</text>
+    <!-- MPS -->
+    <rect class="node-rect-amber" x="250" y="45" width="200" height="170"/>
+    <text class="node-label" x="350" y="68">MPS</text>
+    <text class="node-sublabel" x="350" y="95">显存隔离：软配额</text>
+    <text class="node-sublabel" x="350" y="115">算力隔离：弱</text>
+    <text class="node-sublabel" x="350" y="135">故障隔离：无（连坐）</text>
+    <text class="node-sublabel" x="350" y="165">适合：同质工作负载</text>
+    <text class="node-sublabel" x="350" y="185">不适合异构混部</text>
+    <!-- MIG -->
+    <rect class="node-rect-green" x="480" y="45" width="200" height="170"/>
+    <text class="node-label" x="580" y="68">MIG</text>
+    <text class="node-sublabel" x="580" y="95">显存隔离：硬隔离</text>
+    <text class="node-sublabel" x="580" y="115">算力隔离：硬隔离</text>
+    <text class="node-sublabel" x="580" y="135">故障隔离：完全隔离</text>
+    <text class="node-sublabel" x="580" y="165">适合：生产多租户</text>
+    <text class="node-sublabel" x="580" y="185">推荐用于混部场景</text>
+  </svg>
+  <div class="diagram-caption">从左到右，隔离能力递增，但灵活性递减——这是工程上的核心 trade-off</div>
+</div>
+
+<p>我的判断是：<strong>在生产环境中搞混部，MIG 是底线，不是选项。</strong>没有硬件级隔离就搞推理+训练混部，就像不系安全带上高速——大多数时候没事，出事就是大事。</p>
+
+<p>2025 年新出现的 CRIUgpu 项目值得关注——它实现了 GPU 容器的全透明 checkpoint/restore，让训练任务可以在微秒级别被"冻结"和"解冻"，不丢失任何进度。这为更精细的混部隔离打开了新的可能。</p>
+
+<p><strong>隔离不是技术问题，是信任问题。你敢不敢把推理 SLA 押在隔离机制上，取决于隔离做得有多硬。</strong></p>
+
+<p>解决了隔离，下一个问题是：怎么让 GPU 在白天和晚上干不同的活？</p>
+
+<hr>
+
+<!-- ==================== SECTION: 朝夕调度 ==================== -->
+<h2 id="s4">朝夕调度：白天推理，晚上训练</h2>
+
+<p>如果你在北京开过车，你一定见过"潮汐车道"——早高峰进城方向多一条车道，晚高峰出城方向多一条。车道没变多，但通行效率提高了 30%。</p>
+
+<p>GPU 的朝夕调度（Tidal Scheduling），就是算力世界的潮汐车道。</p>
+
+<h3>核心逻辑：推理和训练的时间差</h3>
+
+<p>看一下典型的推理请求量曲线：</p>
+
+<ul>
+<li><strong>9:00-22:00</strong>：用户活跃期，推理请求量高峰，GPU 需要保障低延迟服务</li>
+<li><strong>22:00-次日 9:00</strong>：请求量跌至白天的 10%-20%，大量 GPU 闲置</li>
+</ul>
+
+<p>而训练任务恰好相反——它不关心什么时候跑，只关心能跑多久。凌晨给它 11 个小时的连续 GPU 时间？求之不得。</p>
+
+<p>这就是天然的互补关系。</p>
+
+<h3>实操：Kubernetes + Kueue 的潮汐策略</h3>
+
+<p>Google 的 GKE 文档给出了一套完整的混合工作负载方案，核心组件是 <strong>Kueue</strong>——一个 Kubernetes 原生的任务队列系统：</p>
+
+<pre><code class="language-yaml"># Kueue 配置：推理优先级高于训练
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: inference-high
+value: 1000        # 推理任务优先级
+---
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: WorkloadPriorityClass
+metadata:
+  name: training-low
+value: 100         # 训练任务优先级（可被抢占）</code></pre>
+
+<p>关键在第二个配置——训练任务标记为"可被抢占"。白天推理高峰来了，Kueue 会自动暂停训练任务、释放 GPU 给推理服务；晚上推理流量下降，训练任务自动恢复。</p>
+
+<p>但这里有个关键问题：<strong>训练被打断了，进度怎么办？</strong></p>
+
+<h3>Checkpoint：训练任务的"存档点"</h3>
+
+<p>训练任务不像推理——中断即丢失。你跑了 8 个小时的训练，被推理抢占后直接 kill 掉，那 8 个小时就白费了。</p>
+
+<p>解法是 checkpoint 机制。训练任务定期把模型权重、优化器状态、训练步数保存到持久化存储（通常是 NFS 或对象存储）。被抢占时，保存当前 checkpoint；恢复时，从最近的 checkpoint 继续。</p>
+
+<p>2025 年的一个重要进展是 <strong>CRIUgpu</strong>——它把 checkpoint 做到了 GPU 容器级别。不需要应用层代码做任何修改，直接在容器层面冻结整个 GPU 上下文（包括显存内容），恢复时原样解冻。零代码侵入，零稳态性能开销。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  跨时区部署是朝夕调度的进阶玩法。如果你在北京和旧金山都有 GPU 集群，旧金山的白天正好是北京的夜晚。推理请求"追着太阳跑"，训练任务"追着月亮跑"——理论上可以实现接近 100% 的全球 GPU 利用率。
+</div>
+
+<p><strong>最好的调度不是跟时间对抗，而是顺势而为——推理追太阳，训练追月亮。</strong></p>
+
+<p>但要把潮汐调度做好，你还得搞清楚一件事：推理和训练的调度需求，到底差在哪？</p>
+
+<hr>
+
+<!-- ==================== SECTION: 推理和训练的调度差异 ==================== -->
+<h2 id="s5">推理和训练的调度，到底差在哪？</h2>
+
+<p>很多团队在做 GPU 调度时犯的最大错误，就是<strong>用同一套策略调度推理和训练</strong>。这就像用管理外卖骑手的方式去管理货运卡车——都是"送东西"，但节奏完全不同。</p>
+
+<p>外卖骑手（推理）：每单要快，10 分钟超时顾客差评，高峰期要弹性扩容，一个骑手可以同时接几单小订单。</p>
+
+<p>货运卡车（训练）：不赶时间，但一趟要拉满，中途卸货代价巨大，需要提前规划路线、预留停车场。</p>
+
+<p>具体来看，核心差异有三个维度：</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>推理（Inference）</th><th>训练（Training）</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>优化目标</strong></td><td>延迟（P95/P99 < 100ms）</td><td>吞吐（tokens/秒、samples/秒）</td></tr>
+<tr><td><strong>Batch 大小</strong></td><td>1-32（动态 batching）</td><td>4096-65536（越大越快）</td></tr>
+<tr><td><strong>任务时长</strong></td><td>毫秒级（单次请求）</td><td>小时到周级（持续运行）</td></tr>
+<tr><td><strong>容错要求</strong></td><td>单次失败可重试</td><td>中断需 checkpoint 恢复</td></tr>
+<tr><td><strong>网络需求</strong></td><td>低延迟、多并发</td><td>高带宽（all-reduce 通信）</td></tr>
+<tr><td><strong>扩缩容</strong></td><td>秒级弹性（按请求量）</td><td>固定资源（按任务规模）</td></tr>
+</tbody>
+</table>
+
+<h3>调度策略的根本分歧：抢占 vs 预留</h3>
+
+<p>推理服务需要<strong>抢占式调度</strong>——新请求来了，必须立刻有资源响应。GPU 空闲？用。GPU 在跑低优先级任务？踢掉，先服务我。延迟是硬指标，差 50 毫秒用户就能感知到。</p>
+
+<p>训练任务需要<strong>预留式调度</strong>——给我 8 块 A100，锁定 72 小时，中间不要来抢。训练跑到一半 GPU 被拿走，即使有 checkpoint，恢复也要花时间重新加载模型、暖 GPU 缓存。</p>
+
+<p>反直觉的是，<strong>这两种看似矛盾的策略，恰好可以在时间维度上共存</strong>。白天推理抢占一切，晚上训练预留整块——这不就是朝夕调度的理论基础吗？</p>
+
+<h3>调度器设计的进化</h3>
+
+<p>传统 Kubernetes 调度器（kube-scheduler）对 GPU 的理解是"整数设备"——要么给一整块，要么不给。这在 CPU 时代可以接受，但在 GPU 时代完全不够用。</p>
+
+<p>2025-2026 年的趋势是<strong>GPU 感知调度器</strong>的崛起：</p>
+
+<ul>
+<li><strong>Kubernetes DRA（Dynamic Resource Allocation）</strong>：1.31 版本 GA，支持细粒度 GPU 分区和时间片</li>
+<li><strong>NVIDIA KAI Scheduler</strong>：分数级分配 + 层级队列 + 拓扑感知</li>
+<li><strong>Google Kueue</strong>：原生任务队列，支持优先级抢占和公平共享</li>
+<li><strong>SIRIUS</strong>（学术界）：在推理-训练混部场景中达到 89% 的 SLO 合规率</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "推理任务用小卡，训练任务用大卡"——这个直觉在 LLM 时代已经过时了。一个 70B 参数的推理服务，需要的显存可能比一个 7B 模型的全参微调还多。调度策略不能只看"训练还是推理"，还要看模型规模、batch 策略和 SLA 要求。
+</div>
+
+<p><strong>搞清楚推理和训练的差异，不是为了把它们分开，恰恰是为了把它们更好地放在一起。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s6">未来：GPU 调度会像电网一样自动</h2>
+
+<p>回到开头那个思想实验。</p>
+
+<p>2000 万的 GPU 集群，55% 的利用率。如果通过本文讨论的这套组合拳——MIG 硬隔离 + KAI 分数调度 + Kueue 优先级抢占 + 朝夕潮汐策略——把利用率从 55% 拉到 85%，意味着你在不加一块卡的情况下，<strong>等效多出了 550 万的算力</strong>。</p>
+
+<p>这不是小钱。</p>
+
+<p>但我认为，今天我们讨论的这些方案，还只是"手动挡"。三年后回看，GPU 调度会像今天的电网调度一样——你打开灯，电就来了，你不需要知道这一度电是火电还是风电、是本地发的还是西电东送的。</p>
+
+<p>我做两个预测，给自己设个 deadline：</p>
+
+<p><strong>预测一：2027 年底之前，主流云厂商会提供"GPU 电网"服务。</strong>用户提交任务，声明 SLA 和预算，平台自动决定用哪种卡、在哪个时区、什么时间段执行。推理、训练、微调的调度边界对用户完全透明。</p>
+
+<p><strong>预测二：2028 年，GPU 集群的平均利用率会从今天的 55% 提升到 80% 以上。</strong>驱动力不是硬件升级，而是调度软件的成熟。就像从手动挡到自动驾驶，硬件没变，软件让一切不同。</p>
+
+<p>一年半后回来看看，我说得对不对。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.redhat.com/en/blog/optimizing-gpu-roi-inference-day-training-night" target="_blank">Red Hat - Optimizing GPU ROI: Inference by Day, Training by Night (2025)</a></li>
+    <li><a href="https://www.usenix.org/system/files/atc25-wang-jiali.pdf" target="_blank">USENIX ATC 2025 - Colocating ML Inference and Training with Fast GPU Context Switching</a></li>
+    <li><a href="https://www.cio.com/article/4152554/how-kubernetes-is-finally-solving-the-gpu-utilization-crisis-to-save-your-ai-budget.html" target="_blank">CIO - How Kubernetes is Solving the GPU Utilization Crisis (2025)</a></li>
+    <li><a href="https://docs.google.com/kubernetes-engine/docs/tutorials/mixed-workloads" target="_blank">Google GKE - Optimize Resource Utilization for Mixed AI/ML Workloads</a></li>
+    <li><a href="https://github.com/NVIDIA/KAI-Scheduler" target="_blank">NVIDIA KAI Scheduler - GitHub</a></li>
+    <li><a href="https://arxiv.org/html/2410.07381v3" target="_blank">Tally: Non-Intrusive Performance Isolation for Concurrent DL Workloads</a></li>
+    <li><a href="https://arxiv.org/html/2502.16631v1" target="_blank">CRIUgpu: Transparent Checkpointing of GPU-Accelerated Workloads</a></li>
+    <li><a href="https://dl.acm.org/doi/full/10.1145/3638757" target="_blank">ACM Computing Surveys - Deep Learning Workload Scheduling in GPU Datacenters</a></li>
+    <li><a href="https://zhuanlan.zhihu.com/p/686793028" target="_blank">知乎 - Kubernetes 容器平台下的 GPU 集群算力管控</a></li>
+    <li><a href="https://cloud.tencent.com/developer/article/2529951" target="_blank">腾讯云 - 提升 GPU 利用率：探索 NVIDIA 的 MIG 与 MPS 虚拟化技术</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
