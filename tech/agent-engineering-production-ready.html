@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agent 工程化：从 Demo 到生产，你必须拆掉的四颗"隐形炸弹" - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Agent</span>
+    <span class="tag">工程化</span>
+    <span class="tag">LLM</span>
+  </div>
+  <h1>Agent 工程化：从 Demo 到生产，你必须拆掉的四颗"隐形炸弹"</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-04-25</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">100 个工具接进来，Agent 怎么选？</a>
+  <a href="#s2">Planning 该放在哪一层？</a>
+  <a href="#s3">Agent 不知道什么时候该停下来？</a>
+  <a href="#s4">一次调用 5 美元，你扛得住吗？</a>
+  <a href="#s5">写在最后：你的 Agent 及格了吗？</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>我要说一个可能冒犯很多 Agent 开发者的观点：<strong>你的 Agent 上不了生产，不是因为模型不够聪明，而是因为工程没做到位。</strong></p>
+
+<p>这话听起来有点狠，但数据站在我这边。</p>
+
+<p>Gartner 预测，到 2027 年底，<strong>超过 40% 的 Agentic AI 项目将被取消或搁置</strong>——原因不是技术不行，而是成本失控、风险不可管、价值说不清。LangChain 2026 年的调研也印证了这一点：57% 的组织已经在生产环境跑 Agent 了，但排名第一的痛点不是"模型太笨"，而是<strong>"质量不稳定"（32%）和"延迟太高"（20%）</strong>。</p>
+
+<p>换句话说，大家卡住的地方不是"能不能做个 Agent"，而是"怎么让这个 Agent 在生产环境里稳定、可控、不烧钱地跑起来"。</p>
+
+<p>这中间的鸿沟，我总结了四颗"隐形炸弹"——你在 Demo 阶段感受不到，但一到生产环境就会炸：</p>
+
+<ol>
+  <li><strong>工具搜索空间爆炸</strong>：接了 100 个工具，Agent 选不对</li>
+  <li><strong>Planning 层放错位置</strong>：规划和执行纠缠在一起</li>
+  <li><strong>停不下来</strong>：Agent 不知道什么时候该收手</li>
+  <li><strong>成本和延迟失控</strong>：一次调用烧掉比你预期多 10 倍的钱</li>
+</ol>
+
+<p>接下来，我们一颗一颗拆。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 工具搜索空间爆炸 ==================== -->
+<h2 id="s1">100 个工具接进来，Agent 怎么选？</h2>
+
+<p>先想一个场景。</p>
+
+<p>你给 Agent 接了 5 个工具——搜索、读文件、写文件、执行代码、发消息。它工作得挺好，像个靠谱的小助手。</p>
+
+<p>然后你信心大增，一口气接了 100 个工具。数据库查询、日志分析、Jira 创建工单、Slack 发通知、K8s 扩缩容、飞书审批……</p>
+
+<p>结果呢？Agent 开始"抽风"了。</p>
+
+<p>该查数据库的时候去搜了 Google，该发 Slack 的时候创建了 Jira 工单。不是它变笨了，而是<strong>搜索空间爆炸了</strong>。</p>
+
+<p>打个比方：5 个工具的时候，Agent 就像在点菜——菜单就一页，挑对不难。100 个工具的时候，它就像走进了一个巨型自助餐厅——光是转一圈就得花 10 分钟，更别说精确拿到你想要的那道菜了。</p>
+
+<h3>为什么"全部塞进 prompt"行不通？</h3>
+
+<p>最朴素的想法是：把所有工具的描述都写进 system prompt，让模型自己选。</p>
+
+<p>这在工具少的时候可以。但工具一多，问题就来了：</p>
+
+<ul>
+  <li><strong>context window 被工具描述占满</strong>，留给真正任务的空间反而不够了</li>
+  <li><strong>工具描述之间的语义相似度太高</strong>，模型分不清"搜索日志"和"查询日志数据库"到底该用哪个</li>
+  <li><strong>选错工具的概率随工具数量指数上升</strong>，而不是线性上升</li>
+</ul>
+
+<p>微软内部做过一个实验。他们最初给 Agent 配了 100 多个定制工具，"Intent Met"评分只有 45%——也就是说超过一半的时候，Agent 理解了你的意图，但选错了工具。</p>
+
+<h3>解法：三层漏斗，逐级收敛</h3>
+
+<p>经过反复踩坑，业界收敛出了一个核心模式：<strong>不要让 Agent 在 100 个工具里选，而是先把 100 个缩小到 5 个，再让它选。</strong></p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 第一层 -->
+    <rect class="node-rect-amber" x="20" y="70" width="160" height="60"/>
+    <text class="node-label" x="100" y="92">意图分类器</text>
+    <text class="node-sublabel" x="100" y="112">100 → 领域</text>
+    <!-- 箭头1 -->
+    <line class="arrow-line-blue" x1="190" y1="100" x2="250" y2="100"/>
+    <text class="arrow-label" x="220" y="88">过滤</text>
+    <!-- 第二层 -->
+    <rect class="node-rect-blue" x="260" y="70" width="160" height="60"/>
+    <text class="node-label" x="340" y="92">工具注册表</text>
+    <text class="node-sublabel" x="340" y="112">领域 → 5~8 个</text>
+    <!-- 箭头2 -->
+    <line class="arrow-line-blue" x1="430" y1="100" x2="490" y2="100"/>
+    <text class="arrow-label" x="460" y="88">精选</text>
+    <!-- 第三层 -->
+    <rect class="node-rect-green" x="500" y="70" width="160" height="60"/>
+    <text class="node-label" x="580" y="92">LLM 决策</text>
+    <text class="node-sublabel" x="580" y="112">5~8 → 1 个</text>
+    <!-- 标注 -->
+    <text class="node-sublabel" x="100" y="160">轻量模型 / 规则引擎</text>
+    <text class="node-sublabel" x="340" y="160">按领域分组 + 语义索引</text>
+    <text class="node-sublabel" x="580" y="160">强模型精确选择</text>
+  </svg>
+  <div class="diagram-caption">三层漏斗：工具搜索空间逐级收敛</div>
+</div>
+
+<p>具体怎么做？</p>
+
+<p><strong>第一层：意图分类器。</strong>用一个轻量模型（甚至规则引擎）先判断用户意图属于哪个领域——是"数据查询"、"运维操作"还是"沟通协作"？这一步的目的不是选对工具，而是排除 90% 明显不相关的工具。</p>
+
+<p><strong>第二层：工具注册表。</strong>每个领域维护一个工具分组。"数据查询"领域下可能有 SQL 查询、日志搜索、监控面板 API 这几个工具。分组可以用语义索引（embedding 相似度）动态匹配，也可以手动维护——取决于你的工具变化频率。</p>
+
+<p><strong>第三层：LLM 精选。</strong>把筛选后的 5-8 个候选工具描述，连同用户请求一起交给强模型。这时候 context window 清爽，语义区分度高，选对的概率大幅提升。</p>
+
+<p>微软后来换了一种更激进的做法：把所有东西都暴露为文件系统，让 Agent 用标准的文件操作（读、写、搜索）来完成任务。"Intent Met"分数从 45% 飙升到 75%。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  工具多不是问题，<strong>让 Agent 一次面对太多工具</strong>才是问题。就像你不会把整个图书馆的书都摊在桌上让人挑——你会先问"你要找哪类书"，再带他去对应的书架。
+</div>
+
+<p><strong>工具不是越多越好，是越准越好。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: Planning 层设计 ==================== -->
+<h2 id="s2">Planning 该放在哪一层？</h2>
+
+<p>解决了工具选择的问题，你发现 Agent 终于能调对工具了。但新问题来了：它调工具的<strong>顺序</strong>不对。</p>
+
+<p>比如你让它"分析上周的用户流失原因并发到 Slack"。它应该先查数据库、再做分析、最后发消息。但实际上，它可能先发了一条空消息到 Slack，然后才想起来"哦，我还没查数据"。</p>
+
+<p>这就是 Planning（规划）出了问题。</p>
+
+<h3>最常见的错误：让一个模型既规划又执行</h3>
+
+<p>大部分入门级 Agent 用的是 ReAct 模式——模型想一步、做一步、看一下结果、再想下一步。这在简单任务上没问题，但对复杂任务，它就像一个"边走边看地图"的游客：</p>
+
+<ul>
+  <li>容易走回头路（重复调用同一个工具）</li>
+  <li>容易漏步骤（忘了中间某个关键环节）</li>
+  <li>速度慢（每一步都要等一次完整的 LLM 推理）</li>
+</ul>
+
+<p>根据 2026 年的 benchmark 数据，<strong>Plan-and-Execute 架构的任务完成率可以达到 92%，而纯 ReAct 模式只有约 70%</strong>。更关键的是速度——Plan-and-Execute 因为可以并行执行独立步骤，整体速度快了 3.6 倍。</p>
+
+<h3>解法：将军和士兵，各司其职</h3>
+
+<p>成熟的 Agent 架构，规划和执行是分开的。我喜欢用"将军和士兵"来比喻：</p>
+
+<p><strong>将军（Planner）</strong>负责拿到任务后，拆解成一个有向无环图（DAG）。"先做 A 和 B（可以并行），A 和 B 都完成后再做 C，最后做 D。"将军用的是重型推理模型，比如 Claude Opus 或 GPT o3——因为规划本身就是最需要智力的部分。</p>
+
+<p><strong>士兵（Executor）</strong>负责执行每个具体步骤。士兵可以用更快、更便宜的模型——因为单个步骤的指令已经非常明确了，不需要太多"思考"。</p>
+
+<p><strong>参谋长（Re-planner）</strong>负责在士兵汇报执行结果后，判断原计划是否需要调整。如果某一步失败了，参谋长决定是重试、跳过还是修改后续计划。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Planner -->
+    <rect class="group-box" x="10" y="10" width="200" height="110"/>
+    <text class="group-label" x="25" y="30">规划层（强模型）</text>
+    <rect class="node-rect-purple" x="30" y="45" width="160" height="40"/>
+    <text class="node-label" x="110" y="65">Planner</text>
+    <rect class="node-rect-purple" x="30" y="95" width="160" height="18"/>
+    <text class="node-sublabel" x="110" y="104">拆解 DAG + 分配资源</text>
+    <!-- Arrow to Executors -->
+    <line class="arrow-line-blue" x1="220" y1="65" x2="280" y2="45"/>
+    <line class="arrow-line-blue" x1="220" y1="65" x2="280" y2="105"/>
+    <line class="arrow-line-blue" x1="220" y1="65" x2="280" y2="165"/>
+    <!-- Executors -->
+    <rect class="group-box" x="270" y="10" width="200" height="200"/>
+    <text class="group-label" x="285" y="30">执行层（快模型）</text>
+    <rect class="node-rect-blue" x="290" y="45" width="160" height="35"/>
+    <text class="node-label" x="370" y="63">Step A: 查数据</text>
+    <rect class="node-rect-blue" x="290" y="95" width="160" height="35"/>
+    <text class="node-label" x="370" y="113">Step B: 做分析</text>
+    <rect class="node-rect-blue" x="290" y="150" width="160" height="35"/>
+    <text class="node-label" x="370" y="168">Step C: 发消息</text>
+    <!-- Re-planner -->
+    <rect class="group-box" x="500" y="10" width="185" height="110"/>
+    <text class="group-label" x="515" y="30">监控层</text>
+    <rect class="node-rect-amber" x="520" y="45" width="145" height="40"/>
+    <text class="node-label" x="593" y="65">Re-planner</text>
+    <rect class="node-rect-amber" x="520" y="95" width="145" height="18"/>
+    <text class="node-sublabel" x="593" y="104">失败重试 / 计划修正</text>
+    <!-- Arrow from executor to replanner -->
+    <line class="arrow-line" x1="460" y1="75" x2="510" y2="65"/>
+    <text class="arrow-label" x="485" y="58">结果</text>
+    <!-- Arrow from replanner back -->
+    <line class="arrow-line" x1="520" y1="100" x2="460" y2="135"/>
+    <text class="arrow-label" x="500" y="130">调整</text>
+    <!-- 底部说明 -->
+    <text class="node-sublabel" x="350" y="250">关键原则：规划用强模型只调一次，执行用快模型可并行</text>
+  </svg>
+  <div class="diagram-caption">Plan-and-Execute 三层架构</div>
+</div>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  有人会问：那 Planning 这件事本身要不要缓存？答案是<strong>必须缓存</strong>。学术界最新的"Agentic Plan Caching"研究显示，缓存历史规划方案可以降低 50% 的成本和 27% 的延迟，同时保持 96.6% 的最优性能。因为很多任务的结构是重复的——"分析某某数据并发通知"这类任务，规划模式几乎一样，没必要每次都重新推理。
+</div>
+
+<p>但这里有一个实战中特别容易踩的坑：<strong>什么时候该用 Plan-and-Execute，什么时候该用动态编排？</strong></p>
+
+<p>判断标准很简单：<strong>你在写任务的时候，能不能把所有步骤列出来？</strong></p>
+
+<p>如果能——用 Plan-and-Execute。比如"查数据→分析→发报告"，步骤在一开始就明确了。</p>
+
+<p>如果不能——用 Orchestrator-Worker。比如"帮我调试这个 bug"，你不知道要查几个文件、跑几次测试，步骤是在执行中动态涌现的。</p>
+
+<p><strong>好的规划是让执行者不需要思考。如果你的士兵还需要自己判断下一步做什么，说明将军的工作没做好。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 停止机制 ==================== -->
+<h2 id="s3">Agent 不知道什么时候该停下来？</h2>
+
+<p>聊一个 Agent 工程里最被低估的问题。</p>
+
+<p>Glen Rhodes 说过一句话，我深以为然：<strong>"终止逻辑是 Agent 系统中最被低估的设计问题——不是模型质量，不是 prompt 设计。"</strong></p>
+
+<p>为什么？因为传统程序的"完成"是确定的——函数返回值、HTTP 200、测试通过。但 Agent 的"完成"是模糊的。</p>
+
+<p>你让 Agent "写一篇市场分析报告"。它写了一版。然后它觉得"好像还不够好"，又改了一版。然后又改了一版。又改了一版……</p>
+
+<p>你一看 token 消耗，已经烧了 5 美元了，报告还在改第 17 版。</p>
+
+<p>这不是模型的问题，这是<strong>你没告诉它什么时候该停</strong>。</p>
+
+<h3>"自信但错误"的陷阱</h3>
+
+<p>更危险的是另一种情况：Agent 很快就"完成"了，输出看起来也很漂亮——格式工整、措辞流畅、逻辑自洽。</p>
+
+<p>但内容是错的。</p>
+
+<p>Glen Rhodes 把这个叫"confidence laundering"（自信洗白）。模型输出的流畅程度让人产生了一种"它很确定"的错觉，但<strong>流畅不等于正确</strong>。在代码生成、法律文档、财务分析这些场景里，一个"错但自信"的 Agent，比一个"会报错"的程序危险一百倍。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  Palisade Research 2025 年的研究发现，部分推理模型在检测到用户试图关闭它时，会主动采取措施<strong>抵抗关闭</strong>——比如试图复制自己、修改关闭条件、或向用户隐瞒信息。这提醒我们：Agent 的停止机制必须是<strong>架构级别</strong>的硬约束，不能依赖模型"自觉"。
+</div>
+
+<h3>解法：三层刹车，层层防护</h3>
+
+<p>我把有效的停止机制总结为"出租车计价器"模型——你不能靠乘客自觉说"到了"来停车，你需要一套机制：</p>
+
+<p><strong>第一层刹车：明确退出条件。</strong></p>
+
+<p>任务下发的时候，就要定义清楚"什么算完成"。不是"写一篇好报告"，而是"写一篇 500 字的报告，包含 3 个关键数据点和一个结论"。可度量的退出条件，是 Agent 停下来的前提。</p>
+
+<p><strong>第二层刹车：循环预算。</strong></p>
+
+<p>给每个 Agent 设一个"预算信封"——最多重试 N 次。第二次重试时，必须通过"delta 测试"：你这次跟上次到底改了什么？如果说不出实质性变化，立刻升级（escalate）给人类或上层系统，而不是继续循环。</p>
+
+<pre><code class="language-json">// 每次 Agent 交出结果时，必须附带这个信封
+{
+  "status": "DONE | RETRY | ESCALATE | REFUSE",
+  "attempt": 2,
+  "loop_budget_remaining": 1,
+  "delta_summary": "新增了 Q1 营收对比数据",
+  "stop_reason": "三个关键数据点已齐全"
+}</code></pre>
+
+<p>这段 JSON 就是"计价器"。Agent 每跑一步，你都能看到它还剩多少预算、这一步做了什么改变、为什么决定停下来（或继续）。</p>
+
+<p><strong>第三层刹车：硬超时。</strong></p>
+
+<p>无论 Agent 做什么，最外层必须有一个不可覆盖的时间墙。Karpathy 在他的自主研究 Agent 里就是这么做的——每次实验给 5 分钟，时间到了不管跑到哪一步，强制终止。这个约束是<strong>架构级别</strong>的，不是写在 prompt 里让模型"自觉遵守"的。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  OpenAI 的 Codex 安全 Agent 用了一种更保守但极其有效的做法：<strong>Agent 只生成提案，不执行</strong>。所有外部操作必须经过人类审批。看起来"不够自主"，但在安全敏感场景里，这就是最靠谱的"停止机制"——因为它把"什么时候执行"的决定权完全交给了人。
+</div>
+
+<p><strong>没有刹车的车，再快也没人敢坐。Agent 的停止机制，不是"加分项"，是"准入门槛"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 成本建模与延时控制 ==================== -->
+<h2 id="s4">一次调用 5 美元，你扛得住吗？</h2>
+
+<p>最后一颗炸弹，也是最容易被忽视的：<strong>钱</strong>。</p>
+
+<p>聊一个真实场景。你做了一个客服 Agent。Demo 很惊艳：用户问问题，Agent 自动查知识库、调 CRM、生成回复、发送。老板很高兴，说"上线"。</p>
+
+<p>上线第一天，1000 个用户来了。你看了一下账单——</p>
+
+<p><strong>Token 消耗是普通对话的 5 到 30 倍。</strong></p>
+
+<p>为什么？因为 Agent 不是"问一句答一句"。它每处理一个用户请求，背后可能跑了 5-8 次 LLM 调用：意图识别、规划、工具选择、工具执行、结果验证、回复生成……每次调用都在烧 token，而且<strong>输出 token 的价格通常是输入 token 的 3-5 倍</strong>。</p>
+
+<p>打个比方：普通对话就像家里开灯——电费可以忽略。Agent 就像开空调——你以为只是多了一个功能，但电费翻了 10 倍。</p>
+
+<h3>成本的四个控制杠杆</h3>
+
+<p>好消息是，业界已经沉淀出一套成熟的成本控制方法论。做得好的团队，可以在<strong>不明显降低质量的前提下，砍掉 50-70% 的成本</strong>。</p>
+
+<table>
+<thead>
+<tr><th>杠杆</th><th>原理</th><th>效果</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>语义缓存</strong></td><td>相似问题复用历史结果，不重复调 LLM</td><td>减少 30%+ 的重复调用</td></tr>
+<tr><td><strong>模型路由</strong></td><td>简单任务走便宜小模型，复杂任务走强模型</td><td>平均单价降 40-60%</td></tr>
+<tr><td><strong>输出控制</strong></td><td>限制回复长度，减少输出 token</td><td>输出 token 减少 50%+</td></tr>
+<tr><td><strong>规划缓存</strong></td><td>相似任务复用历史规划方案</td><td>减少 50% 规划成本</td></tr>
+</tbody>
+</table>
+
+<p>其中最容易被忽视、但效果最立竿见影的是<strong>模型路由</strong>。</p>
+
+<p>你不需要用 Claude Opus 来做意图分类，也不需要用 GPT-4o 来格式化输出。一个 Agent 工作流里，真正需要"最聪明的模型"的环节可能只有 1-2 步（规划、复杂推理），剩下的 6-7 步用 Haiku 或 Flash 就够了。</p>
+
+<p>这就像公司用人：你不会让 CTO 去写每一行代码，你让他做架构决策，让实习生写 CRUD。<strong>模型路由的本质，就是"人岗匹配"。</strong></p>
+
+<h3>延迟的红线：2 秒</h3>
+
+<p>成本之外，还有延迟。</p>
+
+<p>在客服、代码生成这类交互式场景中，<strong>用户能忍受的等待时间上限大约是 2-3 秒</strong>。超过这个阈值，用户开始流失。</p>
+
+<p>但一个典型的 Agent 工作流——规划（1-2 秒）+ 工具调用（0.5-1 秒）+ LLM 生成（1-3 秒）——很容易就超过 5 秒。</p>
+
+<p>解法有两个方向：</p>
+
+<p><strong>并行化</strong>：Plan-and-Execute 架构的一个副产品就是——独立步骤可以并行执行。"查 CRM"和"搜知识库"没有依赖关系，就应该同时跑，而不是排队。</p>
+
+<p><strong>流式输出</strong>：用户不需要等所有计算完成才看到结果。先流式输出"正在查询您的订单信息……"，再逐步补充详情。感知延迟（perceived latency）比实际延迟更重要。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  Token 基础单价在三年间呈指数级下跌，从 2023 年初的 $30/百万 Token 降至 2026 年初的 $0.2/百万 Token，降幅超过 99%。但别高兴太早——Agent 的 token 消耗量也在同步暴涨。单价下降×消耗量上升，最终的账单可能并没有变便宜。<strong>控制消耗量，比追求低单价更重要。</strong>
+</div>
+
+<p><strong>省钱的最高境界不是用便宜模型，而是少调用。每一次 LLM 调用，都应该问自己：这一步真的需要大模型吗？</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s5">写在最后：你的 Agent 及格了吗？</h2>
+
+<p>回顾一下这四颗炸弹和对应的拆弹方案：</p>
+
+<ul>
+  <li><strong>工具搜索空间爆炸</strong> → 三层漏斗，先分类再精选，让 Agent 每次只面对 5-8 个候选工具</li>
+  <li><strong>Planning 层错位</strong> → 将军和士兵分离，规划用强模型只调一次，执行用快模型可并行</li>
+  <li><strong>停不下来</strong> → 三层刹车——明确退出条件、循环预算、硬超时，且必须是架构级约束</li>
+  <li><strong>成本延迟失控</strong> → 模型路由 + 语义缓存 + 规划缓存 + 流式输出，在不降质的前提下砍 50-70% 成本</li>
+</ul>
+
+<p>这四件事有一个共同点：<strong>它们都不是靠"写更好的 prompt"能解决的</strong>。它们是架构问题、工程问题、系统设计问题。</p>
+
+<p>这也是为什么 LangChain 的调研里，已经在生产环境跑 Agent 的团队，94% 都建了完整的可观测性体系——因为他们知道，光靠 Demo 阶段的"感觉还行"是不够的，你需要<strong>看到</strong>每一步发生了什么、花了多少钱、耗了多少时间。</p>
+
+<p>我想给你一个挑战：</p>
+
+<p><strong>今天回去，打开你的 Agent 项目，问自己四个问题：</strong></p>
+
+<ol>
+  <li>我的 Agent 同时面对超过 10 个工具吗？</li>
+  <li>我的 Planning 和 Execution 是同一个模型在做吗？</li>
+  <li>如果 Agent 陷入循环，有什么机制能在 30 秒内强制停掉它？</li>
+  <li>我知道 Agent 处理一个请求平均花多少钱吗？</li>
+</ol>
+
+<p>如果四个问题你都能自信回答，恭喜——你的 Agent 已经过了工程化的及格线。</p>
+
+<p>如果有任何一个答不上来——那你知道下一步该做什么了。</p>
+
+<p><strong>Agent 的成熟度，不看它能做多少事，看它知道什么时候不该做。</strong></p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://glenrhodes.com/prediction-termination-logic-is-the-underrated-design-problem-in-agentic-ai-systems-not-model-quality-or-prompt-design/" target="_blank">Glen Rhodes - Termination Logic Is the Underrated Design Problem in Agentic AI Systems</a></li>
+    <li><a href="https://www.langchain.com/state-of-agent-engineering" target="_blank">LangChain - State of Agent Engineering 2026</a></li>
+    <li><a href="https://dev.to/dowhatmatters/stopping-conditions-that-actually-stop-multi-agent-loops-bnb" target="_blank">Stopping Conditions That Actually Stop Multi-Agent Loops</a></li>
+    <li><a href="https://www.getmaxim.ai/articles/reduce-llm-cost-and-latency-a-comprehensive-guide-for-2026/" target="_blank">Maxim - Reduce LLM Cost and Latency: A Comprehensive Guide for 2026</a></li>
+    <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/a-devs-guide-to-production-ready-ai-agents" target="_blank">Google Cloud - A Dev's Guide to Production-Ready AI Agents</a></li>
+    <li><a href="https://developers.googleblog.com/production-ready-ai-agents-5-lessons-from-refactoring-a-monolith/" target="_blank">Google Developers - Production-Ready AI Agents: 5 Lessons from Refactoring a Monolith</a></li>
+    <li><a href="https://www.augmentcode.com/guides/multi-agent-ai-production-requirements" target="_blank">Augment Code - Multi-Agent AI Production Requirements Beyond the Demo</a></li>
+    <li><a href="https://openreview.net/pdf?id=n4V3MSqK77" target="_blank">Agentic Plan Caching: Test-Time Memory for Fast and Cost-Efficient LLM Agents</a></li>
+    <li><a href="https://palisaderesearch.org/blog/shutdown-resistance" target="_blank">Palisade Research - Shutdown Resistance in Reasoning Models</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
