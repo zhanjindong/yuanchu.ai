@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI 攻破数学圣殿：AlphaProof Nexus 一夜解决 9 道人类 56 年未解难题 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI for Science</span>
+    <span class="tag">DeepMind</span>
+    <span class="tag">数学推理</span>
+  </div>
+  <h1>AI 攻破数学圣殿：AlphaProof Nexus 一夜解决 9 道人类 56 年未解难题</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-05-28</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">埃尔德什是谁？为什么他的问题值钱？</a>
+  <a href="#s2">AlphaProof Nexus 到底怎么"想"的？</a>
+  <a href="#s3">几百美元一道题，凭什么这么便宜？</a>
+  <a href="#s4">谷歌 vs OpenAI：AI 数学的两条路线之争</a>
+  <a href="#s5">数学家要失业了吗？</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+
+<p>9 道题。56 年。几百美元。</p>
+
+<p>把这三个数字放在一起，你会觉得哪个最不可思议？</p>
+
+<p>2026 年 5 月 21 日，Google DeepMind 发表了一篇预印本论文。标题很学术，内容很炸裂——他们的 AI 系统 <strong>AlphaProof Nexus</strong>，自主解决了 9 道埃尔德什（Erdős）开放问题。这些问题中最古老的那个，从 1970 年提出至今，整整悬了 <strong>56 年</strong>，全世界最聪明的数学家都没搞定。</p>
+
+<p>而 AI 花了多少钱？每道题的算力成本只有<strong>几百美元</strong>。</p>
+
+<p>还不够震撼？它还顺手证明了 OEIS（整数序列百科）里的 44 个猜想、搞定了一道搁置 15 年的代数几何难题、改进了凸优化领域一个沿用已久的理论边界。</p>
+
+<p>更反直觉的是——DeepMind CEO Demis Hassabis 第一时间跑出来降温："这还不是 AGI。"</p>
+
+<p>等等，解了 56 年没人解开的数学题，还不算通用智能？那什么才算？</p>
+
+<p>答案藏在 AlphaProof Nexus 的工作方式里。读完你会发现，这个 AI 最厉害的地方，恰恰是它最"笨"的地方。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 埃尔德什 ==================== -->
+<h2 id="s1">埃尔德什是谁？为什么他的问题值钱？</h2>
+
+<p>如果数学界有一个人能被称为"出题之王"，那一定是保罗·埃尔德什（Paul Erdős）。</p>
+
+<p>这个匈牙利数学家一辈子发表了超过 1500 篇论文——没写错，一千五百篇。他没有固定住所，拎着一个旧皮箱在全世界数学家的沙发上轮流睡。每到一个地方，他做的第一件事就是：掏出一个问题，拍在桌上，然后说："这题有意思，谁解出来我给钱。"</p>
+
+<p>这不是玩笑。埃尔德什一生悬赏了上百个数学问题，赏金从 25 美元到 10000 美元不等。金额大小取决于他认为这道题有多难——25 美元的是"有点意思"，10000 美元的是"我赌你们这辈子解不出来"。</p>
+
+<p>1996 年他去世后，他的好友、数学家 Ronald Graham 接管了一笔基金，专门用来兑现这些悬赏。到今天，仍有 353 道埃尔德什问题处于"未解决"状态。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  埃尔德什问题涵盖组合数学、数论、图论等领域，被公认为"硬中之硬"。Fields 奖得主陶哲轩（Terence Tao）曾预测，AI 在埃尔德什问题上的成功率大约在 1-2%。AlphaProof Nexus 的 2.5%（9/353）略超这个预期。
+</div>
+
+<p>打个比方：如果千禧年七大数学难题是武林里的"七大绝世武功秘籍"，那埃尔德什问题就是散布在江湖各处的"悬赏令"——每张看起来都不难懂，但要真正解开，需要的功力一点不少。</p>
+
+<p>为什么这些问题这么难？因为埃尔德什有一种天赋——他能把极其深刻的数学本质，浓缩成一个看起来"小而美"的问题。你以为门槛很低，推开门才发现里面是一片深渊。</p>
+
+<p>比如这次被攻破的 <strong>Erdős #12</strong>（1970 年提出）：找一个无限的整数集合，满足——任意两个数的和，都不能被集合里的第三个数整除，同时这个集合在自然数中的密度不能为零。</p>
+
+<p>听起来不复杂？全世界的组合数学家试了 56 年。</p>
+
+<p><strong>每道埃尔德什问题，都是数学家的勋章。解出一道，够吹一辈子。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 架构 ==================== -->
+<h2 id="s2">AlphaProof Nexus 到底怎么"想"的？</h2>
+
+<p>先纠正一个常见误解：AlphaProof Nexus 不是那种"用大白话写一篇证明，看起来头头是道"的 AI。</p>
+
+<p>恰恰相反。它做数学题的方式，更像是一个<strong>程序员写代码</strong>，而不是一个学生写作文。</p>
+
+<p>怎么理解？你想想，当 ChatGPT 做数学题的时候，它在干什么？它在用自然语言一步步推导，就像写一篇论证文章。问题是，语言模型最大的弱点就是"看起来对但其实错了"——它可能在第 17 步偷偷犯一个逻辑错误，然后自信满满地推出一个错误结论。</p>
+
+<p>AlphaProof Nexus 换了一个思路：<strong>别用人话写证明，用代码写。</strong></p>
+
+<p>它把证明写成 <strong>Lean</strong>——一种形式化证明语言。Lean 有一个编译器，和写代码一模一样：你的证明每一步都必须通过编译。编译器不会被花言巧语忽悠，逻辑错了就是编译报错，没有商量余地。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  传统 AI 做数学 = 写作文，批改靠"看起来对不对"。<br>
+  AlphaProof Nexus 做数学 = 写代码，批改靠编译器。编译通过 = 证明正确。没有灰色地带。
+</div>
+
+<p>这套系统的架构分四层，像俄罗斯套娃一样一层比一层强：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- Agent A -->
+    <rect class="group-box" x="10" y="10" width="170" height="295"/>
+    <text class="group-label" x="25" y="32">Agent A（基础版）</text>
+    <rect class="node-rect-blue" x="25" y="50" width="140" height="40"/>
+    <text class="node-label" x="95" y="70">Gemini 3.1 Pro</text>
+    <line class="arrow-line-blue" x1="95" y1="90" x2="95" y2="120"/>
+    <text class="arrow-label" x="130" y="110">生成 Lean</text>
+    <rect class="node-rect-green" x="25" y="120" width="140" height="40"/>
+    <text class="node-label" x="95" y="140">Lean 编译器</text>
+    <line class="arrow-line" x1="95" y1="160" x2="95" y2="190"/>
+    <text class="arrow-label" x="130" y="180">错误反馈</text>
+    <rect class="node-rect-amber" x="25" y="190" width="140" height="40"/>
+    <text class="node-label" x="95" y="210">迭代修正</text>
+    <line class="arrow-line" x1="55" y1="190" x2="55" y2="90"/>
+
+    <!-- + Arrow to B -->
+    <text class="node-label" x="205" y="100" style="font-size:20px;fill:#3b82f6;">+</text>
+
+    <!-- Agent B -->
+    <rect class="group-box" x="220" y="10" width="150" height="295"/>
+    <text class="group-label" x="235" y="32">Agent B</text>
+    <rect class="node-rect-purple" x="235" y="50" width="120" height="50"/>
+    <text class="node-label" x="295" y="68">AlphaProof</text>
+    <text class="node-sublabel" x="295" y="86">强化学习树搜索</text>
+    <rect class="node-rect" x="235" y="130" width="120" height="40"/>
+    <text class="node-label" x="295" y="150">子目标攻坚</text>
+
+    <!-- + Arrow to C -->
+    <text class="node-label" x="395" y="100" style="font-size:20px;fill:#3b82f6;">+</text>
+
+    <!-- Agent C -->
+    <rect class="group-box" x="410" y="10" width="150" height="295"/>
+    <text class="group-label" x="425" y="32">Agent C</text>
+    <rect class="node-rect-amber" x="425" y="50" width="120" height="50"/>
+    <text class="node-label" x="485" y="68">进化搜索</text>
+    <text class="node-sublabel" x="485" y="86">证明草稿种群</text>
+    <rect class="node-rect" x="425" y="130" width="120" height="40"/>
+    <text class="node-label" x="485" y="150">Elo 评分排序</text>
+
+    <!-- = Arrow to D -->
+    <text class="node-label" x="585" y="100" style="font-size:20px;fill:#10b981;">=</text>
+
+    <!-- Agent D -->
+    <rect class="node-rect-green" x="600" y="40" width="110" height="80" style="stroke-width:2.5;"/>
+    <text class="node-label" x="655" y="72">Agent D</text>
+    <text class="node-sublabel" x="655" y="92">全量版</text>
+
+    <!-- Bottom note -->
+    <text class="node-sublabel" x="360" y="270">A = LLM + 编译器循环 → B 加强化学习 → C 加进化算法 → D 全部整合</text>
+  </svg>
+  <div class="diagram-caption">AlphaProof Nexus 四层 Agent 架构演进</div>
+</div>
+
+<p><strong>Agent A</strong> 是最基础的版本：Gemini 3.1 Pro 生成一段 Lean 证明代码 → 编译器检查 → 如果报错，把错误信息喂回给 LLM → LLM 修改后重新提交。就这么来回循环，直到编译通过。</p>
+
+<p><strong>Agent B</strong> 在 A 的基础上加了一把"手术刀"——当 LLM 卡在某个子问题上时，调用 AlphaProof（DeepMind 2024 年在 IMO 拿银牌的那个强化学习系统）来定点爆破。</p>
+
+<p><strong>Agent C</strong> 引入了"进化搜索"。想象一群 AI 同时在写不同版本的证明草稿，每个草稿会被一个"裁判 AI"（基于 Gemini 3.0 Flash）打分——评估合理性、清晰度、新颖性，然后用 Elo 评分体系排名。高分草稿存活，低分淘汰，像自然选择一样迭代。</p>
+
+<p><strong>Agent D</strong> 是全量版，三者融合。用来解那 9 道埃尔德什问题的，正是这个最强组合。</p>
+
+<p>但是——这里有一个让研究人员自己都惊讶的发现。</p>
+
+<p>事后分析显示，<strong>最基础的 Agent A，也能解出这 9 道题</strong>。只是花的算力更多一些。</p>
+
+<p>这意味着什么？意味着真正的核心不是那些花哨的进化算法和强化学习，而是一个最朴素的循环：<strong>LLM 猜 → 编译器验 → 反馈修正 → 再猜</strong>。</p>
+
+<p>研究团队在论文里写了一句意味深长的话："随着底层语言模型的快速进步，AI 数学正在从'专门训练的特化系统'转向'简单的 Agent 循环'。"</p>
+
+<p><strong>AlphaProof Nexus 最厉害的地方，不是它有多聪明，而是它不会自欺欺人。编译器通过了，证明就是对的。不通过，就继续改。没有幻觉的空间。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 成本 ==================== -->
+<h2 id="s3">几百美元一道题，凭什么这么便宜？</h2>
+
+<p>你可能对"几百美元"没有直观感受。让我换一种方式说。</p>
+
+<p>一个数学博士生，从入学到毕业，通常需要 5-7 年。在这期间，如果他能解决一道埃尔德什问题，足以奠定整个学术生涯。这期间他的生活费、学费、导师薪酬，保守估计几十万美元。</p>
+
+<p>而且他大概率解不出来。</p>
+
+<p>AlphaProof Nexus 在几小时内，用了不到一杯奶茶的价格——好吧，大概是一百杯奶茶——搞定了同样的事。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "AI 解题便宜"不等于"数学家没用"。AI 花几百美元解出的，是它碰巧"够得着"的那 2.5%。剩下的 97.5%，连编译器的门都没摸到。便宜的不是解题本身，是试错的成本。
+</div>
+
+<p>为什么能这么便宜？三个原因。</p>
+
+<p><strong>第一，试错成本趋近于零。</strong>人类数学家试一个思路，可能要花几个月推演、写几十页手稿，最后发现这条路走不通。AI 试一个思路，只需要跑一次 Lean 编译——几秒钟出结果。错了？换一个方向再来。它可以在人类喝一杯咖啡的时间里，试完人类一辈子都试不完的方向。</p>
+
+<p><strong>第二，Lean 编译器是免费的裁判。</strong>数学证明最贵的环节是什么？验证。一篇顶级数学论文的同行评审可能要半年到一年。而 Lean 编译器的验证是即时的、免费的、绝对可靠的。这把原来最昂贵的环节变成了最廉价的环节。</p>
+
+<p><strong>第三，LLM 的推理成本在暴跌。</strong>Gemini 3.1 Pro 的每 token 价格比一年前的模型便宜了一个数量级。当底层模型的成本每半年砍一半，"暴力搜索"就从奢侈品变成了日用品。</p>
+
+<p>有意思的是，这个"便宜"的背后藏着一个更深的洞察。</p>
+
+<p>Agent A 的故事告诉你：解题最贵的不是算力，是方向。当 LLM 能力足够强的时候，你甚至不需要进化算法和强化学习这些"高级武器"——一个简单的"猜-验-改"循环就够了。</p>
+
+<p><strong>过去，最贵的是"算一步"。现在，最贵的是"想到往哪个方向算"。而这恰恰是大语言模型最擅长的事。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 谷歌 vs OpenAI ==================== -->
+<h2 id="s4">谷歌 vs OpenAI：AI 数学的两条路线之争</h2>
+
+<p>就在 DeepMind 发布 AlphaProof Nexus 的前一周，OpenAI 也搞了一个大新闻：他们的模型推翻了一个 80 年的离散几何核心猜想。</p>
+
+<p>同样是 AI 做数学，两家的路线却截然不同。</p>
+
+<p>OpenAI 的做法是什么？让模型用自然语言写证明。没有 Lean，没有编译器验证。模型需要自己扛住整条逻辑链——从第一步到最后一步，全靠"语感"和"推理能力"。</p>
+
+<p>DeepMind 的做法呢？LLM 只负责"猜方向"，Lean 编译器负责"判对错"。模型可以猜得天马行空，但每一步都必须过编译器这个"铁面判官"。</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>AlphaProof Nexus（DeepMind）</th><th>OpenAI 路线</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>验证方式</strong></td><td>Lean 编译器形式化验证</td><td>自然语言推理 + 自洽性检查</td></tr>
+<tr><td><strong>幻觉风险</strong></td><td>编译通过 = 零幻觉</td><td>存在"看起来对但逻辑有缺陷"的风险</td></tr>
+<tr><td><strong>灵活性</strong></td><td>受限于 Lean Mathlib 库的覆盖范围</td><td>理论上可处理任何领域</td></tr>
+<tr><td><strong>可扩展性</strong></td><td>批量自动化，成本可控</td><td>依赖模型本身推理能力的上限</td></tr>
+<tr><td><strong>核心哲学</strong></td><td>"信任但验证"（Trust but verify）</td><td>"模型足够强就不需要拐杖"</td></tr>
+</tbody>
+</table>
+
+<p>打个比方：</p>
+
+<p>OpenAI 的路线像<strong>闭卷考试</strong>——考的是模型的"真功夫"。如果它能在没有任何外部工具辅助的情况下写出正确证明，说明它真的"理解"了数学。</p>
+
+<p>DeepMind 的路线像<strong>开卷考试加自动批改</strong>——模型可以翻书、可以试错，但每一步都有一个不会撒谎的批改系统。考的不是"一次做对"，而是"最终做对"。</p>
+
+<p>哪条路线更好？这取决于你问的是什么问题。</p>
+
+<p>如果你问的是"AI 到底有没有真正理解数学？"——OpenAI 的路线更有说服力。模型不依赖外部验证就能给出正确证明，这是实力的硬指标。</p>
+
+<p>如果你问的是"AI 怎么才能大规模、可靠地辅助数学研究？"——DeepMind 的路线更务实。你不需要 AI "理解"数学，你只需要它能源源不断地生成正确的证明。编译器不在乎 AI 是理解了还是蒙对了。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  这场路线之争，本质上是 AI 领域一个老问题的新版本：<strong>"端到端"还是"模块化"？</strong>在自动驾驶领域，特斯拉走端到端、Waymo 走模块化；在 AI 数学领域，OpenAI 走端到端、DeepMind 走模块化。历史经验告诉我们，最终赢的往往是——谁先把产品交付出去。
+</div>
+
+<p>我的判断是：<strong>短期内 DeepMind 的路线更实用，长期来看两条路线会合流。</strong>OpenAI 的模型迟早会接入 Lean，而 DeepMind 的 LLM 也会越来越强。最终，"猜得好"和"验得准"不是二选一，而是缺一不可。</p>
+
+<p><strong>AI 数学的终极形态，不是选"聪明"还是选"靠谱"，而是用"靠谱"来释放"聪明"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 影响 ==================== -->
+<h2 id="s5">数学家要失业了吗？</h2>
+
+<p>每次 AI 取得突破，这个问题都会被问一遍。</p>
+
+<p>先说数据：AlphaProof Nexus 在 353 道埃尔德什问题上的成功率是 <strong>2.5%</strong>。在 492 个 OEIS 猜想上的成功率是 <strong>9%</strong>。</p>
+
+<p>这意味着，97.5% 的埃尔德什问题，AI 目前连门都没摸到。</p>
+
+<p>但这 2.5% 里的含金量极高——其中有几道题悬了半个世纪以上。AI 的优势不在于"什么都会"，而在于"试得起"。它可以用极低的成本扫过几百道题，把那些恰好在当前能力范围内的摘下来。</p>
+
+<p>数学家们的反应也很有意思。论文中提到，有数学家表示，<strong>即使 AI 的失败尝试也很有价值</strong>——因为形式化的证明草稿让专家可以快速定位"卡在哪里"，而不用从零开始验证整个论证链。</p>
+
+<blockquote>
+AI 系统甚至发现了已发表论文中的形式化错误。形式化验证可以作为一个过滤器，决定哪些证明值得人类花时间审查。<br>
+—— AlphaProof Nexus 论文
+</blockquote>
+
+<p>这其实透露了一个重要信号：<strong>AI 的角色不是取代数学家，而是改变数学家的工作方式。</strong></p>
+
+<p>打个比方：望远镜发明之前，天文学家用肉眼观星。望远镜发明之后，天文学家没有失业——他们看到了更多的星星，提出了更多的问题。</p>
+
+<p>AlphaProof Nexus 就是数学家的"望远镜"。它不会替你思考，但它能帮你看到原来看不到的地方。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  DeepMind 的团队已经在用 AlphaProof Nexus 辅助量子光学和图论的前沿研究。所有已验证的证明都已开源在 GitHub 上。这不是一个实验室里的玩具，它已经在干活了。
+</div>
+
+<p>Demis Hassabis 在播客采访中说了一句大实话："真正的 AGI 需要原创性、创造力，以及跨多个领域的广泛能力，而不仅仅是某一个专门领域。"</p>
+
+<p>他说得对。AlphaProof Nexus 在组合数学和数论上很强，但那是因为 Lean 的 Mathlib 库在这些领域最完善。换到拓扑学或代数几何的某些分支，它可能连问题都读不懂。</p>
+
+<p>但这并不减损它的意义。</p>
+
+<p>想想看：2024 年，AlphaProof 初代在 IMO（国际数学奥林匹克）拿了银牌。2025 年，DeepMind 和 OpenAI 都拿了金牌。2026 年，AI 开始啃研究级的开放问题。这个进化速度，用"指数级"来形容都显得保守。</p>
+
+<p><strong>AI 不是数学家的替代者，它是数学家的新显微镜——只不过这个显微镜，每半年自己就会进化一次。</strong></p>
+
+<hr>
+
+<p>最后，我做两个预测，给自己设个 deadline：</p>
+
+<p><strong>预测一：</strong>2027 年底之前，AI 系统将解决至少 50 道埃尔德什开放问题——目前是 9 道。成功率从 2.5% 提升到 15% 以上。驱动力不是算法突破，而是底层 LLM 能力的持续提升和 Lean Mathlib 库的扩展。</p>
+
+<p><strong>预测二：</strong>2028 年之前，至少一个千禧年数学难题（Millennium Prize Problems）的关键子问题，将由 AI 系统首次给出形式化证明。不是完整解决，但足以让数学界震动。</p>
+
+<p>一年半后回来看看，我说得对不对。</p>
+
+<p>如果你问我 AlphaProof Nexus 这件事最大的启示是什么，我觉得不是"AI 多聪明"，而是一个更朴素的道理：</p>
+
+<p><strong>把"猜"和"验"分开，用最笨的方式确保正确性，然后让试错成本趋近于零——这不仅是 AI 做数学的方法论，也是我们做任何困难决策时，值得借鉴的思路。</strong></p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/html/2605.22763v1" target="_blank">Advancing Mathematics Research with AI-Driven Formal Proof Search - DeepMind 论文预印本</a></li>
+    <li><a href="https://the-decoder.com/google-deepminds-alphaproof-nexus-solves-decades-old-math-problems-for-a-few-hundred-dollars/" target="_blank">Google DeepMind's AlphaProof Nexus solves decades-old math problems - The Decoder</a></li>
+    <li><a href="https://www.qbitai.com/2026/05/425455.html" target="_blank">留给人类数学家的悬赏不多了！谷歌 DeepMind 一口气解决 9 道埃尔德什问题 - 量子位</a></li>
+    <li><a href="https://www.therundown.ai/p/google-tops-openai-math-breakthrough-9-to-1" target="_blank">Google tops OpenAI's math breakthrough — 9 to 1 - The Rundown AI</a></li>
+    <li><a href="https://www.techlusive.in/artificial-intelligence/google-deepmind-ai-solved-56-year-old-math-problems-but-demis-hassabis-says-this-is-not-agi-1663688/" target="_blank">Google DeepMind AI solved 56-year-old math problems but Demis Hassabis says this is not AGI - Techlusive</a></li>
+    <li><a href="https://winbuzzer.com/2026/05/26/google-deepmind-says-alphaproof-nexus-is-still-not-agi-xcxwbn/" target="_blank">AlphaProof Nexus Solves Erdős Problems as AI Math Race Moves Beyond Benchmarks - WinBuzzer</a></li>
+    <li><a href="https://mlq.ai/news/google-deepminds-alphaproof-nexus-solves-nine-open-erdos-math-problems-at-hundreds-of-dollars-each/" target="_blank">AlphaProof Nexus Solves Nine Open Erdős Math Problems - MLQ.ai</a></li>
+    <li><a href="https://www.quantamagazine.org/cash-for-math-the-erdos-prizes-live-on-20170605/" target="_blank">Cash for Math: The Erdős Prizes Live On - Quanta Magazine</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
