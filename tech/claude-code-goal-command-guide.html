@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude Code /goal 命令实战指南：设好终点线，然后去喝咖啡 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Claude Code</span>
+    <span class="tag">AI 编程</span>
+    <span class="tag">Agent</span>
+  </div>
+  <h1>Claude Code /goal 命令实战指南：设好终点线，然后去喝咖啡</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-05-29</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">它到底解决了什么问题？</a>
+  <a href="#s2">怎么写一个好的 goal？</a>
+  <a href="#s3">背后的"评估员"是谁？</a>
+  <a href="#s4">哪些任务适合交给它？</a>
+  <a href="#s5">什么时候它会翻车？</a>
+  <a href="#s6">和其他自治方案怎么选？</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个朋友跟我吐槽：</p>
+
+<p>"我用 Claude Code 重构一个模块，改了 17 个文件。每改完一个，我就得看看结果，敲回车让它继续。整整坐了三个小时，我就干了一件事——按回车。"</p>
+
+<p>我问他："那你有没有想过，你其实可以说一句'把这 17 个文件都迁移到新 API，直到测试全绿'，然后去喝杯咖啡？"</p>
+
+<p>他愣住了。</p>
+
+<p>这就是 <code>/goal</code> 命令干的事。2026 年 5 月 12 日，Anthropic 在 Claude Code 2.1.139 版本中悄悄加了这个功能——不是一个花哨的新界面，不是一个炫酷的 Agent 编排框架，就是一行斜杠命令。但它改变了一件根本性的事情：你和 AI 之间的工作关系。</p>
+
+<p>从"你一步步喂指令"，变成了"你说目标，它自己跑到终点"。</p>
+
+<p>但这句话听起来简单，用起来有一堆讲究。什么样的 goal 写得好？它背后怎么判断"做完了没有"？什么任务适合交给它，什么任务会让它原地打转烧光你的 token？</p>
+
+<p>今天就来聊透这些。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 它到底解决了什么问题？ ==================== -->
+<h2 id="s1">它到底解决了什么问题？</h2>
+
+<p>在没有 <code>/goal</code> 之前，你用 Claude Code 的工作方式大概是这样的：</p>
+
+<p>你给它一个指令，它执行一步，回来问你"接下来呢？"。你再给指令，它再执行一步，再回来问你。一个需要 20 步才能完成的任务，你得交互 20 次。</p>
+
+<p>这就像你坐在副驾驶，对着司机说："前面路口左转。好，现在直行 200 米。好，看到红绿灯了吗？右转。"</p>
+
+<p>有了 <code>/goal</code>，你的交互方式变成了：</p>
+
+<pre><code class="language-bash">/goal all tests in test/auth pass and the lint step is clean</code></pre>
+
+<p>一句话，说清楚终点在哪。然后 Claude 自己规划路线，自己开车，自己处理沿途的各种意外——文件冲突、类型错误、依赖缺失——直到抵达你定义的那个终点。</p>
+
+<p>这不是导航仪帮你做建议。这是自动驾驶。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  普通提示是"每个路口你告诉它转弯方向"。<code>/goal</code> 是"你说目的地，它自己把你送到"。看起来只是少打了几行字，本质上是从"操作者"变成了"指挥者"。
+</div>
+
+<p>具体来说，<code>/goal</code> 的工作流是这样的：你输入一个完成条件（completion condition），Claude 立刻开始执行第一轮工作。每轮结束后，一个独立的小模型会检查："条件满足了吗？"如果没有，自动触发下一轮。如果满足了，停下来，把控制权还给你。</p>
+
+<p>整个过程中，你可以随时用 <code>/goal</code>（不带参数）查看进度——已经跑了多少轮、用了多少 token、评估员最近一次的判断理由是什么。</p>
+
+<p><strong>一句话：<code>/goal</code> 不是让 AI "更聪明"，而是让 AI "不停下来"。这是两件完全不同的事。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 怎么写一个好的 goal？ ==================== -->
+<h2 id="s2">怎么写一个好的 goal？</h2>
+
+<p>这是整篇文章最重要的部分。因为 <code>/goal</code> 的效果好不好，90% 取决于你那句 condition 写得好不好。</p>
+
+<p>先看一个反面教材：</p>
+
+<pre><code class="language-bash"># 糟糕的 goal
+/goal improve the authentication module</code></pre>
+
+<p>"改进认证模块"？改进到什么程度算改进了？加个日志算改进吗？重构完但测试挂了算改进吗？评估员根本无法判断这个条件是否满足。</p>
+
+<p>结果就是两种情况：要么 Claude 原地打转，一轮又一轮地"改进"，烧掉你大把 token；要么评估员随便判一个"已完成"，因为它找不到具体的否定依据。</p>
+
+<p>再看正面案例：</p>
+
+<pre><code class="language-bash"># 优秀的 goal
+/goal Refactor JWT validation in src/auth/middleware.ts to use the
+TokenService class. npm test exits 0 and tsc --noEmit has no errors.
+Do not modify any file outside src/auth/. Or stop after 20 turns.</code></pre>
+
+<p>看到区别了吗？好的 goal 有四个要素：</p>
+
+<p><strong>一、一个可测量的终态。</strong>"npm test exits 0" 是可测量的，"代码更好了"不是。Claude 会在执行过程中跑测试，测试结果会出现在对话记录里，评估员就能据此判断。</p>
+
+<p><strong>二、一个明确的验证方式。</strong>你得告诉 Claude 怎么证明它做完了。"tsc --noEmit has no errors"就是在说：你跑一下 TypeScript 编译器，没报错，就算过了。</p>
+
+<p><strong>三、不能动的边界。</strong>"Do not modify any file outside src/auth/"——这条约束防止 Claude 为了让测试通过而"创造性地"去改其他模块的代码。别笑，它真的会这么干。</p>
+
+<p><strong>四、一个刹车条件。</strong>"Or stop after 20 turns"——这是你的保险丝。没有这条，如果 Claude 卡在一个死循环里，它会一直跑下去，直到你发现或者按 Ctrl+C。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">反例警示</div>
+  <code>/goal</code> 的 condition 最多支持 4000 个字符。但这不意味着你应该写一篇小作文。好的 condition 应该像一条好的测试断言：短、准、可验证。模糊的目标烧掉的不是时间，是你的 token 账单。
+</div>
+
+<p>还有一个很多人忽略的细节：评估员<strong>只能看到 Claude 在对话中已经输出的内容</strong>。它不会自己去读文件，不会自己跑命令。所以你的 condition 必须是 Claude 的输出能够证明的。</p>
+
+<p>比如，"所有 getUser 调用点都改成了 fetchUser"——Claude 可以跑一个 grep 来证明，grep 的结果会出现在对话里，评估员就能看到。但如果你写"代码风格符合团队规范"，评估员就没法判断了，因为它不知道你的团队规范是什么。</p>
+
+<p><strong>写 <code>/goal</code> 的黄金法则：如果你不能用一条命令的输出来验证它，它就不是一个好的 condition。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 背后的"评估员"是谁？ ==================== -->
+<h2 id="s3">背后的"评估员"是谁？</h2>
+
+<p>这可能是 <code>/goal</code> 设计中最巧妙的部分。</p>
+
+<p>你有没有想过一个问题：Claude 自己怎么知道它做完了？如果让做题的人自己判卷，它当然觉得自己做得很好。所以 Anthropic 做了一个关键设计——<strong>做题的和判卷的不是同一个人</strong>。</p>
+
+<!-- SVG 流程图 -->
+<div class="diagram">
+  <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- 主循环 -->
+    <rect class="node-rect-blue" x="20" y="80" width="130" height="50"/>
+    <text class="node-label" x="85" y="100">你输入 /goal</text>
+    <text class="node-sublabel" x="85" y="118">设定完成条件</text>
+
+    <line class="arrow-line-blue" x1="150" y1="105" x2="200" y2="105"/>
+
+    <rect class="node-rect-green" x="200" y="80" width="130" height="50"/>
+    <text class="node-label" x="265" y="100">Claude 执行</text>
+    <text class="node-sublabel" x="265" y="118">一轮工作</text>
+
+    <line class="arrow-line-blue" x1="330" y1="105" x2="380" y2="105"/>
+
+    <rect class="node-rect-amber" x="380" y="80" width="130" height="50"/>
+    <text class="node-label" x="445" y="100">Haiku 评估</text>
+    <text class="node-sublabel" x="445" y="118">条件满足？</text>
+
+    <!-- Yes 分支 -->
+    <line class="arrow-line-blue" x1="510" y1="105" x2="570" y2="105"/>
+    <text class="arrow-label" x="540" y="95">Yes</text>
+
+    <rect class="node-rect-purple" x="570" y="80" width="130" height="50"/>
+    <text class="node-label" x="635" y="100">Goal 完成</text>
+    <text class="node-sublabel" x="635" y="118">返回控制权</text>
+
+    <!-- No 循环箭头 -->
+    <line class="arrow-line" x1="445" y1="130" x2="445" y2="170"/>
+    <text class="arrow-label" x="460" y="155">No</text>
+    <line class="arrow-line" x1="445" y1="170" x2="265" y2="170"/>
+    <line class="arrow-line" x1="265" y1="170" x2="265" y2="130"/>
+    <text class="arrow-label" x="355" y="185">附带失败原因，继续下一轮</text>
+  </svg>
+  <div class="diagram-caption">/goal 执行循环：做题的 Claude 和判卷的 Haiku 各司其职</div>
+</div>
+
+<p>每次 Claude 完成一轮工作后，你的完成条件和整个对话记录会被发送给一个<strong>小而快的模型</strong>——默认是 Haiku。这个模型只做一件事：读对话，看条件，回答"满足了吗？"，给一个 yes/no 和一个简短理由。</p>
+
+<p>如果答案是 no，这个理由会被反馈给 Claude，作为下一轮工作的指引。比如评估员可能会说："测试还有 3 个失败：test_login_expired、test_token_refresh、test_session_cleanup。"Claude 就知道接下来该修什么了。</p>
+
+<p>如果答案是 yes，goal 自动清除，对话记录中会标注一条"achieved"。</p>
+
+<p>这个设计有三个好处：</p>
+
+<p><strong>第一，避免自我验证的偏差。</strong>如果让 Claude 自己判断"我做完了"，它很可能在第三轮就宣布胜利——毕竟 LLM 天然有一种"讨好用户"的倾向。独立的评估员不在乎 Claude 的感受，只看结果。</p>
+
+<p><strong>第二，评估成本极低。</strong>Haiku 是一个快且便宜的模型，评估一次消耗的 token 与主工作轮次相比微乎其微。你不用担心"评估本身"会成为成本大头。</p>
+
+<p><strong>第三，评估理由是天然的调试工具。</strong>你随时可以用 <code>/goal</code>（无参数）查看评估员最近的理由。如果你发现同一个理由连续出现了三轮，说明 Claude 卡住了，你该介入了。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  <code>/goal</code> 本质上是一个 session 级别的 prompt-based Stop hook 的封装。如果你想更精细地控制评估逻辑——比如用脚本而不是模型来判断——你可以直接在 settings 里配置自定义的 Stop hook。但对 99% 的场景来说，<code>/goal</code> 就够了。
+</div>
+
+<p><strong>做题的和判卷的分开，这不是偷懒，这是工程上的优雅。AI 系统中，最危险的事情就是让执行者自己评估自己。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 哪些任务适合交给它？ ==================== -->
+<h2 id="s4">哪些任务适合交给它？</h2>
+
+<p>不是所有任务都适合交给 <code>/goal</code>。这一点很关键。</p>
+
+<p>我总结了一条判断标准：<strong>凡是你能写出验收标准的任务，都能交给 <code>/goal</code>。</strong></p>
+
+<p>什么叫"能写出验收标准"？就是你能说出一句话，让一个不了解项目的人也能判断"做完了没有"。</p>
+
+<p>来看五个真实场景：</p>
+
+<h3>场景一：API 迁移</h3>
+
+<p>你要把一个模块里所有 v1 API 调用迁移到 v2。这可能涉及 20 个文件、50 个调用点。</p>
+
+<pre><code class="language-bash">/goal Migrate all v1 API calls in src/services/ to v2 SDK.
+grep -r "api/v1" src/services/ returns no results.
+npm test exits 0. Stop after 30 turns.</code></pre>
+
+<p>完美适合 <code>/goal</code>。终态清晰（没有 v1 调用 + 测试通过），可机器验证（grep + npm test），范围明确（src/services/ 目录）。</p>
+
+<h3>场景二：测试驱动重构</h3>
+
+<pre><code class="language-bash">/goal Refactor UserService to separate read and write operations
+into UserQueryService and UserCommandService. All existing tests
+pass. No file exceeds 300 lines. Stop after 25 turns.</code></pre>
+
+<p>这种"测试当护城河"的场景是 <code>/goal</code> 的主场。Claude 可以大刀阔斧地重构，只要测试全绿，评估员就放行。</p>
+
+<h3>场景三：批量修复 lint 错误</h3>
+
+<pre><code class="language-bash">/goal Fix all ESLint errors in src/. npx eslint src/ --max-warnings 0
+exits 0. Do not change any test files. Stop after 15 turns.</code></pre>
+
+<p>这种机械性的批量修复工作，人做起来枯燥到想打瞌睡，<code>/goal</code> 做起来一轮接一轮，不抱怨不走神。</p>
+
+<h3>场景四：文档生成</h3>
+
+<pre><code class="language-bash">/goal Add JSDoc comments to all exported functions in src/utils/.
+Every .ts file in src/utils/ has JSDoc on every export.
+Stop after 20 turns.</code></pre>
+
+<h3>场景五：Issue 清队列</h3>
+
+<pre><code class="language-bash">/goal Work through all GitHub issues labeled "good-first-issue" in
+this repo. For each issue, create a fix, run tests. Continue until
+no open issues with that label remain. Stop after 40 turns.</code></pre>
+
+<p>但有一类任务你<strong>绝对不应该</strong>交给 <code>/goal</code>：</p>
+
+<p><strong>需要主观判断的任务。</strong>"让 UI 更好看"、"优化用户体验"、"提升代码质量"——这些都是人类才能判断的事情。评估员没法替你做审美决策。</p>
+
+<p><strong>探索性的研究任务。</strong>"调研一下市面上的状态管理方案"——这没有明确的终态，Claude 可以无限调研下去。</p>
+
+<p><strong>需要频繁人工决策的任务。</strong>如果每隔两步就需要你做一个架构决策，那 <code>/goal</code> 只会让你更晚发现问题。</p>
+
+<p><strong>一句话：<code>/goal</code> 是自动驾驶，不是自动设计。你负责"去哪"，它负责"怎么去"。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 什么时候它会翻车？ ==================== -->
+<h2 id="s5">什么时候它会翻车？</h2>
+
+<p>说了这么多好的，该聊聊坑了。</p>
+
+<p><code>/goal</code> 最常见的翻车场景只有一个词：<strong>死循环</strong>。</p>
+
+<p>什么时候会出现死循环？当 Claude 修了 A 问题导致 B 问题，修了 B 又引出 A 的时候。这在复杂的类型系统或相互依赖的模块中特别常见。</p>
+
+<p>我见过一个真实案例：有人让 Claude 把一个大文件拆成小模块，要求"所有模块编译通过"。Claude 拆完之后发现循环依赖，修循环依赖的时候又破坏了类型定义，修类型定义的时候又引入新的循环依赖。跑了 30 轮，token 烧了一大笔，文件改得面目全非。</p>
+
+<p>怎么防？三个办法：</p>
+
+<p><strong>第一，永远加轮次上限。</strong><code>or stop after 20 turns</code> 是你的安全网。没有它，<code>/goal</code> 真的会一直跑下去。</p>
+
+<p><strong>第二，盯着评估员的理由。</strong>用 <code>/goal</code>（无参数）查看状态。如果连续三轮的理由没变化，说明 Claude 在原地踏步。果断 <code>/goal clear</code>，换个策略。</p>
+
+<p><strong>第三，不要贪心。</strong>"重构认证、加 OAuth、写测试、更新文档"——这是四个目标，不是一个。把复杂任务拆成一串独立的 <code>/goal</code>，每个都有自己的验收标准。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  <code>/goal</code> 没有内置的 token 预算。这意味着如果你不设轮次上限，一个死循环可能会消耗数万甚至数十万 token。在你熟悉它的行为模式之前，建议从 <code>stop after 10 turns</code> 开始试，逐步调大。
+</div>
+
+<p>另一个容易忽视的坑：<strong>版本控制</strong>。</p>
+
+<p>在启动 <code>/goal</code> 之前，确保你在一个干净的 Git 分支上。<code>/goal</code> 做的所有修改都是真实的文件操作，不是沙盒。如果跑了 20 轮之后发现方向错了，你得有办法一键回退。<code>git stash</code> 或者在新分支上操作是最基本的安全措施。</p>
+
+<p><strong>没有刹车的自动驾驶，不叫自动驾驶，叫自杀。给你的 <code>/goal</code> 装上刹车——轮次上限、干净分支、实时监控。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 和其他自治方案怎么选？ ==================== -->
+<h2 id="s6">和其他自治方案怎么选？</h2>
+
+<p>Claude Code 目前有三种"让 AI 自己干活"的方案。很多人搞混了，这里帮你理清。</p>
+
+<table>
+<thead>
+<tr><th>方案</th><th>下一轮触发条件</th><th>什么时候停</th><th>适合场景</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/goal</code></td><td>上一轮执行完毕</td><td>评估员确认条件满足</td><td>有明确终态的任务</td></tr>
+<tr><td><code>/loop</code></td><td>时间间隔到了</td><td>你手动停止或 Claude 判断完成</td><td>周期性巡检、监控</td></tr>
+<tr><td>Stop hook</td><td>上一轮执行完毕</td><td>你的脚本或 prompt 判断</td><td>需要自定义评估逻辑</td></tr>
+</tbody>
+</table>
+
+<p>简单说：<code>/goal</code> 是"跑到终点就停"，<code>/loop</code> 是"每隔 5 分钟检查一次"，Stop hook 是"你自己写规则来判断停不停"。</p>
+
+<p>还有一个容易忽略的配合关系：<code>/goal</code> 和 <strong>Auto mode</strong> 是互补的。</p>
+
+<p>Auto mode 解决的是"单轮内不要反复问我要不要执行这个工具调用"。<code>/goal</code> 解决的是"轮与轮之间不要问我要不要继续"。两个一起用，Claude 才能真正实现全自动。</p>
+
+<p>你还可以在非交互模式下使用 <code>/goal</code>：</p>
+
+<pre><code class="language-bash"># 非交互模式：CI/CD 或脚本中使用
+claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"</code></pre>
+
+<p>这意味着你可以把 <code>/goal</code> 集成到你的 CI 流程里——比如每次合并 PR 后自动更新 CHANGELOG，直到覆盖所有本周的合并。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  一个特别实用的组合：在 <code>/goal</code> 跑完之后，用 <code>--resume</code> 恢复会话查看结果。如果 goal 是在运行中断的（比如笔记本合盖了），<code>--resume</code> 会自动恢复未完成的 goal，轮次计数和 token 统计从零开始重新计算。
+</div>
+
+<p><strong>选择的核心原则：如果你能写出一个"完成条件"，用 <code>/goal</code>。如果你需要周期性执行，用 <code>/loop</code>。如果你的判断逻辑复杂到需要写脚本，用 Stop hook。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 总结 ==================== -->
+<h2 id="s7">你的第一个 /goal 挑战</h2>
+
+<p>聊了这么多，核心就一件事：<code>/goal</code> 让你从"AI 的操作员"变成了"AI 的指挥官"。你不再需要一步步告诉它怎么做，只需要说清楚"做到什么程度算完"。</p>
+
+<p>今天回去试一件事：</p>
+
+<p>打开你的项目，找一个你一直想做但嫌麻烦的任务——可能是给所有导出函数加 JSDoc，可能是把某个模块的 v1 API 调用迁移到 v2，可能是修完所有 lint 警告。</p>
+
+<p>然后，用这个模板写你的第一个 goal：</p>
+
+<pre><code class="language-bash">/goal [具体做什么]. [怎么验证做完了].
+[不要改动什么]. Stop after 15 turns.</code></pre>
+
+<p>跑起来，然后去泡杯咖啡。</p>
+
+<p>如果回来的时候发现目标达成了——恭喜，你刚刚把三小时的枯燥工作变成了一句话。</p>
+
+<p>如果没达成——看看评估员卡在了什么理由上。这个理由本身就是最好的调试线索，也是你理解 AI 能力边界的第一手资料。</p>
+
+<p>无论结果如何，你都迈出了最重要的一步：<strong>从亲自干活，到学会指挥 AI 干活。</strong></p>
+
+<p>这不是偷懒。这是进化。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://code.claude.com/docs/en/goal" target="_blank">Keep Claude working toward a goal - Claude Code 官方文档</a></li>
+    <li><a href="https://explainx.ai/blog/claude-code-goal-command-long-running-agents-2026" target="_blank">Claude Code 2.1.139 adds /goal command - explainx.ai</a></li>
+    <li><a href="https://www.mindstudio.ai/blog/claude-code-goal-command-autonomous-tasks" target="_blank">What Is the /goal Command in Claude Code? - MindStudio</a></li>
+    <li><a href="https://apidog.com/blog/goal-command-codex-claude-code-autonomous-agents/" target="_blank">The /goal Command: How to Run Autonomous Agents - Apidog</a></li>
+    <li><a href="https://blog.dailydoseofds.com/p/claude-codes-goal-command" target="_blank">Claude Code's /goal Command - Daily Dose of Data Science</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
