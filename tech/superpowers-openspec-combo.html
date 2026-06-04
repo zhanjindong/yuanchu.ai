@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Superpowers × OpenSpec：给 AI 编程同时配上"图纸"和"手艺" - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI编程</span>
+    <span class="tag">Agent</span>
+    <span class="tag">工程方法论</span>
+  </div>
+  <h1>Superpowers × OpenSpec：给 AI 编程同时配上"图纸"和"手艺"</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-04</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">AI 编程的两种死法</a>
+  <a href="#s2">OpenSpec：把"做什么"钉进仓库</a>
+  <a href="#s3">Superpowers：把"怎么做"变成肌肉记忆</a>
+  <a href="#s4">组合实战：图纸 + 手艺，一条龙跑通</a>
+  <a href="#s5">踩坑记录：1+1 不会自动等于 2</a>
+  <a href="#s6">写在最后：你今晚就能试的一件事</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个朋友跟我吐槽："我用 Claude Code 写了三天功能，最后发现它做的根本不是我要的东西。"</p>
+
+<p>我问他："那你一开始跟它说清楚要做什么了吗？"</p>
+
+<p>他愣了两秒："我就在聊天框里说了句'帮我加个用户积分系统'，然后它就开干了。"</p>
+
+<p>我又问："那它写的代码有测试吗？逻辑你审过吗？"</p>
+
+<p>他更心虚了："没有……它说写完了我就 merge 了，结果上线第二天积分算错了，回滚到现在。"</p>
+
+<p>这两个问题，其实是 AI 编程的两种典型死法。一种是<strong>做错了东西</strong>——它压根没搞懂你要什么；另一种是<strong>东西做烂了</strong>——它搞懂了，但写得稀烂，没测试、瞎改、留一堆坑。</p>
+
+<p>有意思的是，社区里恰好有两个最近很火的开源工具，一个专治第一种病，一个专治第二种病。前者叫 <strong>OpenSpec</strong>，后者叫 <strong>Superpowers</strong>。今天就来聊聊，把这俩组合起来用，是一种什么样的体验。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">AI 编程的两种死法</h2>
+
+<p>先别急着装工具。你得先想明白一件事：为什么 AI 写代码这么容易翻车？</p>
+
+<p>因为它太"听话"了。</p>
+
+<p>你给它一句模糊的指令，它不会停下来问"你确定吗"，而是立刻脑补一个版本，吭哧吭哧写出来。它的脑补水平很高，但脑补终究是脑补——你想要的是按订单金额给积分，它给你按登录次数算，逻辑自洽，方向全错。</p>
+
+<p>这是第一种死法：<strong>需求活在聊天记录里</strong>。聊天记录是会蒸发的。今天聊的需求，明天换个会话窗口，AI 就失忆了；你自己过一周也忘了当初到底是怎么定的。需求没有一个"权威版本"沉淀下来，每次都是重新脑补。</p>
+
+<p>第二种死法更隐蔽：<strong>它写得太快，快到没人来得及把关</strong>。AI 是个手速惊人的实习生，你说一句它写一百行。没有测试,没有红绿重构,遇到 bug 就东改一下西补一下,改完一个冒出三个。你看着进度条飞涨,心里却越来越没底。</p>
+
+<p>你看,这俩问题根本不在一个层面上。一个是"<strong>做什么</strong>"出了问题——方向错了;一个是"<strong>怎么做</strong>"出了问题——手艺糙了。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左：做什么 -->
+    <rect class="group-box" x="10" y="20" width="290" height="180"/>
+    <text class="group-label" x="24" y="42">死法一 · 做什么错了</text>
+    <rect class="node-rect-red" x="40" y="60" width="230" height="36"/>
+    <text class="node-label" x="155" y="78">需求只在聊天框里</text>
+    <line class="arrow-line" x1="155" y1="96" x2="155" y2="120"/>
+    <rect class="node-rect-red" x="40" y="120" width="230" height="36"/>
+    <text class="node-label" x="155" y="138">换个窗口就失忆 / 跑偏</text>
+    <text class="node-sublabel" x="155" y="180">→ 方向错，白干三天</text>
+    <!-- 右：怎么做 -->
+    <rect class="group-box" x="340" y="20" width="290" height="180"/>
+    <text class="group-label" x="354" y="42">死法二 · 怎么做烂了</text>
+    <rect class="node-rect-amber" x="370" y="60" width="230" height="36"/>
+    <text class="node-label" x="485" y="78">手速飞快，无人把关</text>
+    <line class="arrow-line" x1="485" y1="96" x2="485" y2="120"/>
+    <rect class="node-rect-amber" x="370" y="120" width="230" height="36"/>
+    <text class="node-label" x="485" y="138">没测试 / 瞎改 / 留坑</text>
+    <text class="node-sublabel" x="485" y="180">→ 能跑，但不敢上线</text>
+  </svg>
+  <div class="diagram-caption">AI 编程的两种死法：一种是方向错，一种是手艺糙</div>
+</div>
+
+<p>想治病，得对症下药。治"做什么"的药,是把需求从聊天框里捞出来,变成仓库里一份白纸黑字、人人能审的文档——这是 OpenSpec 干的事。治"怎么做"的药,是给 AI 套上一套工程师的纪律,逼它先想后写、写完必测——这是 Superpowers 干的事。</p>
+
+<p>一句话:<strong>方向和手艺,是两件完全不同的事,得用两味不同的药。</strong></p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">OpenSpec：把"做什么"钉进仓库</h2>
+
+<p>OpenSpec 是 Fission-AI 团队做的一个开源框架,定位特别清晰:<strong>在写任何一行代码之前,先让人和 AI 就"要做什么"达成白纸黑字的一致。</strong></p>
+
+<p>它的核心动作就三个,官方叫 <strong>Propose-Apply-Archive</strong>(提案-实施-归档):</p>
+
+<ul>
+  <li><strong>Propose(提案)</strong>:你说一句"我想加个用户积分系统",它不直接写代码,而是先生成四份文档——<code>proposal.md</code>(为什么做、范围多大)、<code>specs/</code>(需求和验收场景)、<code>design.md</code>(技术方案)、<code>tasks.md</code>(任务清单)。</li>
+  <li><strong>Apply(实施)</strong>:照着 <code>tasks.md</code> 这份清单,一项一项打勾实现。</li>
+  <li><strong>Archive(归档)</strong>:做完了,把这次变更归档,同时更新仓库里那份"主规格",作为下一次迭代的基准。</li>
+</ul>
+
+<p>装起来也简单,一行命令:</p>
+
+<pre><code class="language-bash"># 全局安装 OpenSpec（需要 Node.js 20.19+）
+npm install -g @fission-ai/openspec@latest
+
+# 在你现有的项目里初始化（不会重写你的代码）
+cd your-project
+openspec init</code></pre>
+
+<p>关键在最后一句注释:<strong>不会重写你的代码。</strong>这正是 OpenSpec 跟很多"规格驱动"工具最大的区别——它是给老项目用的。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  市面上的规格驱动工具,很多是给"从零开始的新项目"准备的。OpenSpec 反着来:它专门解决<strong>老项目的增量迭代</strong>。它用 ADDED / MODIFIED / REMOVED 这样的"增量标记",清清楚楚标出这次改动相对于现有功能<strong>加了什么、改了什么、删了什么</strong>。你不用为了用它就把祖传代码推倒重来。
+</div>
+
+<p>那它到底解决了什么?还记得第一种死法吗——需求活在聊天记录里。OpenSpec 干的事,本质上就是把那段会蒸发的对话,<strong>固化成仓库里一份能 git diff、能 code review、能传给下一个会话的文档。</strong></p>
+
+<p>打个比方。没有 OpenSpec 的时候,你跟 AI 的协作像是口头点菜:"来份宫保鸡丁,不要太辣。"厨师(AI)凭印象做,做出来咸了你也只能认。有了 OpenSpec,变成了先写一张<strong>订单小票</strong>:菜名、辣度、忌口,白纸黑字。厨师照单做,做错了对照小票一目了然,而且这张小票永远在那儿,换个厨师也能接着做。</p>
+
+<p>更妙的是它的"规格增量审查"(spec delta review):你 review 的时候,不用一行行啃几百行代码 diff,只看这份规格变更——加了哪条需求、改了哪个场景——就能在高层面上判断这次改动对不对。<strong>从审代码,变成审意图。</strong></p>
+
+<p>所以 OpenSpec 给 AI 编程补上的,是那块最容易丢的拼图:<strong>一个不会蒸发、能被审阅的"做什么"。</strong></p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">Superpowers：把"怎么做"变成肌肉记忆</h2>
+
+<p>如果说 OpenSpec 管的是"做什么",那 Superpowers 管的就是"<strong>怎么做才不丢人</strong>"。</p>
+
+<p>Superpowers 是 Jesse Vincent(GitHub 上叫 obra)做的。这人来头不小:90 年代写了 Request Tracker,管过 Perl 6,做过 K-9 Mail(后来被 Mozilla 收了变成安卓版 Thunderbird)。一个干了三十年工程的老兵,把自己脑子里那套<strong>工程纪律</strong>,打包成了一堆 Markdown 文件,塞给 AI。</p>
+
+<p>对,你没看错,Superpowers 的本质就是<strong>一堆 Markdown</strong>。它不是什么黑科技,而是一套"行为规范",告诉 AI:别一上来就写代码,给我按规矩来。它现在是 Claude Code 生态里最火的插件之一,GitHub 上九万多颗星。</p>
+
+<p>它最核心的几个"技能"(skill),你一看就懂为什么有用:</p>
+
+<table>
+<thead>
+<tr><th>技能</th><th>它逼 AI 做什么</th><th>治的是哪种糙</th></tr>
+</thead>
+<tbody>
+<tr><td>brainstorming(头脑风暴)</td><td>写代码前必须先问清楚、提设计方案,问明白之前不准动手</td><td>上来就瞎写</td></tr>
+<tr><td>writing-plans(写计划)</td><td>把功能拆成 2-5 分钟一个的小任务,带明确文件路径和验证步骤</td><td>大干快上、无章法</td></tr>
+<tr><td>test-driven-development(TDD)</td><td>严格红→绿→重构:先写失败的测试,再写最少的代码让它通过</td><td>没测试就 merge</td></tr>
+<tr><td>systematic-debugging(系统化调试)</td><td>四阶段流程,没搞懂根因之前禁止动手改</td><td>东改西补、越改越乱</td></tr>
+</tbody>
+</table>
+
+<p>你品品这几条。每一条,都精准打在第二种死法的痛点上。</p>
+
+<p>我最喜欢的是 brainstorming 那条规矩:<strong>问明白之前,不准写代码。</strong>这一条就把"AI 太听话所以瞎脑补"的毛病按住了。它会反过来问你:积分按金额还是按次数?有没有上限?过期吗?——这些问题,本来就该在写代码前问清楚。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  Simon Willison 专门写文章夸过 Jesse 是"最有创造力的 coding agent 用户之一"。一个反直觉的细节:这套插件<strong>极其省 token</strong>——核心文档加载进来不到 2k token,需要更细的流程时才用 shell 脚本临时拉取。重活脏活全都甩给<strong>子 agent</strong>(subagent)去干,主对话窗口始终保持清爽。换句话说,纪律没有以"撑爆上下文"为代价。
+</div>
+
+<p>还有个有意思的花絮:Jesse 甚至给 Claude 设计了一本"情绪日记",让它记录自己干活时的投入程度;还试过用 Graphviz 的 DOT 图当工作流指令,发现 Claude 居然能看懂流程图照着执行。这人是真把 AI 当一个需要培养的工程师在带,而不是当个搜索框在用。</p>
+
+<p>所以 Superpowers 给 AI 补的,是另一块拼图:<strong>一套不会偷懒、写完必测、改前先懂的"怎么做"。</strong>它不让 AI 变得更聪明,而是让 AI 变得更<strong>靠谱</strong>。这是两件完全不同的事。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">组合实战:图纸 + 手艺,一条龙跑通</h2>
+
+<p>现在,把这两味药合在一起吃,会发生什么?</p>
+
+<p>先说结论:它俩<strong>不打架,反而严丝合缝</strong>。因为它们管的根本是两个不同的层面——OpenSpec 管"图纸",Superpowers 管"手艺"。一个建筑工地,既要有人人认可的设计蓝图,也要有遵守规范的施工队,缺一个都出事。</p>
+
+<p>它们的接口在哪?就在 OpenSpec 生成的那份 <code>tasks.md</code>。这份任务清单,正好是 Superpowers 那套执行纪律的<strong>输入</strong>。OpenSpec 负责把"做什么"拆成一条条任务,Superpower 负责用 TDD、调试纪律,一条条把它们高质量地实现掉。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+    <!-- OpenSpec 阶段 -->
+    <rect class="group-box" x="10" y="10" width="680" height="120"/>
+    <text class="group-label" x="24" y="32">OpenSpec · 定下"做什么"</text>
+    <rect class="node-rect-blue" x="40" y="55" width="150" height="50"/>
+    <text class="node-label" x="115" y="74">Propose 提案</text>
+    <text class="node-sublabel" x="115" y="92">生成 spec / design</text>
+    <line class="arrow-line-blue" x1="190" y1="80" x2="250" y2="80"/>
+    <rect class="node-rect-blue" x="250" y="55" width="150" height="50"/>
+    <text class="node-label" x="325" y="74">tasks.md</text>
+    <text class="node-sublabel" x="325" y="92">拆成可勾选任务</text>
+    <line class="arrow-line-blue" x1="400" y1="80" x2="460" y2="80"/>
+    <rect class="node-rect-blue" x="460" y="55" width="200" height="50"/>
+    <text class="node-label" x="560" y="74">人工审"意图"</text>
+    <text class="node-sublabel" x="560" y="92">spec delta review</text>
+    <!-- 向下交接 -->
+    <line class="arrow-line" x1="325" y1="130" x2="325" y2="165"/>
+    <text class="arrow-label" x="395" y="152">任务清单交棒</text>
+    <!-- Superpowers 阶段 -->
+    <rect class="group-box" x="10" y="170" width="680" height="135"/>
+    <text class="group-label" x="24" y="192">Superpowers · 管好"怎么做"</text>
+    <rect class="node-rect-green" x="40" y="215" width="140" height="50"/>
+    <text class="node-label" x="110" y="234">头脑风暴</text>
+    <text class="node-sublabel" x="110" y="252">问清再动手</text>
+    <line class="arrow-line" x1="180" y1="240" x2="225" y2="240"/>
+    <rect class="node-rect-green" x="225" y="215" width="140" height="50"/>
+    <text class="node-label" x="295" y="234">TDD 红绿重构</text>
+    <text class="node-sublabel" x="295" y="252">先测试后代码</text>
+    <line class="arrow-line" x1="365" y1="240" x2="410" y2="240"/>
+    <rect class="node-rect-green" x="410" y="215" width="140" height="50"/>
+    <text class="node-label" x="480" y="234">子 agent 实现</text>
+    <text class="node-sublabel" x="480" y="252">省主窗口 token</text>
+    <line class="arrow-line" x1="550" y1="240" x2="595" y2="240"/>
+    <rect class="node-rect-purple" x="595" y="215" width="90" height="50"/>
+    <text class="node-label" x="640" y="234">Archive</text>
+    <text class="node-sublabel" x="640" y="252">归档更新</text>
+  </svg>
+  <div class="diagram-caption">组合工作流:OpenSpec 定方向 → tasks.md 交棒 → Superpowers 高质量落地 → 归档回写规格</div>
+</div>
+
+<p>一个完整的回合,大概长这样:</p>
+
+<ol>
+  <li><strong>OpenSpec 起头</strong>:你跑 <code>/opsx:propose "用户积分系统"</code>,它跟你来回确认需求,生成 spec、design、tasks。你在这一步审"意图",方向定死。</li>
+  <li><strong>Superpowers 接棒</strong>:进入实现阶段,Superpowers 的 brainstorming 会对着 spec 再抠一遍设计细节,然后用 TDD 一个任务一个任务地写——每个任务先写一个失败的测试,再写代码让它变绿。</li>
+  <li><strong>遇到 bug</strong>,systematic-debugging 接管:先定位根因,再动手,绝不瞎补。</li>
+  <li><strong>实现脏活</strong>甩给子 agent,主窗口保持清醒,随时能看到整体进度。</li>
+  <li><strong>全部绿灯</strong>,跑 <code>/opsx:archive</code> 归档,把这次变更回写进主规格。下次迭代,这份规格就是新的起点。</li>
+</ol>
+
+<p>你发现没有?这套组合最妙的地方,是<strong>形成了一个闭环</strong>:意图被固化成规格(OpenSpec)→ 规格被高质量实现(Superpowers)→ 实现回写进规格(OpenSpec)。每转一圈,你的仓库里就多沉淀一份"既是文档、又是事实"的资产。</p>
+
+<p>这就是为什么 1+1 在这里能大于 2:<strong>OpenSpec 让 AI 做对的事,Superpowers 让 AI 把事做对。前者管方向不跑偏,后者管手艺不缩水。</strong></p>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">踩坑记录:1+1 不会自动等于 2</h2>
+
+<p>但我得泼盆冷水。装上这俩工具,不等于第二天你就能躺着收高质量代码。我自己踩过几个坑,说给你听。</p>
+
+<p><strong>第一个坑:职责重叠,谁说了算。</strong>OpenSpec 有自己的提案流程,Superpowers 也有 brainstorming 和 writing-plans。两个都想在"动手前规划"这件事上插一脚。如果你不理清楚,会出现 AI 在 OpenSpec 里规划一遍,进了 Superpowers 又规划一遍的尴尬。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  我的解法是给它俩划清地界:<strong>OpenSpec 负责"是什么"层面的规划</strong>(需求、验收标准、技术方案),产出仓库里的持久化文档;<strong>Superpowers 负责"怎么实现"层面的规划</strong>(任务怎么拆、测试怎么写、子 agent 怎么派)。一个对外定契约,一个对内排施工。别让它俩抢同一块活,否则你会看到两份打架的计划。
+</div>
+
+<p><strong>第二个坑:规格也会过期。</strong>OpenSpec 最大的卖点是"规格即事实",但前提是你<strong>真的去归档</strong>。我见过有人 propose 完爽快,实现完就跑了,从来不 archive。结果仓库里躺着一堆"提案中"的变更,主规格还停在三个月前。这时候规格不但没用,反而误导——它说的是过去,代码跑的是现在。</p>
+
+<p><strong>第三个坑:纪律是有成本的。</strong>Superpowers 那套红绿重构、问清再写,确实让代码更靠谱,但也确实更慢。改个文案、调个样式这种五分钟的小活,你非要走一遍 propose-spec-TDD 全流程,纯属自我折磨。<strong>工具是给硬骨头准备的,不是给软柿子准备的。</strong></p>
+
+<p>所以我的判断很明确:这套组合,是给那些<strong>"做错了代价很高、做烂了很难收场"的功能</strong>准备的——支付、权限、核心业务逻辑这类。小修小补,直接聊天框搞定,别上重型武器。</p>
+
+<p>记住一句话:<strong>方法论是放大器,放大对的东西,也放大错的折腾。用在刀刃上,它是神器;用在牙签上,它是负担。</strong></p>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">写在最后:你今晚就能试的一件事</h2>
+
+<p>聊了这么多,把核心几点拎出来,方便你截图收藏:</p>
+
+<ul>
+  <li><strong>两种死法,两味药</strong>:AI 编程要么做错东西(方向),要么做烂东西(手艺)。OpenSpec 治方向,Superpowers 治手艺。</li>
+  <li><strong>OpenSpec 管"做什么"</strong>:把需求从会蒸发的聊天框,固化成仓库里能 diff、能 review 的规格文档,专为老项目增量迭代设计。</li>
+  <li><strong>Superpowers 管"怎么做"</strong>:一套打包成 Markdown 的工程纪律——问清再写、先测后码、懂了再改,让 AI 从手快变靠谱。</li>
+  <li><strong>组合是个闭环</strong>:意图→规格→高质量实现→回写规格,接口就在那份 <code>tasks.md</code>。</li>
+  <li><strong>别滥用</strong>:重型方法论留给硬骨头,小修小补走聊天框。</li>
+</ul>
+
+<p>说到底,这两个工具背后是同一个朴素的道理:<strong>AI 不是越自由越好,而是越有章法越好。</strong>真正释放 AI 生产力的,从来不是更花哨的 prompt,而是给它一个"先想清楚做什么、再认真做对"的框架。</p>
+
+<p>所以,今晚回去试一件事——</p>
+
+<p>挑一个你<strong>之前用 AI 写崩过、或者改到一半放弃的功能</strong>。先用 OpenSpec 给它写一份 proposal,逼自己(和 AI)把"到底要做什么"说清楚;再用 Superpowers 的 TDD 模式,让它先写一个失败的测试,再写代码。</p>
+
+<p>就跑通这一个最小回合。然后对比一下:这次的代码,你<strong>敢不敢直接 merge</strong>?</p>
+
+<p>如果答案从"不敢"变成了"敢"——恭喜你,你已经摸到了 AI 编程下一个阶段的门槛:不是让 AI 写更多代码,而是让 AI 写<strong>你敢负责的代码</strong>。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://github.com/obra/superpowers" target="_blank">obra/superpowers - An agentic skills framework & software development methodology (GitHub)</a></li>
+    <li><a href="https://github.com/Fission-AI/OpenSpec" target="_blank">Fission-AI/OpenSpec - Spec-driven development (SDD) for AI coding assistants (GitHub)</a></li>
+    <li><a href="https://openspec.pro/" target="_blank">OpenSpec - Spec-Driven Development for AI Coding Assistants 官网</a></li>
+    <li><a href="https://simonwillison.net/2025/Oct/10/superpowers/" target="_blank">Simon Willison: Superpowers — How I'm using coding agents in October 2025</a></li>
+    <li><a href="https://blog.fsck.com/2025/10/09/superpowers/" target="_blank">Jesse Vincent: Superpowers — How I'm using coding agents in October 2025</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
