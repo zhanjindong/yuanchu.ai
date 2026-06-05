@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OpenSpec 实战指南：让 AI 写代码前，先把"图纸"画到能验收 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI 编程</span>
+    <span class="tag">Spec-Driven</span>
+    <span class="tag">OpenSpec</span>
+  </div>
+  <h1>OpenSpec 实战指南：让 AI 写代码前，先把"图纸"画到能验收</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-05</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、它到底解决了什么问题？</a>
+  <a href="#s2">二、五分钟跑通：从 init 到 archive</a>
+  <a href="#s3">三、读懂那四个文件：spec 和 change 的分工</a>
+  <a href="#s4">四、Delta 才是 OpenSpec 的灵魂</a>
+  <a href="#s5">五、真实工作流：我每天怎么用它</a>
+  <a href="#s6">六、踩坑清单与今天的挑战</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个做后端的朋友跟我吐槽："我让 Claude Code 给订单模块加个优惠券功能，它写得飞快，可越写越不对劲——第一版漏了过期判断，我补了一句；第二版又把库存扣减搞错了，我再补一句。来回五轮，最后那坨代码我自己都看不懂了。"</p>
+
+<p>我问他："你一开始有没有跟它说清楚，'优惠券过期了该返回什么错误码'、'库存不足时先扣券还是先扣货'？"</p>
+
+<p>他愣了一下："没有……我以为它会自己想到。"</p>
+
+<p>这就是问题所在。你以为你在跟一个程序员协作，其实你是在跟一个<strong>记性只有一次对话长</strong>的实习生协作。你说过的需求散落在聊天记录里，它读一句忘一句，每次都在"猜"你到底想要什么。猜对了是运气，猜错了你来擦屁股。</p>
+
+<p>那有没有一种办法，让"要建什么"这件事，在写第一行代码之前就白纸黑字地定下来、还能被机器检查？有。它叫 <strong>OpenSpec</strong>——一个由 Fission-AI 开源、专门给 AI 编程助手用的"规格层"。今天我就带你从零跑通它，并告诉你它最容易被忽略、却最值钱的那个设计。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、它到底解决了什么问题？</h2>
+
+<p>先说一句可能有点扎心的话：<strong>AI 写代码的瓶颈，从来不是"写得不够快"，而是"不知道该写什么"。</strong></p>
+
+<p>你想想，Cursor、Claude Code 这些工具补全代码的速度，早就甩开人类几条街了。可为什么真上手干活，还是磕磕绊绊？因为需求这东西，活在你脑子里、活在产品经理的口头描述里、活在三天前那条已经被刷走的聊天记录里。AI 看不到全貌，只能边写边猜。</p>
+
+<p>OpenSpec 的思路特别朴素：<strong>既然口头需求靠不住，那就把它写成文件，跟代码放在同一个仓库里。</strong></p>
+
+<p>这个文件不是写给人看完就扔的 PRD，而是一份结构化的、AI 每次干活前都会去读的"规格"。人和 AI 先就"建什么"达成一致，签字画押，然后才开工。代码写到一半 AI 忘了？没关系，它回头读一眼 spec 就想起来了。新人入职看不懂系统？没关系，把 spec 目录翻一遍就懂了。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  很多人把 OpenSpec 和"让 AI 写技术文档"搞混。不一样。技术文档是<strong>事后</strong>对已有代码的描述，经常过期；OpenSpec 的 spec 是<strong>事前</strong>的约定，而且是"代码必须满足它"，是源头不是注脚。顺序反了，价值就完全不同。
+</div>
+
+<p>这套打法有个正经名字，叫 <strong>SDD（Spec-Driven Development，规格驱动开发）</strong>。它不是 OpenSpec 发明的——GitHub 官方今年也推了类似的工具链。但 OpenSpec 把它做得足够轻：没有 API key，没有云服务，没有一堆要配的环境变量。装个 npm 包，跑一条 <code>init</code>，它就在你项目里铺好了一套目录和给 AI 用的斜杠命令。</p>
+
+<p>而且它有个我特别欣赏的定位——<strong>brownfield first，先伺候老项目</strong>。市面上一堆工具只会做 0 到 1 的全新项目演示，可你我手里真正的活，90% 是在十万行屎山上加需求。OpenSpec 的 change（变更）机制天生就是为"在已有系统上做增量"设计的，这点后面会细讲。</p>
+
+<p>一句话总结这一章：<strong>OpenSpec 不让 AI 写得更快，它让 AI 在动手前先搞清楚"要什么"——而这恰恰是返工的根源。</strong></p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、五分钟跑通：从 init 到 archive</h2>
+
+<p>讲再多概念，不如手把手跑一遍。OpenSpec 是个 npm 包，需要 Node.js 20.19 以上。先全局装上，再到你的项目里初始化：</p>
+
+<pre><code class="language-bash"># 全局安装 OpenSpec CLI
+npm install -g @fission-ai/openspec@latest
+
+# 进入你的项目目录，初始化
+cd your-project
+openspec init</code></pre>
+
+<p>关键在 <code>openspec init</code> 这一步。它会问你用的是哪个 AI 工具（Claude Code、Cursor、Copilot……官方支持 20 多个），然后干两件事：在仓库里建一个 <code>openspec/</code> 目录，再把一组斜杠命令塞进你 AI 工具的配置里。从此你就能在对话框里直接喊 <code>/opsx:propose</code> 这种命令了。</p>
+
+<p>装好之后，一个完整的需求走一遍，是这样四步：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg">
+    <!-- propose -->
+    <rect class="node-rect-blue" x="10" y="45" width="140" height="44"/>
+    <text class="node-label" x="80" y="62">/opsx:propose</text>
+    <text class="node-sublabel" x="80" y="78">提案 + 生成规格</text>
+    <line class="arrow-line-blue" x1="152" y1="67" x2="192" y2="67"/>
+    <!-- review -->
+    <rect class="node-rect-amber" x="194" y="45" width="140" height="44"/>
+    <text class="node-label" x="264" y="62">人工评审</text>
+    <text class="node-sublabel" x="264" y="78">改 spec，定方案</text>
+    <line class="arrow-line-blue" x1="336" y1="67" x2="376" y2="67"/>
+    <!-- apply -->
+    <rect class="node-rect-green" x="378" y="45" width="140" height="44"/>
+    <text class="node-label" x="448" y="62">/opsx:apply</text>
+    <text class="node-sublabel" x="448" y="78">照 tasks 写代码</text>
+    <line class="arrow-line-blue" x1="520" y1="67" x2="560" y2="67"/>
+    <!-- archive -->
+    <rect class="node-rect-purple" x="562" y="45" width="148" height="44"/>
+    <text class="node-label" x="636" y="62">/opsx:archive</text>
+    <text class="node-sublabel" x="636" y="78">合并进主规格</text>
+  </svg>
+  <div class="diagram-caption">OpenSpec 核心生命周期：提案 → 评审 → 实现 → 归档</div>
+</div>
+
+<p><strong>第一步，提案。</strong>你在 Claude Code 里敲：</p>
+
+<pre><code class="language-bash">/opsx:propose 给订单加优惠券功能，支持满减和过期校验</code></pre>
+
+<p>AI 不会立刻写代码。它会先在 <code>openspec/changes/</code> 下建一个变更文件夹，里面生成几份文档：为什么做、改什么、技术怎么选、要分几步干。这一步的产出全是"纸面"的，一行业务代码都没动。</p>
+
+<p><strong>第二步，评审。</strong>这是整套流程里<strong>唯一真正需要你动脑</strong>的环节。你打开 AI 生成的 spec，逐条看：满减的门槛字段叫什么？过期了返回 410 还是 422？这些你拍板，改进 spec 里。这个环节花十分钟，能省后面两小时的返工。</p>
+
+<p><strong>第三步，实现。</strong>规格定稿后，喊一句 <code>/opsx:apply</code>。AI 这才开始照着 <code>tasks.md</code> 的清单一项项写代码，写完一项勾掉一项。因为它手里攥着确定的规格，几乎不会再"自由发挥"。</p>
+
+<p><strong>第四步，归档。</strong>功能验收通过，跑 <code>/opsx:archive</code>（或命令行 <code>openspec archive &lt;change-id&gt;</code>）。这一步有个魔法：它会把这次变更里的规格改动，<strong>自动合并</strong>到项目主规格目录 <code>openspec/specs/</code> 里，然后把整个变更文件夹挪进 <code>archive/</code> 存档。你的"系统当前长什么样"这份事实，就这么悄悄更新了。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">上手提示</div>
+  日常还有几条命令很顺手：<code>openspec list</code> 看当前有哪些进行中的变更，<code>openspec show &lt;change&gt;</code> 看某个变更的细节，<code>openspec validate &lt;change&gt;</code> 检查格式合不合规，<code>openspec view</code> 开一个交互式看板。记不住没关系，AI 会替你调。
+</div>
+
+<p>看明白了吗？从头到尾，<strong>你只在"评审"那一步真正参与，其余三步 AI 自己跑。</strong>你的角色，从"写代码的人"变成了"批图纸的人"。这就是它最舒服的地方。</p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、读懂那四个文件：spec 和 change 的分工</h2>
+
+<p>跑通流程只是入门。想真正用好 OpenSpec，你得理解它目录里那套结构。别慌，核心就两个概念：<strong>specs（规格）和 changes（变更）</strong>。</p>
+
+<p>打个比方。<code>openspec/specs/</code> 是你这套房子的<strong>竣工图纸</strong>——它永远描述"系统现在实际长什么样"，是唯一的事实来源。而 <code>openspec/changes/</code> 是一张张<strong>装修变更单</strong>——每次你想改点什么，先开一张单子，单子上写清楚"哪面墙要拆、哪里要加个柜子"，单子审批通过、施工完成后，才更新到竣工图纸上。</p>
+
+<p>这么设计的妙处在于：变更单是隔离的。你可以同时开三张单子（三个并行的 change），互不干扰；每张单子在合并前都能被单独评审；合并的时候，它的改动会干净地叠加到主图纸上。<strong>这就是为什么 OpenSpec 特别适合老项目——它从不要求你一次性把整个系统的规格写全，只要求你把"这次要改的部分"说清楚。</strong></p>
+
+<p>一个 change 文件夹里，通常躺着四个文件，各司其职：</p>
+
+<table>
+<thead>
+<tr><th>文件</th><th>回答的问题</th><th>谁主要看它</th></tr>
+</thead>
+<tbody>
+<tr><td><code>proposal.md</code></td><td>为什么做、改什么（意图与范围）</td><td>人 + AI</td></tr>
+<tr><td><code>design.md</code></td><td>技术上怎么实现（方案与取舍）</td><td>人 + AI</td></tr>
+<tr><td><code>tasks.md</code></td><td>分几步干（可勾选的清单）</td><td>AI 执行</td></tr>
+<tr><td><code>specs/</code></td><td>这次对规格做了哪些增删改（Delta）</td><td>归档时合并</td></tr>
+</tbody>
+</table>
+
+<p>这里我要重点圈一个词：<code>specs/</code> 子目录里装的不是完整规格，而是 <strong>Delta（增量）</strong>。它不写"系统全貌"，只写"相对于现状，这次加了什么、改了什么、删了什么"。</p>
+
+<p>这个 Delta 机制，才是 OpenSpec 真正的灵魂。它值得单开一章细讲。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、Delta 才是 OpenSpec 的灵魂</h2>
+
+<p>为什么我说 Delta 是灵魂？因为它一举解决了规格驱动开发最头疼的两个老大难：<strong>规格会过期、规格写不全。</strong></p>
+
+<p>你想，如果每次改需求都要重写整份系统规格，那这份文档很快就会变成没人维护的"祖传文件"，跟代码越漂越远。OpenSpec 反其道而行：<strong>每次变更只描述差异，归档时由工具自动把差异合并进主规格。</strong>规格的更新不再靠人手抄，而是流程的副产品。它想不准都难。</p>
+
+<p>那 Delta 长什么样？它就是一份 Markdown，用三个标准段落把改动分类清楚：</p>
+
+<pre><code class="language-markdown">## ADDED Requirements
+
+### Requirement: 优惠券过期校验
+系统必须在下单时校验优惠券有效期，过期则拒绝使用。
+
+#### Scenario: 使用已过期的优惠券
+- **WHEN** 用户在结算时选择一张已过期的优惠券
+- **THEN** 系统返回 422 错误，提示"优惠券已过期"
+- **AND** 订单金额不发生任何抵扣
+
+## MODIFIED Requirements
+
+### Requirement: 满减门槛判断
+（原：满 100 减 10）现调整为可配置门槛，由营销后台下发。
+
+## REMOVED Requirements
+
+### Requirement: 固定立减券
+该券种已下线，相关逻辑整体移除。</code></pre>
+
+<p>看到那个 <code>#### Scenario</code> 了吗？这是整份规格里最金贵的部分。它用 <strong>WHEN / THEN</strong> 的句式，把一条抽象需求翻译成了具体到能直接当测试用例的场景。</p>
+
+<p>这一笔，把"规格"从一句正确的废话，变成了可验收的合同。</p>
+
+<p>我举个对比你就懂了。如果需求只写"要校验优惠券过期"，AI 完全可以理解成"过期就当没填优惠券、静默下单"——技术上它没违反需求，可这跟你想的完全是两回事。但如果规格里写明 <em>WHEN 选了过期券 THEN 返回 422 且不抵扣</em>，那就没有歧义了：AI 照着实现，你照着验收，对得上就是对，对不上就是错。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  别把 Scenario 当成"可有可无的补充说明"。恰恰相反，<strong>没有 Scenario 的 Requirement，等于没写。</strong>一条需求是不是说清楚了，标准就一个——AI 能不能照着它写出测试，你能不能照着它做验收。空有一句"要支持 XX"，最后大概率还是返工。
+</div>
+
+<p>这也是为什么 OpenSpec 给了你一条 <code>openspec validate</code> 命令。它会检查你的 Delta 文件结构合不合规：ADDED/MODIFIED/REMOVED 的层级对不对，每条 Requirement 有没有挂 Scenario。它不保证你的需求"对",但它逼着你把需求"说完整"。这两件事不一样,但后者已经能挡掉一大半的低级返工。</p>
+
+<p>一句话收这一章：<strong>OpenSpec 真正的护城河不是那套目录，而是 Delta + Scenario 这套"让需求可验收、让规格自动保鲜"的机制。</strong></p>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、真实工作流：我每天怎么用它</h2>
+
+<p>概念讲完，说点实在的——它到底怎么嵌进日常开发？我自己摸出来的节奏是这样的，分享给你。</p>
+
+<p><strong>小需求，别上 OpenSpec。</strong>改个文案、调个样式、修个一眼能看明白的 bug，直接让 AI 干就行。给这种活套一整套提案流程，纯属杀鸡用牛刀，反而拖慢你。OpenSpec 的价值在"需求有歧义、改动有牵连"的活上才显现。</p>
+
+<p><strong>中等以上需求，先 propose，再人工把关。</strong>这是核心。我会先 <code>/opsx:propose</code> 让 AI 出一版规格，然后<strong>把 90% 的注意力花在读它生成的 Scenario 上</strong>。AI 列出的场景往往覆盖了主干，但容易漏边界——并发下单同一张券会不会超用？退款后券退不退回？这些 AI 想不全的洞，正是我作为人最该补的地方。补完场景，再放它去 apply。</p>
+
+<p><strong>并行的活，开多个 change。</strong>前面说过，change 是隔离的。所以我可以让一个变更在做支付重构、另一个变更在加优惠券，两条线各有各的提案和规格，互不打架。等各自验收完，分别 archive，主规格依次更新。这点对多人协作尤其香。</p>
+
+<p>OpenSpec 还提供了一套"展开式"工作流给重活用——把 <code>/opsx:propose</code> 这一步拆得更细：<code>/opsx:new</code> 先搭个空架子，再用 <code>/opsx:continue</code> 或 <code>/opsx:ff</code> 逐步生成各份文档，<code>/opsx:apply</code> 之后还能 <code>/opsx:verify</code> 做一道核对。需求越大、越想分阶段控制，这套展开流越有用；小活用默认的精简流就够了。</p>
+
+<blockquote>
+AI coding assistants are powerful but unpredictable when requirements live only in chat history.<br>
+（AI 编程助手很强，但当需求只活在聊天记录里时，它就变得不可预测。）<br>
+—— OpenSpec 官方仓库
+</blockquote>
+
+<p>这句话我特别认同。OpenSpec 干的事，本质就是<strong>把需求从"易失的聊天记录"搬到"持久的仓库文件"里</strong>。一个存在内存里、关掉对话就没了；一个存在硬盘上、还能 git diff、还能 code review。可靠性完全不在一个量级。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  OpenSpec 支持 20 多个 AI 工具——Claude Code、Cursor、Copilot、Gemini CLI、Codex…… 这意味着规格是<strong>工具无关</strong>的。今天你用 Claude Code，明天团队换 Cursor，那套 <code>openspec/</code> 规格原封不动地继续用。在工具半年一换的当下，这种"把约定沉淀在中立格式里"的选择，比绑死某一家要稳得多。
+</div>
+
+<p>说到底，用好 OpenSpec 的诀窍就一句：<strong>把你的判断力，从"逐行审代码"前移到"逐条审场景"。</strong>前者累且容易漏，后者省力且抓得住根本。</p>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">六、踩坑清单与今天的挑战</h2>
+
+<p>聊了这么多，把最容易踩的几个坑给你拎出来，再留个今天就能做的小挑战。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  ① <strong>跳过评审直接 apply</strong>——这是头号坑。AI 生成的规格只是初稿，不审就用，等于把猜需求的活又交回给了 AI，OpenSpec 白装了。<br>
+  ② <strong>给每个小改动都开 change</strong>——流程是有成本的，鸡毛蒜皮的活直接干。<br>
+  ③ <strong>写了 Requirement 不写 Scenario</strong>——没有 WHEN/THEN 的需求等于没说清，返工照旧。<br>
+  ④ <strong>忘了 archive</strong>——不归档，主规格就不更新，下次 AI 读到的还是旧事实，越用越乱。
+</div>
+
+<p>把这套东西浓缩成几句你能记住的话：</p>
+
+<ul>
+  <li><strong>定位</strong>：OpenSpec 不让 AI 写得快，让它写之前先搞清"要什么"。</li>
+  <li><strong>四步</strong>：propose 提案 → 人工评审 → apply 实现 → archive 归档，你只重点管第二步。</li>
+  <li><strong>两概念</strong>：specs 是竣工图纸（现状事实），changes 是装修变更单（隔离的增量）。</li>
+  <li><strong>真灵魂</strong>：Delta + Scenario——让规格自动保鲜，让需求可验收。</li>
+</ul>
+
+<p><strong>我的看法：</strong>随着 AI 写代码越来越快，开发的瓶颈正在从"实现"整体迁移到"说清楚要什么"。在这个迁移里，谁能把需求表达得精确、可验收，谁就能让 AI 真正发挥十倍生产力。OpenSpec 不是唯一的答案，但它把这件事的门槛压得足够低——一个 npm 包就能开始。这种"轻"，在我看来比功能多寡更重要。</p>
+
+<p><strong>今天回去试一件事：</strong>挑一个你手头中等大小、需求有点模糊的功能，别急着让 AI 写代码。先在脑子里（或纸上）逼自己写出三条 <em>WHEN... THEN...</em> 的验收场景，特别是边界场景——并发会怎样？出错返回什么？为空怎么办？</p>
+
+<p>如果你能轻松写出来——恭喜，你已经具备了用好 OpenSpec 的核心能力，剩下的只是把它落进文件。如果你卡住了、写不全——那正好说明，<strong>你之前丢给 AI 的需求，本来就没说清楚。</strong>而这，就是你所有返工的真正源头。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://github.com/Fission-AI/OpenSpec" target="_blank">Fission-AI/OpenSpec — GitHub 官方仓库</a></li>
+    <li><a href="https://github.com/Fission-AI/OpenSpec/blob/main/docs/getting-started.md" target="_blank">OpenSpec Getting Started 官方文档</a></li>
+    <li><a href="https://openspec.dev/" target="_blank">OpenSpec — A lightweight spec-driven framework（官网）</a></li>
+    <li><a href="https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/" target="_blank">Spec-driven development with AI — The GitHub Blog</a></li>
+    <li><a href="https://recca0120.github.io/en/2026/03/08/openspec-sdd/" target="_blank">OpenSpec: Make AI Coding Assistants Follow a Spec, Not Just Guess</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
