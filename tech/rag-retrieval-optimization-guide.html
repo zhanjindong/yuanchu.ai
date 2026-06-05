@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RAG 检索优化实战：从"答非所问"到"指哪打哪"的 6 个关键决策 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">RAG</span>
+    <span class="tag">检索优化</span>
+    <span class="tag">LLM</span>
+  </div>
+  <h1>RAG 检索优化实战：从"答非所问"到"指哪打哪"的 6 个关键决策</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-05</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">先别急着换模型，先搞清楚它烂在哪</a>
+  <a href="#s2">切分：90% 的检索失败，死在第一步</a>
+  <a href="#s3">Embedding：不是越大越好，而是越"对口"越好</a>
+  <a href="#s4">混合检索 + 重排：几乎免费的准确率红利</a>
+  <a href="#s5">Query 改写：用户不会问问题，你得帮他问</a>
+  <a href="#s6">上下文检索 + 评估闭环：让优化有据可依</a>
+  <a href="#s7">写在最后：给你一个今晚就能做的挑战</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个做企业知识库的朋友找我吐槽："我把全公司的文档都灌进向量库了，模型也用的最贵的，可一问问题它就答非所问，到底哪儿出了问题？"</p>
+
+<p>我问他："你怎么判断它'答非所问'的？是生成的话术不对，还是它压根没找到该找的文档？"</p>
+
+<p>他愣了一下："……这有区别吗？"</p>
+
+<p>区别大了。这一愣，恰恰是大多数人做 RAG 翻车的根源。</p>
+
+<p>你一定听过那句话：RAG 就像开卷考试，模型可以翻书再答题，所以比闭卷的纯大模型更靠谱。这个比喻没错。但它漏掉了最关键的一环——<strong>开卷考试能考好的前提，是你得翻到正确的那一页。</strong></p>
+
+<p>如果你的书是乱撕成一堆纸条的，如果你翻书的索引建错了，如果你看到题目压根不知道该翻哪一章——那"开卷"反而是灾难。模型会自信满满地照着错误的那页,给你一个一本正经的胡说八道。</p>
+
+<p>所以,RAG 系统 80% 的问题,不在那个负责"答题"的大模型,而在那个负责"翻书"的检索环节。今天我就把检索这条流水线拆开,从切分、embedding、混合检索、重排到 query 改写,一个一个告诉你:你的 RAG 到底卡在哪,以及怎么救。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 1 ==================== -->
+<h2 id="s1">先别急着换模型，先搞清楚它烂在哪</h2>
+
+<p>我发现一个特别普遍的现象:RAG 一不准,所有人的第一反应都是"换个更强的大模型"。GPT 换 Claude,Claude 换最新版,换完发现……还是不准。</p>
+
+<p>为什么?因为你修的是答题的人,可问题出在翻书这一步。<strong>检索没召回正确的内容,你给它接个爱因斯坦也没用——它手里的资料本来就是错的。</strong></p>
+
+<p>所以优化 RAG 的第一步,永远不是开药,而是<strong>诊断</strong>。你得先把"答非所问"这个笼统的症状,拆成两类完全不同的病:</p>
+
+<p><strong>第一类:检索期没找对(Retrieval Failure)。</strong>正确答案明明在你的知识库里,但检索环节根本没把它捞出来,送给模型的 Top-K 里压根没有它。这是召回率(Recall)问题。</p>
+
+<p><strong>第二类:生成期没用好(Generation Failure)。</strong>正确的文档已经送到模型面前了,但模型要么没看懂,要么被一堆无关内容干扰,答歪了。这是模型和上下文的问题。</p>
+
+<p>这两类病,药方天差地别。判断方法也简单粗暴:<strong>把检索召回的那几个 chunk 打印出来,自己人眼看一遍——正确答案在不在里面?</strong></p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  如果正确内容根本没被召回 → 检索的锅,往下读这篇文章。如果正确内容召回了但模型答错了 → 那是 prompt 和模型的事,不在今天的讨论范围。先分清这两件事,能帮你省下 90% 的瞎折腾。
+</div>
+
+<p>本文聊的全是第一类病——怎么让检索"指哪打哪"。整条检索流水线,我把它画成了下面这张图,后面每一节,就是在拆解这张图上的一个环节。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 索引期 -->
+    <rect class="group-box" x="10" y="10" width="330" height="90"/>
+    <text class="group-label" x="22" y="30">离线·索引期</text>
+    <rect class="node-rect-amber" x="30" y="45" width="90" height="40"/>
+    <text class="node-label" x="75" y="65">文档切分</text>
+    <line class="arrow-line" x1="122" y1="65" x2="148" y2="65"/>
+    <rect class="node-rect-amber" x="150" y="45" width="90" height="40"/>
+    <text class="node-label" x="195" y="65">Embedding</text>
+    <line class="arrow-line" x1="242" y1="65" x2="268" y2="65"/>
+    <rect class="node-rect-gray" x="270" y="45" width="60" height="40"/>
+    <text class="node-label" x="300" y="65">向量库</text>
+
+    <!-- 查询期 -->
+    <rect class="group-box" x="10" y="115" width="700" height="95"/>
+    <text class="group-label" x="22" y="135">在线·查询期</text>
+    <rect class="node-rect-blue" x="30" y="150" width="80" height="40"/>
+    <text class="node-label" x="70" y="170">用户提问</text>
+    <line class="arrow-line-blue" x1="112" y1="170" x2="138" y2="170"/>
+    <rect class="node-rect-purple" x="140" y="150" width="90" height="40"/>
+    <text class="node-label" x="185" y="167">Query 改写</text>
+    <text class="node-sublabel" x="185" y="180">HyDE/分解</text>
+    <line class="arrow-line-blue" x1="232" y1="170" x2="258" y2="170"/>
+    <rect class="node-rect-green" x="260" y="150" width="100" height="40"/>
+    <text class="node-label" x="310" y="167">混合检索</text>
+    <text class="node-sublabel" x="310" y="180">向量+BM25</text>
+    <line class="arrow-line-blue" x1="362" y1="170" x2="388" y2="170"/>
+    <rect class="node-rect-green" x="390" y="150" width="100" height="40"/>
+    <text class="node-label" x="440" y="167">重排 Rerank</text>
+    <text class="node-sublabel" x="440" y="180">50→5</text>
+    <line class="arrow-line-blue" x1="492" y1="170" x2="518" y2="170"/>
+    <rect class="node-rect-red" x="520" y="150" width="80" height="40"/>
+    <text class="node-label" x="560" y="170">大模型</text>
+    <line class="arrow-line-blue" x1="602" y1="170" x2="628" y2="170"/>
+    <rect class="node-rect" x="630" y="150" width="70" height="40"/>
+    <text class="node-label" x="665" y="170">答案</text>
+  </svg>
+  <div class="diagram-caption">RAG 检索全流水线:橙色是离线索引环节,蓝绿是在线查询环节,每一环都能成为瓶颈</div>
+</div>
+
+<p>看明白这张图,你就明白了一件事:RAG 优化不是单点调参,而是一条流水线的协同。任何一环掉链子,后面再强也救不回来。而第一环,也是最容易被忽视的一环,就是切分。</p>
+
+<p><strong>一句话收束这一节:RAG 不准的时候,先做侦探,别急着当医生。</strong></p>
+
+<!-- ==================== SECTION: 2 ==================== -->
+<h2 id="s2">切分:90% 的检索失败,死在第一步</h2>
+
+<p>我先给你一个反直觉的结论:<strong>你怎么切文档,对检索质量的影响,比你选哪个 embedding 模型还大。</strong></p>
+
+<p>这听起来很离谱,对吧?embedding 模型是几十亿参数训出来的,切分不就是按字数咔咔一刀切吗?但数据不会骗人——根据一份 2026 年的基准测试,同一份语料,最好的切分方法和最差的切分方法,召回率(Recall)能差出 <strong>9 个百分点</strong>。这是什么概念?相当于你白白扔掉了近十分之一的正确答案。</p>
+
+<p>为什么切分这么致命?打个比方。你把一本书撕成纸条,准备做开卷考试的小抄。如果你撕的位置刚好把"爱因斯坦提出了相对论"这句话从中间撕开——"爱因斯坦提出了"在一张纸条上,"相对论"在另一张上——那等你考场上翻小抄的时候,这两张纸条谁也答不了这道题。</p>
+
+<p>这就是 chunking 最大的坑:<strong>一个完整的事实,被切到了两个 chunk 里,从此谁也召回不了它。</strong>再强的 embedding、再牛的 reranker 都救不回来,因为信息从一开始就被你切碎了。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  最常见的翻车姿势:按固定字符数(比如每 500 字)粗暴切分。这种切法完全不管语义边界,一句话、一个表格、一段代码,说断就断。它的唯一优点是快。如果你的 RAG 效果差又找不到原因,80% 的概率,先去看看你的切分是不是这么干的。
+</div>
+
+<p>那该怎么切?2026 年的主流答案,我帮你排了个序:</p>
+
+<p><strong>默认选项:递归切分(Recursive Chunking)。</strong>它不按字数硬切,而是优先按段落、再按句子这样的自然边界递归地切,尽量不破坏语义。Vectara 在 2026 年 2 月对 50 篇学术论文做的端到端测试里,512 token 的递归切分拿到了 69% 的准确率,排名第一。如果你不知道选什么,选它,基本不会错。</p>
+
+<p><strong>进阶选项:语义切分(Semantic Chunking)。</strong>它用 embedding 算相邻句子的相似度,在"话题转折"的地方下刀。理论上最贴合语义,某些场景能比朴素切分提升高达 70%。但它有两个代价:一是慢,比简单切分慢约 14 倍;二是不稳定,2025 年一篇 NAACL 的研究甚至发现,固定 200 词的切分在不少任务上能打平甚至超过语义切分。所以别盲目上语义切分,它不是银弹。</p>
+
+<p><strong>解决"撕碎"问题的杀手锏:迟分(Late Chunking)与层级切分。</strong>迟分的思路很妙——先让模型读完整个长文档、生成带全文上下文的 token 向量,<em>然后</em>再切。这样每个 chunk 的向量里,都"记得"自己原本所处的上下文。Jina 的测试显示,文档越长,迟分的优势越明显。而层级切分(父子 chunk)则是 2025–2026 production 环境里最广泛采用的模式:用小 chunk 保证检索精度,命中后再把它所属的大 chunk(父块)喂给模型,兼顾精确和完整。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  无论你用哪种切法,有一件事必须做:<strong>给每个 chunk 带上元数据</strong>——来源文档、章节标题、页码、父块 ID。这玩意儿成本几乎为零,但能让你后续做引用溯源、元数据过滤、层级检索,全靠它。很多团队后期想加这些功能,才发现当初切分时没存,只能推倒重来。
+</div>
+
+<p>切分定了,文档就变成了一堆 chunk,准备进向量库。但变成向量这一步,用哪个 embedding 模型?这又是一个被无数人想当然搞错的决策。</p>
+
+<p><strong>一句话收束这一节:切分是地基,地基歪一寸,上面盖的楼塌一丈。</strong></p>
+
+<!-- ==================== SECTION: 3 ==================== -->
+<h2 id="s3">Embedding:不是越大越好,而是越"对口"越好</h2>
+
+<p>选 embedding 模型,大多数人就干一件事:打开 MTEB 榜单,挑排名第一的那个。</p>
+
+<p>这个习惯,对一半,错一半。</p>
+
+<p>对的地方是:榜单确实能帮你筛掉一批弱鸡模型。错的地方是:<strong>榜单第一的模型,未必是你这个场景的第一。</strong></p>
+
+<p>我给你打个比方。你要找翻译,一个是联合国同传冠军,一个是专门做医药翻译的老法师。翻日常对话,同传冠军赢。但你要翻一份心血管手术的病历,那个"榜单排名更低"的医药老法师,吊打同传冠军。<strong>embedding 模型也一样:通用榜单分数高 ≠ 你的垂直领域召回好。</strong></p>
+
+<p>这不是空话。2026 年的测试数据显示,在代码、法律、医学、金融这些专业领域,voyage-3-large 这类模型能比通用冠军在领域检索上高出 4–6 个 MTEB 点。在垂类场景,"对口"比"通用强"重要得多。</p>
+
+<p>那 2026 年怎么选?我把主流选项的定位给你理一理:</p>
+
+<table>
+<thead>
+<tr><th>模型</th><th>定位</th><th>什么时候选它</th></tr>
+</thead>
+<tbody>
+<tr><td>voyage-3-large</td><td>检索专项最强,垂类领域领先</td><td>代码/法律/医学/金融等专业知识库</td></tr>
+<tr><td>Gemini Embedding 001</td><td>英文 MTEB 检索综合领先</td><td>以英文为主的通用通识库</td></tr>
+<tr><td>BGE-M3</td><td>开源、多语言、可私有部署</td><td>中文/多语言、数据不能出内网</td></tr>
+<tr><td>Cohere Embed v4</td><td>原生支持文本+图像同一向量空间</td><td>要检索带图表的 PDF、图文混合库</td></tr>
+</tbody>
+</table>
+
+<p>选完模型,还有一个几乎所有人都忽略的免费优化:<strong>向量量化(Quantization)。</strong>把原本 32 位浮点的向量,压成 8 位整数(int8),索引体积直接缩小 4 倍,而召回率只掉大约 1%。当你的向量库从十万条涨到几千万条,这个优化能帮你省下大笔内存和成本。几乎是稳赚不赔的买卖。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">数据说话</div>
+  别为了 MTEB 榜单上那 0.5 分的差距纠结到失眠。真正拉开差距的从来不是"换个高 0.5 分的模型",而是"在你自己的数据上跑一遍 A/B,看谁的召回更高"。榜单是起点,不是终点。拿你自己 50 条真实问题测一测,胜过看 50 篇评测文章。
+</div>
+
+<p>好,现在文档切好了、向量也建好了。用户来提问,你拿他的问题去向量库里捞最相似的 chunk。问题来了——<strong>只靠向量相似度去捞,真的够吗?</strong></p>
+
+<p><strong>一句话收束这一节:选 embedding 不是选最贵的,是选最懂你这行的。</strong></p>
+
+<!-- ==================== SECTION: 4 ==================== -->
+<h2 id="s4">混合检索 + 重排:几乎免费的准确率红利</h2>
+
+<p>纯向量检索有个天生的软肋:它擅长"懂意思",但不擅长"抠字眼"。</p>
+
+<p>什么意思?你搜"如何配置 RAG_TIMEOUT 参数",向量检索能理解你大概想问"超时配置",但它对 <code>RAG_TIMEOUT</code> 这个精确的、它训练时可能没怎么见过的字符串,反而不敏感。结果就是,一个产品型号、一个错误码、一个专有名词的缩写,向量检索经常给你漏掉。</p>
+
+<p>而这,恰恰是上古时代的关键词检索(BM25)的强项。BM25 不懂语义,但它认死理:你打的字,它一个不差地给你匹配出来。</p>
+
+<p>你看出来了吗?这俩简直是天造地设的互补。一个管"意思对",一个管"字眼准"。把它们的结果用 RRF(倒数排名融合)合并起来,就是<strong>混合检索(Hybrid Search)</strong>。业界几乎公认:在几乎所有数据集上,混合检索相比纯向量都是一次"几乎免费的准确率提升"。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
+    <rect class="node-rect-blue" x="20" y="80" width="110" height="44"/>
+    <text class="node-label" x="75" y="96">用户 Query</text>
+    <text class="node-sublabel" x="75" y="110">"RAG_TIMEOUT"</text>
+
+    <line class="arrow-line-blue" x1="132" y1="90" x2="178" y2="55"/>
+    <line class="arrow-line-blue" x1="132" y1="114" x2="178" y2="148"/>
+
+    <rect class="node-rect-green" x="180" y="33" width="150" height="44"/>
+    <text class="node-label" x="255" y="49">向量检索</text>
+    <text class="node-sublabel" x="255" y="63">懂语义·抓相似</text>
+
+    <rect class="node-rect-amber" x="180" y="125" width="150" height="44"/>
+    <text class="node-label" x="255" y="141">BM25 关键词</text>
+    <text class="node-sublabel" x="255" y="155">抠字眼·抓精确</text>
+
+    <line class="arrow-line" x1="332" y1="55" x2="378" y2="90"/>
+    <line class="arrow-line" x1="332" y1="147" x2="378" y2="112"/>
+
+    <rect class="node-rect-purple" x="380" y="79" width="100" height="44"/>
+    <text class="node-label" x="430" y="95">RRF 融合</text>
+    <text class="node-sublabel" x="430" y="109">Top 50</text>
+
+    <line class="arrow-line-blue" x1="482" y1="101" x2="518" y2="101"/>
+
+    <rect class="node-rect-red" x="520" y="79" width="100" height="44"/>
+    <text class="node-label" x="570" y="95">重排器</text>
+    <text class="node-sublabel" x="570" y="109">Top 50→5</text>
+  </svg>
+  <div class="diagram-caption">混合检索:向量管"意思",BM25 管"字眼",融合后再交给重排器精筛</div>
+</div>
+
+<p>但混合检索只是"海选"。它从几十万条里粗筛出 Top 50,这 50 条质量参差不齐,你不能直接全塞给大模型——又贵,又容易被无关内容干扰。这时候就需要"复试官"登场了:<strong>重排(Reranking)。</strong></p>
+
+<p>重排器和检索器有个本质区别。检索器为了快,是把 query 和 文档<em>各自</em>编码成向量再算距离(双塔);而重排器(cross-encoder)是把 query 和每个文档<em>拼在一起</em>送进模型,逐一精算相关性。前者像海选时扫一眼简历,后者像复试时面对面深聊。慢,但准得多。</p>
+
+<p>所以标准打法是:<strong>混合检索粗筛 Top 50 → 重排器精排成 Top 5 → 只把这 5 条最相关的喂给大模型。</strong>2026 年常用的重排器有 Cohere Rerank 3.5、Voyage rerank-2.5、BGE reranker-v2、Jina Reranker v2,接个 API 就能用。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  "既然重排这么准,那我直接拿重排器把全库几十万条都排一遍不就行了?"——千万别。重排器是 cross-encoder,每一条都要过一次模型,几十万条排下来,延迟和成本会爆炸。它的正确位置是"粗筛之后的精排",处理几十条,不是几十万条。粗筛和精排,各司其职。
+</div>
+
+<p>到这儿,你的检索流水线已经相当能打了:好的切分 + 对口的 embedding + 混合检索 + 重排。但还有一个角色我们一直没动——<strong>用户的那句提问本身。</strong>如果用户问得稀烂呢?</p>
+
+<p><strong>一句话收束这一节:混合检索负责广撒网,重排负责精挑鱼,一个都不能少。</strong></p>
+
+<!-- ==================== SECTION: 5 ==================== -->
+<h2 id="s5">Query 改写:用户不会问问题,你得帮他问</h2>
+
+<p>我们做 RAG,有一个特别天真的假设:用户会清晰、准确、完整地描述他的需求。</p>
+
+<p>醒醒。真实世界里,用户的提问长这样:"那个东西怎么弄"、"它为什么不行"、"上次说的那个功能"。又短、又模糊、又缺上下文。你拿这种 query 直接去检索,就像让图书管理员根据"那本蓝色的书"去帮你找书——找不到不怪他。</p>
+
+<p>所以高级 RAG 的一个核心思路是:<strong>别直接拿用户的原始提问去检索,先用大模型把它"翻译"成更适合检索的形式。</strong>这就是 Query 改写。它有好几种打法,我挑最实用的几个讲透:</p>
+
+<p><strong>第一招:HyDE(假设性文档嵌入)。</strong>这招的脑洞特别大。用户问一个问题,你不拿问题去检索,而是<em>先让大模型瞎编一个答案</em>,然后拿这个编出来的"假答案"去检索。为什么这样反而更好?因为"问题"和"答案"在向量空间里长得不太像——问题是疑问句,文档是陈述句。但"假答案"和"真答案"长得很像。用假答案去匹配真答案,命中率反而更高。听起来荒唐,但它真的管用。</p>
+
+<p><strong>第二招:多查询改写(Multi-Query)。</strong>一个问题,让大模型从不同角度改写成 3–5 个版本,分别检索,再把结果合并去重。用户问"RAG 怎么提速",模型可以改写成"RAG 检索延迟优化"、"向量库查询加速"、"reranking 性能调优"……多撒几张网,总有一张能捞到对的。</p>
+
+<p><strong>第三招:问题分解(Decomposition)。</strong>遇到复杂的多跳问题,比如"对比一下 A 方案和 B 方案在成本和性能上的差异",一次检索根本捞不全。把它拆成"A 方案的成本"、"A 方案的性能"、"B 方案的成本"、"B 方案的性能"四个子问题,分别检索,再汇总。化整为零,各个击破。</p>
+
+<p><strong>第四招:回退提问(Step-Back)。</strong>当用户问得太具体、太钻牛角尖,先"退一步"问个更宏观的问题。用户问"Python 3.12 里 asyncio 的 TaskGroup 怎么处理异常",先退一步检索"asyncio 异常处理机制"的背景知识,再回来抠细节。先建立大局观,再填具体事实。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">延伸思考</div>
+  这几招不是互斥的,2026 年的 Agentic RAG 干脆把它们串起来:先 step-back 建立背景,再 decomposition 拆解,对每个子问题用 HyDE 检索,甚至让 Agent 根据中间结果决定要不要再检索一轮(多跳)。检索从"一锤子买卖"变成了"会思考的循环"。这是 RAG 正在发生的最大范式转变。
+</div>
+
+<p>不过要提醒你一句:Query 改写每一招都要多调用大模型,会增加延迟和成本。别一上来就全套堆上。先用最简单的版本跑通,哪类 query 检索不好,再针对性地加对应的改写策略。</p>
+
+<p>切分、embedding、混合检索、重排、query 改写——五个环节都讲完了。但还有一个把它们串成闭环的关键:你怎么知道这些优化<em>到底有没有用</em>?</p>
+
+<p><strong>一句话收束这一节:用户问不清楚不是用户的错,帮他把话问明白,是你的活儿。</strong></p>
+
+<!-- ==================== SECTION: 6 ==================== -->
+<h2 id="s6">上下文检索 + 评估闭环:让优化有据可依</h2>
+
+<p>讲到这,我想先给你看一组 Anthropic 公布的、特别能说明问题的数据。</p>
+
+<p>他们针对"切分丢上下文"这个老大难,提出了一个叫<strong>上下文检索(Contextual Retrieval)</strong>的方法。思路很朴素:在每个 chunk 入库前,先用大模型给它生成一小段"这个片段在原文里讲的是什么"的上下文说明,贴在 chunk 前面再去做 embedding 和 BM25。相当于给每张撕碎的纸条,贴一张便利贴,写明"我是从哪一章、讲什么的内容里撕下来的"。</p>
+
+<p>效果如何?看这组数字的递进,你就明白这篇文章讲的每一招是怎么叠加的:</p>
+
+<table>
+<thead>
+<tr><th>方案</th><th>Top-20 检索失败率</th><th>相对提升</th></tr>
+</thead>
+<tbody>
+<tr><td>朴素 RAG(基线)</td><td>5.7%</td><td>—</td></tr>
+<tr><td>+ 上下文 Embedding</td><td>3.7%</td><td>失败率降 35%</td></tr>
+<tr><td>+ 上下文 BM25(即混合检索)</td><td>2.9%</td><td>失败率降 49%</td></tr>
+<tr><td>+ 重排器</td><td><strong>1.9%</strong></td><td><strong>失败率降 67%</strong></td></tr>
+</tbody>
+</table>
+
+<p>看明白了吗?从 5.7% 到 1.9%,检索失败率砍掉了三分之二。而这正是本文一路讲下来的几招——保留上下文、混合检索、重排——<strong>叠加</strong>出来的结果。没有哪一招是银弹,但叠在一起,就是质变。</p>
+
+<p>但是——注意,重点来了——<strong>Anthropic 能说出"从 5.7% 到 1.9%"这种话,前提是他们有一套能测出"5.7%"和"1.9%"的评估体系。</strong>这才是整篇文章我最想塞给你的一句话。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  90% 的 RAG 团队,优化全凭"感觉"。改完切分,问几个问题,"嗯好像准了点",就上线了。然后下个月又"感觉变差了",又开始瞎调。没有量化指标的优化,本质上是在赌博。你根本不知道这次改动是真的变好了,还是只是今天运气好。
+</div>
+
+<p>怎么破?建一个评估集。不用很复杂:</p>
+
+<ul>
+  <li><strong>攒 50–200 条真实问题</strong>:从用户实际问过的问题里挑,覆盖各种典型场景。</li>
+  <li><strong>标注每条问题的"正确答案应该来自哪个 chunk"</strong>:这是最费人力但最值钱的一步。</li>
+  <li><strong>盯三个指标</strong>:Recall@K(正确 chunk 有没有被召回到前 K 个)、P95 延迟、每千次查询成本。</li>
+</ul>
+
+<p>有了这套东西,你之前所有的优化才有了意义。换切分?跑一遍评估集,Recall 涨了还是跌了,一目了然。加重排?延迟涨了多少、召回提了多少,清清楚楚。<strong>优化不再是玄学,而是一道有标准答案的应用题。</strong></p>
+
+<p><strong>一句话收束这一节:测不出来的优化,等于没优化;能量化,才能进化。</strong></p>
+
+<!-- ==================== SECTION: 7 — 总结 ==================== -->
+<h2 id="s7">写在最后:给你一个今晚就能做的挑战</h2>
+
+<p>我们从那个朋友的吐槽聊起,绕了一大圈,把 RAG 检索这条流水线彻底拆开了。如果你只能记住几句话,记住这几句:</p>
+
+<ul>
+  <li><strong>先诊断,再开药</strong>:RAG 不准,先看是检索没召回,还是模型没用好。修错地方比不修更浪费时间。</li>
+  <li><strong>切分是地基</strong>:固定字数硬切是头号杀手,递归切分做默认,长文档考虑迟分和层级切分。</li>
+  <li><strong>embedding 要对口</strong>:垂类场景"懂行"比"通用强"重要,别迷信榜单 0.5 分的差距。</li>
+  <li><strong>混合检索 + 重排是标配</strong>:向量管意思、BM25 管字眼,粗筛 50 条、精排 5 条,几乎免费的准确率红利。</li>
+  <li><strong>Query 改写帮用户把话问明白</strong>:HyDE、多查询、分解、回退,按需叠加,别一把全上。</li>
+  <li><strong>没有评估集,一切优化都是赌博</strong>:50–200 条标注问题 + Recall@K,是你所有优化的标尺。</li>
+</ul>
+
+<p>现在,我给你一个今晚回去就能做的挑战,只要 30 分钟:</p>
+
+<p><strong>打开你现在的 RAG 系统,随便挑 10 个最近用户问过的、效果不太好的问题。对每一个,把检索召回的 chunk 原样打印出来,自己人眼看一遍:正确答案,到底在不在召回结果里?</strong></p>
+
+<p>然后数一数:10 个里,有几个是"压根没召回"(检索的锅),有几个是"召回了但模型答歪了"(生成的锅)。</p>
+
+<p>做完这件事,你会得到一个比读十篇这种文章都值钱的东西——<strong>你第一次真正知道,你的 RAG 该往哪儿修。</strong></p>
+
+<p>因为优化 RAG 这件事,从来不缺技巧,缺的是有人逼你停下来,先看清楚问题长什么样。这 10 个问题,就是你的起点。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anthropic.com/news/contextual-retrieval" target="_blank">Anthropic — Introducing Contextual Retrieval</a></li>
+    <li><a href="https://dev.to/young_gao/rag-is-not-dead-advanced-retrieval-patterns-that-actually-work-in-2026-2gbo" target="_blank">RAG Is Not Dead: Advanced Retrieval Patterns That Actually Work in 2026</a></li>
+    <li><a href="https://www.digitalapplied.com/blog/rag-chunking-strategies-2026-retrieval-quality-playbook" target="_blank">RAG Chunking Strategies: A 2026 Retrieval Playbook</a></li>
+    <li><a href="https://www.firecrawl.dev/blog/best-chunking-strategies-rag" target="_blank">Best Chunking Strategies for RAG (and LLMs) in 2026</a></li>
+    <li><a href="https://awesomeagents.ai/leaderboards/embedding-model-leaderboard-mteb-april-2026/" target="_blank">Embedding Model Leaderboard: MTEB Rankings April 2026</a></li>
+    <li><a href="https://www.buildmvpfast.com/blog/best-embedding-model-comparison-voyage-openai-cohere-2026" target="_blank">Voyage 3.5 vs OpenAI vs Cohere Embedding Models 2026</a></li>
+    <li><a href="https://dev.to/jamesli/in-depth-understanding-of-rag-query-transformation-optimization-multi-query-problem-decomposition-and-step-back-27jg" target="_blank">In-Depth Understanding of RAG Query Transformation: Multi-Query, Decomposition, Step-Back</a></li>
+    <li><a href="https://github.com/NirDiamant/RAG_Techniques" target="_blank">NirDiamant/RAG_Techniques — Advanced RAG Techniques 合集</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
