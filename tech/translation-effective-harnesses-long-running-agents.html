@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>为长时运行的智能体打造高效 Harness - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">AI 工程</span>
+    <span class="tag">Agent</span>
+  </div>
+  <h1>为长时运行的智能体打造高效 Harness</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-14</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>Effective harnesses for long-running agents</div>
+  <div class="source-row"><strong>作者</strong>Justin Young（Anthropic）</div>
+  <div class="source-row"><strong>来源</strong>Anthropic Engineering Blog</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank" rel="noopener">https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents</a></div>
+  <div class="source-row"><strong>发布日期</strong>2025 年 11 月 26 日</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  让智能体在跨越多个上下文窗口、持续数小时甚至数天的任务中稳定推进，至今仍是一个开放难题。Anthropic 从人类工程师的协作方式中获得灵感，提出了一套由「初始化智能体 + 编码智能体」组成的双重 Harness 方案，并以「克隆 claude.ai」这一真实任务为例，拆解了长时运行智能体常见的失败模式及对应解法。对任何正在构建自主编码 Agent 的人来说，这是一份非常实用的工程参考。
+</div>
+
+<p>随着 AI 智能体能力日益增强，开发者们越来越多地希望它们承担起需要跨越数小时、乃至数天的复杂任务。然而，要让智能体在多个上下文窗口之间保持稳定一致的进展，仍是一个尚未解决的难题。</p>
+
+<p>长时运行智能体的核心挑战在于：它们必须在一段段离散的会话（session）中工作，而每一段新会话开始时，都对此前发生的一切毫无记忆。想象一个软件项目由轮班制的工程师承担，每一位接班的新工程师到岗时，都对上一班发生了什么一无所知。由于上下文窗口是有限的，而大多数复杂项目又无法在单个窗口内完成，智能体便需要某种机制，来弥合一段段编码会话之间的鸿沟。</p>
+
+<p>我们开发了一套双管齐下的方案，让 Claude Agent SDK 能够高效地跨越多个上下文窗口工作：一个<strong>初始化智能体（initializer agent）</strong>，负责在首次运行时搭建好环境；以及一个<strong>编码智能体（coding agent）</strong>，负责在每一段会话中做出增量推进，同时为下一段会话留下清晰的「交接物」。你可以在配套的 <a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank" rel="noopener">quickstart</a> 中找到代码示例。</p>
+
+<h2 id="s1">长时运行智能体问题</h2>
+
+<p>Claude Agent SDK 是一个强大的通用智能体 harness，它擅长编码，也擅长其他那些需要模型调用工具来收集上下文、制定计划并执行的任务。它具备诸如「压缩（compaction）」之类的上下文管理能力，使智能体能够在不耗尽上下文窗口的情况下持续处理任务。理论上，有了这样的配置，智能体应当可以在任意长的时间内持续做有用的工作。</p>
+
+<p>然而，仅靠压缩还不够。开箱即用的情况下，即便是像 Opus 4.5 这样的前沿编码模型，在 Claude Agent SDK 上以循环方式跨越多个上下文窗口运行，如果只给它一个高层级的提示——比如「构建一个 claude.ai 的克隆版」——它也难以真正构建出一个生产级质量的 Web 应用。</p>
+
+<p>Claude 的失败表现为两种模式。第一种，智能体往往倾向于一口气做太多事——本质上是想「一次性搞定（one-shot）」整个应用。这常常导致模型在实现到一半时耗尽了上下文，留给下一段会话的是一个实现到一半、又没有文档的功能。接班的智能体不得不去猜测此前发生了什么，并花费大量时间试图把基础应用重新跑起来。即便有压缩机制，这种情况仍会发生——因为压缩并不总能把足够清晰的指令传递给下一个智能体。</p>
+
+<p>第二种失败模式通常出现在项目的后期。在已经构建了一些功能之后，后来的某个智能体实例环顾四周，看到已经取得了进展，于是便宣告任务大功告成。</p>
+
+<p>这把问题分解为了两个部分。第一，我们需要搭建一个初始环境，为给定提示所要求的全部功能打好地基，从而让智能体能够一步一步、一个功能一个功能地推进。第二，我们应当提示每一个智能体，在朝着目标做出增量推进的同时，也要在会话结束时把环境留在一个「干净的状态」。所谓「干净的状态」，指的是那种适合合并到主分支的代码：没有重大 bug，代码条理清晰、文档完备，总体上，一位开发者无需先去收拾一摊与己无关的烂摊子，就能轻松地着手开发新功能。</p>
+
+<p>在内部实验中，我们用一套两段式方案来解决这些问题：</p>
+
+<ul>
+  <li><strong>初始化智能体（Initializer agent）</strong>：最开始的那段智能体会话使用一个专门的提示词，要求模型搭建好初始环境：一个 <code>init.sh</code> 脚本、一个用于记录各智能体做过哪些事的 <code>claude-progress.txt</code> 文件，以及一次展示了新增哪些文件的初始 git 提交。</li>
+  <li><strong>编码智能体（Coding agent）</strong>：此后的每一段会话都要求模型做出增量推进，然后留下结构化的更新记录。<sup><a href="#fn1" id="ref1">1</a></sup></li>
+</ul>
+
+<p>这里的关键洞察在于：找到一种方式，让智能体在以全新的上下文窗口开始工作时，能够迅速理解当前的工作状态——这正是通过 <code>claude-progress.txt</code> 文件配合 git 历史来实现的。这些做法的灵感，来自于我们对优秀软件工程师日常工作方式的观察。</p>
+
+<h2 id="s2">环境管理</h2>
+
+<p>在更新后的 <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/claude-4-best-practices" target="_blank" rel="noopener">Claude 4 提示工程指南</a>中，我们分享了一些面向多上下文窗口工作流的最佳实践，其中包括一种「为最开始的那个上下文窗口使用不同提示词」的 harness 结构。这个「不同的提示词」要求初始化智能体把环境搭建好，并备齐未来的编码智能体高效工作所需的全部上下文。下面，我们将更深入地剖析这样一个环境的若干关键组成部分。</p>
+
+<h3>功能清单</h3>
+
+<p>为了解决「智能体一次性搞定应用」或「过早地认为项目已完成」的问题，我们提示初始化智能体去编写一份详尽的功能需求文件，对用户的初始提示加以展开。在 claude.ai 克隆版的例子中，这意味着超过 200 项功能，比如「用户可以打开一个新对话、输入一条查询、按下回车，然后看到 AI 的回复」。这些功能一开始都被标记为「failing（未通过）」，这样后续的编码智能体便能对「完整的功能形态」有一份清晰的纲要。</p>
+
+<pre><code>{
+    "category": "functional",
+    "description": "New chat button creates a fresh conversation",
+    "steps": [
+      "Navigate to main interface",
+      "Click the 'New Chat' button",
+      "Verify a new conversation is created",
+      "Check that chat area shows welcome state",
+      "Verify conversation appears in sidebar"
+    ],
+    "passes": false
+  }</code></pre>
+
+<p>我们提示编码智能体只能通过修改 <code>passes</code> 字段的状态来编辑这个文件，并使用措辞强硬的指令，例如「删除或编辑测试是不可接受的，因为这可能导致功能缺失或存在 bug」。经过一番试验，我们最终选择用 JSON 来承载这份清单，因为相比 Markdown 文件，模型更不容易不恰当地修改或覆写 JSON 文件。</p>
+
+<h3>增量推进</h3>
+
+<p>有了这套初始的环境脚手架，接下来的每一轮编码智能体便被要求「一次只做一个功能」。事实证明，这种增量式的方法，对于解决智能体「一口气做太多」的倾向至关重要。</p>
+
+<p>在以增量方式工作的同时，让模型在每次改完代码后把环境留在干净的状态，依然必不可少。在实验中我们发现，要诱导出这种行为，最好的办法是要求模型把进展用带有描述性提交信息的方式提交到 git，并把进展概要写进一个进度文件里。这使得模型可以借助 git 来回退糟糕的代码改动，并恢复到代码库可正常工作的状态。</p>
+
+<p>这些做法还提升了效率，因为它们免去了智能体去猜测此前发生了什么、并耗费时间把基础应用重新跑起来的麻烦。</p>
+
+<h3>测试</h3>
+
+<p>我们观察到的最后一个主要失败模式，是 Claude 倾向于在没有经过妥善测试的情况下，就把某个功能标记为已完成。在没有明确提示的情况下，Claude 往往会改动代码，甚至会用单元测试或对开发服务器执行 curl 命令来做测试，但却没能意识到该功能在端到端层面并不能真正工作。</p>
+
+<p>在构建 Web 应用的场景下，一旦被明确提示要使用浏览器自动化工具、并像真实用户那样去完成所有测试，Claude 在端到端验证功能这件事上大体上表现得相当不错。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/f94c2257964fb2d623f1e81f874977ebfc0986bc-1920x1080.gif" alt="Claude 通过 Puppeteer MCP 服务器测试 claude.ai 克隆版时截取的屏幕画面" loading="lazy">
+  <figcaption>Claude 在测试 claude.ai 克隆版时，通过 Puppeteer MCP 服务器截取的屏幕画面。</figcaption>
+</figure>
+
+<p>为 Claude 提供这类测试工具，极大地提升了它的表现，因为智能体得以识别并修复那些仅凭代码本身并不显而易见的 bug。</p>
+
+<p>一些问题依然存在，比如 Claude 的视觉能力以及浏览器自动化工具本身的局限，使得它难以发现每一种 bug。举例来说，Claude 无法通过 Puppeteer MCP 看到浏览器原生的 alert 弹窗，因此那些依赖此类弹窗的功能，往往更容易出 bug。</p>
+
+<h2 id="s3">快速进入状态</h2>
+
+<p>有了上述这一切，每一个编码智能体都被提示要走一遍一系列步骤来摸清自己的处境——其中有些步骤相当基础，但仍然很有帮助：</p>
+
+<ul>
+  <li>运行 <code>pwd</code>，看清你正在哪个目录下工作。你只能编辑这个目录里的文件。</li>
+  <li>阅读 git 日志和进度文件，迅速了解最近在做的是什么。</li>
+  <li>阅读功能清单文件，并从尚未完成的功能中挑选优先级最高的那一项来着手处理。</li>
+</ul>
+
+<p>这种方法在每段会话中都能为 Claude 节省一些 token，因为它无需再去琢磨该如何测试代码。此外，让初始化智能体写一个能够运行开发服务器的 <code>init.sh</code> 脚本，然后在实现新功能之前先跑一遍基础的端到端测试，也很有帮助。</p>
+
+<p>在 claude.ai 克隆版的例子中，这意味着智能体总是先启动本地开发服务器，并使用 Puppeteer MCP 去开启一个新对话、发送一条消息、接收一条回复。这确保了 Claude 能够迅速发现应用是否被留在了某种损坏的状态，并立即修复任何已有的 bug。如果智能体反过来一上来就去实现新功能，那很可能会让问题雪上加霜。</p>
+
+<p>综上所述，一段典型的会话通常以如下这些助手消息开场：</p>
+
+<pre><code>[Assistant] I'll start by getting my bearings and understanding the current state of the project.
+[Tool Use] &lt;bash - pwd&gt;
+[Tool Use] &lt;read - claude-progress.txt&gt;
+[Tool Use] &lt;read - feature_list.json&gt;
+[Assistant] Let me check the git log to see recent work.
+[Tool Use] &lt;bash - git log --oneline -20&gt;
+[Assistant] Now let me check if there's an init.sh script to restart the servers.
+&lt;Starts the development server&gt;
+[Assistant] Excellent! Now let me navigate to the application and verify that some fundamental features are still working.
+&lt;Tests basic functionality&gt;
+[Assistant] Based on my verification testing, I can see that the fundamental functionality is working well. The core chat features, theme switching, conversation loading, and error handling are all functioning correctly. Now let me review the tests.json file more comprehensively to understand what needs to be implemented next.
+&lt;Starts work on a new feature&gt;</code></pre>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/5dfb835ad3cbbf76b85824e969146eac20329e72-1000x1000.svg" alt="长时运行 AI 智能体的四种常见失败模式及对应解法的总结图" loading="lazy">
+  <figcaption>对长时运行 AI 智能体中四种常见失败模式及对应解法的总结。</figcaption>
+</figure>
+
+<h2 id="s4">未来工作</h2>
+
+<p>这项研究展示了在长时运行智能体 harness 中，一组可行的解法，使模型能够跨越多个上下文窗口做出增量推进。然而，仍有一些开放问题有待回答。</p>
+
+<p>其中最值得关注的是：单一的通用型编码智能体在跨上下文场景下是否表现最佳，抑或通过多智能体架构能够取得更好的性能，目前仍不明朗。一个合理的猜想是，诸如测试智能体、质量保证（QA）智能体、代码清理智能体之类的专用智能体，或许能在软件开发生命周期的各个子任务上做得更出色。</p>
+
+<p>此外，本次演示是针对全栈 Web 应用开发做优化的。一个未来的方向，是把这些发现推广到其他领域。这其中部分乃至全部的经验，很可能可以应用到诸如科学研究或金融建模这类同样需要长时运行智能体任务的场景中去。</p>
+
+<h3>致谢</h3>
+
+<p>本文由 Justin Young 撰写。特别感谢 David Hershey、Prithvi Rajasakeran、Jeremy Hadfield、Naia Bouscal、Michael Tingley、Jesse Mu、Jake Eaton、Marius Buleandara、Maggie Vo、Pedram Navid、Nadine Yasser 以及 Alex Notov 的贡献。</p>
+
+<p>这项工作凝聚了 Anthropic 多个团队的集体努力，正是他们让 Claude 得以安全地从事长周期的自主软件工程，尤其要感谢 code RL 团队与 Claude Code 团队。有意贡献力量的候选人，欢迎前往 <a href="https://www.anthropic.com/careers" target="_blank" rel="noopener">anthropic.com/careers</a> 申请。</p>
+
+<h3>脚注</h3>
+
+<p id="fn1"><a href="#ref1">1.</a> 在本文语境中，我们之所以把它们称为不同的智能体，仅仅是因为它们有着不同的初始用户提示词。除此之外，系统提示词、工具集以及整体的智能体 harness 都是完全相同的。</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
