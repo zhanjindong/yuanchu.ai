@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>规模化托管智能体：让"大脑"与"双手"解耦 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">AI 工程</span>
+    <span class="tag">Agent</span>
+  </div>
+  <h1>规模化托管智能体：让"大脑"与"双手"解耦</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-14</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>Scaling Managed Agents: Decoupling the brain from the hands</div>
+  <div class="source-row"><strong>作者</strong>Lance Martin、Gabe Cemaj、Michael Cohen</div>
+  <div class="source-row"><strong>来源</strong>Anthropic Engineering Blog</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://www.anthropic.com/engineering/managed-agents" target="_blank" rel="noopener">https://www.anthropic.com/engineering/managed-agents</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026 年 4 月 8 日</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  Harness（智能体外层框架）里写死的种种假设，会随着模型能力提升而过时。Anthropic 这篇文章介绍了 Managed Agents——他们用来运行长时程智能体任务的托管服务，其核心思路是借鉴操作系统"虚拟化硬件"的经验：把智能体拆成会话、harness、沙箱三个稳定接口，让背后的实现可以自由替换。对所有在搭建 Agent 平台、思考接口该如何设计才能"撑过模型迭代"的工程师，都很有参考价值。
+</div>
+
+<p><strong>Harness 里写死了对模型能力的假设，而这些假设会随模型变强而过时。Managed Agents——我们面向长时程智能体任务的托管服务——围绕着一组"哪怕 harness 改变也保持稳定"的接口来构建。</strong></p>
+
+<p>想要上手 Claude Managed Agents，可以参照我们的<a href="https://www.anthropic.com/engineering/managed-agents" target="_blank" rel="noopener">官方文档</a>。工程博客上有一个反复出现的主题：如何构建有效的智能体、如何为长时程任务设计 harness。贯穿这些工作的一条主线是：harness 里写死了对"Claude 自己做不到什么"的种种假设。然而这些假设需要被频繁地质疑,因为它们会随着模型变强而过时。</p>
+
+<p>举一个例子:在此前的工作中我们发现,Claude Sonnet 4.5 会在感知到自己快要触及上下文上限时提前草草收尾——这种行为有时被称为"上下文焦虑"(context anxiety)。我们当时通过在 harness 里加入上下文重置(context reset)来解决它。但当我们把同一个 harness 用在 Claude Opus 4.5 上时,却发现这种行为消失了。那些重置反而成了无用的累赘。</p>
+
+<p>我们预计 harness 还会持续演进。所以我们构建了 Managed Agents:这是 Claude Platform 中的一项托管服务,它通过一小组接口替你运行长时程智能体,而这组接口的设计意图,就是要比任何一种具体实现活得更久——包括我们今天自己在跑的这套实现。</p>
+
+<p>构建 Managed Agents,意味着要解决计算领域一个古老的问题:如何为"尚未被设想出来的程序"设计一个系统。几十年前,操作系统通过把硬件虚拟化成一系列抽象(进程、文件)解决了这个问题——这些抽象足够通用,足以容纳当时还不存在的程序。这些抽象比硬件本身活得更久。<code>read()</code> 这条命令并不在乎它读取的是 1970 年代的磁盘组还是现代的 SSD。上层的抽象保持稳定,而底层的实现可以自由更替。</p>
+
+<p>Managed Agents 沿用了同样的模式。我们把智能体的各个组件虚拟化:一个<strong>会话</strong>(session,记录所有发生之事的只追加日志)、一个<strong>harness</strong>(调用 Claude、并把 Claude 的工具调用路由到相应基础设施的那个循环)、以及一个<strong>沙箱</strong>(sandbox,Claude 可以在其中运行代码、编辑文件的执行环境)。这样一来,每个组件的实现都可以被替换,而不会扰动其他组件。我们对这些接口的形态有明确主张,但对接口背后跑什么并不设限。</p>
+
+<h2 id="s1">不要养"宠物"</h2>
+
+<p>一开始,我们把智能体的所有组件都放进单一一个容器里,这意味着会话、智能体 harness 和沙箱共享同一个环境。这种做法确实有其好处,比如文件编辑就是直接的系统调用,而且不需要设计任何服务边界。</p>
+
+<p>但把所有东西耦合进一个容器后,我们撞上了一个古老的基础设施难题:我们养了一只"宠物"。在"宠物 vs 牲口"(pets-vs-cattle)这个比喻里,宠物是有名字、需要悉心照料、丢不起的个体,而牲口则是可以互换的。在我们这里,服务器就成了那只宠物——如果一个容器挂了,会话就丢了;如果一个容器没响应,我们就得把它"养"回健康状态。</p>
+
+<p>"照料"容器意味着要去调试那些卡死、不响应的会话。我们唯一的观察窗口是 WebSocket 事件流,但它无法告诉我们故障从何而来——这意味着 harness 里的一个 bug、事件流里的一次丢包、或者容器下线,表现出来都一模一样。要弄清出了什么问题,工程师就得在容器内部打开一个 shell;可由于那个容器往往同时还装着用户数据,这种做法实际上等于让我们丧失了调试能力。</p>
+
+<p>第二个问题是,harness 假设 Claude 处理的一切东西都和它一起住在容器里。当客户要求我们把 Claude 连到他们的虚拟私有云(VPC)时,他们要么得把自己的网络和我们的对等互联,要么得在自己的环境里运行我们的 harness。一个烙进 harness 的假设,在我们想把它连接到不同基础设施时,就变成了麻烦。</p>
+
+<h2 id="s2">让"大脑"与"双手"解耦</h2>
+
+<p>我们最终找到的解决方案,是把我们所认为的"大脑"(Claude 及其 harness)从"双手"(执行动作的沙箱与工具)和"会话"(会话事件的日志)中解耦出来。每一部分都成为一个对其余部分几乎不做假设的接口,而且每一部分都可以独立失败、独立替换。</p>
+
+<p><strong>harness 离开容器。</strong>让大脑与双手解耦,意味着 harness 不再住在容器内部。它调用容器的方式,和它调用任何其他工具的方式一样:<code>execute(name, input) → string</code>。容器变成了"牲口"。如果容器死了,harness 会把这次失败当作一次工具调用错误捕获下来,再把它传回给 Claude。如果 Claude 决定重试,就可以用一份标准配方重新初始化一个新容器:<code>provision({resources})</code>。我们不必再把出故障的容器"养"回健康。</p>
+
+<p><strong>从 harness 故障中恢复。</strong>harness 自身也变成了"牲口"。由于会话日志位于 harness 之外,harness 里没有任何东西需要在崩溃中幸存。当一个 harness 失败时,可以用 <code>wake(sessionId)</code> 重启一个新的,用 <code>getSession(id)</code> 取回事件日志,然后从最后一个事件处恢复。在智能体循环过程中,harness 通过 <code>emitEvent(id, event)</code> 写入会话,以保持一份持久的事件记录。</p>
+
+<p><strong>安全边界。</strong>在耦合式设计中,Claude 生成的任何不可信代码,都和凭据(credentials)跑在同一个容器里——所以一次提示注入(prompt injection)只需要说服 Claude 去读取它自己的环境就够了。一旦攻击者拿到那些令牌,他们就能派生出全新的、不受限制的会话,并把工作委派给它们。把令牌权限范围收窄是一个显而易见的缓解措施,但这又写死了一个关于"Claude 拿一个受限令牌做不到什么"的假设——而 Claude 正变得越来越聪明。结构性的修复办法,是确保这些令牌从 Claude 生成代码所运行的沙箱里根本无法触及。</p>
+
+<p>我们用了两种模式来保证这一点。认证信息可以和某个资源捆绑在一起,也可以存放在沙箱之外的保险库(vault)中。对于 Git,我们用每个仓库各自的访问令牌,在沙箱初始化期间克隆仓库,并把它接入本地的 git remote。这样,git push 和 git pull 在沙箱内部就能工作,而智能体自始至终都不会经手那个令牌。对于自定义工具,我们支持 MCP,并把 OAuth 令牌存放在一个安全保险库里。Claude 通过一个专用代理(proxy)调用 MCP 工具;这个代理接收一个与当前会话关联的令牌,随后就能从保险库里取出对应的凭据,并向外部服务发起调用。harness 自始至终都不会知道任何凭据。</p>
+
+<h2 id="s3">会话不是 Claude 的上下文窗口</h2>
+
+<p>长时程任务的长度常常超过 Claude 的上下文窗口,而应对这一点的标准做法,无一例外都涉及关于"保留什么"的不可逆决策。我们在此前关于<a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener">上下文工程</a>的工作中探讨过这些技术。比如,压缩(compaction)让 Claude 把自己上下文窗口的一份摘要保存下来,而 memory 工具让 Claude 把上下文写入文件,从而实现跨会话的学习。这又可以和上下文修剪(context trimming)配合使用——后者会有选择地移除诸如旧的工具结果或思考块这样的 token。</p>
+
+<p>但"有选择地保留或丢弃上下文"这种不可逆决策,可能导致失败。我们很难知道未来的轮次将会需要哪些 token。如果消息被一个压缩步骤改写过,harness 就会把被压缩的消息从 Claude 的上下文窗口里移除,而这些消息只有在被存下来的情况下才可恢复。此前的工作探索过应对之道:把上下文存成一个活在上下文窗口之外的对象。举例来说,上下文可以是一个 REPL 里的对象,LLM 通过写代码来过滤或切片它,从而以编程方式访问它。</p>
+
+<p>在 Managed Agents 里,会话提供了同样的好处——它充当一个活在 Claude 上下文窗口之外的上下文对象。但上下文并不是存在沙箱或 REPL 里,而是被持久地存放在会话日志中。接口 <code>getEvents()</code> 让大脑能够通过选取事件流中的位置切片来审视上下文。这个接口可以被灵活地使用:大脑既可以从上次停止读取的地方继续,也可以在某个特定时刻之前回退几个事件以看清来龙去脉,还可以在某个特定动作之前重读上下文。</p>
+
+<p>任何被取出的事件,在传入 Claude 的上下文窗口之前,还可以在 harness 里被加工。这些加工可以是 harness 所编码的任何处理,包括为了拿到高提示缓存命中率(prompt cache hit rate)而做的上下文组织,以及各种上下文工程。我们之所以把"会话里可恢复的上下文存储"和"harness 里任意的上下文管理"这两件事拆开,是因为我们无法预测未来的模型会需要哪种具体的上下文工程。这些接口把上下文管理推到了 harness 里,只保证会话是持久的、并且可供审视。</p>
+
+<h2 id="s4">多个大脑,多双手</h2>
+
+<p><strong>多个大脑。</strong>让大脑与双手解耦,解决了我们最早遇到的客户抱怨之一。当团队希望 Claude 针对他们自己 VPC 里的资源开展工作时,唯一的路径就是把他们的网络与我们的对等互联——因为那个装着 harness 的容器假设每一个资源都紧挨着它。一旦 harness 不再待在容器里,这个假设就消失了。同样这个改动还带来了性能上的回报。当我们最初把大脑放进容器时,这意味着"多个大脑"就需要"同样多的容器"。对每一个大脑来说,在容器被配置好之前,推理都无法开始;每一个会话都得在最开始预付完整的容器启动成本。每一个会话——哪怕是那些永远不会碰沙箱的会话——都不得不克隆仓库、启动进程、从我们的服务器拉取待处理事件。</p>
+
+<p>那段空等的时间,体现在首 token 时延(time-to-first-token,TTFT)上,它衡量的是一个会话从接受工作到产出第一个响应 token 之间要等多久。TTFT 是用户感受最直接、最强烈的那种延迟。</p>
+
+<p>让大脑与双手解耦,意味着容器只有在需要时才由大脑通过一次工具调用(<code>execute(name, input) → string</code>)来配置。于是,一个不需要立刻用到容器的会话,就不必为它干等。一旦编排层从会话日志里拉到了待处理事件,推理就能开始。采用这套架构后,我们的 p50 TTFT 下降了大约 60%,p95 下降了超过 90%。扩展到多个大脑,无非就是启动许多个无状态的 harness,并仅在需要时才把它们连接到双手。</p>
+
+<p><strong>多双手。</strong>我们还希望能够把每一个大脑连接到许多双手。在实践中,这意味着 Claude 必须对许多个执行环境进行推理,并决定把工作派往何处——这是一个比"在单个 shell 里操作"更难的认知任务。我们最初之所以把大脑放在单个容器里,是因为更早的模型还没有能力做到这一点。随着智能水平的提升,单个容器反而成了限制:当那个容器失败时,我们就丢失了大脑正在伸入的每一只手的状态。</p>
+
+<p>让大脑与双手解耦,使得每一只手都成为一个工具——<code>execute(name, input) → string</code>:输入一个名字和输入,返回一个字符串。这个接口可以承载任何自定义工具、任何 MCP 服务器,以及我们自己的工具。harness 并不知道沙箱到底是一个容器、一部手机,还是一个《宝可梦》模拟器。而且由于没有任何一只手与任何一个大脑耦合,大脑之间可以把"手"互相传递。</p>
+
+<h2 id="s5">结语</h2>
+
+<p>我们面对的挑战是一个古老的挑战:如何为"尚未被设想出来的程序"设计一个系统。操作系统之所以能延续数十年,正是因为它把硬件虚拟化成了足够通用、足以容纳当时还不存在的程序的抽象。借助 Managed Agents,我们的目标是设计一个系统,让它能够容纳未来的 harness、沙箱,或者围绕 Claude 的其他组件。</p>
+
+<p>Managed Agents 本着同样的精神,是一个"元 harness"(meta-harness)——它对"Claude 未来会需要哪种具体 harness"不做主张。相反,它是一个带有通用接口、能够容纳许多种不同 harness 的系统。举例来说,Claude Code 就是一个出色的 harness,我们在各类任务中广泛使用它。我们也展示过,<a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener">面向特定任务的智能体 harness</a> 在狭窄领域里表现卓越。Managed Agents 可以容纳上述任何一种,并随着时间推移与 Claude 的智能水平相匹配。</p>
+
+<p>元 harness 的设计,意味着要对"围绕 Claude 的那些接口"有明确主张:我们预计 Claude 将需要操纵状态的能力(会话)与执行计算的能力(沙箱)。我们还预计 Claude 将需要扩展到多个大脑、多双手的能力。我们把这些接口设计成可以在长时间跨度内可靠且安全地运行。但我们对"Claude 将会需要的大脑或双手的数量、位置"不做任何假设。</p>
+
+<h2 id="s6">致谢</h2>
+
+<p>本文由 Lance Martin、Gabe Cemaj 和 Michael Cohen 撰写。感谢 Nodir Turakulov 和 Jeremy Fox 就这些话题进行的有益讨论。特别感谢 Agents API 团队以及 Jake Eaton 的贡献。</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
