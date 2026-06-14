@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>关于近期 Claude Code 质量反馈的复盘 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">Claude Code</span>
+    <span class="tag">事故复盘</span>
+  </div>
+  <h1>关于近期 Claude Code 质量反馈的复盘</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-14</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>An update on recent Claude Code quality reports</div>
+  <div class="source-row"><strong>作者</strong>未注明（Engineering at Anthropic）</div>
+  <div class="source-row"><strong>来源</strong>Engineering at Anthropic（Anthropic 工程博客）</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://www.anthropic.com/engineering/april-23-postmortem" target="_blank" rel="noopener">https://www.anthropic.com/engineering/april-23-postmortem</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026 年 4 月 23 日</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  这是 Anthropic 针对近期"Claude Code 变笨了"用户反馈发布的官方复盘。文章坦率地把问题拆解为三处独立改动——默认推理强度下调、一个丢弃历史思考的缓存优化 bug、以及一条压缩冗长度的系统提示词——并说明了各自的成因、修复和后续改进措施。对于做 LLM 产品工程、关心 prompt 缓存与上下文管理的同行，这是一份难得的真实事故拆解。
+</div>
+
+<p>我们把近期关于 Claude Code 质量问题的反馈，追溯到了三处各自独立的改动。下面说明发生了什么，以及我们正在做出哪些调整。</p>
+
+<p>过去一个月里，我们一直在排查"Claude 的回复对某些用户来说变差了"这类反馈。我们把这些反馈追溯到了三处各自独立的改动，它们分别影响了 Claude Code、Claude Agent SDK 和 Claude Cowork。API 未受影响。</p>
+
+<p>截至 4 月 20 日（v2.1.116），这三个问题现已全部解决。</p>
+
+<p>在这篇文章里，我们解释了我们发现了什么、修复了什么，以及我们今后将做出哪些不同的改变，以确保类似问题再次发生的可能性大大降低。</p>
+
+<p>我们非常严肃地对待有关质量下降的反馈。我们绝不会有意降低模型的表现，而且我们能够立即确认：我们的 API 和推理层未受影响。</p>
+
+<p>经过调查，我们识别出三个不同的问题：</p>
+
+<ul>
+  <li>3 月 4 日，我们把 Claude Code 的默认推理强度（reasoning effort）从 high 改为 medium，以减少某些用户在 high 模式下遇到的、长到足以让界面看起来像卡死了的超长延迟。这是个错误的取舍。在用户告诉我们他们更希望默认采用更高的智能、并对简单任务再主动选择更低强度之后，我们于 4 月 7 日撤销了这一改动。此问题影响了 Sonnet 4.6 和 Opus 4.6。</li>
+  <li>3 月 26 日，我们发布了一项改动：对那些已闲置超过一小时的会话，清除 Claude 较早的思考内容，以便用户恢复这些会话时降低延迟。一个 bug 导致这件事在该会话余下的过程中<em>每一轮</em>都在发生，而不是只发生一次，这让 Claude 显得健忘且爱重复。我们于 4 月 10 日修复了它。此问题影响了 Sonnet 4.6 和 Opus 4.6。</li>
+  <li>4 月 16 日，我们在系统提示词中加了一条用于压缩冗长度的指令。它与其他提示词改动叠加在一起，损害了编码质量，已于 4 月 20 日被撤销。此问题影响了 Sonnet 4.6、Opus 4.6 和 Opus 4.7。</li>
+</ul>
+
+<p>由于每处改动按不同的时间表影响着不同的流量切片，叠加起来的整体效果，看上去就像是一种大范围、不一致的质量下降。虽然我们早在 3 月初就开始调查这些反馈，但起初它们很难与用户反馈中的正常波动区分开来，而且无论是我们的内部使用还是评测（eval），最初都没能复现所识别出的这些问题。</p>
+
+<p>这并不是用户应当从 Claude Code 那里得到的体验。自 4 月 23 日起，我们为所有订阅用户重置使用额度（usage limits）。</p>
+
+<h2 id="s1">一处对 Claude Code 默认推理强度的改动</h2>
+
+<p>我们在 2 月把 Opus 4.6 引入 Claude Code 时，把默认推理强度设为了 high。</p>
+
+<p>不久之后，我们收到用户反馈：处于 high 强度模式的 Claude Opus 4.6 偶尔会思考太久，导致界面看起来像卡死了，并给这部分用户带来不成比例的延迟和 token 消耗。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/de3bcf9733b61f57234d8c45e663b1bd48677ea1-3840x2160.png" alt="按推理强度划分的 Agent 编码表现折线图，横轴为总 token 数，纵轴为得分百分比" loading="lazy">
+  <figcaption>按推理强度划分的 Agent 编码表现（Anthropic 内部自主 Agent 编码评测）。随着 token 投入增加，Opus 4.7 与 Opus 4.6 的得分都在上升，但收益逐渐递减。</figcaption>
+</figure>
+
+<p>一般来说，模型思考得越久，输出就越好。"强度等级（effort level）"正是 Claude Code 让用户设定这一取舍的方式——更多思考，对换更低延迟、更少触及使用额度上限。在为我们的模型校准强度等级时，我们会把这个取舍考虑进去，从而在"测试时算力（test-time-compute）"曲线上选取一些能给人们提供最佳选项区间的点位。在产品层，我们再选择把这条曲线上的哪个点设为默认值，那也就是我们以 effort 参数形式发往 Messages API 的值；其余选项则通过 <code>/effort</code> 提供出来。</p>
+
+<p>在我们的内部评测和测试中，medium 强度对大多数任务而言，智能略有下降、但延迟显著减少。它也不会像 high 那样偶尔出现思考的超长尾延迟问题，还有助于把用户的使用额度利用最大化。因此，我们推出了把 medium 设为默认强度的改动，并通过产品内的弹窗解释了缘由。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/459b2a8a0baa88937eebcbe4566dde4d6cc7f185-3794x2260.png" alt="Claude Code 中的强度选择界面截图，显示推荐使用 medium 强度" loading="lazy">
+  <figcaption>当时 Claude Code 中的强度选择界面，提示"我们推荐对 Opus 使用 medium 强度"，并提供 Medium（推荐）/ High / Low 三个选项。</figcaption>
+</figure>
+
+<p>推出后不久，用户开始反馈 Claude Code 感觉变笨了。为了提醒人们可以更改默认值，我们发布了若干设计迭代，让当前强度设置更清晰可见（启动时的提示、内联的强度选择器，以及把 ultrathink 找了回来），但大多数用户仍然保留了 medium 这个默认强度。</p>
+
+<p>在听取了更多客户的反馈后，我们于 4 月 7 日推翻了这个决定。现在所有用户对 Opus 4.7 默认采用 xhigh 强度，对其他所有模型默认采用 high 强度。</p>
+
+<h2 id="s2">一项丢弃了既有推理内容的缓存优化</h2>
+
+<p>当 Claude 推理一项任务时，那段推理通常会被保留在对话历史里，这样在后续的每一轮，Claude 都能看到自己当初为什么做出那些编辑和工具调用。</p>
+
+<p>3 月 26 日，我们发布了一项本意是要改进这一机制效率的改动。我们使用提示词缓存（prompt caching）来让连续的 API 调用对用户更便宜、更快。Claude 在发起 API 请求时会把输入 token 写入缓存，随后在一段不活跃期之后，该提示词会被从缓存中逐出，给其他提示词腾出空间。缓存利用率是我们会精心管理的东西（更多关于我们做法的说明）。</p>
+
+<p>这个设计本该很简单：如果一个会话已经闲置超过一小时，我们就可以通过清除旧的思考片段，来降低用户恢复该会话的成本。既然这个请求反正都会是一次缓存未命中（cache miss），那我们就可以从请求中剪掉不必要的消息，以减少发往 API 的未缓存 token 数量。之后，我们会恢复发送完整的推理历史。为实现这一点，我们使用了 <code>clear_thinking_20251015</code> 这个 API 请求头，并配合 <code>keep:1</code>。</p>
+
+<p>这个实现里有一个 bug。它并没有把思考历史清除<em>一次</em>，而是在该会话余下的过程中<em>每一轮</em>都清除。一旦某个会话越过了那条闲置阈值，在该进程余下的过程中，每一个请求都会告诉 API 只保留最近的那一块推理、并丢弃在它之前的一切。这会层层叠加：如果你在 Claude 正处于一次工具使用过程中时发去一条追问消息，那就会在这个出错的标志位下开启新的一轮，于是连当前这一轮的推理也被丢掉了。Claude 会继续执行，但越来越想不起自己当初为什么要那么做。这表现出来，就是人们反馈的健忘、重复和奇怪的工具选择。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/332d9c487bb73c8078686068dcbe1b616720a8dd-3016x1198.png" alt="闲置后恢复会话时，预期行为与实际 bug 行为的对比图" loading="lazy">
+  <figcaption>闲置后恢复：预期 vs 实际。该优化本应在恢复时只清除一次思考内容，但实际上它在之后的每一轮都在清除。图例中的色块依次为：系统提示、用户/工具、已发送的思考、被 keep:1 丢弃的思考、被错误丢弃的思考、以及本轮新增内容。</figcaption>
+</figure>
+
+<p>因为这会持续地从后续请求中丢弃思考块，那些请求也就同样导致了缓存未命中。我们认为，这正是另外那批"使用额度耗尽得比预期更快"反馈背后的原因。</p>
+
+<p>两个不相干的实验，让我们起初很难复现这个问题：一个是仅限内部、与消息排队（message queuing）相关的服务端实验；另一个是一处正交的、关于我们如何展示思考内容的改动，它在大多数 CLI 会话中把这个 bug 掩盖了，以致我们即便在测试外部构建版本时也没能逮到它。</p>
+
+<p>这个 bug 处在 Claude Code 上下文管理、Anthropic API 与扩展思考（extended thinking）三者的交叉地带。它所引入的改动，闯过了多轮人工和自动代码评审，也闯过了单元测试、端到端测试、自动化验证和内部试用（dogfooding）。再加上这只在一种边角情形（陈旧会话）下发生、以及问题本身难以复现，我们花了一个多星期才发现并确认了根因。</p>
+
+<p>作为调查的一部分，我们用 Opus 4.7 对那几个出问题的 pull request 回测了 Code Review（代码评审）功能。在提供了用以收集完整上下文所需的代码仓库之后，Opus 4.7 找出了这个 bug，而 Opus 4.6 没有。为防止此类情况再次发生，我们正在落地"支持把更多仓库作为代码评审上下文"的能力。</p>
+
+<p>我们于 4 月 10 日在 v2.1.101 中修复了这个 bug。</p>
+
+<h2 id="s3">一处用于压缩冗长度的系统提示词改动</h2>
+
+<p>我们最新的模型 Claude Opus 4.7，相对其前代有一个显著的行为癖性：正如我们在发布时所写到的，它倾向于相当啰嗦。这让它在难题上更聪明，但也产生了更多的输出 token。</p>
+
+<p>在发布 Opus 4.7 的前几周，我们就开始为此调试 Claude Code 以做准备。每个模型的行为都略有不同，我们会在每次发布前花时间为它优化 harness 和产品。</p>
+
+<p>我们有若干工具可用来压缩冗长度：模型训练、提示词，以及在产品中改进思考的交互体验（UX）。最终我们把这些都用上了，但系统提示词里的一处新增内容，对 Claude Code 的智能造成了不成比例的影响：</p>
+
+<blockquote>"长度限制：把工具调用之间的文字控制在 ≤25 个词。把最终回复控制在 ≤100 个词，除非任务需要更多细节。"</blockquote>
+
+<p>在经过数周的内部测试、且我们所跑的那套评测中没有出现任何回退之后，我们对这处改动有了信心，并在 4 月 16 日随 Opus 4.7 一同发布了它。</p>
+
+<p>作为这次调查的一部分，我们用一套更广的评测，跑了更多消融实验（ablation，即从系统提示词中逐行删除内容，以理解每一行的影响）。其中一项评测显示，Opus 4.6 和 4.7 都出现了 3% 的下降。我们随即在 4 月 20 日的发布中撤销了这条提示词。</p>
+
+<h2 id="s4">今后的做法</h2>
+
+<p>为避免这些问题，我们将做出几项不同的安排：我们会确保更大比例的内部员工使用与公开版完全一致的 Claude Code 构建（而非我们用来测试新功能的那个版本）；我们也会改进我们内部使用的 Code Review 工具，并把这个改进后的版本交付给客户。</p>
+
+<p>我们还将对系统提示词改动加上更严格的管控。对 Claude Code 的每一次系统提示词改动，我们都会跑一整套分模型的评测，持续做消融实验以理解每一行的影响；我们也已构建了新的工具，让提示词改动更便于评审和审计。此外，我们在 CLAUDE.md 中补充了指引，以确保针对特定模型的改动被限定（gated）在它所针对的那个具体模型上。对于任何可能以牺牲智能为代价的改动，我们都会加上浸泡期（soak period）、更广的评测套件和渐进式推出（gradual rollout），以便更早地发现问题。</p>
+
+<p>我们最近在 X 上创建了 @ClaudeDevs 账号，好让我们有空间去深入解释产品决策及其背后的考量。我们也会在 GitHub 上以集中式的话题帖（thread）分享同样的更新。</p>
+
+<p>最后，我们要感谢我们的用户：那些使用 <code>/feedback</code> 命令向我们反馈问题的人（以及那些在网上贴出具体、可复现示例的人），正是他们最终让我们得以定位并修复这些问题。今天，我们为所有订阅用户重置使用额度。</p>
+
+<p>我们对你们的反馈和耐心，致以无比的感激。</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
