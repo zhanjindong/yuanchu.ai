@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>让失忆的 AI 连续盖完一栋楼：拆解 Anthropic 的长任务 Agent Harness - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Agent</span>
+    <span class="tag">Claude Agent SDK</span>
+    <span class="tag">上下文工程</span>
+  </div>
+  <h1>让失忆的 AI 连续盖完一栋楼：拆解 Anthropic 的长任务 Agent Harness</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-14</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、长任务到底卡在哪一步？</a>
+  <a href="#s2">二、Anthropic 怎么解？两个分工明确的 Agent</a>
+  <a href="#s3">三、三道防线，是如何"逼"AI 老实干活的？</a>
+  <a href="#s4">四、为什么这套设计，本质上是在模仿人类工程师？</a>
+  <a href="#s5">五、写在最后：你能从中学到什么？</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>做一个思想实验。</p>
+
+<p>假设你雇了一个程序员，技术一流，干活又快又好。但他有个怪病：<strong>每天下班的瞬间，就把当天的事忘得一干二净。</strong>第二天来上班，他不记得自己昨天写了什么、改了哪个文件、卡在哪一步，甚至不记得这个项目是干嘛的。</p>
+
+<p>现在，你要让这个人——独自一人，花两个星期，盖出一个完整的 Claude.ai 网站克隆。</p>
+
+<p>你会怎么办？</p>
+
+<p>大概率，你会给他准备一套"外挂记忆系统"：一份写得明明白白的需求清单，一个记录"昨天干到哪儿"的工作日志，一套"打开电脑第一步该做什么"的开机流程。你不会指望他靠脑子记住一切——你会把记忆，<strong>搬到他脑子外面去。</strong></p>
+
+<p>这正是当下所有 AI Agent 面对长任务时的真实处境。模型的上下文窗口（context window）就是它的"当天记忆"，窗口一满，会话一结束，它就"失忆"了。而一个稍微复杂点的项目，根本不可能塞进一个窗口里干完。</p>
+
+<p>2026 年 6 月，Anthropic 发布了一篇工程博客《Effective harnesses for long-running agents》，外加一个开源仓库，专门回答这个问题：<strong>怎么让一个会失忆的 AI，跨越几十个上下文窗口，连续工作几个小时甚至几天，最后真的把活干完？</strong>它给出的答案，不是更大的模型，也不是更长的窗口，而是一套精巧的"外挂记忆系统"——他们管这个叫 harness（挽具）。</p>
+
+<p>这篇文章，我就带你把这套 harness 拆开看看。它的每一个设计，背后都藏着一句话：<strong>不要相信 AI 的记性，要相信硬盘上的文件。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、长任务到底卡在哪一步？</h2>
+
+<p>先说清楚问题，不然解法就是空中楼阁。</p>
+
+<p>你可能会想：现在的模型不是号称 20 万、100 万 token 的超长上下文吗？盖个网站还不够用？</p>
+
+<p>不够。差得远。</p>
+
+<p>一个真实的全栈项目——比如 Anthropic 拿来做实验的 Claude.ai 克隆——光是功能点就有 <strong>200 多个</strong>。前端、后端、数据库、流式响应、登录态、消息列表……每写一个功能都要读代码、写代码、跑测试、改 bug。这些动作产生的 token，几个窗口就撑爆了。这不是"窗口大一点就能解决"的量级问题，而是"必须分很多次干"的结构问题。</p>
+
+<p>一旦要分很多次干，"失忆"就成了致命伤。Anthropic 在用 Claude Opus 4.5 做实验时，观察到两种典型的翻车方式，特别有代表性。</p>
+
+<h3>翻车一：好高骛远，半途熄火</h3>
+
+<p>第一种，叫<strong>"过度雄心"（over-ambition）</strong>。</p>
+
+<p>你给 AI 一个大任务，它一上来就想"我要把整个 App 一口气写完"。于是它雄心勃勃地铺开摊子，前端写一半、后端搭一半，结果上下文窗口在实现到一半时耗尽了。会话结束，留下一地半成品——功能没写完，也没记录写到哪了。</p>
+
+<p>下一个会话的 AI 醒来，面对这堆烂尾工程，根本看不懂前任想干嘛。这就像第一天那个失忆程序员，挖了十个地基坑，每个都挖一半就下班了。第二天的他看着这十个坑，完全懵了。</p>
+
+<h3>翻车二：还没干完，就宣布胜利</h3>
+
+<p>第二种更隐蔽，叫<strong>"过早完成"（premature completion）</strong>。</p>
+
+<p>后来的某个会话醒来，看了一眼现有代码，发现"诶，好像已经有不少东西了嘛"，于是它大手一挥：<strong>"项目完成！"</strong>然后心满意足地下班。</p>
+
+<p>可实际上，200 个功能它可能就实现了 30 个。它没有一个客观标准来判断"什么叫做完"，只能凭感觉。而 AI 的感觉，往往是"差不多得了"。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">关键区别</div>
+  请注意，这两个失败模式的根子是同一个：<strong>AI 没有一个跨会话的、客观的"事实来源"（source of truth）。</strong>它既不知道"全部要做什么"，也不知道"已经做到哪"。前者导致它乱铺摊子，后者导致它瞎宣布完工。解决长任务，本质上就是解决这个"事实来源"该放在哪、怎么不被篡改的问题。
+</div>
+
+<p>所以你看，问题从来不在模型聪不聪明。Opus 4.5 写单个功能写得很好。问题在于，<strong>没人给这个聪明的失忆症患者，准备一套靠谱的记忆外挂。</strong></p>
+
+<p>那 Anthropic 准备的这套外挂，长什么样？</p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、Anthropic 怎么解？两个分工明确的 Agent</h2>
+
+<p>Anthropic 的核心思路，可以浓缩成一句话：<strong>把"开工准备"和"日常搬砖"拆成两个角色。</strong></p>
+
+<p>具体来说，整个系统由两类 Agent 组成——一个<strong>初始化 Agent（initializer）</strong>，只在项目最开始跑一次；一个<strong>编码 Agent（coding agent）</strong>，被反复唤醒，一次又一次地干活。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- initializer -->
+    <rect class="node-rect-purple" x="20" y="90" width="150" height="60"/>
+    <text class="node-label" x="95" y="112">初始化 Agent</text>
+    <text class="node-sublabel" x="95" y="132">只跑一次</text>
+    <!-- arrow -->
+    <line class="arrow-line-blue" x1="175" y1="120" x2="245" y2="120"/>
+    <text class="arrow-label" x="210" y="110">交付物</text>
+    <!-- artifacts group -->
+    <rect class="group-box" x="250" y="30" width="200" height="180"/>
+    <text class="group-label" x="262" y="50">硬盘上的"记忆"</text>
+    <rect class="node-rect-amber" x="270" y="60" width="160" height="34"/>
+    <text class="node-label" x="350" y="77">feature_list.json</text>
+    <rect class="node-rect-amber" x="270" y="105" width="160" height="34"/>
+    <text class="node-label" x="350" y="122">init.sh</text>
+    <rect class="node-rect-amber" x="270" y="150" width="160" height="34"/>
+    <text class="node-label" x="350" y="167">claude-progress.txt</text>
+    <!-- arrow to coding agent -->
+    <line class="arrow-line-blue" x1="455" y1="120" x2="525" y2="120"/>
+    <text class="arrow-label" x="490" y="110">读取</text>
+    <!-- coding agent loop -->
+    <rect class="node-rect-green" x="530" y="90" width="160" height="60"/>
+    <text class="node-label" x="610" y="112">编码 Agent</text>
+    <text class="node-sublabel" x="610" y="132">反复唤醒 N 次</text>
+    <!-- loop back arrow -->
+    <path class="arrow-line" d="M610 150 Q610 215 350 215 Q260 215 260 184" fill="none"/>
+    <text class="arrow-label" x="450" y="232">每次更新进度 + 提交 git</text>
+  </svg>
+  <div class="diagram-caption">两类 Agent 通过硬盘上的文件传递"记忆"，完成跨会话接力</div>
+</div>
+
+<h3>初始化 Agent：先把"工地"搭好</h3>
+
+<p>初始化 Agent 是项目的"奠基者"。它在第一次运行时，做三件关键的事：</p>
+
+<p><strong>第一，把模糊的需求，翻译成一份结构化的清单。</strong>你给它一句话"做一个 Claude.ai 克隆"，它会把这句话展开成一个 <code>feature_list.json</code>——里面是 200 多个具体功能，每个都写清楚类别、描述、验证步骤，以及一个最关键的字段：<code>passes</code>（是否通过），初始值统统是 <code>false</code>。</p>
+
+<p><strong>第二，写一个开机脚本 <code>init.sh</code>。</strong>这个脚本负责自动启动开发服务器、跑一遍基础的端到端冒烟测试。以后每个会话醒来，第一件事就是跑它，确认"环境是好的、上一棒没把房子拆了"。</p>
+
+<p><strong>第三，建立 git 仓库、写下第一行 <code>claude-progress.txt</code> 工作日志、打第一个 commit。</strong>从这一刻起，项目的每一点进展都有版本可查、有日志可读。</p>
+
+<p>奠基者干完这三件事，就退场了。它不写业务功能，它只负责把"工地"和"游戏规则"立起来。</p>
+
+<h3>编码 Agent：每次只搬一块砖</h3>
+
+<p>真正干活的，是编码 Agent。它会被一个外层循环反复唤醒，每次醒来都执行一套<strong>标准化的开工动作</strong>：</p>
+
+<ol>
+  <li>先跑 <code>pwd</code> 确认自己在哪个目录（别笑，失忆的人连自己站哪都得先看一眼）；</li>
+  <li>读 git log 和 <code>claude-progress.txt</code>，搞清楚"前任干到哪了"；</li>
+  <li>跑 <code>init.sh</code>，启动服务、验证环境没坏；</li>
+  <li>从 <code>feature_list.json</code> 里挑出<strong>一个</strong>优先级最高的、还没完成的功能；</li>
+  <li>实现它、测试它、确认它真的能跑；</li>
+  <li>提交 git commit，更新 <code>claude-progress.txt</code>，然后下班。</li>
+</ol>
+
+<p>注意第 4 步那个加粗的"<strong>一个</strong>"。这是整套设计的灵魂——它从机制上掐死了"过度雄心"。AI 不被允许一次干十个功能，它一次只能搬一块砖。砖虽小，但每块都砌得结结实实，commit 干干净净。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  这里有个特别"反 AI 直觉"的细节：清单文件用的是 <strong>JSON 而不是 Markdown</strong>。为什么？Anthropic 解释，模型<strong>更不容易去乱改或覆盖一个 JSON 文件</strong>。Markdown 太像"草稿纸"，AI 手一痒就改了；JSON 更像"合同"，结构严谨，AI 会本能地保持敬畏。一个文件格式的选择，背后是对模型行为习惯的深刻理解。
+</div>
+
+<p>两个角色，一份清单，一套循环。听起来是不是有点简单？但魔鬼在细节里。光有这套流程还不够——你怎么保证那个会"过早宣布胜利"的 AI，不偷偷把 <code>passes</code> 全改成 <code>true</code> 然后下班？</p>
+
+<p>这就要讲到整套 harness 里最精彩的部分：<strong>三道防线。</strong></p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、三道防线，是如何"逼"AI 老实干活的？</h2>
+
+<p>Anthropic 开源的参考实现里，藏着三个核心机制。它们的共同信条只有一句话：<strong>不要"好言相劝"地请 AI 守规矩，要用结构从根上让它"想耍滑头都没门"。</strong></p>
+
+<p>用他们自己的话说，这叫"<strong>Structure over prompting</strong>"——用结构，而不是用嘴皮子。我们一道一道看。</p>
+
+<h3>第一道防线：默认失败的"契约文件"</h3>
+
+<p>还记得那个 <code>passes</code> 字段全是 <code>false</code> 吗？这叫 <strong>Default-FAIL（默认失败）契约</strong>。每一个功能点，出生就是"不及格"，AI 必须拿出证据，才能把它改成"及格"。</p>
+
+<p>但问题来了：AI 要是直接撒谎，不看证据就把 <code>false</code> 改成 <code>true</code> 呢？</p>
+
+<p>这时候 harness 用了一个绝妙的手段——<strong>钩子（hook）拦截</strong>。它在工具调用层面加了一道闸：<strong>除非你先"打开"过对应的证据文件（截图、日志、测试结果），否则系统直接拒绝你写入那个契约文件。</strong></p>
+
+<p>翻译成大白话：你想说"这个功能通过了"？可以，<strong>先把证据拍在桌上</strong>。没看证据就想盖章，门都没有。这一招，把"过早完成"这个毛病从机制上焊死了。AI 不是不想偷懒，是它<strong>偷不了</strong>。</p>
+
+<h3>第二道防线：一个"没参与建造"的验收员</h3>
+
+<p>这是我个人最欣赏的设计，叫 <strong>Fresh-Context Evaluator（全新上下文的评估者）</strong>。</p>
+
+<p>想象一下，盖房子的工人自己验收自己的房子，会发生什么？他会自动忽略那些他"知道但懒得修"的瑕疵，因为他对这堆代码已经有了感情和路径依赖。这就是"当局者迷"。</p>
+
+<p>Anthropic 的解法是：派一个<strong>全新的、从没见过建造过程的 Agent</strong> 来验收。这个评估者 Agent 有几个狠角色设定：</p>
+
+<ul>
+  <li><strong>它没有写入和编辑代码的权限</strong>——它只能看，不能改，纯粹的甲方视角；</li>
+  <li><strong>它只看 diff 和截图</strong>，看不到建造者脑子里那些"我本来是想这样的"的辩解；</li>
+  <li><strong>它的输出只有两种</strong>：<code>PASS</code>（通过）或 <code>NEEDS_WORK</code>（需返工），并附上具体问题。</li>
+</ul>
+
+<p>最妙的是闭环：如果验收员说 <code>NEEDS_WORK</code>，它列出的问题会<strong>变成下一个建造者会话的开场白</strong>。建造 → 验收 → 返工 → 再验收，一个干净的质量闭环就这么转起来了。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- builder -->
+    <rect class="node-rect-green" x="30" y="70" width="150" height="56"/>
+    <text class="node-label" x="105" y="92">建造 Agent</text>
+    <text class="node-sublabel" x="105" y="110">写代码 + 提交</text>
+    <!-- arrow -->
+    <line class="arrow-line-blue" x1="185" y1="98" x2="265" y2="98"/>
+    <text class="arrow-label" x="225" y="88">提交 diff</text>
+    <!-- evaluator -->
+    <rect class="node-rect-purple" x="270" y="70" width="150" height="56"/>
+    <text class="node-label" x="345" y="92">验收 Agent</text>
+    <text class="node-sublabel" x="345" y="110">只读 · 全新视角</text>
+    <!-- pass arrow -->
+    <line class="arrow-line" x1="425" y1="98" x2="520" y2="98"/>
+    <text class="arrow-label" x="472" y="88">PASS</text>
+    <rect class="node-rect-blue" x="525" y="70" width="130" height="56"/>
+    <text class="node-label" x="590" y="98">标记完成</text>
+    <!-- needs work loop back -->
+    <path class="arrow-line" d="M345 126 Q345 175 105 175 Q105 175 105 130" fill="none"/>
+    <text class="arrow-label" x="225" y="192">NEEDS_WORK：问题变成下一棒的开场白</text>
+  </svg>
+  <div class="diagram-caption">建造与验收分离，用"全新上下文"破解"当局者迷"</div>
+</div>
+
+<h3>第三道防线：Agent 自己维护的"交接班记录"</h3>
+
+<p>第三道，叫 <strong>Agent-Maintained Handoff（自维护交接）</strong>。</p>
+
+<p>这其实就是我们开头说的"工作日志"，但有两个关键讲究。</p>
+
+<p>其一，<strong>交接记录由 Agent 自己写、自己读，颗粒度足够细。</strong>它不依赖模型自动的"上下文压缩"（compaction）去帮你总结——因为压缩是把旧对话揉成摘要，难免丢细节、变模糊。而 <code>PROGRESS.md</code> 是 Agent 主动落到硬盘上的清晰笔记，"上次试了 Y 方案没成，下次该试 Z"，明明白白。</p>
+
+<p>其二，<strong>用一个 Stop 钩子做兜底。</strong>万一 Agent 在会话结束时还有没提交的代码，<code>commit-on-stop.sh</code> 会自动帮它 commit，绝不让一行心血烂在工作区里丢失。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">踩坑记录</div>
+  Anthropic 特别强调：<strong>光靠模型的上下文压缩（compaction）是不够的。</strong>很多人以为 Agent SDK 自带了 compaction，长任务就稳了——这是个美丽的误会。压缩能帮你省 token，但它给不了"明确的指令"和"可追溯的状态"。真正的跨会话连续性，靠的是 git 历史 + 进度文件这种<strong>显式的、写在硬盘上的状态</strong>，而不是模型脑子里那团被压缩过的、模糊的记忆。
+</div>
+
+<p>三道防线合在一起，你品出味道了吗？<strong>契约文件管"做什么和算不算完"，验收员管"做得好不好"，交接记录管"下一棒怎么接"。</strong>它们环环相扣，把一个会失忆、会偷懒、会自我感觉良好的 AI，硬生生规训成了一个靠谱的连续工作者。</p>
+
+<p>那么问题来了——这套东西，是 Anthropic 凭空发明的某种 AI 黑魔法吗？</p>
+
+<p>恰恰相反。它平淡无奇得有点出乎意料。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、为什么这套设计，本质上是在模仿人类工程师？</h2>
+
+<p>Anthropic 在博客里说了一句很朴素的话，我觉得是全文的题眼：</p>
+
+<blockquote>
+这些实践的灵感，来自我们观察优秀软件工程师每天都在做的事。<br>
+—— Anthropic《Effective harnesses for long-running agents》
+</blockquote>
+
+<p>你回头看看那三道防线，是不是越看越眼熟？</p>
+
+<p><strong>feature_list.json</strong>，不就是团队的需求清单 / Jira backlog 吗？每个 ticket 一个状态，做完打勾。</p>
+
+<p><strong>claude-progress.txt 和 git commit</strong>，不就是每天站会时那句"我昨天做了 X，今天准备做 Y，卡在 Z"吗？外加规规矩矩的小步提交。</p>
+
+<p><strong>那个全新视角的验收 Agent</strong>，不就是 Code Review 里那个"没参与你这段代码、所以能挑出你看不见的毛病"的同事吗？我们早就知道，<strong>作者审不出自己的 bug</strong>，所以才有了 Code Review 这个制度。</p>
+
+<p><strong>"一次只做一个功能"</strong>，不就是资深工程师反复念叨的"小步快跑、频繁提交、别一次改一大坨"吗？</p>
+
+<p>这就是整件事最有意思的地方。我们折腾了半天怎么让 AI 干长活，最后发现：<strong>最有效的办法，是把人类团队几十年沉淀下来的工程纪律，原封不动地"翻译"给 AI 听。</strong></p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">延伸思考</div>
+  这其实揭示了一个更深的道理：<strong>软件工程那一整套流程——需求拆解、版本控制、测试、Code Review、交接文档——从来都不是给"聪明人"准备的，而是给"会犯错、会遗忘、会有人离职"的真实团队准备的。</strong>AI Agent 恰好就是一个"绝顶聪明但严重失忆、还时不时偷懒"的极端团队成员。所以那些流程对它出奇地有效。我们不是在发明新东西，我们是在重新发现老智慧的价值。
+</div>
+
+<p>顺带说个花絮。Anthropic 这套东西最早是 2026 年"Code with Claude"开发者大会上的一个 workshop 素材，开源仓库里他们老老实实写着：<strong>"这不是一个开箱即用的成品 harness，而是一堆可以挑着用、改着用的'配料'。"</strong>这种态度我很喜欢——它不卖你一个银弹，它给你一套思路和零件，让你照着自己的项目去拼。</p>
+
+<p>而且这套思路不只绑死在 Claude Code 上。仓库里专门给了 Agent SDK 的对应实现：契约文件对应 <code>PreToolUse</code> 回调，验收员对应独立的 <code>query()</code> 调用，交接记录对应系统提示词加 <code>Stop</code> 回调。换句话说，<strong>不管你用 Claude Code、无头模式（headless）还是直接撸 Agent SDK，这套"挽具"的骨架都搬得过去。</strong></p>
+
+<p>当然，它也坦承了局限。比如验收用的 Puppeteer 浏览器工具<strong>看不到浏览器原生的 alert 弹窗</strong>，所以依赖这类弹窗的功能就容易出 bug。还有一个开放问题挺值得玩味：到底是<strong>一个全能 Agent</strong> 好，还是<strong>拆成测试 Agent、QA Agent、清理 Agent 的多专家团队</strong>更好？这个，目前还没有定论。</p>
+
+<p>一句话总结这一章：<strong>给 AI 装挽具的过程，照出了一面镜子——原来我们引以为傲的工程纪律，本质上都是给"不完美"打的补丁。</strong></p>
+
+<!-- ==================== SECTION: 章节 5 — 总结 ==================== -->
+<h2 id="s5">五、写在最后：你能从中学到什么？</h2>
+
+<p>绕了一圈，我们回到开头那个失忆的程序员。Anthropic 给出的答案其实特别冷静：<strong>别想着治好他的失忆症（那是模型厂商的事），你要做的，是给他配一套好用的外挂记忆。</strong></p>
+
+<p>这套外挂的核心智慧，浓缩成三点，建议你截图存下来：</p>
+
+<ul>
+  <li><strong>状态要落盘，别靠模型记。</strong>git、JSON 清单、进度文件——能写硬盘的，绝不留在上下文窗口里。上下文压缩是省钱的，不是用来当记忆的。</li>
+  <li><strong>用结构约束，别靠提示词哀求。</strong>"请你做完再标记完成"是没用的；"不看证据就禁止你写入"才是有用的。Structure over prompting。</li>
+  <li><strong>把建造和验收分开。</strong>让一个全新视角的 Agent 来挑刺，比让作者自查可靠十倍。这一条，对人对 AI 都成立。</li>
+</ul>
+
+<p><strong>我的看法：</strong>这篇博客真正的价值，不在于那几个文件和钩子，而在于它点破了一个范式——<strong>长任务 Agent 的胜负手，已经从"模型能力"转移到了"harness 设计"上。</strong>未来一两年，会涌现一批专门做 Agent harness 的工具和框架，就像当年 DevOps 工具链的爆发一样。谁能把"工程纪律"翻译给 AI 翻译得最丝滑，谁就能让 AI 干最重的活。模型是发动机，harness 才是底盘和方向盘。</p>
+
+<p><strong>今天回去，给你一个具体的挑战：</strong></p>
+
+<p>打开你手头任何一个 AI 编程工具，找一个你平时会让它"一口气做完"的中等任务。这次，<strong>别这么干。</strong>试着做三件事：</p>
+
+<ol>
+  <li>先让它把任务拆成一份带勾选状态的清单，存成一个文件；</li>
+  <li>要求它每做完一项，就提交一次 git，并写一句进度笔记；</li>
+  <li>做完后，<strong>开一个全新的对话</strong>，把代码丢给它，让它以"挑剔的 Reviewer"身份验收。</li>
+</ol>
+
+<p>如果它揪出了第一个会话里它自己没发现的问题——恭喜，你已经亲手搭起了一个最小可用的 harness。你会突然理解，为什么 Anthropic 说，让 AI 干好长活的秘密，<strong>藏在你每天上班那些"无聊"的工程习惯里。</strong></p>
+
+<p>失忆不可怕。可怕的是，你以为它记得。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank">Anthropic Engineering — Effective harnesses for long-running agents</a></li>
+    <li><a href="https://github.com/anthropics/cwc-long-running-agents" target="_blank">GitHub — anthropics/cwc-long-running-agents（开源参考实现）</a></li>
+    <li><a href="https://venturebeat.com/ai/anthropic-says-it-solved-the-long-running-ai-agent-problem-with-a-new-multi" target="_blank">VentureBeat — Anthropic says it solved the long-running AI agent problem with a new multi-session Claude SDK</a></li>
+    <li><a href="https://www.zenml.io/llmops-database/long-running-agent-harness-for-multi-context-software-development" target="_blank">ZenML LLMOps Database — Long-Running Agent Harness for Multi-Context Software Development</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
