@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>面向长时运行应用开发的 Harness 设计 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">AI 工程</span>
+    <span class="tag">Agent Harness</span>
+  </div>
+  <h1>面向长时运行应用开发的 Harness 设计</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-14</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>Harness design for long-running application development</div>
+  <div class="source-row"><strong>作者</strong>Prithvi Rajasekaran（Anthropic Labs 团队成员）</div>
+  <div class="source-row"><strong>来源</strong>Engineering at Anthropic</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank" rel="noopener">https://www.anthropic.com/engineering/harness-design-long-running-apps</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026 年 3 月 24 日</div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、为什么朴素的实现方式行不通</a>
+  <a href="#s2">二、前端设计：让主观质量变得可评分</a>
+  <a href="#s3">三、扩展到全栈编程</a>
+  <a href="#s3-1" class="sub">架构</a>
+  <a href="#s3-2" class="sub">运行这套 harness</a>
+  <a href="#s3-3" class="sub">迭代这套 harness</a>
+  <a href="#s3-4" class="sub">移除 sprint 结构</a>
+  <a href="#s3-5" class="sub">更新版 harness 的结果</a>
+  <a href="#s4">四、接下来是什么</a>
+  <a href="#s5">五、致谢</a>
+  <a href="#s6">六、附录</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  这是 Anthropic Labs 团队的一篇工程实践文章，记录了作者如何借鉴生成对抗网络（GAN）的思路，用"生成器 + 评估器"的多智能体结构，把 Claude 在前端设计和长时运行自主编程两个领域的能力推到基线之上。文中对"上下文焦虑""自我评估失效""评估器何时值得投入"等问题的观察，对任何在搭建 Agent harness 的人都很有参考价值。
+</div>
+
+<p>Harness（指环绕模型搭建的框架/脚手架）设计是 agentic coding（智能体编程）在前沿水平上发挥性能的关键。下面介绍我们如何在前端设计和长时运行的自主软件工程这两方面进一步提升 Claude 的表现。</p>
+
+<p>作者：Prithvi Rajasekaran，Anthropic Labs 团队成员。</p>
+
+<figure>
+  <video src="https://cdn.sanity.io/files/4zrzovbb/website/9877febd34432f7f582aecd0023b951223605c6a.mp4" controls playsinline muted preload="metadata"></video>
+  <figcaption>▶ 原文开篇演示视频</figcaption>
+</figure>
+
+<p>过去几个月里，我一直在研究两个相互关联的问题：让 Claude 产出高质量的前端设计，以及让它在无人干预的情况下构建完整的应用。这项工作源于我们此前在前端设计 skill 和长时运行编程智能体 harness 上的努力——当时我和同事通过提示工程（prompt engineering）和 harness 设计，把 Claude 的表现提升到了远超基线的水平，但两条路最终都触及了天花板。</p>
+
+<p>为了突破瓶颈，我寻找那种能同时适用于两个差异巨大的领域的新颖 AI 工程方法：一个领域由主观品味定义，另一个则由可验证的正确性和可用性定义。受生成对抗网络（GAN）的启发，我设计了一种由生成器（generator）智能体和评估器（evaluator）智能体组成的多智能体结构。要构建一个能可靠打分、且具备品味的评估器，首先得制定一套标准，把"这个设计好不好？"这类主观判断转化为具体、可评分的条目。</p>
+
+<p>随后，我把这些技术应用到长时运行的自主编程上，并沿用了此前 harness 工作中的两条经验：把构建任务拆解成可处理的小块，以及用结构化的产物在多个会话之间传递上下文。最终成果是一套三智能体架构——规划器（planner）、生成器、评估器——它能在长达数小时的自主编程会话中产出功能丰富的全栈应用。</p>
+
+<hr>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2 id="s1">一、为什么朴素的实现方式行不通</h2>
+
+<p>我们此前已经证明，harness 设计对长时运行 agentic coding 的有效性有重大影响。在早先的一项实验中，我们用一个初始化器（initializer）智能体把产品规格说明拆解成任务清单，再由一个编程智能体逐个特性地实现这些任务，并在会话之间通过交接产物来跨会话传递上下文。更广泛的开发者社区也得出了类似的洞见，例如 "Ralph Wiggum" 方法就用 hook 或脚本让智能体保持持续的迭代循环。</p>
+
+<p>但有些问题始终存在。对于更复杂的任务，智能体随着时间推移仍然容易"跑偏"。在拆解这个问题时，我们观察到执行这类任务的智能体有两种常见的失败模式。</p>
+
+<p>第一种是：随着上下文窗口被填满，模型在长任务上容易丧失连贯性（参见我们关于上下文工程的文章）。有些模型还表现出"上下文焦虑（context anxiety）"——当它们接近自认为的上下文上限时，会开始过早地草草收尾。上下文重置（context reset）——即彻底清空上下文窗口、启动一个全新的智能体，并配合一次结构化交接，把上一个智能体的状态和后续步骤带过去——可以同时解决这两个问题。</p>
+
+<p>这与"压缩（compaction）"不同：压缩是就地总结对话的较早部分，让同一个智能体能在缩短后的历史上继续工作。压缩虽然保持了连续性，但并没有给智能体一个"干净的起点"，这意味着上下文焦虑仍可能存在。重置则提供了干净的起点，代价是交接产物必须包含足够的状态，好让下一个智能体能干净利落地接手工作。在我们早先的测试中，我们发现 Claude Sonnet 4.5 的上下文焦虑严重到仅靠压缩不足以支撑出色的长任务表现，因此上下文重置成了 harness 设计中不可或缺的一环。这解决了核心问题，但也给每次 harness 运行增加了编排复杂度、token 开销和延迟。</p>
+
+<p>第二个问题是我们此前没有处理过的：自我评估。当被要求评估自己产出的工作时，智能体往往会自信地夸赞这份工作——哪怕在人类观察者看来，质量明显平庸。这个问题在设计这类主观任务上尤为突出，因为不存在像可验证的软件测试那样的二元判定。一个布局究竟显得精致还是平庸，是一种判断；而智能体在给自己的工作打分时，可靠地偏向正面。</p>
+
+<p>不过，即便是那些确有可验证结果的任务，智能体有时仍会表现出糟糕的判断力，妨碍它完成任务时的表现。把"干活的智能体"和"评判它的智能体"分开，被证明是解决这一问题的有力杠杆。这种分离本身并不会立刻消除那种宽容：评估器仍然是一个 LLM，天然倾向于对 LLM 生成的产出网开一面。但事实证明，把一个独立的评估器调教得多疑，远比让生成器对自己的工作变得苛刻要容易得多；而一旦有了这种外部反馈，生成器就有了可以据以迭代的具体依据。</p>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2 id="s2">二、前端设计：让主观质量变得可评分</h2>
+
+<p>我从前端设计入手做实验，因为自我评估的问题在这里最为明显。在没有任何干预的情况下，Claude 通常倾向于保守、可预测的布局——技术上能用，但视觉上平淡无奇。</p>
+
+<p>有两点洞见塑造了我为前端设计构建的 harness。第一，尽管美感无法被完全归约为一个分数，且个人品味永远会有差异，但它可以借助编码了设计原则与偏好的评分标准来改善。"这个设计美吗？"很难一致地回答，但"它是否遵循了我们对好设计的原则？"就给了 Claude 一个可以据以评分的具体依据。第二，通过把前端生成与前端评分分开，我们可以创建一个反馈循环，推动生成器产出更强的结果。</p>
+
+<p>带着这个想法，我写下了四条评分标准，并把它们同时放进生成器和评估器智能体的提示词中：</p>
+
+<ul>
+  <li><strong>设计质量（Design quality）</strong>：这个设计是否感觉像一个连贯的整体，而非各部分的简单拼凑？这里的优秀之作意味着色彩、排版、布局、图像及其他细节融合在一起，营造出独特的氛围与身份认同。</li>
+  <li><strong>原创性（Originality）</strong>：是否有自定义决策的痕迹，还是只是模板布局、库的默认样式和 AI 生成的套路？一位人类设计师应当能辨认出有意为之的创意选择。未经改动的现成组件——或者诸如白色卡片上的紫色渐变这类 AI 生成的明显标志——在这一项上不及格。</li>
+  <li><strong>工艺（Craft）</strong>：技术执行层面，如排版层次、间距一致性、色彩和谐度、对比度。这是一项能力检查，而非创意检查。大多数合理的实现在这里默认都能过关；不及格意味着基本功有硬伤。</li>
+  <li><strong>功能性（Functionality）</strong>：脱离美感的可用性。用户能否理解这个界面是做什么的、找到主要操作、并在无需猜测的情况下完成任务？</li>
+</ul>
+
+<p>我把设计质量和原创性看得比工艺和功能性更重。Claude 在工艺和功能性上默认就表现不错，因为所需的技术能力对模型来说往往是自然而然的。但在设计和原创性上，Claude 的产出往往充其量只是平淡。这套标准明确惩罚那些高度通用的"AI 流水线垃圾（AI slop）"套路，并通过给设计和原创性更高的权重，推动模型在美学上更敢于冒险。</p>
+
+<p>我用带有详细分数拆解的 few-shot 示例来校准评估器。这确保了评估器的判断与我的偏好一致，并减少了跨迭代时的分数漂移。</p>
+
+<p>我把这个循环搭建在 Claude Agent SDK 上，这让编排变得简单直接。生成器智能体先根据用户提示创建一个 HTML/CSS/JS 前端。我给评估器配上了 Playwright MCP，让它在对每条标准打分、并写出详细评语之前，能直接与实时页面交互。实际运行中，评估器会自行浏览页面，截图并仔细研究实现，然后再给出评估。这份反馈随后流回生成器，作为下一轮迭代的输入。我每次生成运行 5 到 15 轮迭代，每一轮通常都会随着生成器对评估器评语的回应，把它推向更具特色的方向。由于评估器是在主动浏览页面而非给一张静态截图打分，每个循环都耗费了实打实的真实时间。完整运行最长可达四小时。我还指示生成器在每次评估之后做一个策略性决定：如果分数趋势良好就在当前方向上精细打磨，如果这个路子行不通就转向一种完全不同的美学。</p>
+
+<p>在多次运行中，评估器的评分会随迭代不断改善，然后趋于平台期，但仍留有上升空间。有些生成是渐进式地精细打磨。另一些则在迭代之间出现了美学上的急转弯。</p>
+
+<p>这些标准的措辞以我未能完全预料的方式引导了生成器。加入诸如"最好的设计是博物馆级别的"这样的措辞，会把设计推向某种特定的视觉收敛，这表明与标准相关联的提示词直接塑造了产出的风格特征。</p>
+
+<p>虽然分数总体上随迭代改善，但这个模式并不总是干净地线性递增。后期的实现整体上往往更好，但我经常看到自己更偏爱某个中间迭代而非最后一版的情况。实现的复杂度也往往随轮次增加，生成器会为回应评估器的反馈而尝试更有野心的方案。即便是第一轮迭代，其产出也明显优于完全没有任何提示的基线，这表明标准本身及其相关措辞，早在评估器反馈带来进一步精修之前，就已经把模型从通用的默认套路中拉了出来。</p>
+
+<p>有一个值得一提的例子：我让模型为一家荷兰艺术博物馆创建网站。到第九轮迭代时，它产出了一个干净的、深色主题的虚构博物馆落地页。页面视觉上很精致，但大体在我的预期之内。然后，在第十轮循环时，它把整个方案推倒重来，把网站重新构想成一种空间化的体验：一个用 CSS 透视渲染出的、带棋盘格地板的 3D 房间，墙上以自由的位置挂着艺术品，并用基于门廊的导航在展厅之间穿行，而非滚动或点击。这是那种我此前从未在单次生成中见过的创意飞跃。</p>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2 id="s3">三、扩展到全栈编程</h2>
+
+<p>掌握了这些发现后，我把这种受 GAN 启发的模式应用到全栈开发上。生成器-评估器循环可以自然地映射到软件开发生命周期上，其中代码评审和 QA 扮演着与设计评估器相同的结构性角色。</p>
+
+<h3 id="s3-1">架构</h3>
+
+<p>在我们早先的长时运行 harness 中，我们用一个初始化器智能体、一个每次只处理一个特性的编程智能体，以及会话之间的上下文重置，解决了多会话连贯编程的问题。上下文重置是一个关键的突破点：那个 harness 用的是 Sonnet 4.5，它表现出前面提到的"上下文焦虑"倾向。打造一个能在上下文重置之间良好运作的 harness，是让模型不偏离任务的关键。Opus 4.5 在很大程度上自行消除了这一行为，因此我得以在这个 harness 中完全去掉上下文重置。这些智能体在整个构建过程中作为一个连续会话运行，由 Claude Agent SDK 的自动压缩功能来应对沿途的上下文增长。</p>
+
+<p>在这项工作中，我在原始 harness 的基础上构建了一套三智能体系统，每个智能体都针对我在此前运行中观察到的某个特定缺口。该系统包含以下几种智能体角色：</p>
+
+<p><strong>规划器（Planner）：</strong>我们之前的长时运行 harness 要求用户预先提供详细的规格说明。我想把这一步自动化，于是创建了一个规划器智能体，它接收一段简单的 1–4 句话提示，并将其扩展为完整的产品规格说明。我提示它在范围上要有野心，并聚焦于产品语境和高层技术设计，而非详细的技术实现。这样强调是出于一个顾虑：如果规划器试图预先指定粒度很细的技术细节、却搞错了某处，规格说明中的错误就会向下游实现层层传导。更聪明的做法似乎是只约束要产出的交付物，让智能体在工作过程中自行摸索路径。我还要求规划器寻找把 AI 特性编织进产品规格的机会。（示例见文末附录。）</p>
+
+<p><strong>生成器（Generator）：</strong>早先 harness 中"每次只做一个特性"的方式在范围管理上效果很好。我在这里采用了类似的模式，指示生成器以 sprint（冲刺）为单位工作，每次从规格说明中取一个特性来做。每个 sprint 都用 React、Vite、FastAPI 和 SQLite（后来换成 PostgreSQL）这套技术栈来实现应用，并指示生成器在每个 sprint 结束、交给 QA 之前先自我评估其工作。它还配有 git 用于版本控制。</p>
+
+<p><strong>评估器（Evaluator）：</strong>来自早先 harness 的应用往往看起来令人印象深刻，但当你真正去用时仍有实打实的 bug。为了抓出这些问题，评估器使用 Playwright MCP，像用户那样点击遍历正在运行的应用，测试 UI 特性、API 端点和数据库状态。然后，它根据自己发现的 bug，以及一套仿照前端实验、并在此处调整为覆盖产品深度、功能性、视觉设计和代码质量的标准，对每个 sprint 打分。每条标准都有一个硬性阈值，只要任何一条低于阈值，该 sprint 即告失败，生成器就会收到关于哪里出了问题的详细反馈。在每个 sprint 之前，生成器和评估器会协商一份 sprint 契约（sprint contract）：在写任何代码之前，先就这块工作的"完成"是什么样子达成一致。之所以有这一步，是因为产品规格说明有意保持在高层，而我想要一个步骤来弥合用户故事与可测试实现之间的鸿沟。生成器提出它将构建什么、以及如何验证成功，评估器则审阅这份提案，以确保生成器在构建正确的东西。两者反复迭代，直到达成一致。</p>
+
+<p>智能体之间的通信通过文件来处理：一个智能体写入一个文件，另一个智能体读取它，并在该文件内做出回应，或者新建一个文件，由前一个智能体接着读取。生成器随后照着商定好的契约来构建，再把工作交给 QA。这让工作既忠实于规格说明，又不至于过早地把实现规定得太死。</p>
+
+<h3 id="s3-2">运行这套 harness</h3>
+
+<p>在这个 harness 的第一个版本中，我使用了 Claude Opus 4.5，把用户提示分别在完整 harness 和单智能体系统上运行以作对比。我用 Opus 4.5 是因为它是我开始这些实验时我们最好的编程模型。</p>
+
+<p>我写了如下提示来生成一个复古电子游戏制作器：</p>
+
+<blockquote>创建一个 2D 复古游戏制作器，功能包括关卡编辑器、精灵（sprite）编辑器、实体行为，以及一个可玩的测试模式。</blockquote>
+
+<p>下表展示了 harness 类型、运行时长和总成本。</p>
+
+<p>这套 harness 的成本高出 20 多倍，但产出质量上的差异立刻就显现出来了。</p>
+
+<p>我原本期待的是这样一个界面：我可以构建一个关卡及其组成部件（精灵、实体、瓦片布局），然后点击播放真正去玩这个关卡。我先打开了单智能体运行（solo run）的产物，初始应用看起来与这些预期相符。</p>
+
+<p>然而，当我逐一点击时，问题开始浮现。布局浪费空间，固定高度的面板让大部分视口空着。工作流很僵硬。试图填充一个关卡时，它提示我要先创建精灵和实体，但 UI 里没有任何东西引导我遵循这个顺序。更关键的是，游戏本身是坏的。我的实体出现在屏幕上，但什么都不响应输入。深入代码后发现，实体定义与游戏运行时之间的连接是断的，而表面上没有任何迹象指出问题出在哪里。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/23c98f1d7ae720bfb39190d50e0706c03b177ad8-1999x1320.png" alt="单智能体 harness 创建的应用初始界面" loading="lazy">
+  <figcaption>打开由单智能体 harness 创建的应用时的初始界面。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/24472c85629a6c82a092f25def4a659042be1f7c-1999x1010.png" alt="单智能体 harness 制作的精灵编辑器" loading="lazy">
+  <figcaption>在单智能体 harness 制作的精灵编辑器中创建一个精灵。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/79217dbfce3f31172eb7fd4deee5449023c9b2ac-1999x757.png" alt="尝试播放关卡失败" loading="lazy">
+  <figcaption>尝试播放我创建的关卡，但未能成功。</figcaption>
+</figure>
+
+<p>评估完单智能体运行后，我把注意力转向了 harness 运行。这次运行从同一句话提示开始，但规划器这一步把那句提示扩展成了一个横跨十个 sprint、包含 16 个特性的规格说明。它远远超出了单智能体运行所尝试的范围。除了核心编辑器和播放模式之外，规格还要求一个精灵动画系统、行为模板、音效和音乐、一个 AI 辅助的精灵生成器和关卡设计器，以及带可分享链接的游戏导出功能。我给规划器开放了我们的前端设计 skill，它读取并据此为应用创建了一套视觉设计语言，作为规格的一部分。对每个 sprint，生成器和评估器都协商了一份契约，定义该 sprint 的具体实现细节，以及用于验证其完成的可测试行为。</p>
+
+<p>这个应用立刻就显示出比单智能体运行更高的精致度和流畅度。画布用上了整个视口，面板尺寸合理，界面有一种与规格中的设计方向一脉相承的统一视觉身份。我在单智能体运行中看到的一些笨拙之处仍然存在——工作流仍然没有清楚地表明你应该先构建精灵和实体再去填充关卡，我还是得靠四处摸索才搞明白。这读起来像是基座模型产品直觉上的一处缺口，而非 harness 本应解决的问题，不过它也提示了一个地方：在 harness 内部做针对性的迭代，或许能进一步提升产出质量。</p>
+
+<p>逐一试用各个编辑器后，新运行相对单智能体的优势变得更明显。精灵编辑器更丰富、功能更完整，工具面板更整洁，取色器更好用，缩放控件也更易用。</p>
+
+<p>因为我让规划器把 AI 特性编织进它的规格，这个应用还自带了一个内置的 Claude 集成，让我能通过提示来生成游戏的不同部分。这大大加快了工作流。</p>
+
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/a8bef95425966495629095a5cb38bde4a8b13558-1999x997.png" alt="完整 harness 构建的应用初始界面" loading="lazy">
+  <figcaption>初始界面——在用完整 harness 构建的应用中创建一个新游戏。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/c05aa3ef8daaf0ef3d0dba66d6480ab753e9cbaa-1999x1007.png" alt="更整洁的精灵编辑器" loading="lazy">
+  <figcaption>精灵编辑器感觉更整洁、更易用。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/287b35f4683ecb77ac6a8d66bf2b3ed5956d1db9-1999x1008.png" alt="用内置 AI 特性生成关卡" loading="lazy">
+  <figcaption>使用内置的 AI 特性来生成关卡。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/8596eab2b4a06124df41ad6b2f7ff4ff9d9f105f-1999x1000.png" alt="用内置 AI 特性生成关卡" loading="lazy">
+  <figcaption>使用内置的 AI 特性来生成关卡。</figcaption>
+</figure>
+<figure>
+  <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/f2953550e51957a0a49a3792a0df3bcfed0fde48-1994x1654.png" alt="玩生成出来的游戏" loading="lazy">
+  <figcaption>玩我生成出来的游戏。</figcaption>
+</figure>
+
+<p>最大的差别在播放模式。我真的能移动我的实体并玩这个游戏。物理效果有一些粗糙的边角——我的角色跳上了一个平台，但最后和它重叠了，这在直觉上感觉不对——但核心功能是能用的，这是单智能体运行没能做到的。四处移动了一会儿后，我确实碰到了 AI 在游戏关卡构建上的一些局限。有一堵很大的墙我跳不过去，于是卡住了。这表明 harness 还可以处理一些常识性改进和边界情况，来进一步打磨这个应用。</p>
+
+<p>翻阅日志可以清楚看到，评估器让实现始终与规格保持一致。每个 sprint，它都会走一遍 sprint 契约里的测试标准，通过 Playwright 实操运行中的应用，对任何偏离预期行为的地方提交 bug。这些契约很细——单是 Sprint 3 就有 27 条覆盖关卡编辑器的标准——而评估器的发现足够具体，无需额外调查就能据以行动。下表展示了我们的评估器识别出的若干问题示例：</p>
+
+<p>让评估器达到这个水平是要下功夫的。开箱即用的 Claude 是个糟糕的 QA 智能体。在早期运行中，我看着它识别出真实的问题，然后又说服自己认为这些问题没什么大不了，照样批准了工作。它还倾向于浅尝辄止地测试，而不去探查边界情况，于是更微妙的 bug 常常溜了过去。调教的循环是：读评估器的日志，找出它的判断与我的判断分歧的例子，再更新 QA 的提示词去解决这些问题。经过好几轮这样的开发循环，评估器才以一种我认为合理的方式打分。即便到那时，harness 的产出仍暴露出模型 QA 能力的极限：细小的布局问题、某些地方感觉不直观的交互，以及评估器没有充分实操过的更深层嵌套特性里未被发现的 bug。显然还有更多验证空间可以通过进一步调教来挖掘。但与单智能体运行——应用的核心特性干脆就不工作——相比，这种提升是显而易见的。</p>
+
+<h3 id="s3-3">迭代这套 harness</h3>
+
+<p>第一批 harness 结果令人鼓舞，但它也臃肿、缓慢、昂贵。合乎逻辑的下一步，是在不降低性能的前提下找到简化 harness 的方法。这部分是常识，部分则源于一条更普适的原则：harness 中的每一个组件都编码了一个关于"模型自己做不到什么"的假设，而这些假设值得去压力测试——既因为它们可能本就不对，也因为随着模型进步它们会很快过时。我们的博文《构建有效的智能体》把背后的思路概括为"先找最简单可行的方案，只在需要时才增加复杂度"，这对任何维护智能体 harness 的人来说，都是一个反复出现的模式。</p>
+
+<p>在我第一次尝试简化时，我把 harness 大刀阔斧地砍了回去，还试了几个有创意的新想法，但没能复现原版的性能。同时也变得难以判断 harness 设计中哪些部分真正起到了承重作用、以何种方式起作用。基于这次经验，我转向了一种更有条理的方法：每次只移除一个组件，并审视它对最终结果有什么影响。</p>
+
+<p>在我经历这些迭代周期的过程中，我们也发布了 Opus 4.6，这进一步推动了我去降低 harness 复杂度。有充分理由预期 4.6 会比 4.5 需要更少的脚手架。引用我们的发布博文："[Opus 4.6] 规划得更周密，能更长时间地维持智能体任务，在更大的代码库中运行得更可靠，并且有更好的代码评审和调试能力来捕捉自己的错误。"它在长上下文检索上也有大幅改进。这些都正是 harness 当初被构建来弥补的能力。</p>
+
+<h3 id="s3-4">移除 sprint 结构</h3>
+
+<p>我先彻底移除了 sprint 结构。sprint 结构曾帮助把工作拆解成小块，让模型能连贯地工作。鉴于 Opus 4.6 的改进，有充分理由相信模型可以在没有这种拆解的情况下原生地胜任这项工作。</p>
+
+<p>我保留了规划器和评估器，因为两者都继续带来明显的价值。没有规划器，生成器会把范围定得不足：给它原始提示，它会不先做规格就开始构建，最终做出一个比有规划器时功能更单薄的应用。</p>
+
+<p>移除 sprint 结构后，我把评估器改为在运行结束时做单次评估，而不是逐 sprint 打分。由于模型能力强了很多，这改变了评估器对某些运行的承重程度——它的有用性取决于任务相对于模型自己能可靠完成的范围处在什么位置。在 4.5 上，那条边界很近：我们的构建正处在生成器单独能做好的边缘，评估器在整个构建中都能抓到有意义的问题。在 4.6 上，模型的原始能力提升了，于是这条边界向外移动。那些过去需要评估器把关才能被连贯实现的任务，现在往往已落在生成器自己就能做好的范围内；而对于这条边界之内的任务，评估器就成了不必要的开销。但对于构建中那些仍处在生成器能力边缘的部分，评估器继续带来实打实的提升。</p>
+
+<p>实践含义是：评估器并不是一个固定的"是或否"的决定。当任务超出当前模型单独能可靠完成的范围时，它的成本才是值得的。</p>
+
+<p>在结构性简化之外，我还增加了一些提示，来改善 harness 把 AI 特性构建进每个应用的方式，具体来说是让生成器构建一个真正的智能体，能通过工具驱动应用自身的功能。这花了实打实的迭代，因为相关知识足够新，以至于 Claude 的训练数据对它覆盖得很稀薄。但经过足够的调教，生成器就能正确地构建智能体了。</p>
+
+<h3 id="s3-5">更新版 harness 的结果</h3>
+
+<p>为了检验更新版 harness，我用了如下提示来生成一个数字音频工作站（DAW），即一个用于作曲、录音和混音的音乐制作程序：</p>
+
+<blockquote>使用 Web Audio API 在浏览器中构建一个功能完整的 DAW。</blockquote>
+
+<p>这次运行仍然冗长且昂贵，大约耗时 4 小时、花费 124 美元的 token 成本。</p>
+
+<p>大部分时间花在了构建器上，它在没有 Opus 4.5 所需的 sprint 拆解的情况下，连贯地运行了两个多小时。</p>
+
+<p>和之前的 harness 一样，规划器把这句话提示扩展成了一份完整规格。从日志中我能看到，生成器模型在规划应用和智能体设计、把智能体接线、以及在交给 QA 之前测试它，这几件事上都做得不错。</p>
+
+<p>话虽如此，QA 智能体仍然抓到了真实的缺口。在它的第一轮反馈中，它指出：</p>
+
+<blockquote>这是一个出色的应用，设计还原度极高、AI 智能体扎实、后端良好。主要的失败点是"特性完整度"——尽管应用看起来令人印象深刻、AI 集成也运作良好，但若干核心 DAW 特性只是展示性的、缺乏可交互的深度：片段（clip）无法在时间线上拖动/移动，没有乐器 UI 面板（合成器旋钮、鼓垫），也没有可视化的效果编辑器（EQ 曲线、压缩器表头）。这些不是边界情况——它们正是让一个 DAW 可用的核心交互，而规格也明确要求了它们。</blockquote>
+
+<p>在它的第二轮反馈中，它又抓到了几个功能性缺口：</p>
+
+<blockquote>剩余缺口：- 音频录制仍然只是桩实现（按钮能切换，但没有麦克风采集）- 通过边缘拖动调整片段大小、以及片段切分都未实现 - 效果可视化是数值滑块，不是图形化的（没有 EQ 曲线）</blockquote>
+
+<p>生成器在无人看管时仍然容易漏掉细节或把特性做成桩，而 QA 在捕捉这些"最后一公里"问题、交给生成器修复方面，仍然带来了价值。</p>
+
+<p>基于这条提示，我期待的是这样一个程序：我能创建旋律、和声和鼓点，把它们编排成一首歌，并在过程中得到一个集成智能体的帮助。下面的视频展示了结果。</p>
+
+<figure>
+  <video src="https://cdn.sanity.io/files/4zrzovbb/website/555910f9adb3938734940224e7a6f4c7cbbbd8f2.mp4" controls playsinline muted preload="metadata"></video>
+  <figcaption>▶ 用更新版 harness 生成的 DAW 演示</figcaption>
+</figure>
+
+<p>这个应用离专业的音乐制作程序还差得很远，智能体的作曲能力显然还有大量工作要做。此外，Claude 实际上听不到声音，这让 QA 反馈循环在音乐品味方面的效果打了折扣。</p>
+
+<p>但最终的应用具备了一个可用的音乐制作程序的全部核心部件：一个能用的编排视图、混音器，以及在浏览器中运行的走带控制（transport）。除此之外，我还完全通过提示拼出了一小段歌曲片段：智能体设定了速度和调性、铺下一段旋律、搭了一条鼓轨、调整了混音器音量，并加了混响。作曲的核心原语都在，智能体也能自主地驱动它们，用工具从头到尾做出一个简单的作品。你或许会说它还没到"音准完美"的程度——但它正在接近。</p>
+
+<!-- ==================== SECTION 4 ==================== -->
+<h2 id="s4">四、接下来是什么</h2>
+
+<p>随着模型不断进步，我们大致可以预期它们能工作更长时间、处理更复杂的任务。在某些情况下，这意味着环绕模型的脚手架会随时间变得不那么重要，开发者可以等待下一个模型，看着某些问题自行解决。另一方面，模型越好，就越有空间去开发那些能完成超出模型基线能力的复杂任务的 harness。</p>
+
+<p>带着这个想法，这项工作中有几条值得延续的经验。一个始终值得遵循的好做法是：用你正在为之构建的那个模型做实验，读它在真实问题上的轨迹（trace），并调教它的表现以达到你想要的结果。在处理更复杂的任务时，有时可以通过拆解任务、为问题的每个方面配上专门的智能体来获得提升空间。而当一个新模型到来时，通常值得重新审视一遍 harness，剥掉那些对性能不再起承重作用的部分，再加上新的部分，去实现以前可能做不到的更强能力。</p>
+
+<p>从这项工作中，我的信念是：随着模型进步，有趣的 harness 组合的空间并不会缩小。相反，它会移动；而 AI 工程师有趣的工作，就是不断去寻找下一个新颖的组合。</p>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2 id="s5">五、致谢</h2>
+
+<p>特别感谢 Mike Krieger、Michael Agaby、Justin Young、Jeremy Hadfield、David Hershey、Julius Tarng、Xiaoyi Zhang、Barry Zhang、Orowa Sidker、Michael Tingley、Ibrahim Madha、Martina Long 和 Canyon Robbins 对这项工作的贡献。</p>
+
+<p>也感谢 Jake Eaton、Alyssa Leonard 和 Stef Sequeira 在塑造这篇文章上提供的帮助。</p>
+
+<!-- ==================== SECTION 6 ==================== -->
+<h2 id="s6">六、附录</h2>
+
+<p>由规划器智能体生成的计划示例。</p>
+
+<blockquote>
+<strong>RetroForge —— 2D 复古游戏制作器</strong><br><br>
+<strong>概述</strong><br>
+RetroForge 是一个基于网页的创意工作室，用于设计和构建 2D 复古风格的电子游戏。它把经典 8 位和 16 位游戏美学的怀旧魅力，与现代、直观的编辑工具结合起来——让从业余创作者到独立开发者的任何人，都能在不写传统代码的情况下把游戏创意变为现实。该平台提供四个集成的创意模块：用于设计游戏世界的基于瓦片的关卡编辑器、用于制作视觉素材的像素画精灵编辑器、用于定义游戏逻辑的可视化实体行为系统，以及用于实时玩法测试的即时可玩测试模式。通过在全流程中编织 AI 辅助（由 Claude 驱动），RetroForge 加速了创作过程——帮助用户通过自然语言交互来生成精灵、设计关卡和配置行为。RetroForge 面向那些热爱复古游戏美学、但又想要现代便利的创作者。无论是重现童年的平台跳跃游戏、RPG 还是动作游戏，或是在复古约束内创造全新的体验，用户都可以快速做原型、可视化地迭代，并与他人分享自己的作品。<br><br>
+<strong>特性</strong><br>
+<strong>1. 项目仪表盘与管理</strong><br>
+项目仪表盘是 RetroForge 中所有创意工作的大本营。用户需要一种清晰、有条理的方式来管理他们的游戏项目——创建新项目、回到进行中的工作，并一眼就能了解每个项目包含什么。<br>
+用户故事：作为用户，我想要：- 用名称和描述创建一个新游戏项目，以便我开始设计我的游戏 - 看到我所有现有项目以可视化卡片形式展示，显示项目名称、最后修改日期和缩略图预览，以便我快速找到并继续我的工作 - 打开任意项目进入完整的游戏编辑器工作区，以便我处理我的游戏 - 删除我不再需要的项目，并带确认对话框以防意外，以便我保持工作区整洁 - 复制一个现有项目作为新游戏的起点，以便我复用之前的工作<br>
+项目数据模型：每个项目包含：项目元数据（名称、描述、创建/修改时间戳）、画布设置（分辨率：如 256x224、320x240 或 160x144）、瓦片尺寸配置（8x8、16x16 或 32x32 像素）、调色板选择，以及所有关联的精灵、瓦片集、关卡和实体定义……
+</blockquote>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.anthropic.com/engineering/harness-design-long-running-apps" target="_blank" rel="noopener">原文：Harness design for long-running application development — Anthropic Engineering</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
