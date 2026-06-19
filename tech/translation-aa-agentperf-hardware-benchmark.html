@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AA-AgentPerf 首批结果：面向 Agent 时代的硬件基准测试 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">AI 硬件</span>
+    <span class="tag">Agent</span>
+  </div>
+  <h1>AA-AgentPerf 首批结果：面向 Agent 时代的硬件基准测试</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-19</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>First results from AA-AgentPerf: the hardware benchmark for the agent era</div>
+  <div class="source-row"><strong>作者</strong>Artificial Analysis 团队（未单独署名）</div>
+  <div class="source-row"><strong>来源</strong>Artificial Analysis</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">https://artificialanalysis.ai/articles/aa-agentperf</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026 年 6 月 12 日</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  Artificial Analysis 推出了首个面向 Agent 工作负载的推理硬件基准测试 AA-AgentPerf。它不再用固定长度的合成请求来刷峰值吞吐，而是回放真实的编码 Agent 轨迹，衡量在满足生产级服务质量的前提下，一套系统最多能同时服务多少个 Agent。其核心指标「每兆瓦 Agent 数（Agents per Megawatt）」抓住了功耗受限时代 AI 基建最关心的问题：每一兆瓦电力能撑起多少个 Agent。本文配图均为原文中的交互式图表，文中以中文图注说明，可点击各处链接到原文查看动态版本。
+</div>
+
+<p>AA-AgentPerf 是首个面向智能体（agentic）的推理基准测试：它回放真实的编码 Agent 轨迹，衡量在满足生产级服务等级目标的前提下，一套系统能够同时服务多少个并发 Agent。它的核心指标是<strong>每兆瓦 Agent 数（Agents per Megawatt）</strong>——即一套加速器平台每消耗一兆瓦电力所能服务的 Agent 数量上限。在一个功耗受限的世界里，这是衡量 AI 基建最重要的指标。在首批结果中，NVIDIA 的 Blackwell 系统领先，相比 Hopper 展现出显著的代际飞跃。机架级（rack-scale）部署在算力和功耗效率两方面的规模优势与分离式（disaggregated）推理优势也十分明显。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">实时基准测试 · 现已开放提交</div>
+  AA-AgentPerf 是一个持续更新的实时基准测试，目前已开放配置提交。
+</div>
+
+<h2 id="s1">面向 Agent 时代的基准测试</h2>
+
+<p>2026 年的主流 AI 工作负载，与那些推理基准测试当初为之设计的工作负载毫无相似之处。编码 Agent 会运行数百个回合，把推理与工具调用、代码编辑交织在一起，上下文动辄超过 10 万 token。把它们服务好，与服务聊天对话是完全不同的工程问题：长而共享的前缀让 KV 缓存复用变得有利可图，成批的短输出给调度器带来压力，而用户仍然期望响应迅速、可交互的速度。</p>
+
+<p>大多数硬件基准测试至今仍在以固定的输入、输出长度测量合成请求，并且关闭了生产部署所依赖的各项优化。买家真正需要的那个数字——这套系统能以用户可接受的体验服务多少个 Agent？——从未出现。而在一个 AI 算力日益受可用电力与能源成本约束的世界里，这个问题还带着一个分母。AA-AgentPerf 的核心指标「每兆瓦 Agent 数」衡量的，正是在满足每个 Agent 的输出速度与首 token 时延（time-to-first-token）目标的前提下，一套系统每兆瓦实测功耗能支撑多少个同时运行的 Agent。</p>
+
+<p>AA-AgentPerf 是首个面向智能体的推理基准测试。它针对被测系统回放真实的编码 Agent 轨迹，并找出在满足由市场推导出的性能目标的前提下，该系统能够持续支撑的最大并发 Agent 数。它历经一年时间，与推理服务商、AI 加速器厂商、开发者和企业买家共同打磨而成。它的目标，是成为任何为智能体工作负载采购或租赁 AI 硬件者的权威参考。</p>
+
+<figure>
+  <figcaption>【原文交互图】更多并发 Agent 意味着更高的总吞吐，但每个 Agent 的输出速度更慢。AA-AgentPerf 精确测量出每套系统在这一权衡中的拐点所在。（动态演示见 <a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">原文</a>）</figcaption>
+</figure>
+
+<h3>真实的编码 Agent 轨迹</h3>
+
+<p>AA-AgentPerf 中每个被模拟的 Agent，都在执行一条真实的编码 Agent 轨迹——这些轨迹由 Agent 在公开代码仓库中解决 issue 时生成，使用的是开启了推理能力的顶级开放权重模型。会话最长运行 200 个回合，序列长度可超过 10 万 token：</p>
+
+<ul>
+  <li>每个请求的输入长度从约 5K 到约 131K token 不等，均值约 27K——其增长主要来自工具输出和累积的历史记录，而非提示词本身</li>
+  <li>各回合的输出长度差异很大：Agent 大多发出简短的工具调用和代码编辑，其间穿插着较长篇幅的推理</li>
+  <li>覆盖 12 种以上编程语言，依据源代码仓库的主要语言划分</li>
+  <li>测试集保持私有。参与者会收到一份具代表性的调优子集用于配置验证；完整数据集则保留不公开，以防止针对基准测试的定向优化</li>
+</ul>
+
+<figure>
+  <figcaption>【原文交互图】示意会话——回合结构与 token 计数依据 AA-AgentPerf 数据集建模（输入 1K–131K token、均值约 27K · 输出中位数约 150 token、P95 约 2K）。上下文逐回合累积叠加：前缀由 KV 缓存提供，只有新 token 需要预填充（prefill），会话规模随之增长到超过 10 万 token。（动态演示见 <a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">原文</a>）</figcaption>
+</figure>
+
+<p>正是这种形态让 Agent 的服务变得困难，也正是均匀长度的合成基准测试完全忽视的地方。工具结果让上下文急剧膨胀，输出却往往只有几百个 token，而同一段前缀在一个又一个回合中反复出现。一套系统的 KV 缓存行为、调度器和内存层级结构，决定了它在这种模式下是如鱼得水还是彻底崩溃。</p>
+
+<h2 id="s2">测量现代生产技术栈</h2>
+
+<p>AA-AgentPerf 是首个允许使用实验室和推理服务商在生产中实际运行的各项优化的推理基准测试：KV 缓存复用、推测解码（speculative decoding）以及分离式预填充/解码（disaggregated prefill/decode）。关闭这些优化的基准测试，测量的是一种没人会真正上线的部署方式；允许它们，才能反映真实部署应有的样子。这也让 AA-AgentPerf 成为一个理解每一项新软件、新硬件进展影响的工具，而不仅仅是衡量每一颗新芯片。准确性验证会控制质量损失，因此任何优化都不能以牺牲输出质量为代价来换取容量。</p>
+
+<p>允许生产级优化，意味着服务配置（serving configuration）成为基准测试中举足轻重的一环。在给定系统上服务一个模型的方案空间极其宽广——推理框架及其版本、并行策略、推测解码的设置、分离式拓扑结构，以及数十项调优决策——而且变化飞快：自 DeepSeek V4 Pro 发布以来，我们看到针对它的服务配置几乎每天都在改进。</p>
+
+<p>结果通过两条路径登上排行榜，且每条公布的结果都会注明来源：要么由厂商为自家系统提交经过调优的配置，由我们运行并验证；要么在尚无厂商提交时，由 Artificial Analysis 在内部自行构建配置。在 DeepSeek V4 Pro 的首发结果中，B300 与 GB300 的配置由 NVIDIA 提交，而 H200 与 MI355X 的结果运行的是 Artificial Analysis 构建的配置。每个数字背后完整的服务配置，以及它由谁提交，都可在配置浏览器中查阅。</p>
+
+<p>AA-AgentPerf 本次首发的这些数字，应当被解读为一条快速演进的前沿曲线上的一个快照，正如 Artificial Analysis 报告的其他实时性能基准测试结果一样。这些是真实的结果，反映了在所披露配置下今天可达到的性能，但我们提醒读者：每套系统都可能存在不等量的进一步提升空间，并且我们预期随着更多厂商提交配置，结果还会继续攀升。尤其是 MI355X 和 H200 的提升空间可能更大，因为它们的配置是由 Artificial Analysis 团队而非厂商团队提交的。</p>
+
+<h2 id="s3">在真实服务等级下衡量容量</h2>
+
+<p>峰值吞吐很容易被注水：只要不断堆叠并发量，直到每个 Agent 都慢如蜗牛即可。AA-AgentPerf 反其道而行——它固定服务等级，然后追问一套系统在维持该等级的前提下最多能扩展到多远。性能目标取自 Artificial Analysis 的无服务器（serverless）API 基准测试数据，即当今市场上真实存在的各档服务等级。速度与时延按请求逐一测量：P25 输出速度和 P95 首 token 时延，在一个测试阶段的全部请求上计算得出。</p>
+
+<h3>首发时的服务等级档位</h3>
+
+<p><strong>DeepSeek V4 Pro（max）</strong></p>
+
+<table>
+  <thead>
+    <tr><th>档位</th><th>每 Agent 输出速度</th><th>P95 首 token 时延（TTFT）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tier 1</td><td>20 token/s</td><td>≤ 10 秒</td></tr>
+    <tr><td>Tier 2</td><td>60 token/s</td><td>≤ 5 秒</td></tr>
+    <tr><td>Tier 3</td><td>180 token/s</td><td>≤ 3 秒</td></tr>
+  </tbody>
+</table>
+
+<p><strong>gpt-oss-120b（high）</strong>（即将推出）</p>
+
+<table>
+  <thead>
+    <tr><th>档位</th><th>每 Agent 输出速度</th><th>P95 首 token 时延（TTFT）</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tier 1</td><td>100 token/s</td><td>≤ 5 秒</td></tr>
+    <tr><td>Tier 2</td><td>250 token/s</td><td>≤ 3 秒</td></tr>
+    <tr><td>Tier 3</td><td>500 token/s</td><td>≤ 2 秒</td></tr>
+    <tr><td>Tier 4</td><td>2,000 token/s</td><td>≤ 1 秒</td></tr>
+  </tbody>
+</table>
+
+<figure>
+  <figcaption>【原文交互图】每套系统在每个档位上都会得到一个结果：放宽速度目标，就能腾出容量服务更多 Agent。图中所示档位目标对应 DeepSeek V4 Pro；Agent 数量为示意值（例如：8 个 Agent 各自维持在 ≥ 300 token/s）。（动态演示见 <a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">原文</a>）</figcaption>
+</figure>
+
+<p>对每个档位，先以指数式爬坡、再以二分搜索的方式，找出系统在不违反目标的前提下能维持的最大并发量；各项指标在稳态窗口内计算，该窗口要求所有 Agent 都已活跃至少 30 秒。</p>
+
+<figure>
+  <figcaption>【原文交互图】容量搜索的实际过程：爬坡、探测，并收敛到某一服务等级下所支持的最大并发量（示例中最大 Agent 数 = 11，SLO 阈值为 100 token/s）。（动态演示见 <a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">原文</a>）</figcaption>
+</figure>
+
+<h3>首批结果揭示了什么</h3>
+
+<p>第一波结果覆盖了运行 DeepSeek V4 Pro 的 NVIDIA 与 AMD 系统，测量范围从单颗加速器一直到整机架，gpt-oss-120b 的结果随后跟进。其中有三点发现尤为突出：</p>
+
+<h4>01 · 机架级展现出其效率</h4>
+<p>其与生俱来的规模优势，以及对推理进行激进分离的能力，相比单节点在纯算力和「每兆瓦 Agent 数」上都带来了明显增益。</p>
+
+<h4>02 · 一次代际飞跃</h4>
+<p>从 Hopper 迈向 Blackwell，在系统能够持续支撑的并发 Agent 数上带来了阶跃式提升——无论是原始容量还是「每兆瓦 Agent 数」皆是如此。</p>
+
+<h4>03 · 真实世界的优化至关重要</h4>
+<p>采用不同的内核（kernel）优化和服务配置设计，会显著改变结果，这再次印证了对整个技术栈进行优化的必要性。</p>
+
+<p>下文每个结果都按「每加速器、每系统、每兆瓦」三种口径做了归一化，以便公平比较规模相差悬殊的系统。其中「每兆瓦」数字是基于负载下实测的加速器功耗计算的，而非额定热设计功耗（TDP）。</p>
+
+<p>需要注意的是，由于 DeepSeek V4 Pro 在 AMD 系统上的内核优化和配置设计尚处于相对早期阶段，我们预期 AMD 的性能在近期会有显著改进。我们期待与所有厂商合作，长期跟踪其性能随时间的提升。</p>
+
+<h2 id="s4">探索 DeepSeek V4 Pro 的结果</h2>
+
+<p>下方图表是 AA-AgentPerf 排行榜的实时视图——与硬件基准测试看板的数据相同，随着新结果落地而更新。你可以在不同的归一化视角（每加速器、每系统、每兆瓦）之间切换以查看 Agent 容量，并深入查看每个数字背后的容量搜索过程。</p>
+
+<p><strong>Agent 容量</strong>：每套系统在每个输出速度目标下所能维持的并发 Agent 数与输出吞吐。</p>
+
+<figure>
+  <figcaption>【原文交互图】每兆瓦加速器功耗的最大并发 Agent 数：对比各系统（GB300-NVL72、B300 ×8、MI355X ×8、H200 ×8）在「每兆瓦加速器功耗的并发 Agent 数」与「每次查询的 P25 输出速度（token/s）」之间的关系。各系统配置示意——H200：TP8 / EAGLE；MI355X：TP8 / radix 缓存 / 不启用推测解码；B300：分离式 1p1d / TEP4 ctx+gen / MTP3；GB300：分离式 6p1d / ctx TP4 / gen DEP16 / MTP3、分离式 6p1d / ctx TP4 / gen DEP8 / MTP3。功耗归一化（每兆瓦）：数值按 GPU 功耗（兆瓦）归一化，基于实测的纯 GPU 功耗（GPU 芯片加 HBM，不含 CPU、网络及散热开销）。（动态图表见 <a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank" rel="noopener">原文</a>）</figcaption>
+</figure>
+
+<h2 id="s5">一个实时、开放提交的基准测试</h2>
+
+<p>AA-AgentPerf 是一个实时基准测试。用于评测的配置提交现已开放，并随着新硬件、新软件栈和新模型版本的出现而滚动发布结果。厂商也可以为已经登榜的系统提交改进后的配置；随着服务软件的进步，已公布的结果会更新，以反映真实世界性能的演进。该基准测试旨在公平地评估各类系统——从单颗加速器到整机架，从纯 DRAM 架构到纯 SRAM 设计，以及介于两者之间的一切。</p>
+
+<p>如果你是硬件厂商或推理服务商，希望让自己的系统接受评测，请联系 <a href="mailto:agentperf@artificialanalysis.ai">agentperf@artificialanalysis.ai</a>。我们将持续扩展模型覆盖、系统覆盖与工作负载广度。</p>
+
+<h2 id="s6">下一步计划</h2>
+
+<p>AA-AgentPerf 将持续升级。已规划的扩展包括：</p>
+
+<ul>
+  <li><strong>更长的上下文长度</strong>——将轨迹扩展至 100 万 token</li>
+  <li><strong>更广的模型覆盖</strong>——在所有已提交的系统上给出 gpt-oss-120b 结果，后续还会加入更多模型</li>
+  <li><strong>更广的硬件覆盖</strong>——更多 NVIDIA 与 AMD 系统的结果，以及更多加速器架构</li>
+  <li><strong>工具执行性能</strong>——把执行 Agent 工具调用所需的 CPU 性能纳入基准测试</li>
+  <li><strong>随时间变化的结果</strong>——跟踪各系统的数字如何随服务配置和框架的进步而提升</li>
+  <li><strong>对 token 经济性与定价的更深入分析</strong>——包括每美元/小时租赁成本对应的 Agent 容量、每任务成本以及总拥有成本（TCO）</li>
+</ul>
+
+<h2 id="s7">进一步了解</h2>
+
+<ul>
+  <li>完整结果、各归一化视角以及服务配置均实时呈现在硬件基准测试页面，随新结果落地而更新</li>
+  <li>AA-AgentPerf 方法论详细记录了数据集、服务等级档位、测试执行流程与各项指标</li>
+  <li>配置浏览器列出了每个已公布结果背后完整的服务配置</li>
+  <li>提交评测请联系：<a href="mailto:agentperf@artificialanalysis.ai">agentperf@artificialanalysis.ai</a></li>
+</ul>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
