@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>改写工具说明书：你的 Agent 调用老翻车，问题不在模型，在那段给人看的文档 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Agent</span>
+    <span class="tag">Tool Use</span>
+    <span class="tag">LLM</span>
+  </div>
+  <h1>改写工具说明书：你的 Agent 调用老翻车，问题可能不在模型，在那段给人看的文档</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-17</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、真凶不是模型，是那段给人看的说明书</a>
+  <a href="#s2">二、五种"坑"：工具说明书到底差在哪</a>
+  <a href="#s3">三、老办法的死胡同：为什么"试一遍再改"行不通</a>
+  <a href="#s4">四、Trace-Free+：把"试出来的经验"教成"看一眼就会"</a>
+  <a href="#s5">五、成绩单：数字到底好看在哪</a>
+  <a href="#s6">六、写在最后：环境工程，才是 Agent 的下半场</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>我先说一个可能会冒犯很多人的观点：<strong>你的 Agent 调用工具老出错，十有八九不是模型不够聪明，而是你喂给它的那段工具说明书，本来就是写给人看的。</strong></p>
+
+<p>这话听起来有点像甩锅。模型那么贵、参数那么大、跑分那么高，怎么会栽在一段文档上？</p>
+
+<p>但你冷静想想：你给 Agent 接了一个天气 API，文档里写着"<em>获取指定地点的天气</em>"。地点怎么传？经纬度还是城市名？城市名要中文还是英文拼音？纬度的合法范围是多少？这些信息，文档全没写——因为当年写这份文档的工程师，默认读它的是另一个工程师，看不懂大不了点开源码翻一翻。</p>
+
+<p>可 Agent 不会翻源码。它只能盯着这段话猜。猜对了,任务完成;猜错了,你在日志里看到一行刺眼的 <code>400 Bad Request</code>,然后开始怀疑是不是该换个更大的模型。</p>
+
+<p>2026 年 2 月,来自 Intuit AI Research 的一篇论文——<em>《Learning to Rewrite Tool Descriptions for Reliable LLM-Agent Tool Use》</em>——把这件事捅破了:与其没完没了地调教 Agent,不如回头把工具的"说明书"重写一遍,改成专门给机器看的版本。他们做出来的方法叫 <strong>Trace-Free+</strong>,在工具数量飙到 150 个以上时,把"任务成功率"硬生生拉高了 <strong>60.89%</strong>。</p>
+
+<p>接下来我们就一层层揭开:Agent 调用工具,到底是怎么翻车的?这篇论文又凭什么说,改文档比改模型更划算?</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、真凶不是模型，是那段给人看的说明书</h2>
+
+<p>我们先把"Agent 调用工具"这件事拆开看。</p>
+
+<p>一个 Agent 要完成"帮我订一张明天去上海的高铁票",它脑子里其实在做三道选择题:第一,我手上有几十上百个工具,该挑哪个?第二,挑中了"购票"这个工具,它要哪些参数?第三,这些参数我该填什么值?</p>
+
+<p>这三步,全靠一样东西支撑——<strong>工具描述(tool description)</strong>。也就是每个工具配的那段自然语言说明,加上参数的 schema(名字、类型、是否必填)。</p>
+
+<p>问题在于,这些描述几乎全是<strong>"人类中心"</strong>的。它们诞生于 API 文档,服务对象是写代码的人。人有什么?人有常识、有上下文、有 Stack Overflow、有点开源码的能力。所以文档可以偷懒,可以含糊,可以"你懂的"。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为 Agent 工具调用的瓶颈在"推理能力"——模型不够聪明,不会规划。但这篇论文给出的判断恰恰相反:很多失败根本轮不到推理,在"读懂工具"这一步就已经崩了。<strong>环境的质量(也就是工具接口写得好不好),和 Agent 自身的推理能力一样关键。</strong>
+</div>
+
+<p>论文作者打了个特别精准的比方:工具描述就是 Agent 和外部世界之间的<strong>接口契约</strong>。契约写得含糊,再聪明的执行方也会违约。这不是能力问题,是信息问题——你压根没把规则告诉它。</p>
+
+<p>更要命的是规模。当工具只有三五个时,模型还能连蒙带猜。可一旦工具池涨到 100 个、150 个,几十个功能相近的接口摆在一起,描述里那点含糊就会被无限放大。挑错工具、填错参数,像滚雪球一样越滚越大。</p>
+
+<p>所以这篇论文的第一个洞察就特别反直觉:<strong>想让 Agent 更可靠,别急着换模型,先去看看你给它的工具说明书,是不是还停留在"给人看"的年代。</strong></p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、五种"坑"：工具说明书到底差在哪</h2>
+
+<p>光说"文档写得烂"太虚了。这篇论文最扎实的地方,是把"烂"拆成了五种<strong>具体的、可复现的坑</strong>。我们一个个看,你会发现每一个都似曾相识。</p>
+
+<p><strong>坑一:不知道什么时候该用它(工具选择边界)。</strong>描述只说了这个工具"能干什么",没说它"什么时候不该用"。结果两个功能相似的接口摆在一起,Agent 反复横跳,选错了还浑然不觉。</p>
+
+<p><strong>坑二:参数格式没说清(参数约束)。</strong>这是重灾区。论文里举了一个 Walk Score API 的例子:它要一个纬度参数,但文档没告诉你纬度的合法范围是 <code>-90 到 90</code>;它还有个"是否计算骑行得分"的参数,文档没说这里必须传字符串 <code>'1'</code>,而不是布尔值 <code>true</code>。Agent 想当然填了个 <code>true</code>,接口直接报错。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  这种"参数格式陷阱"听着像小事,但在多步任务里是致命的。一个 Agent 要连续调用三四个工具才能完成任务,只要中间任何一步因为参数格式挂掉,整条链路就断了——前面做对的全白费。这正是为什么工具一多,成功率断崖式下跌。
+</div>
+
+<p><strong>坑三:不知道参数从哪来(跨工具依赖)。</strong>真实任务很少是单个工具搞定的。比如先调"搜索电影"拿到一个 <code>movie_id</code>,再用这个 id 去调"获取演员表"。但文档常常不写:这个 id 参数,得是上一个工具的输出。Agent 不知道,只能凭空捏一个,然后……你懂的。</p>
+
+<p><strong>坑四:不知道它会吐回来什么(输出描述缺失)。</strong>调完一个工具,它返回的是什么?有哪些字段?类型是什么?如果描述不说,Agent 就没法把这一步的输出,接到下一步的输入上。链条还是断。</p>
+
+<p><strong>坑五:参数之间还有暗规则(跨参数依赖)。</strong>有些参数是互斥的——填了 A 就不能填 B;有些是成对出现的——要么都填,要么都不填。这种"潜规则"几乎从不写进文档,但违反了就报错。</p>
+
+<p>看完这五条,你大概明白了:这些坑没有一个是"模型笨"造成的。它们全是<strong>信息缺失</strong>。文档里本该有、却没有的信息,逼着 Agent 去赌。</p>
+
+<p>论文里有一个特别传神的<strong>前后对比</strong>。有个工具原本的描述是:</p>
+
+<blockquote>
+"Fetches the year a particular scientific work was published."(获取某部科学著作的出版年份。)
+</blockquote>
+
+<p>看着没毛病吧?但 Agent 一用就翻车。因为它会把"万有引力定律"这种<strong>俗称</strong>直接当标题传进去。而这个 API 要的是著作的<strong>完整正式标题</strong>——《Philosophiæ Naturalis Principia Mathematica》(自然哲学的数学原理)。改写后的描述,会明确告诉 Agent:这里要传完整正式书名,不要传通俗叫法。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左:原始描述 -->
+    <rect class="group-box" x="10" y="20" width="300" height="180"/>
+    <text class="group-label" x="24" y="42">改写前(给人看)</text>
+    <rect class="node-rect-red" x="40" y="60" width="240" height="44"/>
+    <text class="node-label" x="160" y="82">"获取某著作的出版年份"</text>
+    <rect class="node-rect-gray" x="40" y="128" width="240" height="52"/>
+    <text class="node-sublabel" x="160" y="148">Agent 传入:"万有引力定律"</text>
+    <text class="node-sublabel" x="160" y="166" fill="#ef4444">→ 查无此书,失败</text>
+    <!-- 箭头 -->
+    <line class="arrow-line-blue" x1="320" y1="110" x2="388" y2="110"/>
+    <text class="arrow-label" x="354" y="100">改写</text>
+    <!-- 右:改写后 -->
+    <rect class="group-box" x="396" y="20" width="294" height="180"/>
+    <text class="group-label" x="410" y="42">改写后(给机器看)</text>
+    <rect class="node-rect-green" x="420" y="60" width="248" height="44"/>
+    <text class="node-label" x="544" y="76">"...需传入完整正式标题,</text>
+    <text class="node-label" x="544" y="92">而非俗称"</text>
+    <rect class="node-rect-gray" x="420" y="128" width="248" height="52"/>
+    <text class="node-sublabel" x="544" y="148">Agent 传入:Principia Mathematica</text>
+    <text class="node-sublabel" x="544" y="166" fill="#10b981">→ 命中,成功</text>
+  </svg>
+  <div class="diagram-caption">同一个工具,描述补上"参数格式"这一句,成败两重天</div>
+</div>
+
+<p>你看,改动其实很小——就补了一句话。但对 Agent 来说,这一句话的差别,就是成功和失败的差别。<strong>工具描述不是文档,是 Agent 的"操作规程";少写一行,就可能多崩一次。</strong></p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、老办法的死胡同：为什么"试一遍再改"行不通</h2>
+
+<p>"那简单啊,"你可能会说,"让 Agent 去试,试错了把错误信息记下来,再回头改文档不就行了?"</p>
+
+<p>恭喜,你想到的正是之前主流的做法。学术上有个词叫<strong>execution trace(执行轨迹)</strong>:让 Agent 真刀真枪跑一遍任务,记录下它每一步调了什么、传了什么、报了什么错、最后成没成。然后从这些"踩坑记录"里提炼规律,反过来优化工具描述。</p>
+
+<p>这套思路对不对?对。有用吗?有用。但它有两个要命的前提。</p>
+
+<p><strong>第一,你得先有"试错"的机会。</strong>可现实里太多场景压根不允许试。一个刚上线的新工具,没有任何历史调用记录,这叫<strong>冷启动(cold-start)</strong>;一个涉及用户隐私、金融交易的接口,你不可能让 Agent 拿真实数据去反复试,这叫<strong>隐私约束</strong>。这两种情况下,执行轨迹根本不存在。巧妇难为无米之炊。</p>
+
+<p><strong>第二,这套流程贵得离谱,而且不通用。</strong>论文点了名:旧方法要为<strong>每一个</strong>新工具,从头跑一遍多阶段流水线——合成测试查询、让 Agent 执行、标注轨迹、再用大模型提炼。来一个新工具,整套再来一遍。一个工具一个工具地优化,完全没法规模化。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">关键区别</div>
+  这里有个特别容易被忽略的点:旧方法是"<strong>每个工具单独优化</strong>",学到的经验绑死在那个工具上,换个没见过的新工具就抓瞎。而这篇论文要做的,是让模型学会一种"<strong>可迁移的通用直觉</strong>"——看到一个从没见过的工具,光读它的 schema,就知道该怎么把描述改好。这是"治一个病"和"学会看病"的区别。
+</div>
+
+<p>所以矛盾就摆在这了:执行轨迹里藏着最宝贵的"实战经验",但部署的时候,你恰恰最可能拿不到它。</p>
+
+<p>怎么办?能不能<strong>在训练阶段把轨迹的经验榨干,到了部署阶段就彻底不依赖它</strong>?</p>
+
+<p>这,就是 Trace-Free+ 这个名字的由来——"Trace-Free",无轨迹。它要的就是:用的时候,不需要任何执行轨迹。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、Trace-Free+：把"试出来的经验"教成"看一眼就会"</h2>
+
+<p>要理解 Trace-Free+ 的巧妙,得先看它"笨"的版本长什么样。</p>
+
+<p>最朴素的想法叫 <strong>Trace-Free</strong>(没有那个加号):既然部署时拿不到轨迹,那训练时我也不用轨迹,只拿"工具 schema → 好描述"这种干巴巴的样本来教。结果呢?模型确实学会了"无轨迹",但也<strong>白白扔掉了执行轨迹里那些最珍贵的实战信号</strong>——哪些参数会被填错、哪种格式会报错、哪两个工具容易混。这些金子,全没了。</p>
+
+<p>Trace-Free+ 那个"+",加的就是<strong>课程学习(curriculum learning)</strong>。这个词听着唬人,其实道理朴素得像你小时候学骑车。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">打个比方</div>
+  教小孩骑车,你不会一上来就撒手。先装辅助轮(扶着),再单手扶,再虚扶,最后彻底放手。每一步都在悄悄减少"外部支撑",逼孩子自己找平衡。<strong>课程学习就是给模型装辅助轮:训练初期多给执行轨迹这根"拐杖",然后一点点抽走,到最后纯靠 schema 自己生成好描述。</strong>
+</div>
+
+<p>具体怎么走?论文把训练分成了一条<strong>由"扶"到"放"</strong>的坡道:</p>
+
+<ul>
+  <li><strong>训练前期(辅助轮阶段):</strong>大量喂带执行轨迹的样本。模型在这里看清楚——这个失败是怎么发生的,那个成功又对应了描述里的哪句话。它在学"病例"。</li>
+  <li><strong>训练中期(逐渐撒手):</strong>慢慢调高"无轨迹样本"的比例。拐杖一点点抽走,模型被迫开始自己琢磨规律,而不是死记某条轨迹的修法。</li>
+  <li><strong>训练后期(彻底放手):</strong>样本几乎全是无轨迹的。模型必须只看一个工具的 schema,就生成出高质量的描述。这时候它学到的,已经不是"某个工具的修法",而是"<strong>怎么把任何工具的描述写好</strong>"的通用直觉。</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- 阶段1 -->
+    <rect class="node-rect-blue" x="20" y="80" width="180" height="80"/>
+    <text class="node-label" x="110" y="106">前期 · 多给轨迹</text>
+    <text class="node-sublabel" x="110" y="128">从"踩坑记录"里</text>
+    <text class="node-sublabel" x="110" y="144">学失败与成功的映射</text>
+    <line class="arrow-line-blue" x1="208" y1="120" x2="258" y2="120"/>
+    <!-- 阶段2 -->
+    <rect class="node-rect-purple" x="266" y="80" width="180" height="80"/>
+    <text class="node-label" x="356" y="106">中期 · 逐步撤轨迹</text>
+    <text class="node-sublabel" x="356" y="128">无轨迹样本占比上升</text>
+    <text class="node-sublabel" x="356" y="144">逼模型自己抽象规律</text>
+    <line class="arrow-line-blue" x1="454" y1="120" x2="504" y2="120"/>
+    <!-- 阶段3 -->
+    <rect class="node-rect-green" x="512" y="80" width="188" height="80"/>
+    <text class="node-label" x="606" y="106">后期 · 几乎无轨迹</text>
+    <text class="node-sublabel" x="606" y="128">只看 schema</text>
+    <text class="node-sublabel" x="606" y="144">生成通用好描述</text>
+    <!-- 底部标注 -->
+    <text class="arrow-label" x="110" y="195">辅助轮</text>
+    <text class="arrow-label" x="356" y="195">单手扶</text>
+    <text class="arrow-label" x="606" y="195">放手骑</text>
+    <line class="arrow-line" x1="20" y1="210" x2="700" y2="210"/>
+    <text class="arrow-label" x="360" y="228">训练进程:监督信号从"轨迹丰富"平滑过渡到"无轨迹"</text>
+  </svg>
+  <div class="diagram-caption">Trace-Free+ 的课程学习:像教孩子骑车一样,逐步抽走"轨迹"这根拐杖</div>
+</div>
+
+<p>这一招的精髓在于:它<strong>把成本全压到了离线的训练阶段</strong>。模型一旦训好,部署时面对一个全新工具,只需要读 schema,瞬间生成好描述——不跑任务、不要轨迹、不碰隐私数据、推理成本极低。该出的力,在出厂前就出完了。</p>
+
+<p>那训练用的"病例库"从哪来?这是论文另一块硬功夫——他们专门搭了一套数据流水线:</p>
+
+<ul>
+  <li><strong>第一步,种子工具标注:</strong>从 ToolBench 里捞出 <strong>5,576 个真实世界的 RESTful API</strong>,用一个"智能标注器"判断每个接口是死是活,再切成训练集(991 个工具)和测试集(4,585 个工具)。</li>
+  <li><strong>第二步,带依赖的查询合成:</strong>这步是关键。他们分析 API 的真实调用历史,找出工具之间的"前后依赖",再让大模型生成那种<strong>必须串起 3 个以上工具</strong>才能完成的多步任务。因为只有多步任务,才逼得出"跨工具依赖"这种深层的坑。</li>
+  <li><strong>第三步,两阶段描述改进:</strong>先套用一套通用文档规范,得到初版改写(论文里叫 D₁);再结合从轨迹里提炼的规则(用一个叫 RIMRULE 的框架),精修出终版(D₂)。</li>
+</ul>
+
+<p>顺便说一句,负责"写描述"的模型,用的是 <strong>Qwen3-4B-Instruct</strong>——一个只有 40 亿参数的小模型。这事本身就很有信息量:改写工具描述,不需要动用最顶级的大模型。<strong>方法对了,小模型也能干出漂亮活。</strong></p>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、成绩单：数字到底好看在哪</h2>
+
+<p>方法再漂亮,也得拿数字说话。论文在两个公认的硬核基准上做了测试,我挑最能说明问题的几个数给你。</p>
+
+<p>第一个是 <strong>StableToolBench</strong>,专门考多步任务(G2+G3 这种需要串多个工具的题)。结果是这样的:</p>
+
+<table>
+<thead>
+<tr><th>工具描述版本</th><th>任务成功率</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>D₀(原始,给人看的)</td><td>33.5%</td><td>未经改写的人类文档</td></tr>
+<tr><td>D₁(通用规范改写)</td><td>41.5%</td><td>套通用规范的初版</td></tr>
+<tr><td><strong>Trace-Free+</strong></td><td><strong>44.6%</strong></td><td>课程学习生成的终版</td></tr>
+</tbody>
+</table>
+
+<p>从 33.5% 到 44.6%,看着是 11 个百分点,但这是<strong>完全没碰 Agent、没换模型</strong>的前提下,纯靠改文档拿到的。你想想,这相当于免费给你的 Agent 升了个级。</p>
+
+<p>第二个基准 <strong>RestBench</strong>(用的是 TMDB 电影数据库)更夸张:原始描述 D₀ 的成功率是 <strong>49.5%</strong>,Trace-Free+ 直接干到 <strong>74.9%</strong>——<strong>相对提升 51.3%</strong>。</p>
+
+<p>但真正让我觉得这篇论文有分量的,是<strong>"规模压力测试"</strong>。前面说过,工具一多,含糊的描述会被无限放大。论文就专门把工具池撑到 <strong>150 个以上</strong>,看会发生什么:</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  当候选工具超过 150 个,Trace-Free+ 让"准确率随工具数增加而下滑"的<strong>退化幅度减少了 29.23%</strong>,同时把平均任务成功率<strong>拉高了 60.89%</strong>。换句话说,工具越多、场景越接近真实生产环境,这套方法的价值越大。
+</div>
+
+<p>这点特别重要。Demo 里挂三五个工具谁都行,可真实的企业 Agent,工具池动辄几十上百。<strong>能扛住规模,才是能上生产的硬通货。</strong></p>
+
+<p>还有两个发现我得提一句。一是<strong>跨域泛化</strong>:在一个领域训出来的描述改写能力,换到没见过的领域,不用重训也照样有效——这正是"学会看病"而非"治一个病"的回报。二是<strong>互补性</strong>:改写工具描述和微调 Agent 本身,这两条路不打架。你把 Agent 也调好了,再叠加上改写后的描述,还能再涨一截。</p>
+
+<p>所以结论很清楚:改工具描述,不是改模型的"平替",而是一个<strong>被长期忽视、却性价比极高的独立杠杆</strong>。<strong>同样一份算力,与其全砸在模型上,不如分一点给被你冷落多年的那段文档。</strong></p>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">六、写在最后：环境工程，才是 Agent 的下半场</h2>
+
+<p>我们从头捋一遍这篇论文的逻辑链,其实特别清爽:</p>
+
+<ul>
+  <li><strong>真问题被找错了:</strong>Agent 工具调用翻车,很多时候不是模型笨,是工具描述写给人、没写给机器。</li>
+  <li><strong>坑是具体的:</strong>工具选择边界、参数格式、跨工具依赖、输出描述、跨参数依赖——五种信息缺失,每一种都能让多步任务断链。</li>
+  <li><strong>老办法走进死胡同:</strong>依赖执行轨迹,可冷启动和隐私场景压根没有轨迹,而且一个工具一套流程,贵且不通用。</li>
+  <li><strong>Trace-Free+ 的解法:</strong>用课程学习,在训练时榨干轨迹经验,在部署时彻底甩掉轨迹,让小模型学会"看一眼 schema 就把描述改好"的通用直觉。</li>
+  <li><strong>数字够硬:</strong>多步任务、超大工具池下,任务成功率最高提升 60.89%,且能跨域泛化、与 Agent 微调互补。</li>
+</ul>
+
+<p><strong>我的判断是:</strong>过去两年,所有人的目光都钉在 Agent 的"大脑"上——更强的推理、更长的上下文、更花哨的规划。但这篇论文提醒了一件被严重低估的事:<strong>Agent 表现得好不好,一半取决于它生活在一个什么样的"环境"里。</strong>而工具描述,就是这个环境最基础的地基。地基歪了,楼盖多高都晃。</p>
+
+<p>我甚至觉得,"环境工程"(Environment Engineering)会和"提示词工程""上下文工程"并列,成为 Agent 时代一个独立的工种。谁的工具接口写得对机器友好,谁的 Agent 就更稳、更省、更能扛规模。</p>
+
+<p>那就大胆做两个预测,给自己设个 deadline:</p>
+
+<ul>
+  <li><strong>2026 年底之前</strong>,主流的 Agent 框架(LangChain、LlamaIndex 这一档)里,会出现专门的"工具描述自动优化"模块——把人写的 API 文档,一键改写成 Agent 友好的版本。</li>
+  <li><strong>2027 年内</strong>,"为 Agent 优化的工具接口"会变成 MCP 这类协议的标配关注点,甚至催生专门做"工具描述质量"的工具链和评测榜。</li>
+</ul>
+
+<p>半年后、一年后回来看看,我说得对不对。</p>
+
+<p>但不管预测准不准,有一件事你今天就能做:<strong>打开你正在用的那个 Agent,挑一个它最近调错过的工具,去读读那段工具描述——用"机器读者"的眼光读。</strong>那五种坑,它占了几条?</p>
+
+<p>我赌你会发现,问题从来不在模型那边。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/abs/2602.20426" target="_blank">Learning to Rewrite Tool Descriptions for Reliable LLM-Agent Tool Use - arXiv:2602.20426</a></li>
+    <li><a href="https://arxiv.org/html/2602.20426v2" target="_blank">论文 HTML 全文(含方法细节、数据集构建与基准结果)- arXiv</a></li>
+    <li><a href="https://huggingface.co/papers/2602.20426" target="_blank">Paper page - Learning to Rewrite Tool Descriptions - Hugging Face Papers</a></li>
+    <li><a href="https://arxiviq.substack.com/p/learning-to-rewrite-tool-descriptions" target="_blank">Learning to Rewrite Tool Descriptions - ArxivIQ 解读</a></li>
+    <li><a href="https://www.alphaxiv.org/overview/2602.20426" target="_blank">论文概览与讨论 - alphaXiv</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI 一周观察（6.13–6.19）：这一周，"Agent" 从形容词变成了名词 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">AI 周报</span>
+    <span class="tag">Agent</span>
+    <span class="tag">AI 治理</span>
+  </div>
+  <h1>AI 一周观察（6.13–6.19）：这一周，"Agent" 从形容词变成了名词</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-19</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、一个判断：Agent 正在"名词化"</a>
+  <a href="#s2">二、谈判桌：AI 第一次坐进了 G7 的午餐会</a>
+  <a href="#s3">三、计费单位：Anthropic 给 Agent 单开了一个账户</a>
+  <a href="#s4">四、度量衡：硬件开始按"每兆瓦跑几个 Agent"打分</a>
+  <a href="#s5">五、暗线：出口管制挡得住模型，挡不住开源</a>
+  <a href="#s6">六、总结：三个预言，半年后回来对账</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>2026 年 6 月 17 日，法国小镇埃维昂（Évian），日内瓦湖边。</p>
+
+<p>这里在开 G7 峰会。按惯例，午餐会的桌子是留给国家元首的。但这一天，桌边坐着几张不太一样的脸：Anthropic 的 Dario Amodei、Google DeepMind 的 Demis Hassabis、还有 OpenAI 的人。</p>
+
+<p>科技公司的 CEO，第一次以"被各国领导人请来商量事"的姿态，坐进了 G7 的核心议程。CNBC 那篇报道的标题很直白——<em>"A signal of where power sits"（这是一个关于权力坐在哪里的信号）</em>。</p>
+
+<p>你可能觉得，这不就是又一场科技大佬的合影外交吗？</p>
+
+<p>不。如果你把这一周散落在各处的新闻拼起来——埃维昂的午餐会、Anthropic 在 6 月 15 日悄悄改的一行计费规则、一家测评机构发布的新基准——你会发现它们指向同一件事。</p>
+
+<p>这一周，"Agent"这个词，完成了一次词性转换：<strong>它从一个形容词（agentic AI、智能体能力），变成了一个名词（一个被计价、被测量、被监管的实体）。</strong>这才是过去七天真正发生的事。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、一个判断：Agent 正在"名词化"</h2>
+
+<p>先说我的核心判断，剩下的内容都是为它做注脚。</p>
+
+<p>过去一年，我们聊 Agent，聊的都是"能力"：它能不能自己调用工具？能不能跑几百轮不跑偏？能不能改完代码自己跑测试？这些都是<strong>形容词式</strong>的讨论——智能体"有多智能"。</p>
+
+<p>但这一周，讨论的层次变了。三件看似无关的事，同时把 Agent 当成了一个<strong>独立的对象</strong>来处理：</p>
+
+<ul>
+  <li><strong>在 G7</strong>，AI 的"自主能力"成了国家安全议题——监管者要管的不是"模型说了什么"，而是"智能体能干什么"。</li>
+  <li><strong>在 Anthropic</strong>，Agent 的用量从 6 月 15 日起被单独拎出来计费，不再和你聊天的额度混在一起。</li>
+  <li><strong>在测评圈</strong>，一个叫 AA-AgentPerf 的新基准上线，第一次用"每兆瓦电能跑多少个 Agent"来给硬件打分。</li>
+</ul>
+
+<p>监管、计费、度量——这是任何一个东西从"技术概念"变成"经济实体"的三个标志。货币是这样，电力是这样，现在轮到 Agent 了。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg">
+    <!-- 中心节点 -->
+    <rect class="node-rect-purple" x="270" y="95" width="140" height="44"/>
+    <text class="node-label" x="340" y="111">Agent</text>
+    <text class="node-sublabel" x="340" y="127">从形容词 → 名词</text>
+    <!-- 三个分支 -->
+    <rect class="node-rect-red" x="30" y="20" width="180" height="44"/>
+    <text class="node-label" x="120" y="36">被监管</text>
+    <text class="node-sublabel" x="120" y="52">G7 · 国家安全议题</text>
+    <rect class="node-rect-blue" x="470" y="20" width="180" height="44"/>
+    <text class="node-label" x="560" y="36">被计价</text>
+    <text class="node-sublabel" x="560" y="52">Agent SDK 独立额度</text>
+    <rect class="node-rect-green" x="250" y="180" width="180" height="44"/>
+    <text class="node-label" x="340" y="196">被测量</text>
+    <text class="node-sublabel" x="340" y="212">每兆瓦跑几个 Agent</text>
+    <!-- 连线 -->
+    <line class="arrow-line" x1="270" y1="110" x2="210" y2="55"/>
+    <line class="arrow-line" x1="410" y1="110" x2="470" y2="55"/>
+    <line class="arrow-line" x1="340" y1="139" x2="340" y2="180"/>
+  </svg>
+  <div class="diagram-caption">一个技术概念"成精"的三个标志：被监管、被计价、被测量</div>
+</div>
+
+<p>所以这一周不该用"哪个模型又刷新了榜单"来总结。该这么总结：<strong>智能体经济，开始有了它的法律、它的账单和它的尺子。</strong></p>
+
+<p>我们一条一条看。先去埃维昂的那张午餐桌。</p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、谈判桌：AI 第一次坐进了 G7 的午餐会</h2>
+
+<p>为什么是今年？为什么 AI 突然就成了 G7 桌上的主菜，而不是甜点？</p>
+
+<p>答案藏在一个词里：<strong>网络攻击能力（cyber capabilities）</strong>。</p>
+
+<p>过去半年，前沿模型的进化方向悄悄拐了个弯。Anthropic 的 Mythos、OpenAI 的 GPT-5.5 Cyber，这一批模型最让政府睡不着觉的，不是它们会写诗，而是它们会找漏洞——而且找得太好了。</p>
+
+<p>还记得 Mythos 那个数字吗？在一个叫 Glasswing 的封闭项目里，它在 1000 多个开源项目里挖出了 <strong>23,019 个漏洞</strong>。这个能力用来做防御，是神器；用来做攻击，就是网络武器。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">insider 视角</div>
+  这就是为什么美国对 Anthropic 的 Fable 5 和 Mythos 5 动用了出口管制——这是历史上第一次，一个 AI 模型被当成"军民两用品"来管制。监管者第一次承认：他们要管的不是模型输出的文字，而是这个"数字特工"能对真实世界做什么。形容词变名词的第一个证据，就是它进了出口管制清单。
+</div>
+
+<p>于是在埃维昂，几位 AI 巨头的掌门人没有去争"谁的模型更强"，而是异口同声地喊了一句话：<strong>别分裂（resist the temptation to splinter）。</strong></p>
+
+<p>Amodei 警告各国元首，不要在 AI 监管上各搞一套；Hassabis 和他一起，呼吁组建一个"美国主导的 AI 联盟"。印度总理莫迪则在另一头喊话：所有民主国家都应该能用上前沿模型，否则没法防御网络威胁，并提议建立共同标准和"监管沙盒"。</p>
+
+<blockquote>
+当一项技术的掌门人开始主动请求被监管，通常只有两种可能：要么它真的危险到了连造它的人都怕；要么他们想用监管这堵墙，把后来者挡在门外。<br>
+—— 这一周最值得琢磨的潜台词
+</blockquote>
+
+<p>我倾向于认为，两者都对。Mythos 的能力是真的吓人，但"美国主导的联盟"这五个字，也实实在在地把中国实验室、把开源模型，划到了墙的另一边。</p>
+
+<p>谈判桌上聊的是安全，桌子底下踢的是格局。这是 Agent 名词化的第一层：<strong>它成了地缘政治的筹码。</strong></p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、计费单位：Anthropic 给 Agent 单开了一个账户</h2>
+
+<p>从日内瓦湖边回到你的终端。这一周还有一件事，几乎没人发新闻稿，但每个用 Claude 写代码的人都会被它改变。</p>
+
+<p>6 月 15 日起，Anthropic 调整了订阅计划的计费方式：<strong>Agent SDK 的用量、以及非交互式的 <code>claude -p</code> 跑批，不再从你日常聊天的额度里扣，而是从一笔单独的"Agent SDK 月度额度"里扣。</strong></p>
+
+<p>Pro 计划 20 美元，Max 5x 是 100 美元，Max 20x 是 200 美元——这是专门划给"机器自己干活"的钱。</p>
+
+<p>这一行规则改动，信息量比它看起来大得多。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+    <!-- 旧模式 -->
+    <text class="group-label" x="30" y="22">6/15 之前</text>
+    <rect class="node-rect-gray" x="30" y="40" width="220" height="120"/>
+    <text class="node-label" x="140" y="70">一个钱包</text>
+    <text class="node-sublabel" x="140" y="92">人聊天 + 机器跑批</text>
+    <text class="node-sublabel" x="140" y="112">混在一起扣额度</text>
+    <text class="node-sublabel" x="140" y="138">（谁先跑光算谁的）</text>
+    <!-- 箭头 -->
+    <line class="arrow-line-blue" x1="270" y1="100" x2="350" y2="100"/>
+    <text class="arrow-label" x="310" y="90">拆分</text>
+    <!-- 新模式 -->
+    <text class="group-label" x="370" y="22">6/15 之后</text>
+    <rect class="node-rect-blue" x="370" y="40" width="220" height="52"/>
+    <text class="node-label" x="480" y="58">交互额度</text>
+    <text class="node-sublabel" x="480" y="76">你和 Claude 聊天</text>
+    <rect class="node-rect-purple" x="370" y="108" width="220" height="52"/>
+    <text class="node-label" x="480" y="126">Agent 额度</text>
+    <text class="node-sublabel" x="480" y="144">机器自主跑批</text>
+  </svg>
+  <div class="diagram-caption">Anthropic 把"人用"和"Agent 用"拆成了两个钱包</div>
+</div>
+
+<p>打个比方。以前你家只有一个电表，人用电、空调用电、电动车充电，全走一个表。现在电力公司过来说：电动车充电，我们给你单独装一个表。</p>
+
+<p>为什么要单独装表？因为电动车的耗电模式跟你开灯做饭<strong>完全不是一回事</strong>——它是大功率、长时间、可调度的。你只有给它单独计量，才能单独定价、单独优化、单独限流。</p>
+
+<p>Anthropic 给 Agent 单开账户，是同一个逻辑。一个 Agent 任务动辄跑几百轮、烧掉几十万 token，它的消耗曲线和"人和 AI 一问一答"根本不在一个量级。把它们混在一个额度里，要么人被机器挤爆，要么没法给企业级的自动化工作流定价。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  这背后是真金白银的增长。Anthropic 的 CEO 透露，到 2026 年 Q1 末，Claude 的年化收入跑到了 <strong>300 亿美元</strong>的运行率——而年初这个数字还只有约 90 亿。单季度 80 倍的年化增速，靠的不是更多人来聊天，而是越来越多的 Agent 在后台 7×24 小时地干活。给 Agent 单开账户，是在给这台印钞机装上独立的计量表。
+</div>
+
+<p>所以别小看这一行计费改动。<strong>当一个东西开始拥有独立的账单，它就从"功能"变成了"商品"。</strong>这是 Agent 名词化的第二层。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、度量衡：硬件开始按"每兆瓦跑几个 Agent"打分</h2>
+
+<p>有了法律，有了账单，还差一样东西，Agent 才算真正"成精"：一把尺子。</p>
+
+<p>这一周，这把尺子也来了。测评机构 Artificial Analysis 发布了 <strong>AA-AgentPerf</strong>，自称是第一个为"智能体时代"设计的硬件基准。</p>
+
+<p>它有意思在哪？过去我们衡量 AI 硬件，用的是"每秒能吐多少 token"。这套尺子，是为"人和模型一问一答"设计的——你问一句，它答一段，比谁吐字快。</p>
+
+<p>但 Agent 不这么干活。一个编程 Agent 会连续跑几百轮，一会儿推理、一会儿调工具、一会儿改代码，上下文动不动就超过 10 万 token。AA-AgentPerf 干脆把真实的编程 Agent 轨迹录下来重放，然后问一个全新的问题：</p>
+
+<p><strong>在保证服务质量的前提下，一台机器最多能同时伺候多少个 Agent？</strong></p>
+
+<p>它的核心指标，叫 <strong>Agents per Megawatt（每兆瓦智能体数）</strong>——每一兆瓦电，能养活多少个并发的 Agent。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  尺子换了，意味着游戏规则换了。"每秒多少 token"比的是<strong>速度</strong>；"每兆瓦多少 Agent"比的是<strong>吞吐与能效</strong>。前者关心你等得烦不烦，后者关心数据中心一个月电费多少、能并行养活多大规模的智能体集群。当度量单位从"字"变成"个体"，说明大家默认：未来跑在机器上的，是一群一群的 Agent，不是一句一句的对话。
+</div>
+
+<p>首批结果也很说明问题（以最宽松的服务等级、跑 DeepSeek V4 Pro 为例）：</p>
+
+<table>
+<thead>
+<tr><th>硬件平台</th><th>每兆瓦智能体数</th><th>相对水平</th></tr>
+</thead>
+<tbody>
+<tr><td>NVIDIA GB300（机架级）</td><td>约 61,354</td><td>断层领先</td></tr>
+<tr><td>NVIDIA B300（单节点）</td><td>约 21,053</td><td>第二梯队</td></tr>
+<tr><td>AMD MI355X</td><td>约 3,551</td><td>追赶中</td></tr>
+<tr><td>NVIDIA H200（上代）</td><td>约 2,594</td><td>老将退场</td></tr>
+</tbody>
+</table>
+
+<p>注意最后两行：上一代的 Hopper（H200）和最新的 Blackwell Ultra 之间，差了将近 20 倍。这不是挤牙膏，这是为了喂饱"Agent 大军"而做的一次架构跃迁。</p>
+
+<p>一把新尺子的诞生，从来都不只是测量工具的升级。<strong>你用什么单位度量世界，就说明你打算和什么样的世界打交道。</strong></p>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、暗线：出口管制挡得住模型，挡不住开源</h2>
+
+<p>聊完明线，说一条这一周的暗线。它和前面的 G7 故事，是一枚硬币的两面。</p>
+
+<p>美国在埃维昂喊"美国主导的联盟"，对 Mythos 搞出口管制，本质上是想给前沿能力筑一道墙。但就在同一周，墙的另一边，中国的开源模型正在用一种让人没法忽视的速度逼近前沿。</p>
+
+<p>这不是口号，是基准分。来看这一周被反复提及的几个名字：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左侧：闭源前沿 -->
+    <text class="group-label" x="40" y="24">闭源前沿（贵）</text>
+    <rect class="node-rect-blue" x="40" y="40" width="170" height="40"/>
+    <text class="node-label" x="125" y="60">GPT-5.5</text>
+    <rect class="node-rect-blue" x="40" y="92" width="170" height="40"/>
+    <text class="node-label" x="125" y="112">Claude Opus 4.8</text>
+    <rect class="node-rect-blue" x="40" y="144" width="170" height="40"/>
+    <text class="node-label" x="125" y="164">Gemini 3.1 Pro</text>
+    <!-- 中间逼近箭头 -->
+    <line class="arrow-line-blue" x1="430" y1="112" x2="220" y2="112"/>
+    <text class="arrow-label" x="325" y="102">差几分 · 价格 1/34</text>
+    <text class="arrow-label" x="325" y="128">开源逼近</text>
+    <!-- 右侧：中国开源 -->
+    <text class="group-label" x="440" y="24">中国开源（便宜）</text>
+    <rect class="node-rect-green" x="440" y="40" width="190" height="40"/>
+    <text class="node-label" x="535" y="60">DeepSeek V4 Pro</text>
+    <rect class="node-rect-green" x="440" y="92" width="190" height="40"/>
+    <text class="node-label" x="535" y="112">Qwen 3.7 Max</text>
+    <rect class="node-rect-green" x="440" y="144" width="190" height="40"/>
+    <text class="node-label" x="535" y="164">GLM-5.1 / Kimi K2.6</text>
+  </svg>
+  <div class="diagram-caption">2026 年的开源故事，几乎是一个"中国实验室"的故事</div>
+</div>
+
+<p>最扎眼的是 <strong>DeepSeek V4 Pro</strong>。它是第一个在真实编程和推理基准上，真正逼近 Claude Opus 4.7 和 GPT-5.5 的开源权重模型——而每百万输出 token 的价格，大约是 GPT-5.5 的 <strong>三十四分之一</strong>。它还用了 MIT 许可证，价格直接砍了 75%。</p>
+
+<p>这是什么概念？前沿能力你可以管制，但当一个开源模型只差几分、价格却便宜一个数量级，墙就开始漏风了。你管得住权重的出口，管不住权重的下载。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">延伸思考</div>
+  这里有一个微妙的张力：G7 想用"安全"的名义收紧前沿模型的流通，而开源恰恰用"便宜且够用"消解了这种稀缺性。莫迪在 G7 上喊"所有民主国家都该用上前沿模型"，潜台词其实是——如果你们不给，市场上有的是替代品。出口管制能延缓领先，但延缓不了扩散。这是这一周最值得长期跟踪的一条暗线。
+</div>
+
+<p>把明线和暗线叠在一起看，这一周的格局就清楚了：<strong>前沿在被监管收紧，能力却在被开源稀释。</strong>一边筑墙，一边漏风，AI 的权力地图正在这两股力量的拉扯中重新画线。</p>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">六、总结：三个预言，半年后回来对账</h2>
+
+<p>回到开头那张埃维昂的午餐桌。这一周散落各处的新闻，拼起来其实是一句话：<strong>Agent 正在从一个"能力形容词"，变成一个被监管、被计价、被测量的"经济名词"。</strong></p>
+
+<p>三条线索，分别对应它"成精"的三个标志：</p>
+
+<ul>
+  <li><strong>被监管</strong>：G7 把 AI 的网络攻击能力摆上台面，模型第一次进了出口管制清单。</li>
+  <li><strong>被计价</strong>：Anthropic 给 Agent 单开了一个钱包，自动化工作流有了独立账单。</li>
+  <li><strong>被测量</strong>：AA-AgentPerf 用"每兆瓦跑几个 Agent"立了一把新尺子。</li>
+  <li><strong>暗线</strong>：中国开源模型逼近前沿，让"筑墙"这件事变得越来越难。</li>
+</ul>
+
+<p>既然这一周的关键词是"名词化"，那我就大胆做三个预言，给自己设个 deadline，<strong>2026 年底回来对账</strong>：</p>
+
+<p><strong>预言一：</strong>2026 年底前，会有至少两家主流厂商跟进 Anthropic，把 Agent 用量从交互额度里拆出来单独计费。"按 Agent 计费"会成为行业默认，就像今天的"按 token 计费"。</p>
+
+<p><strong>预言二：</strong>"每兆瓦多少 Agent"这类能效指标，会取代"每秒多少 token"，成为数据中心和芯片厂商对外 PK 的头号话术。</p>
+
+<p><strong>预言三：</strong>出口管制挡不住扩散。年底前，至少会有一个开源模型在主流编程基准上正式追平某个闭源前沿模型——价格还便宜一个数量级。</p>
+
+<p>我不一定全对。但我赌，半年后你再看这三件事，会发现它们都不是孤立的新闻，而是同一条主线上的三个刻度。</p>
+
+<p>到时候，咱们回来对账。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.cnbc.com/2026/06/17/g7-trump-ai-tech-leaders-openai-anthropic-google.html" target="_blank">AI in spotlight at G7 as Trump, world leaders joined by tech chiefs - CNBC</a></li>
+    <li><a href="https://www.cnbc.com/2026/06/17/anthropic-amodei-google-hassabis-us-ai-coalition-g7.html" target="_blank">CEOs of Anthropic and Google DeepMind call for U.S.-led AI coalition at G7 - CNBC</a></li>
+    <li><a href="https://fortune.com/2026/06/18/ai-chiefs-regulation-collaboration-g7-summit/" target="_blank">AI chiefs call for regulation collaboration at the G7 summit - Fortune</a></li>
+    <li><a href="https://artificialanalysis.ai/articles/aa-agentperf" target="_blank">First results from AA-AgentPerf: the hardware benchmark for the agent era - Artificial Analysis</a></li>
+    <li><a href="https://blogs.nvidia.com/blog/nvidia-blackwell-agentperf-artificial-analysis/" target="_blank">NVIDIA Blackwell Leads on First Agentic AI Infrastructure Benchmark - NVIDIA Blog</a></li>
+    <li><a href="https://benchlm.ai/blog/posts/best-chinese-llm" target="_blank">Best Chinese LLMs in 2026: DeepSeek V4, Kimi K2.6, GLM-5, Qwen Ranked - BenchLM.ai</a></li>
+    <li><a href="https://wavespeed.ai/blog/posts/june-2026-ai-launch-wave/" target="_blank">June 2026 AI Launch Wave: A Builder's Decision Map - WaveSpeed Blog</a></li>
+    <li><a href="https://llm-stats.com/ai-news" target="_blank">LLM News Today (June 2026) – AI Model Releases - llm-stats.com</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
