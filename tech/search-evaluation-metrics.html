@@ -3,188 +3,481 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>搜索评测指标全解析：从召回率到在线效果 - 元初AI</title>
+<title>搜索评测指标全解析：从 Recall@K 到 CTR，一条链路上的 10 个数字 - 元初AI</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:#f5f5f5;line-height:1.8;color:#333;}
-.container{max-width:900px;margin:0 auto;padding:20px;}
-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:40px 20px;text-align:center;border-radius:12px;margin-bottom:30px;}
-header h1{font-size:2.2rem;margin-bottom:10px;}
-header .subtitle{font-size:1.1rem;opacity:0.9;}
-.content{background:#fff;border-radius:12px;padding:30px;box-shadow:0 2px 12px rgba(0,0,0,0.08);}
-.content h2{color:#667eea;padding:15px 0 10px;border-bottom:2px solid #f0f0f0;margin:25px 0 15px;font-size:1.5rem;}
-.content h2:first-child{margin-top:0;}
-.content h3{color:#444;margin:20px 0 10px;font-size:1.2rem;}
-.content p{margin:12px 0;line-height:1.9;}
-.content ul,.content ol{margin:12px 0 12px 25px;}
-.content li{margin:8px 0;}
-.callout{padding:15px 20px;margin:15px 0;border-radius:8px;}
-.callout-tip{background:#e8f5e9;border-left:4px solid #4caf50;}
-.callout-info{background:#e3f2fd;border-left:4px solid #2196f3;}
-.callout-warn{background:#fff3e0;border-left:4px solid #ff9800;}
-.callout .title{font-weight:bold;margin-bottom:5px;}
-table{width:100%;border-collapse:collapse;margin:15px 0;font-size:0.95rem;}
-th,td{padding:12px 8px;border:1px solid #e0e0e0;text-align:left;}
-th{background:#f8f9fa;font-weight:600;}
-tr:nth-child(even){background:#fafafa;}
-.example{background:#f8f9fa;padding:15px;border-radius:8px;margin:15px 0;font-family:monospace;font-size:0.9rem;}
-footer{text-align:center;padding:20px;color:#666;font-size:0.9rem;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
 </style>
 </head>
 <body>
-<div class="container">
-<header>
-<h1>搜索评测指标全解析</h1>
-<p class="subtitle">从 Recall@K 到在线 CTR，系统性掌握搜索质量评估</p>
-</header>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
 <div class="content">
-<p>搜索系统好不好，不能凭感觉，得用数据说话。本文系统性介绍搜索系统中从离线到在线的全链路评估指标，覆盖召回、粗排、精排各阶段的考核重点。</p>
+<a href="index.html" class="back">TECH ARTICLES</a>
 
-<h2 id="s1">一、召回阶段： Recall@K 与召回率</h2>
-<h3>1.1 Recall@K</h3>
-<p>Recall@K 是召回阶段最核心的指标，衡量的是"Top K 结果中召回多少相关文档"。</p>
-<div class="example">
-Recall@K = (Top K 结果中相关文档数) / (全部相关文档总数)</div>
-<p>举例：假设总共有 50 个相关文档，系统返回了 100 条，Top 10 中有 8 个相关的，则 Recall@10 = 8/50 = 16%。</p>
-<div class="callout callout-tip">
-<div class="title">💡 一句话记住</div>
-<p>Recall@K 的"K"是截断点——截到第K个，召回率是多少。</p>
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">搜索系统</span>
+    <span class="tag">评测指标</span>
+    <span class="tag">信息检索</span>
+  </div>
+  <h1>搜索评测指标全解析：从 Recall@K 到 CTR，一条链路上的 10 个数字</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-26</span>
+  </div>
 </div>
-<h3>1.2 召回率（Recall）</h3>
-<p>召回率是更广义的指标，通常指"所有相关文档被召回的比例"——相当于 Recall@all。</p>
-<div class="example">
-Recall = 召回的相关文档数 / 总相关文档数</div>
-<h3>1.3 其他召回指标</h3>
-<table>
-<tr><th>指标</th><th>含义</th><th>适用场景</th></tr>
-<tr><td>Recall@K</td><td>Top K 召回率</td><td>离线评估</td></tr>
-<tr><td>Hit Rate@K</td><td>Top K 中是否命中</td><td>开源检索</td></tr>
-<tr><td>Recall@K / Precision@K</td><td>召回/精确平衡</td><td>多路召回调优</td></tr>
-</table>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、召回阶段：「漏没漏」怎么量化？</a>
+  <a href="#s2">二、排序阶段：「排没排对」怎么量化？</a>
+  <a href="#s3">三、在线指标：用户用脚投票，靠谱吗？</a>
+  <a href="#s4">四、F1 和 MAPE：那两个总被叫错场的指标</a>
+  <a href="#s5">五、总结：一张表搞定指标选用逻辑</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周，一个做搜索的朋友跟我吐槽：「我们模型 nDCG 涨了 3 个点，老板很高兴，结果上线 AB 测试，CTR 纹丝不动，差点被骂。」</p>
+
+<p>我问他：「那你线下评测的时候，看召回率了吗？」</p>
+
+<p>他愣了一下：「nDCG 不就够了吗？」</p>
+
+<p>这就是问题所在。很多人聊搜索评测，张口就是 nDCG、MRR，好像这几个洋缩写就能代表一切。但你有没有想过：<strong>一次搜索从你按下回车到看到结果，中间至少经过了三道关卡，每道关卡考的根本不是同一件事。</strong></p>
+
+<p>召回阶段考的是「该捞的东西有没有捞上来」；排序阶段考的是「捞上来的东西有没有排对顺序」；上线之后考的是「真实用户买不买账」。你拿一个排序指标去衡量召回好坏，就像拿尺子量体重——工具没错，但量错了维度。</p>
+
+<p>所以这篇文章，我不打算给你罗列十个公式让你背。我想带你顺着一次搜索的真实链路走一遍，看清楚<strong>每一个数字到底在回答哪一个问题</strong>。读完你会明白，为什么我朋友的 nDCG 涨了，CTR 却不动——答案，藏在他没看的那个指标里。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg">
+    <!-- 漏斗三层 -->
+    <rect class="node-rect-blue" x="60" y="30" width="600" height="40"/>
+    <text class="node-label" x="360" y="50">① 召回 Recall&#64;K：从千万文档里捞出几百个候选</text>
+    <rect class="node-rect-amber" x="140" y="95" width="440" height="40"/>
+    <text class="node-label" x="360" y="115">② 排序 MRR / MAP / nDCG：把候选排出先后顺序</text>
+    <rect class="node-rect-green" x="240" y="160" width="240" height="40"/>
+    <text class="node-label" x="360" y="180">③ 在线 CTR / 有点比：用户真实反馈</text>
+    <!-- 漏斗连线 -->
+    <line class="arrow-line" x1="360" y1="70" x2="360" y2="93"/>
+    <line class="arrow-line" x1="360" y1="135" x2="360" y2="158"/>
+    <!-- 侧标 -->
+    <text class="arrow-label" x="360" y="218" style="fill:#94a3b8">链路越往下，离用户越近，离「真相」也越近</text>
+  </svg>
+  <div class="diagram-caption">搜索评测指标，本质上是给链路的每一层装一个「体温计」</div>
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、召回阶段：「漏没漏」怎么量化？</h2>
+
+<p>先说召回。这是整条链路的第一关，也是最容易被低估的一关。</p>
+
+<p>想象一下，你在一个有一千万件商品的电商库里搜「无线降噪耳机」。系统不可能把这一千万件逐一精细打分——太慢了。它得先用一套又快又糙的方法，从一千万里粗筛出几百个「八成相关」的候选，扔给后面的排序模型。</p>
+
+<p>这个「粗筛」就是召回。而衡量召回好坏的核心问题只有一个：<strong>那些本该被捞上来的相关文档，你到底捞上来了多少？</strong></p>
+
+<h3>召回率（Recall）：分母是「所有该找到的」</h3>
+
+<p>召回率的定义很朴素：在所有真正相关的文档里，你成功找回了多大比例。</p>
+
+<pre><code class="language-python"># 召回率 = 找回的相关文档数 / 全部相关文档数
+recall = len(retrieved &amp; relevant) / len(relevant)
+
+# 例：库里一共有 50 件真正相关的耳机
+# 你的召回模块捞回来的候选里，命中了 40 件
+# recall = 40 / 50 = 0.8</code></pre>
+
+<p>关键在分母——它是<strong>所有相关文档的总数</strong>，不是你返回结果的数量。这一点恰恰是召回率和准确率的分水岭，后面我们会专门掰扯。</p>
+
+<p>召回率为什么这么重要？因为它是整条链路的「天花板」。一个残酷的事实：<strong>召回阶段漏掉的文档，后面再牛的排序模型也救不回来。</strong>排序模型只能在候选集里挑挑拣拣，它没法把一个根本没进候选集的好结果变出来。召回率是 0.8，意味着 20% 的好东西从一开始就出局了，这 20% 你这辈子都别想排上去。</p>
+
+<h3>Recall@K：现实世界只看前 K 个</h3>
+
+<p>但纯召回率有个不接地气的地方：它不管位置。理论上你把全库一千万件全返回，召回率必然是 100%——可这有什么意义？</p>
+
+<p>所以工程上真正用的是 <strong>Recall@K</strong>：只看排在前 K 个的结果里，命中了多少相关文档。</p>
+
+<pre><code class="language-python"># Recall@K = 前 K 个结果里的相关文档数 / 全部相关文档数
+# K 通常取 100、500、1000，对应召回返回的候选集大小
+
+# 库里 50 件相关，召回模块返回 Top-500 候选
+# 这 500 个里命中了 45 件
+# Recall@500 = 45 / 50 = 0.9</code></pre>
+
+<p>这个 K 怎么定？它直接等于你给后面排序模型留多大的「池子」。K 越大，召回率越容易冲高，但排序的计算压力也越大；K 越小越省算力，但漏掉好结果的风险越高。<strong>Recall@K 的本质，是在「别漏」和「别贪」之间找一个平衡点。</strong></p>
+
 <div class="callout callout-info">
-<div class="title">📊 关键区别</div>
-<p>Recall 关注"找全了没有"，Precision 关注"找对了没有"。召回是后者的分子，精确是前者的分子。</p>
+  <div class="callout-title">数据说话</div>
+  在向量检索（RAG、语义搜索）里，Recall@K 几乎是召回质量的唯一硬指标。业界常用 Recall@10、Recall@100 来对比不同 embedding 模型或向量索引（如 HNSW、IVF）的优劣——同样的 K，谁的 Recall 高，谁的「捞回能力」就强。这也是为什么向量数据库的 benchmark 报告里，永远把 Recall 摆在第一栏。
 </div>
 
-<h2 id="s2">二、排序阶段： MRR、nDCG、MAP</h2>
-<h3>2.1 MRR（Mean Reciprocal Rank）</h3>
-<p>MRR 衡量"第一个相关文档出现在第几位"。只看第一名，是搜索排序最直观的指标。</p>
-<div class="example">
-MRR = 1/n × Σ(1/rank_i)  // rank_i = 第i个query第一个相关文档的位置</div>
-<p>举例：查询"手机"第一个相关结果是第3位，则该项得分为 1/3；查询"电脑"第一个相关结果是第1位，得分为1。MRR = (1/3 + 1)/2 = 0.667。</p>
-<div class="callout callout-tip">
-<div class="title">💡 一句话记住</div>
-<p>MRR 只看"第一个"相关结果在哪——排得越靠前，分数越高。</p>
-</div>
-<h3>2.2 nDCG（Normalized Discounted Cumulative Gain）</h3>
-<p>nDCG 是排序质量的黄金标准，考虑了"相关性权重"——相关度越高的文档越靠前，分数越高。</p>
-<div class="example">
-DCG@K = Σ(rel_i / log2(i+1))  // rel_i为第i位的相关性分数
-nDCG@K = DCG@K / IDCG@K       // IDCG为理想排序的DCG</div>
-<p>举例：假设理想排序应该是[3,2,1,0]（相关度递减），但系统返回了[2,3,1,0]，nDCG 会量化这个差距。</p>
-<table>
-<tr><th>相关性分数</th><th>含义</th></tr>
-<tr><td>3</td><td>完全相关</td></tr>
-<tr><td>2</td><td>部分相关</td></tr>
-<tr><td>1</td><td>边缘相关</td></tr>
-<tr><td>0</td><td>不相关</td></tr>
-</table>
+<p>记住这一层的核心：召回阶段，你只关心一件事——<strong>别让好东西在第一道门就被挡在外面。</strong>排序的精彩，得先有召回的全面兜底。</p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、排序阶段：「排没排对」怎么量化？</h2>
+
+<p>候选捞上来了，假设有 500 个。现在轮到排序模型登场，它的任务是：把这 500 个排出一个先后顺序，最相关的放最前面。</p>
+
+<p>到了这一层，光看「漏没漏」就不够了，你得看「<strong>顺序对不对</strong>」。而衡量顺序，有一组听起来很唬人、其实逻辑很清晰的指标。我们一个一个拆。</p>
+
+<h3>准确率（Precision）：召回率那个「冤家」</h3>
+
+<p>先把准确率（精确率，Precision）讲清楚，因为它老跟召回率搞混。</p>
+
+<p>一句话区别：<strong>召回率的分母是「所有该找的」，准确率的分母是「你实际返回的」。</strong></p>
+
+<pre><code class="language-python"># 准确率 = 返回结果中的相关文档数 / 返回结果总数
+precision = len(retrieved &amp; relevant) / len(retrieved)
+
+# 同样用 Precision@K：前 K 个结果里有多少是相关的
+# 前 10 个结果里，8 个相关
+# Precision@10 = 8 / 10 = 0.8</code></pre>
+
 <div class="callout callout-warn">
-<div class="title">⚠️ 踩坑记录</div>
-<p>nDCG 需要人工标注相关性——标注质量直接决定指标可信度。标注一致性比指标本身更重要。</p>
-</div>
-<h3>2.3 MAP（Mean Average Precision）</h3>
-<p>MAP 衡量"每个相关文档的排序位置"，综合考量召回和排序。</p>
-<div class="example">
-AP = Σ(Precision@K × rel_k) / 总相关数
-MAP  = 1/n × Σ(AP_i)</div>
-<p>举例：查询返回[相关,相关,不相关,相关]，则 AP = (1/2 + 2/4 + 0 + 3/4)/3 = 0.67。</p>
-<h3>2.4 准确率与精确率</h3>
-<table>
-<tr><th>指标</th><th>公式</th><th>说明</th></tr>
-<tr><td>Precision@K</td><td>相关文档数 / K</td><td>Top K 中相关的比例</td></tr>
-<tr><td>Accuracy</td><td>(TP+TN) / 总数</td><td>整体正确率</td></tr>
-<tr><td>F1 Score</td><td>2×P×R/(P+R)</td><td>精确率和召回率的调和平均</td></tr>
-</table>
-<div class="callout callout-info">
-<div class="title">📊 离线指标对比</div>
-<table>
-<tr><th>指标</th><th>特点</th><th>适用阶段</th></tr>
-<tr><td>Recall@K</td><td>看召回能力</td><td>召回</td></tr>
-<tr><td>MRR</td><td>看top1质量</td><td>精排</td></tr>
-<tr><td>nDCG</td><td>看整体排序</td><td>精排</td></tr>
-<tr><td>MAP</td><td>综合评估</td><td>全链路</td></tr>
-</table>
+  <div class="callout-title">常见误解</div>
+  「准确率高 = 搜索好」，这是新手最容易踩的坑。你只返回一个最有把握的结果，准确率轻松 100%，可召回率低得可怜——用户要的另外 49 个相关结果，你一个没给。反过来，把全库都返回，召回率 100%，准确率惨不忍睹。<strong>这两个指标天生互相拉扯，单看任何一个都会骗你。</strong>这也正是后面 F1 要出场的原因。
 </div>
 
-<h2 id="s3">三、在线指标：点击率、有点比、CTR</h2>
-<h3>3.1 CTR（Click-Through Rate）</h3>
-<p>点击率是最直接的在线效果指标，衡量"用户点不点"。</p>
-<div class="example">
-CTR = 点击次数 / 曝光次数</div>
-<h3>3.2 有点比（UVR - User Valid Rate）</h3>
-<p>有点比衡量"点进来的用户占比"，排除机器流量，更真实。</p>
-<div class="example">
-有点比 = 点击用户数 / 曝光用户数</div>
-<h3>3.3 文档点击率（Document CTR）</h3>
-<p>文档点击率关注"每个结果被点的概率"，评估单条结果的质量。</p>
-<div class="example">
-文档 CTR = 文档点击数 / 文档曝光数</div>
-<h3>3.4 其他在线指标</h3>
-<table>
-<tr><th>指标</th><th>含义</th><th>用途</th></tr>
-<tr><td>UV_CTR</td><td>独立用户点击率</td><td>去重</td></tr>
-<tr><td>Skip Rate</td><td>跳过率</td><td>首条效果</td></tr>
-<tr><td>Long Click Rate</td><td>长尾点击</td><td>内容深度</td></tr>
-<tr><td>Conversions</td><td>转化次数</td><td>商业目标</td></tr>
-</table>
-<div class="callout callout-tip">
-<div class="title">💡 一句话记住</div>
-<p>离线指标用来"调模型"，在线指标用来"看效果"——前者是实验数据，后者是真实用户用脚投票。</p>
-</div>
+<p>所以在排序场景里，单纯的准确率/召回率都太「粗」——它们把相关性当成「是/否」的二值判断，而且不在乎你把相关结果排在第 1 位还是第 10 位。可对用户来说，第 1 位和第 10 位的体验天差地别。于是，更精细的位置敏感指标登场了。</p>
 
-<h2 id="s4">四、综合指标与实践</h2>
-<h3>4.1 F1 Score</h3>
-<p>F1 是精确率和召回率的调和平均，兼顾"找全"和"找准"。</p>
-<div class="example">
-F1 = 2 × Precision × Recall / (Precision + Recall)</div>
-<h3>4.2 MAPE（Mean Absolute Percentage Error）</h3>
-<p>MAPE 是预测误差指标，常用于搜索结果的"应该排第几"预测。</p>
-<div class="example">
-MAPE = 1/n × Σ(|预测-实际| / 实际)</div>
-<h3>4.3 指标选用建议</h3>
-<table>
-<tr><th>阶段</th><th>核心指标</th><th>辅助指标</th></tr>
-<tr><td>召回</td><td>Recall@K</td><td>Hit Rate、召回路数</td></tr>
-<tr><td>粗排</td><td>MRR</td><td>Recall@K、延迟</td></tr>
-<tr><td>精排</td><td>nDCG、MAP</td><td>离线AUC</td></tr>
-<tr><td>全链路</td><td>在线CTR</td><td>有点比、Skip Rate</td></tr>
-</table>
-<div class="callout callout-warn">
-<div class="title">⚠️ 常见误区</div>
+<h3>MRR：你只关心「第一个对的」排多前</h3>
+
+<p>MRR（Mean Reciprocal Rank，平均倒数排名）是这组里最简单的。它只问一件事：<strong>第一个相关结果，排在第几位？</strong></p>
+
+<p>它取这个名次的倒数。第一个相关结果排第 1 位，得分 1；排第 2 位，得分 1/2；排第 5 位，得分 1/5。然后把所有查询的得分平均一下，就是 MRR。</p>
+
+<pre><code class="language-python"># 单条查询的 RR = 1 / 第一个相关结果的排名
+# 三条查询，第一个正确结果分别排在第 1、第 3、第 2 位
+rr = [1/1, 1/3, 1/2]
+mrr = sum(rr) / len(rr)   # = 0.611</code></pre>
+
+<p>MRR 的脾气很「专一」：它只盯着第一个命中的结果，第一个之后排得再好再烂，它一概不管。这听起来很偏激，但对某些场景恰恰完美——比如<strong>问答、导航类搜索</strong>。你搜「Python 官网」，要的就是第一条直接给对，后面九条好不好你压根不看。这种「只要第一个对就行」的场景，MRR 就是最贴切的尺子。</p>
+
+<h3>MAP：把每个相关结果的位置都算进去</h3>
+
+<p>但更多时候，用户要的不止一个结果。你搜「机器学习入门资料」，希望前几条都是好货。这时 MRR 就不够用了——它只看第一个。</p>
+
+<p>MAP（Mean Average Precision，平均精度均值）补上了这个缺口。它的思路是：<strong>每命中一个相关结果，就在那个位置算一次准确率，再把这些准确率平均。</strong>相关结果排得越靠前，这一串准确率就越高。</p>
+
+<pre><code class="language-python"># 假设返回 5 条，相关性为 [✓, ✗, ✓, ✗, ✓]（共 3 个相关）
+# 在每个命中位置算 Precision@该位置：
+#   位置1 命中 → 1/1 = 1.00
+#   位置3 命中 → 2/3 = 0.67
+#   位置5 命中 → 3/5 = 0.60
+ap = (1.00 + 0.67 + 0.60) / 3   # AP = 0.756
+# MAP = 把所有查询的 AP 再平均</code></pre>
+
+<p>MAP 的好处是它同时照顾了「全不全」和「靠不靠前」：漏掉相关结果会拉低 AP，把相关结果排在后面也会拉低 AP。<strong>它是召回率和准确率在「排序」这件事上的一次握手言和。</strong>所以经典信息检索论文里，MAP 长期是综合排序质量的标配指标。</p>
+
+<h3>nDCG：当「相关」不再只有 0 和 1</h3>
+
+<p>MAP 还有一个隐藏假设：相关性是二值的——要么相关，要么不相关。可现实哪有这么干脆？</p>
+
+<p>你搜「iPhone 充电器」，一个原装充电器是「高度相关」，一个第三方兼容充电器是「中度相关」，一根纯数据线是「沾点边」。这三者显然不该被一视同仁。</p>
+
+<p>nDCG（normalized Discounted Cumulative Gain，归一化折损累计增益）就是为分级相关性而生的。它的名字很吓人，但拆开看就三个动作：</p>
+
 <ul>
-<li>只调离线指标——离线涨分但在线下跌是常态</li>
-<li>只看 CTR——短期CTR陷阱可能伤害长尾</li>
-<li>指标太多——聚焦核心指标，其他辅助看</li>
+  <li><strong>Gain（增益）</strong>：每个结果按相关性等级给分，比如高度相关 = 3 分，中度 = 2 分，沾边 = 1 分，不相关 = 0 分。</li>
+  <li><strong>Discounted（折损）</strong>：排得越靠后，分数打的折越狠（除以一个随位置增长的 <code>log</code> 系数）。第 1 位拿满分，第 10 位的同样相关性只能拿零头。</li>
+  <li><strong>normalized（归一化）</strong>：用你的实际得分（DCG）除以「理论最优排序」的得分（IDCG），把结果压到 0~1 之间，方便跨查询对比。</li>
 </ul>
+
+<pre><code class="language-python">import numpy as np
+# 相关性等级（按你模型排出的顺序）
+rels = [3, 2, 3, 0, 1]
+def dcg(r):
+    return sum((2**rel - 1) / np.log2(i + 2) for i, rel in enumerate(r))
+idcg = dcg(sorted(rels, reverse=True))   # 理论最优排序的 DCG
+ndcg = dcg(rels) / idcg                    # 归一化到 0~1
+print(round(ndcg, 3))   # ≈ 0.948</code></pre>
+
+<p>为什么 nDCG 是当今搜索/推荐排序的「头牌指标」？因为它最接近用户的真实感受：<strong>既在乎结果有多相关（分级 Gain），又在乎好结果排得有多靠前（位置折损）。</strong>一个把「中度相关」误排到第一、「高度相关」压到第五的模型，nDCG 会毫不留情地扣分——而这正是用户会皱眉的地方。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">关键区别</div>
+  三个排序指标，一句话各自记住：<strong>MRR</strong> 只问「第一个对的排多前」（适合问答/导航）；<strong>MAP</strong> 问「所有相关的排得整体好不好」（二值相关性）；<strong>nDCG</strong> 问「考虑相关程度后，排序有多接近完美」（分级相关性，最贴近用户体验）。从 MRR 到 MAP 再到 nDCG，是一条「越来越在乎细节」的进化线。
 </div>
 
-<h2 id="s5">五、总结：指标选用逻辑</h2>
-<p>搜索系统评估的核心逻辑：</p>
-<ol>
-<li><strong>召回阶段</strong>：Recall@K 衡量"相关文档召回多少"，目标是"不漏"</li>
-<li><strong>粗排阶段</strong>：MRR 衡量"Top结果够不够准"，目标是"减压"</li>
-<li><strong>精排阶段</strong>：nDCG/MAP 衡量"排序质量够不够好"，目标是"精准"</li>
-<li><strong>上线后</strong>：CTR/有点比 衡量"用户买不买账"，目标是"有效"</li>
-</ol>
+<p>到这里，离线评测的工具箱基本齐了。但你有没有发现一个问题——上面所有指标，都建立在一个前提上：<strong>我们事先知道哪些文档是「相关」的。</strong>可这个「相关」是谁说了算？真实的用户，会同意我们的判断吗？</p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、在线指标：用户用脚投票，靠谱吗？</h2>
+
+<p>前面两层，nDCG 也好 MAP 也好，本质上都是「考试」——题目和标准答案都是我们人工标注出来的。标注员说这条相关，它就相关。</p>
+
+<p>但标注员不是用户。真正的考官，是那个坐在屏幕前、烦躁地搜东西的真人。他点不点你的结果，才是终极裁决。于是有了在线指标——它们不依赖任何人工标注，<strong>直接读用户的行为。</strong></p>
+
+<h3>文档点击率（CTR）：最基础的那一票</h3>
+
+<p>CTR（Click-Through Rate，点击率）是最广为人知的在线指标：某个结果被展示了 N 次，被点击了 M 次，CTR 就是 M/N。</p>
+
+<pre><code class="language-python"># 文档点击率 = 该文档的点击次数 / 该文档的曝光(展现)次数
+doc_ctr = clicks / impressions
+# 一条结果展现了 1000 次，被点了 120 次 → CTR = 12%</code></pre>
+
+<p>CTR 高，通常说明这条结果对用户有吸引力。它是广告、推荐、搜索通吃的硬通货。但注意，CTR 衡量的是<strong>单个文档</strong>的吸引力，它回答不了「这一整次搜索，用户满不满意」。要回答这个，得换个口径。</p>
+
+<h3>有点比：这次搜索，用户究竟点没点</h3>
+
+<p>这就是国内搜索团队常说的「<strong>有点比</strong>」——有点击的搜索次数，占总搜索次数的比例。</p>
+
+<pre><code class="language-python"># 有点比 = 有点击行为的搜索次数 / 总搜索次数
+clickthrough_rate = searches_with_click / total_searches
+# 它衡量的是"一次搜索"层面，而非单个文档</code></pre>
+
+<p>差别在哪？文档 CTR 站在「文档」视角，有点比站在「搜索会话」视角。一次搜索只要用户点了任意一条结果，就算「有点」。<strong>有点比低，意味着大量搜索是「点都不想点」的——这往往是结果烂到用户失望的信号。</strong>业界经验里，有点比通常在 70% 上下。</p>
+
+<p>再往细里抠，还有个「<strong>首屏有点比</strong>」：用户在第一屏（不翻页、不下滑）就发生点击的搜索占比。它比有点比更严格，因为好的搜索应该让用户在第一屏就找到答案，不用费劲翻。所以三者关系永远是：</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg">
+    <rect class="node-rect-green" x="20" y="45" width="180" height="44"/>
+    <text class="node-label" x="110" y="61">有点比</text>
+    <text class="node-sublabel" x="110" y="77">≈ 70%（最宽松）</text>
+    <text class="arrow-label" x="240" y="71" style="font-size:18px;fill:#94a3b8">&gt;</text>
+    <rect class="node-rect-amber" x="270" y="45" width="180" height="44"/>
+    <text class="node-label" x="360" y="61">首屏有点比</text>
+    <text class="node-sublabel" x="360" y="77">≈ 60%（更严格）</text>
+    <text class="arrow-label" x="490" y="71" style="font-size:18px;fill:#94a3b8">&gt;</text>
+    <rect class="node-rect-blue" x="520" y="45" width="160" height="44"/>
+    <text class="node-label" x="600" y="61">文档点击率</text>
+    <text class="node-sublabel" x="600" y="77">单文档维度，最低</text>
+  </svg>
+  <div class="diagram-caption">口径越严格，数值越低：有点比 &gt; 首屏有点比 &gt; 文档点击率</div>
+</div>
+
+<p>除了点击类，在线指标还有一大家子，因业务而异：电商看 <strong>CVR</strong>（转化率，点了之后买没买）、看 GMV；内容平台看停留时长、看跳出率；通用搜索还会看「换词率」「翻页率」——用户频繁换词、不停翻页，恰恰说明他没找到，这些是反向指标。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  「CTR 高就是搜索质量好」——这个等号也不成立。一个标题党、一张擦边封面，能把 CTR 拉得很高，但用户点进去发现货不对板，转头就走。这就是为什么 CTR 和 CVR 经常不同向：吸引点击是一回事，满足需求是另一回事。<strong>点击率衡量「诱惑力」，转化率衡量「满足度」，别拿前者冒充后者。</strong>
+</div>
+
+<p>所以在线指标的真正价值，不是某一个数字漂亮，而是它们<strong>共同拼出用户的真实满意度</strong>——这是任何离线标注都模拟不出来的。但它也有代价：它只能上线后才拿得到，而且容易被外部因素（流量、热点、UI 改版）污染。离线和在线，注定是一对需要互相校准的搭档。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、F1 和 MAPE：那两个总被叫错场的指标</h2>
+
+<p>最后聊两个「编外」指标。它们不是搜索链路的主角，但经常在评测报告里露脸，而且特别容易被用错地方。</p>
+
+<h3>F1：给准确率和召回率做个「和事佬」</h3>
+
+<p>还记得前面那对冤家吗——准确率和召回率，一个升另一个就容易降。那评测时到底该信谁？</p>
+
+<p>F1 的答案是：谁都别偏袒，取它俩的<strong>调和平均</strong>。</p>
+
+<pre><code class="language-python"># F1 = 2 × (Precision × Recall) / (Precision + Recall)
+# 调和平均的特点：任何一个特别低，F1 就被拖低
+precision, recall = 0.9, 0.3
+f1 = 2 * precision * recall / (precision + recall)   # = 0.45</code></pre>
+
+<p>为什么用调和平均，而不是简单的算术平均？因为调和平均「<strong>怕短板</strong>」。上面例子里准确率 0.9 很漂亮，但召回率只有 0.3，算术平均是 0.6 看着还行，F1 却只有 0.45——它逼着你不能靠一个指标偏科。<strong>F1 的潜台词是：准确和全面，你得两手都硬。</strong></p>
+
 <div class="callout callout-info">
-<div class="title">📊 一句话记住</div>
-<p>召回看"全"，排序看"准"，在线看"转"——三个阶段三重考核。</p>
+  <div class="callout-title">insider 视角</div>
+  F1 在搜索的「排序」环节其实用得不多——因为排序更在乎位置，nDCG/MAP 更合适。F1 真正的主场是<strong>相关性判断、意图分类这类二分类任务</strong>：判断一个 query 是不是导航类、一个文档与 query 相不相关。这种「是/否」的判定，才是 F1 的标准战场。把 F1 硬套到排序质量上，就是叫错了场。
 </div>
+
+<h3>MAPE：它根本不是搜索质量指标</h3>
+
+<p>MAPE（Mean Absolute Percentage Error，平均绝对百分比误差）更是个「外来户」。它衡量的是<strong>预测值和真实值差了百分之几</strong>，是个回归（预测）指标。</p>
+
+<pre><code class="language-python"># MAPE = 平均( |真实值 - 预测值| / |真实值| ) × 100%
+# 衡量预测偏离真实的百分比，越小越好
+# 预测某 query 明天的搜索量 1000，实际 1200 → 误差 16.7%</code></pre>
+
+<p>那它跟搜索有什么关系？关系在「<strong>外围</strong>」：搜索系统里有大量预测任务——预估某条结果的 CTR、预测一个 query 未来的搜索量、预测库存或流量。这些预测准不准，就用 MAPE 来量。它不评价「搜得好不好」，它评价「<strong>预测准不准</strong>」。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">关键区别</div>
+  千万别把 MAPE 和搜索相关性指标混为一谈。Recall、nDCG、CTR 回答的是「<strong>搜索结果好不好</strong>」；MAPE 回答的是「<strong>我对某个数值的预测准不准</strong>」。一个是排序质量，一个是预测精度，俩世界。它出现在搜索评测里，通常是在评估 CTR 预估模型、流量预测模型这些「幕后辅助系统」，而不是搜索结果本身。
 </div>
+
+<p>把这两个「编外」指标的边界划清楚，你就不会再犯「拿 F1 评排序、拿 MAPE 评相关性」的错。用对工具，比知道工具更重要。</p>
+
+<!-- ==================== SECTION: 章节 5 — 总结 ==================== -->
+<h2 id="s5">五、总结：一张表搞定指标选用逻辑</h2>
+
+<p>绕了一大圈，我们回到开头那个问题：为什么我朋友 nDCG 涨了 3 个点，CTR 却不动？</p>
+
+<p>现在答案很清楚了。<strong>nDCG 衡量的是「在已召回的候选里，排序排得好不好」；但如果召回阶段就漏掉了用户真正想要的结果，排序再优化也是在一堆次品里挑最好的。</strong>他优化的是排序层，瓶颈却在召回层——线下排序指标涨了，线上用户却根本没看到那个本该出现的好结果。他该看的，是 Recall@K。</p>
+
+<p>这就是搜索评测的第一性原理：<strong>指标没有好坏，只有「考的是不是这一层」。</strong>顺着链路对号入座，是唯一不会出错的姿势：</p>
+
+<table>
+<thead>
+<tr><th>链路阶段</th><th>核心指标</th><th>回答的问题</th></tr>
+</thead>
+<tbody>
+<tr><td>召回</td><td>Recall@K、召回率</td><td>该捞的有没有捞上来（链路天花板）</td></tr>
+<tr><td>排序</td><td>MRR、MAP、nDCG、Precision</td><td>捞上来的有没有排对顺序</td></tr>
+<tr><td>在线</td><td>CTR、有点比、首屏有点比、CVR</td><td>真实用户买不买账</td></tr>
+<tr><td>外围/辅助</td><td>F1（分类）、MAPE（预测）</td><td>判定准不准、预测偏多少</td></tr>
+</tbody>
+</table>
+
+<p>几个最该刻进脑子的要点：</p>
+
+<ul>
+  <li><strong>召回定上限，排序定体验</strong>：召回漏了的，排序永远救不回来，所以 Recall@K 是地基。</li>
+  <li><strong>准确率和召回率是天生冤家</strong>：单看一个会骗你，要么用 F1 平衡，要么按场景明确取舍。</li>
+  <li><strong>排序三件套各有专长</strong>：MRR 看第一个、MAP 看整体、nDCG 看分级相关性，nDCG 最贴用户。</li>
+  <li><strong>离线指标是模拟考，在线指标才是高考</strong>：两者经常对不上，对不上时优先信用户行为，并回头排查离线标注。</li>
+</ul>
+
+<p><strong>我的看法：</strong>太多团队把精力 all in 在排序模型上，反复打磨 nDCG 那零点几个点，却对召回率视而不见。这是典型的「在天花板下面装修」。我的建议恰恰相反——<strong>先把召回的天花板顶高，再去抠排序的精装修。</strong>顺序反了，努力会大打折扣。</p>
+
+<p><strong>下一步建议：</strong></p>
+<ol>
+  <li>翻出你手上搜索系统的评测报告，按「召回 / 排序 / 在线」三栏重新归类一遍指标——大概率你会发现某一层是空白的，那就是你的盲区。</li>
+  <li>下次再看到「nDCG 涨了」的喜报，先追问一句：「召回率动了吗？线上有点比验证了吗？」一个指标的涨跌，永远要放回它所在的那一层去解读。</li>
+</ol>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.evidentlyai.com/ranking-metrics/ndcg-metric" target="_blank">Normalized Discounted Cumulative Gain (NDCG) explained — Evidently AI</a></li>
+    <li><a href="https://weaviate.io/blog/retrieval-evaluation-metrics" target="_blank">Evaluation Metrics for Search and Recommendation Systems — Weaviate</a></li>
+    <li><a href="https://www.shaped.ai/blog/evaluating-recommendation-systems-map-mmr-ndcg" target="_blank">Evaluating recommendation systems (MAP, MRR, NDCG) — Shaped</a></li>
+    <li><a href="https://mienxiu.com/systematic-evaluation-for-ir-map-and-ndcg/" target="_blank">Systematic Evaluation for Information Retrieval: MAP and nDCG</a></li>
+    <li><a href="https://blog.csdn.net/levy_cui/article/details/140553802" target="_blank">浅谈搜索指标 &amp; 业务辅助应用（有点比 / CTR / CVR）— CSDN</a></li>
+    <li><a href="https://www.cnblogs.com/hapjin/p/15926194.html" target="_blank">搜索业务各指标（有点比、首屏有点比、文档点击率）— 博客园</a></li>
+    <li><a href="https://zhuanlan.zhihu.com/p/681954322" target="_blank">王树森《搜索引擎技术》课程笔记 — 知乎</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
 <footer>
-<p>作者：Jackie Zhan · 2026-06-26</p>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
 </footer>
 </div>
+<script defer src="/tracker.js"></script>
 </body>
 </html>
