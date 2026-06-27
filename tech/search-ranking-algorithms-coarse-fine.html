@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>搜索排序的七种武器：粗排到精排，从 LightGBM 到 MMOE 一篇讲透 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">搜索排序</span>
+    <span class="tag">推荐系统</span>
+    <span class="tag">CTR 预估</span>
+  </div>
+  <h1>搜索排序的七种武器：粗排到精排，从 LightGBM 到 MMOE 一篇讲透</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-27</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、为什么排序要分粗排和精排两段？</a>
+  <a href="#s2">二、粗排的进化：LightGBM → COLD → 蒸馏</a>
+  <a href="#s3">三、精排的特征交叉之争：DeepFM 与 DCN</a>
+  <a href="#s4">四、DIN：让模型学会"看人下菜碟"</a>
+  <a href="#s5">五、MMOE：同时优化点击、转化、时长</a>
+  <a href="#s6">六、总结：排序是一场"精度与算力"的永恒谈判</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>上周有个做后端的朋友问我："召回我懂了，不就是从一亿个商品里捞出几千个候选嘛。那后面的排序，不就是按分数从高到低排个序？这有啥好讲的，<code>ORDER BY score DESC</code> 不就完了？"</p>
+
+<p>我反问他："那这个 <code>score</code>，是谁算出来的？"</p>
+
+<p>他愣住了。</p>
+
+<p>对，问题就藏在这个 score 里。排序阶段的全部学问，不是"怎么排"，而是"<strong>怎么给每个候选打出那个分</strong>"。而这件事难就难在——你有几千个候选要打分，但留给你的时间只有几十毫秒。打分打得准，用户才点得爽；打分打得快，机器才扛得住。这两件事天生矛盾。</p>
+
+<p>于是工业界想出了一个特别"狡猾"的办法：把排序拆成两段。先用一个又快又糙的模型（粗排）把几千个砍到几百个，再用一个又慢又精的模型（精排）把这几百个排得明明白白。这就是我们上一篇聊过的"三级火箭"里的后两级。</p>
+
+<p>这篇文章，我们就钻进这两级火箭的引擎舱，看看里面到底装了哪些算法：粗排的 LightGBM、COLD、蒸馏，精排的 DeepFM、DCN、DIN、MMOE。它们不是孤立的七个名词，而是一条清晰的进化链——每一个的出现，都是为了补上一个的窟窿。读完你会明白，所谓排序算法的演进史，本质上是一部"在算力的镣铐下，把精度一点点榨出来"的历史。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、为什么排序要分粗排和精排两段？</h2>
+
+<p>先想一个最朴素的问题：既然精排最准，为什么不直接拿精排模型给所有候选打分，一步到位？</p>
+
+<p>答案就两个字：<strong>算不过来</strong>。</p>
+
+<p>打个比方。召回交给排序的，是一个几千人的"海选名单"。精排模型是一位极其挑剔的评委，他看一个人要看简历、看作品、看过往表现、还要看这个人和当前观众的匹配度——一套流程下来要好几毫秒。几千人挨个看完，黄花菜都凉了。用户在手机前等超过 300 毫秒，就开始烦躁了。</p>
+
+<p>所以聪明的做法是加一道"初筛"。初筛的评委（粗排）水平差一点没关系，但他得快——几千人扫一眼，几十毫秒内刷掉八九成,只把最有戏的几百人递给精排。精排评委于是能心无旁骛地精挑细选。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- 漏斗各级 -->
+    <rect class="node-rect-gray" x="40" y="40" width="150" height="44"/>
+    <text class="node-label" x="115" y="56">召回</text>
+    <text class="node-sublabel" x="115" y="72">数万 → 数千</text>
+
+    <rect class="node-rect-amber" x="265" y="40" width="150" height="44"/>
+    <text class="node-label" x="340" y="56">粗排</text>
+    <text class="node-sublabel" x="340" y="72">数千 → 数百</text>
+
+    <rect class="node-rect-blue" x="490" y="40" width="150" height="44"/>
+    <text class="node-label" x="565" y="56">精排</text>
+    <text class="node-sublabel" x="565" y="72">数百 → 数十</text>
+
+    <line class="arrow-line" x1="190" y1="62" x2="262" y2="62"/>
+    <line class="arrow-line" x1="415" y1="62" x2="487" y2="62"/>
+
+    <!-- 维度对照 -->
+    <text class="node-sublabel" x="115" y="130" style="font-weight:600;fill:#475569;">快 · 糙</text>
+    <text class="node-sublabel" x="340" y="130" style="font-weight:600;fill:#475569;">较快 · 较糙</text>
+    <text class="node-sublabel" x="565" y="130" style="font-weight:600;fill:#475569;">慢 · 精</text>
+
+    <text class="node-sublabel" x="115" y="160">特征少 / 算力省</text>
+    <text class="node-sublabel" x="340" y="160">特征中 / 算力受限</text>
+    <text class="node-sublabel" x="565" y="160">特征多 / 算力管够</text>
+
+    <text class="node-sublabel" x="115" y="184">耗时 ~ ms 级</text>
+    <text class="node-sublabel" x="340" y="184">耗时 ~ 十 ms</text>
+    <text class="node-sublabel" x="565" y="184">耗时 ~ 数十 ms</text>
+
+    <!-- 底部说明 -->
+    <text class="arrow-label" x="340" y="220" style="font-size:12px;fill:#94a3b8;">候选越往后越少，单个打分越往后越贵 —— 用"逐级收窄"换"总算力可控"</text>
+  </svg>
+  <div class="diagram-caption">排序漏斗：粗排和精排是同一个目标下的两次取舍</div>
+</div>
+
+<p>这里有个特别关键、却经常被搞错的点：粗排和精排，<strong>不是两个不相关的模型，而是同一件事的两种精度</strong>。它们追求的目标完全一致——都是预测"用户会不会喜欢这个候选"。区别只在于，一个为了快牺牲了精度，一个为了精牺牲了速度。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  很多人以为粗排是在做"召回的补充"，其实不是。<strong>粗排是精排的"穷人版"</strong>——它和精排的 KPI 是同一个，只是预算少得可怜。这个定位决定了后面所有粗排算法的设计哲学：不是去发明新东西，而是想方设法用更少的算力，逼近精排的判断。
+</div>
+
+<p>理解了这个定位，你就能看懂粗排算法这十年的整条演进主线了。它本质上在回答一个问题：<strong>预算这么紧，我怎么才能算得又快、又尽量像精排？</strong></p>
+
+<p>这条路，工业界走了三步。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、粗排的进化：LightGBM → COLD → 蒸馏</h2>
+
+<h3>第一步：LightGBM——用一棵棵树搭起的"快枪手"</h3>
+
+<p>早期的粗排，主力是 <strong>GBDT（梯度提升决策树）</strong>，而 GBDT 阵营里最能打的，是微软在 2017 年开源的 LightGBM。</p>
+
+<p>GBDT 的思路特别符合直觉。它不追求一个模型一次到位，而是种一棵又一棵的决策树，<strong>每棵新树都专门去纠正前面所有树犯的错</strong>。第一棵树预测得粗糙，差了多少？第二棵树就专门去拟合这个差值（残差）。一棵棵叠加下来，误差越摊越薄。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  Boosting 这套"知错就改、专补窟窿"的打法，像极了一个团队复盘：第一个人给出初稿，第二个人专挑初稿的毛病来补，第三个人再补前两人合起来还没补上的……每个人都不全能，但叠在一起就很强。这也是为什么 GBDT 在结构化特征（年龄、价格、点击率这类表格数据）上，至今依然是难以撼动的强基线。
+</div>
+
+<p>那 LightGBM 凭什么从一堆 GBDT 实现里杀出来？就凭一个字：<strong>快</strong>。它干了两件聪明事。</p>
+
+<p>一是<strong>直方图算法</strong>。传统的树要找最佳分裂点，得把每个特征的所有取值排序、逐个试，贵得要命。LightGBM 干脆把连续特征切成几十个"桶"（比如把价格分成 0–10、10–20……),只在桶的边界上找分裂点。精度损失微乎其微，速度却快了一个数量级。</p>
+
+<p>二是<strong>Leaf-wise 生长</strong>。别的树是"每层一起长"（level-wise），雨露均沾；LightGBM 是"哪片叶子分裂后收益最大就先长哪片"（leaf-wise），把算力集中在刀刃上。</p>
+
+<p>所以在很长一段时间里，粗排的标配就是：人工设计一堆特征，喂给 LightGBM，输出一个分数。简单、稳定、快。但它有个天花板——<strong>它吃不动那些高维稀疏的 ID 类特征</strong>（比如几亿个商品 ID、用户 ID）。而恰恰是这些 ID 特征里，藏着推荐最值钱的个性化信号。树模型对此无能为力。</p>
+
+<p>精排那边早就用深度模型把 ID 特征玩出花了，粗排却还在用树模型啃结构化特征。这道精度鸿沟，迟早要填。问题是——深度模型那么贵，粗排的预算根本养不起。怎么办？</p>
+
+<h3>第二步：COLD——把"算力预算"直接写进模型设计</h3>
+
+<p>2020 年，阿里在 KDD 上甩出了 COLD，全称很长：<em>Computing power cost-aware Online and Lightweight Deep pre-ranking system</em>（算力成本感知的在线轻量级深度粗排系统）。光这个名字，就把它的野心说清楚了。</p>
+
+<p>在 COLD 之前，粗排升级深度模型有两条老路，都不太行。一条是<strong>向量内积模型</strong>（双塔）：用户一个向量、商品一个向量，点积出分数。够快，但用户和商品在打分前"老死不相往来",学不到交叉特征,精度有上限。另一条是<strong>直接把精排模型砍小</strong>:砍特征、砍网络层。砍轻了不够快，砍狠了精度崩。两头不讨好。</p>
+
+<p>COLD 的破局点，是换了个思路：<strong>别再纠结"模型该多大",而是把算力当成一个可以协同优化的变量。</strong></p>
+
+<div class="diagram">
+  <svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg">
+    <!-- 全部特征 -->
+    <rect class="node-rect-gray" x="30" y="100" width="120" height="48"/>
+    <text class="node-label" x="90" y="118">全部特征</text>
+    <text class="node-sublabel" x="90" y="134">含交叉特征</text>
+
+    <!-- SE Block 特征筛选 -->
+    <rect class="node-rect-amber" x="220" y="100" width="140" height="48"/>
+    <text class="node-label" x="290" y="118">SE Block 筛选</text>
+    <text class="node-sublabel" x="290" y="134">给特征打重要性分</text>
+    <line class="arrow-line" x1="150" y1="124" x2="217" y2="124"/>
+
+    <!-- 保留 top 特征 -->
+    <rect class="node-rect-blue" x="430" y="60" width="150" height="44"/>
+    <text class="node-label" x="505" y="76">保留高价值特征</text>
+    <text class="node-sublabel" x="505" y="92">喂给深度网络</text>
+    <line class="arrow-line-blue" x1="360" y1="112" x2="427" y2="86"/>
+
+    <!-- 丢弃低价值 -->
+    <rect class="node-rect-red" x="430" y="150" width="150" height="44"/>
+    <text class="node-label" x="505" y="166">砍掉低价值特征</text>
+    <text class="node-sublabel" x="505" y="182">省下算力</text>
+    <line class="arrow-line" x1="360" y1="136" x2="427" y2="166"/>
+
+    <!-- 工程优化标注 -->
+    <rect class="group-box" x="410" y="40" width="200" height="170"/>
+    <text class="group-label" x="420" y="34">算法-系统协同设计</text>
+
+    <text class="arrow-label" x="330" y="232" style="font-size:12px;fill:#94a3b8;">精度由"留下的特征"保证，速度由"砍掉的特征 + 推理加速"保证</text>
+  </svg>
+  <div class="diagram-caption">COLD 的核心：用 SE Block 做特征筛选，在算力预算内塞进尽可能强的深度模型</div>
+</div>
+
+<p>具体怎么做的？COLD 允许你用<strong>任意复杂的深度模型，包括交叉特征</strong>——这是双塔做不到的。但它在模型里加了一个叫 <strong>SE Block</strong> 的模块，专门给每个特征打一个"重要性分数"。然后做一件很狠的事：<strong>只保留得分最高的那批特征，剩下的直接砍掉。</strong></p>
+
+<p>这就把"特征选择"从一门玄学，变成了模型自己学出来的结果。你想让模型快一点？把保留的特征数调小,算力立刻降下来,而且砍掉的都是模型认为最不重要的,精度损失最小。再配上一堆工程上的推理加速（混合精度、算子融合、列式计算),COLD 硬是在粗排那点可怜的预算里,跑起了一个带交叉特征的深度模型。</p>
+
+<p>更妙的是,COLD 是<strong>在线学习</strong>的,能跟着数据分布的变化实时更新——大促期间用户行为剧变,它扛得住。这一下,粗排和精排的精度鸿沟,被填平了一大截。</p>
+
+<p>但 COLD 再轻量,它终究是个独立训练的模型。它和精排,是"两个各自努力、目标相同的人"。可既然目标相同,精排又比它强,粗排为什么不干脆<strong>直接拜精排为师</strong>呢？</p>
+
+<h3>第三步：蒸馏——让粗排"抄"精排的答案</h3>
+
+<p>这就是蒸馏（Knowledge Distillation）的思路,也是当下粗排最主流的范式。</p>
+
+<p>一句话说清蒸馏：<strong>让又大又准的精排模型当"老师",又小又快的粗排模型当"学生",学生不光学真实的点击标签,还要学着模仿老师的输出。</strong></p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  为什么"学老师的输出"比"学真实标签"更有营养？因为真实标签太"硬"了——用户点了就是 1,没点就是 0,信息量只有一个比特。而老师模型的输出是个概率,比如"0.92""0.88""0.03",这里面藏着老师对样本之间细微差别的判断:同样是没点击的两个商品,老师能告诉你哪个"差一点点就点了"。这种<strong>软标签</strong>携带的"暗知识",才是学生真正该偷师的东西。
+</div>
+
+<p>蒸馏在粗排里主要有两种用法。一种是<strong>Logits 蒸馏</strong>:让粗排去拟合精排打出的分数,等于直接对齐两者的判断。另一种是<strong>特征蒸馏</strong>:让粗排去模仿精排中间层学到的表示。两者常常一起上。</p>
+
+<p>蒸馏顺手解决了一个长期让工程师头疼的毛病——<strong>粗排精排不一致</strong>。想象一下:粗排觉得 A 比 B 好,把 A 送进精排;精排却觉得 B 比 A 好。可 B 早被粗排刷掉了,精排根本没机会见到它。这种"上下游打架"会让整个链路的效果打折。而蒸馏让粗排直接学精排的偏好,两者口径自然就一致了,送上去的候选,正是精排想要的。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  蒸馏不是"无脑让学生抄老师"就完事。有两个坑:一是<strong>老师自己也会错</strong>,如果精排模型本身有偏差(比如热门商品打分虚高),蒸馏会把这种偏差原封不动传给粗排,甚至放大。二是<strong>师生差距过大会"教不会"</strong>——精排几百维交叉特征,粗排可能只有几十维,强行对齐反而让学生学崩。实践中要给蒸馏 loss 配一个合适的权重,让学生"既听老师的,也信自己看到的标签"。
+</div>
+
+<p>从 LightGBM 到 COLD 再到蒸馏,你看出这条线的逻辑了吗?它一直在回答同一个问题——<strong>怎么用更少的算力,逼近精排</strong>。树模型靠快,COLD 靠"算力可控的深度模型",蒸馏靠"直接拜师"。手段在变,目标始终如一。</p>
+
+<p><strong>粗排的进化史,就是一部"穷人怎么把日子过出富人质感"的奋斗史。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、精排的特征交叉之争：DeepFM 与 DCN</h2>
+
+<p>现在轮到精排了。预算管够,该比拼真功夫了。精排的核心任务是 <strong>CTR 预估</strong>——预测用户点击这个候选的概率。而 CTR 预估这门手艺的胜负手,几十年都绕不开一个词:<strong>特征交叉</strong>。</p>
+
+<p>什么叫特征交叉?举个例子。"用户是女性"是一个特征,"商品是口红"是一个特征。单看这两个,信息有限。但"<strong>女性 × 口红</strong>"这个组合,点击率立刻飙升——这就是交叉特征的威力。真正决定点击的,往往不是单个特征,而是特征之间的<strong>组合</strong>。</p>
+
+<p>早年这些组合靠工程师手工设计,费时费力还容易漏。于是深度学习时代的精排模型,都在卷同一件事:<strong>怎么让模型自动、高效地学出有用的特征交叉</strong>。DeepFM 和 DCN,是这条路上两个最经典的答案。</p>
+
+<h3>DeepFM：低阶交叉和高阶交叉，我全都要</h3>
+
+<p>DeepFM 是华为 2017 年提出的,它的设计哲学是"既要又要"。</p>
+
+<p>它把模型劈成两半,共享同一套特征 embedding:</p>
+
+<ul>
+  <li><strong>FM 部分</strong>(因子分解机):专门负责<strong>二阶交叉</strong>。它能高效地把"任意两个特征两两组合"的信号都学出来,而且不需要这两个特征在训练数据里真的同时出现过——这是 FM 的杀手锏。</li>
+  <li><strong>Deep 部分</strong>(深度神经网络):负责<strong>高阶、隐式的交叉</strong>。多层网络叠下来,能捕捉那些"女性 × 口红 × 周末晚上 × 25 岁"这种谁也想不全的复杂组合。</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 620 250" xmlns="http://www.w3.org/2000/svg">
+    <!-- 输入 -->
+    <rect class="node-rect-gray" x="230" y="200" width="160" height="40"/>
+    <text class="node-label" x="310" y="220">稀疏特征输入</text>
+
+    <!-- 共享 embedding -->
+    <rect class="node-rect-amber" x="210" y="130" width="200" height="40"/>
+    <text class="node-label" x="310" y="146">共享 Embedding 层</text>
+    <text class="node-sublabel" x="310" y="162">两边共用一套向量</text>
+    <line class="arrow-line" x1="310" y1="200" x2="310" y2="172"/>
+
+    <!-- FM 部分 -->
+    <rect class="node-rect-blue" x="70" y="60" width="170" height="44"/>
+    <text class="node-label" x="155" y="76">FM 部分</text>
+    <text class="node-sublabel" x="155" y="92">二阶显式交叉</text>
+    <line class="arrow-line-blue" x1="260" y1="130" x2="180" y2="106"/>
+
+    <!-- Deep 部分 -->
+    <rect class="node-rect-purple" x="380" y="60" width="170" height="44"/>
+    <text class="node-label" x="465" y="76">Deep 部分</text>
+    <text class="node-sublabel" x="465" y="92">高阶隐式交叉</text>
+    <line class="arrow-line" x1="360" y1="130" x2="440" y2="106"/>
+
+    <!-- 输出 -->
+    <rect class="node-rect-green" x="240" y="10" width="140" height="36"/>
+    <text class="node-label" x="310" y="28">加权求和 → CTR</text>
+    <line class="arrow-line" x1="155" y1="60" x2="280" y2="44"/>
+    <line class="arrow-line" x1="465" y1="60" x2="340" y2="44"/>
+  </svg>
+  <div class="diagram-caption">DeepFM：FM 管低阶、Deep 管高阶，共享 embedding 一次训练两边受益</div>
+</div>
+
+<p>DeepFM 最聪明的地方,是这两部分<strong>共享 embedding</strong>。FM 学到的特征向量,Deep 直接拿来用,一次训练,两边都受益,还省掉了前辈 Wide&amp;Deep 里"Wide 部分仍需人工设计特征"的麻烦。从此,CTR 预估真正进入了"端到端、免特征工程"的时代。</p>
+
+<p>但 DeepFM 也留了个尾巴:它的显式交叉只到<strong>二阶</strong>就停了。三阶、四阶的显式交叉,全靠 Deep 部分那个"黑箱"去隐式地碰运气。能不能让显式的、可控的高阶交叉,也成为模型的一等公民?</p>
+
+<h3>DCN：让特征交叉像搭积木一样层层叠加</h3>
+
+<p>谷歌的 DCN(Deep &amp; Cross Network)接住了这个问题。它保留了 Deep 部分,但把 DeepFM 的 FM 换成了一个更妙的设计——<strong>Cross Network(交叉网络)</strong>。</p>
+
+<p>Cross Network 的精髓在于:<strong>每加一层,特征交叉的阶数就自动加一</strong>。第一层学二阶交叉,第二层在第一层基础上再交叉一次变三阶,第三层变四阶……你想要几阶交叉,就叠几层,清清楚楚、明明白白。而且它用了一个巧妙的公式,让这种逐层交叉的参数量极小、计算极省。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  DeepFM 和 DCN 的分野,一句话:<strong>DeepFM 的显式交叉"封顶二阶",DCN 的显式交叉"层数即阶数,要多高有多高"。</strong> 打个比方:DeepFM 像一个只会算两数相乘的计算器,再复杂的组合就丢给旁边的"黑箱"去猜;DCN 则像一台能层层嵌套的运算器,每多按一次,就多算一层组合,而且每一步你都看得见。2020 年的升级版 DCN-V2 进一步增强了交叉网络的表达能力,成了很多大厂精排的主力骨架。
+</div>
+
+<p>讲到这里,你可能发现 DeepFM 和 DCN 有个共同的隐含假设:它们都把用户当成一个"静态的特征集合"——性别、年龄、历史偏好,打包成一堆向量。可真实的用户,是<strong>有历史、有当下、会变心的</strong>。</p>
+
+<p>同一个用户,你给他推一台相机。如果他过去一周浏览的全是镜头、三脚架,这台相机的点击率应该很高;如果他最近全在看婴儿用品,这台相机大概率划走。<strong>同样的用户特征,面对不同的商品,该激活的兴趣完全不同。</strong>这件事,DeepFM 和 DCN 都没专门处理。</p>
+
+<p>谁来补这个窟窿?DIN。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、DIN：让模型学会"看人下菜碟"</h2>
+
+<p>DIN(Deep Interest Network,深度兴趣网络)是阿里 2018 年的作品,它解决的,正是上面那个"用户兴趣是动态的"问题。</p>
+
+<p>在 DIN 之前,模型处理用户的历史行为(浏览过的、买过的商品),通常是简单粗暴地<strong>取个平均</strong>:把用户看过的 100 个商品的向量加起来除以 100,得到一个"用户兴趣向量"。这么做有个致命问题——<strong>它把用户压成了一个固定的画像</strong>。无论你给他推相机还是推奶粉,那个兴趣向量都一模一样。</p>
+
+<p>DIN 说:这不对。用户的兴趣不是一个点,而是一片<strong>多元的兴趣分布</strong>。该激活哪一块,得看你要给他推什么。</p>
+
+<p>它的做法,借用了 <strong>注意力机制(Attention)</strong>。当要预测用户对"相机"的点击率时,DIN 会拿"相机"这个目标,去和用户历史行为里的每一个商品做匹配:看过镜头?高度相关,权重拉满;看过奶粉?毫不相关,权重压到接近零。然后按这个权重,把历史行为加权求和。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg">
+    <!-- 目标商品 -->
+    <rect class="node-rect-green" x="250" y="10" width="140" height="40"/>
+    <text class="node-label" x="320" y="30">目标商品：相机</text>
+
+    <!-- 历史行为 -->
+    <rect class="node-rect-blue" x="30" y="110" width="110" height="40"/>
+    <text class="node-label" x="85" y="126">镜头</text>
+    <text class="node-sublabel" x="85" y="142">权重 0.9</text>
+
+    <rect class="node-rect-blue" x="160" y="110" width="110" height="40"/>
+    <text class="node-label" x="215" y="126">三脚架</text>
+    <text class="node-sublabel" x="215" y="142">权重 0.8</text>
+
+    <rect class="node-rect-gray" x="290" y="110" width="110" height="40"/>
+    <text class="node-label" x="345" y="126">奶粉</text>
+    <text class="node-sublabel" x="345" y="142">权重 0.05</text>
+
+    <rect class="node-rect-gray" x="420" y="110" width="110" height="40"/>
+    <text class="node-label" x="475" y="126">童装</text>
+    <text class="node-sublabel" x="475" y="142">权重 0.03</text>
+
+    <!-- attention 连线 -->
+    <line class="arrow-line-blue" x1="300" y1="50" x2="110" y2="108"/>
+    <line class="arrow-line-blue" x1="305" y1="50" x2="225" y2="108"/>
+    <line class="arrow-line" x1="335" y1="50" x2="350" y2="108"/>
+    <line class="arrow-line" x1="345" y1="50" x2="465" y2="108"/>
+    <text class="arrow-label" x="200" y="80" style="fill:#3b82f6;">Attention 算相关性</text>
+
+    <!-- 加权汇总 -->
+    <rect class="node-rect-amber" x="220" y="190" width="200" height="40"/>
+    <text class="node-label" x="320" y="206">动态兴趣向量</text>
+    <text class="node-sublabel" x="320" y="222">为"相机"量身定制</text>
+    <line class="arrow-line" x1="120" y1="150" x2="260" y2="188"/>
+    <line class="arrow-line" x1="430" y1="150" x2="380" y2="188"/>
+  </svg>
+  <div class="diagram-caption">DIN：同一份历史行为，面对不同目标商品，激活出不同的兴趣表示</div>
+</div>
+
+<p>这一下,用户的兴趣向量就<strong>活</strong>了。给他推相机时,镜头、三脚架的权重高,算出来的兴趣向量偏"摄影";给他推奶粉时,奶粉、童装的权重高,兴趣向量偏"育儿"。<strong>同一个用户,同一份历史,模型却能根据当前商品,看人下菜碟。</strong></p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">insider 视角</div>
+  DIN 的意义远不止"涨了几个点的 AUC"。它把"<strong>用户表示应该随上下文动态变化</strong>"这个理念,第一次扎扎实实落进了工业级 CTR 模型。后面的 DIEN(加入兴趣的时间演化)、SIM(超长行为序列建模),乃至今天动辄建模上千条行为的序列模型,都是顺着 DIN 这条路走下去的。可以说,DIN 是"用户行为序列建模"这整个大流派的开山之作。
+</div>
+
+<p>到这里,精排已经会做复杂的特征交叉(DeepFM/DCN),也会动态捕捉用户兴趣(DIN)了。看起来很完美?但还有最后一个,也是最贴近业务现实的难题没解决——</p>
+
+<p>到现在为止,我们聊的所有模型,都只预测一件事:<strong>点击率</strong>。可一个真实的业务,真的只关心点击吗?</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、MMOE：同时优化点击、转化、时长</h2>
+
+<p>想象你是电商平台的算法负责人。老板说:我要 GMV(成交额)。可成交,是用户点击 → 浏览详情 → 加购 → 下单一连串行为的终点。你只优化点击率,会发生什么?</p>
+
+<p>模型学精了,专门给你推"标题党"——点击率爆高,但点进去全是劣质商品,没人买。<strong>点击率涨了,成交反而跌了。</strong>这就是只优化单一目标的陷阱。</p>
+
+<p>真实业务要的,是同时优化一堆目标:点击率(CTR)、转化率(CVR)、停留时长、收藏、分享……这些目标之间,有的正相关,有的甚至打架。怎么用一个模型,同时把它们都照顾好?这就是<strong>多任务学习</strong>要解决的问题,而 MMOE 是其中的里程碑。</p>
+
+<p>最朴素的多任务做法,叫 Shared-Bottom:底层网络共享,上面给每个任务接一个"塔"。这有个老大难问题——<strong>跷跷板效应</strong>。底层被所有任务共用,当两个任务的诉求冲突时(比如"提升点击"和"提升转化"拉扯方向不一致),共享底层就会左右为难,顾此失彼,按下葫芦浮起瓢。</p>
+
+<p>谷歌 2018 年的 MMOE(Multi-gate Mixture-of-Experts,多门控混合专家)给出了一个优雅的解法。它干了两件事:</p>
+
+<ul>
+  <li><strong>把"一个共享底层"换成"多个专家网络"</strong>。不再是一锅烩,而是养了一组各有所长的专家(Expert)。</li>
+  <li><strong>给每个任务配一个独立的"门控"(Gate)</strong>。这个门控负责决定:对于我这个任务,该听哪几个专家的、各听多少。点击任务可能更信专家 1、2,转化任务更信专家 2、3。</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg">
+    <!-- 输入 -->
+    <rect class="node-rect-gray" x="250" y="200" width="140" height="38"/>
+    <text class="node-label" x="320" y="219">共享输入</text>
+
+    <!-- 专家们 -->
+    <rect class="node-rect-amber" x="60" y="120" width="100" height="38"/>
+    <text class="node-label" x="110" y="139">专家 1</text>
+    <rect class="node-rect-amber" x="190" y="120" width="100" height="38"/>
+    <text class="node-label" x="240" y="139">专家 2</text>
+    <rect class="node-rect-amber" x="320" y="120" width="100" height="38"/>
+    <text class="node-label" x="370" y="139">专家 3</text>
+    <line class="arrow-line" x1="300" y1="200" x2="130" y2="160"/>
+    <line class="arrow-line" x1="315" y1="200" x2="240" y2="160"/>
+    <line class="arrow-line" x1="335" y1="200" x2="360" y2="160"/>
+
+    <!-- 任务塔 + 门控 -->
+    <rect class="node-rect-blue" x="120" y="40" width="160" height="44"/>
+    <text class="node-label" x="200" y="58">任务塔 A：CTR</text>
+    <text class="node-sublabel" x="200" y="74">Gate A 决定听谁</text>
+
+    <rect class="node-rect-green" x="360" y="40" width="160" height="44"/>
+    <text class="node-label" x="440" y="58">任务塔 B：CVR</text>
+    <text class="node-sublabel" x="440" y="74">Gate B 决定听谁</text>
+
+    <!-- 门控连线：A 偏向 专家1,2 -->
+    <line class="arrow-line-blue" x1="110" y1="120" x2="170" y2="86"/>
+    <line class="arrow-line-blue" x1="240" y1="120" x2="200" y2="86"/>
+    <!-- 门控连线：B 偏向 专家2,3 -->
+    <line class="arrow-line" x1="250" y1="120" x2="410" y2="86"/>
+    <line class="arrow-line" x1="370" y1="120" x2="445" y2="86"/>
+  </svg>
+  <div class="diagram-caption">MMOE：多个专家共享，每个任务用自己的门控，按需挑选专家组合</div>
+</div>
+
+<p>这个"<strong>多门控</strong>"的设计是点睛之笔。它让任务之间既能<strong>共享</strong>(都用同一批专家,知识互通),又能<strong>解耦</strong>(每个任务用自己的门控,挑出最适合自己的专家组合,不再被冲突的任务硬拽)。跷跷板效应大大缓解。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  MMOE 不是万能药。当任务之间相关性很低、甚至强冲突时,共享专家依然会力不从心——后来的 PLE(Progressive Layered Extraction)就是专门给每个任务再配上"私有专家"来进一步解耦的。另外,多目标的分数最终要融合成一个排序分(常用形如 <code>CTR^α × CVR^β × 时长^γ</code> 的加权乘式),这几个权重怎么调,是门玄学,直接影响线上是冲 GMV 还是冲活跃,往往比模型结构本身更影响业务结果。
+</div>
+
+<p>从 DeepFM 到 MMOE,精排走完了一条很完整的路:先解决"<strong>怎么把特征学透</strong>"(交叉),再解决"<strong>怎么把用户看准</strong>"(兴趣),最后解决"<strong>怎么把业务目标对齐</strong>"(多任务)。每一步,都是往"更懂业务"的方向上迈。</p>
+
+<p><strong>精排的终局,从来不是预测得多准,而是和业务的真实目标对得多齐。</strong></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">六、总结：排序是一场"精度与算力"的永恒谈判</h2>
+
+<p>我们从一个"<code>ORDER BY score DESC</code>"的天真问题出发,钻进了排序阶段的引擎舱。现在把这七种武器串起来,你会看到两条清晰的进化线:</p>
+
+<ul>
+  <li><strong>粗排线(穷人逼近富人)</strong>:LightGBM 用树模型的快扛住海量候选 → COLD 把算力预算写进模型、跑起带交叉的轻量深度网络 → 蒸馏让粗排直接拜精排为师,顺手解决了上下游不一致。主线只有一个:<strong>用更少的算力,逼近精排的判断。</strong></li>
+  <li><strong>精排线(把精度榨到极致)</strong>:DeepFM 自动学低阶+高阶交叉 → DCN 让显式高阶交叉层层可控 → DIN 用注意力让用户兴趣随商品动态变化 → MMOE 用多专家多门控同时优化一堆业务目标。主线也只有一个:<strong>从"算得准"走向"对得齐业务"。</strong></li>
+</ul>
+
+<p><strong>我的判断:</strong>这两条线的底层,其实是同一场谈判——<strong>精度和算力的谈判</strong>。粗排是"算力出价低,精度尽量谈高";精排是"算力管够,精度往死里榨"。理解了这场谈判,你就不会再把这七个模型当七个孤立的名词背,而是能看懂每一个新模型出现时,它到底在这张谈判桌上,为哪一方多争取了一点筹码。</p>
+
+<p><strong>大胆预测两件事,给自己立个 flag:</strong></p>
+
+<p>第一,<strong>到 2027 年,粗排和精排的边界会进一步模糊</strong>。随着推理加速和模型轻量化技术成熟,"一个统一的大模型 + 不同精度的推理路径"会越来越多地取代"两个独立训练的模型"。蒸馏只是个开始,终点是粗精排共享同一套底座。</p>
+
+<p>第二,<strong>生成式推荐(Generative Recommendation)会从精排往整条链路渗透</strong>。今天我们还在用 DeepFM、DIN 这套"判别式打分"的范式,但把用户历史当成序列、用类 LLM 的方式直接"生成"下一个该推什么的思路,已经在头部公司跑出了效果。两三年后回来看,今天这七种武器,可能会被重新洗一遍牌。</p>
+
+<p>半年到一年后,回来看看我这两个预测,对不对。</p>
+
+<p>但无论范式怎么变,有一件事不会变:<strong>排序的本质,永远是在算力的镣铐下跳舞——谁能用同样的算力榨出更高的精度,谁就赢。</strong></p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/abs/2007.16122" target="_blank">COLD: Towards the Next Generation of Pre-Ranking System（Alibaba, KDD 2020）</a></li>
+    <li><a href="https://arxiv.org/abs/1703.04247" target="_blank">DeepFM: A Factorization-Machine based Neural Network for CTR Prediction（Huawei, 2017）</a></li>
+    <li><a href="https://arxiv.org/abs/1708.05123" target="_blank">Deep &amp; Cross Network for Ad Click Predictions（Google, 2017）/ DCN-V2（2020）</a></li>
+    <li><a href="https://arxiv.org/abs/1706.06978" target="_blank">Deep Interest Network for Click-Through Rate Prediction（Alibaba, 2018）</a></li>
+    <li><a href="https://dl.acm.org/doi/10.1145/3219819.3220007" target="_blank">Modeling Task Relationships in Multi-task Learning with Multi-gate Mixture-of-Experts（Google, KDD 2018）</a></li>
+    <li><a href="https://github.com/microsoft/LightGBM" target="_blank">LightGBM: A Highly Efficient Gradient Boosting Decision Tree（Microsoft）</a></li>
+    <li><a href="https://github.com/tangxyw/RecSysPapers" target="_blank">RecSysPapers：推荐/广告/搜索领域工业界经典与前沿论文集合</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
