@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>搜索召回的四大主流算法：从倒排索引到多路召回，一篇讲透 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">搜索召回</span>
+    <span class="tag">向量检索</span>
+    <span class="tag">推荐系统</span>
+  </div>
+  <h1>搜索召回的四大主流算法：从倒排索引到多路召回，一篇讲透</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-06-27</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、召回到底在解一道什么题？</a>
+  <a href="#s2">二、倒排索引与 BM25：搜索的地基</a>
+  <a href="#s3">三、向量检索：让机器读懂"意思"</a>
+  <a href="#s4">四、双塔模型：召回的深度学习答案</a>
+  <a href="#s5">五、多路召回：没有银弹，只有合奏</a>
+  <a href="#s6">六、写在最后：召回的本质</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>10 毫秒。</p>
+
+<p>这是淘宝、抖音、Google 这类系统，留给"召回"这一步的全部时间预算。</p>
+
+<p>在这 10 毫秒里，它要做一件听起来不可能的事：从<strong>几亿甚至上百亿</strong>条候选里，挑出几百到几千条"可能相关"的结果，交给后面的排序模型去精挑细选。</p>
+
+<p>我换个比方你就懂了。这就好比让你在 10 毫秒内，从中国 14 亿人里圈出 500 个"最可能买你这款产品"的人。你不可能挨个看一遍——光是遍历一次就要好几秒。所以召回这一步，从来就不是"找得准"，而是"找得快、还不能漏"。</p>
+
+<p>很多人对搜索的理解停在"关键词匹配"。但你有没有想过：为什么你搜"番茄炒蛋",能搜到标题写着"西红柿炒鸡蛋"的菜谱?为什么你刚看完一个露营视频,首页立刻给你推帐篷——可你压根没搜过"帐篷"这个词?</p>
+
+<p>这些"魔法",全发生在召回这一层。今天我就带你把召回阶段的四大主流算法一次拆透:<strong>倒排索引与 BM25、向量检索(ANN/HNSW/FAISS)、双塔模型、以及把它们串起来的多路召回</strong>。读完你会发现,现代搜索的强大,不是靠某一个绝招,而是靠一场精心编排的合奏。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、召回到底在解一道什么题？</h2>
+
+<p>在拆算法之前,我们得先把题目读懂。否则你会困惑:为什么不直接上最聪明的模型,一步到位排出最好的结果?</p>
+
+<p>答案是:<strong>算力不允许。</strong></p>
+
+<p>一个成熟的搜索/推荐系统,通常分成三步走:召回 → 粗排 → 精排。这就像企业招聘——简历来了一万份,你不可能让 CTO 每一份都亲自面。先用关键词海选筛到 500 份(召回),再用初级面试官刷到 50 份(粗排),最后才轮到 CTO 终面(精排)。</p>
+
+<p>每一层的候选越来越少,但用的模型越来越重、越来越准。<strong>召回是漏斗最宽的入口,它的任务不是排序,而是"圈定范围"。</strong></p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  召回和排序,追求的是<strong>两个完全不同的指标</strong>。召回关心的是"召回率"——该找回来的有没有漏掉(宁可错抓,不可放过);排序关心的是"精准度"——排在前面的够不够好。所以评价召回好坏,你不能问"第一条准不准",而要问"正确答案,有没有落在我圈的这 500 条里"。
+</div>
+
+<p>理解了这一点,后面所有算法的设计取舍就都顺了。召回算法的世界里,有一条铁律:<strong>能离线算好的,绝不留到线上算。</strong>因为线上只有 10 毫秒,而离线你有一整晚。</p>
+
+<p>记住这句话,它是理解倒排索引、向量索引、双塔模型为什么长成这个样子的总钥匙。现在,我们从最古老、也最不该被低估的那一个开始。</p>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、倒排索引与 BM25：搜索的地基</h2>
+
+<p>先问你一个问题:一本书后面的"索引页",是干嘛用的?</p>
+
+<p>你想查"量子纠缠"在哪几页讲过,不会从第一页翻到最后一页,而是翻到书末的索引,找到"量子纠缠 …… 见 87、142、203 页"。直接跳过去就行。</p>
+
+<p>倒排索引(Inverted Index),干的就是这件事,只不过对象是几亿篇文档。</p>
+
+<h3>正排 vs 倒排:一次方向的翻转</h3>
+
+<p>正常存文档,是"文档 → 包含哪些词":第 1 篇文章包含 [搜索, 召回, 算法]。这叫<strong>正排</strong>。但用户查询时,给的是词,要的是文档。如果用正排,你得遍历每一篇文章看它含不含这个词——几亿次,慢到没法用。</p>
+
+<p>倒排,就是把这个映射<strong>反过来</strong>:从"词 → 包含它的文档列表"。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg">
+    <text class="group-label" x="40" y="28" style="font-size:13px;fill:#64748b;">词项 (Term)</text>
+    <text class="group-label" x="300" y="28" style="font-size:13px;fill:#64748b;">倒排链 (Posting List)</text>
+    <rect class="node-rect-blue" x="30" y="45" width="110" height="36"/>
+    <text class="node-label" x="85" y="63">"召回"</text>
+    <line class="arrow-line-blue" x1="145" y1="63" x2="280" y2="63"/>
+    <rect class="node-rect-gray" x="285" y="45" width="60" height="36"/>
+    <text class="node-label" x="315" y="63">doc1</text>
+    <rect class="node-rect-gray" x="355" y="45" width="60" height="36"/>
+    <text class="node-label" x="385" y="63">doc7</text>
+    <rect class="node-rect-gray" x="425" y="45" width="70" height="36"/>
+    <text class="node-label" x="460" y="63">doc23</text>
+    <rect class="node-rect-blue" x="30" y="100" width="110" height="36"/>
+    <text class="node-label" x="85" y="118">"算法"</text>
+    <line class="arrow-line-blue" x1="145" y1="118" x2="280" y2="118"/>
+    <rect class="node-rect-gray" x="285" y="100" width="60" height="36"/>
+    <text class="node-label" x="315" y="118">doc1</text>
+    <rect class="node-rect-gray" x="355" y="100" width="70" height="36"/>
+    <text class="node-label" x="390" y="118">doc23</text>
+    <rect class="node-rect-gray" x="435" y="100" width="70" height="36"/>
+    <text class="node-label" x="470" y="118">doc88</text>
+    <text x="320" y="170" style="font-size:12px;fill:#10b981;font-weight:600;">查 "召回 算法" → 两条链求交集 → doc1、doc23</text>
+  </svg>
+  <div class="diagram-caption">倒排索引:词项指向文档链,查询即对多条链做交/并集</div>
+</div>
+
+<p>用户搜"召回 算法",系统就取出"召回"和"算法"两条倒排链,做个交集,瞬间得到 doc1、doc23。几亿篇文档的检索,被压缩成了几次链表的合并运算。这就是搜索引擎能"秒回"的物理基础。Elasticsearch、Lucene 这些你耳熟能详的工具,内核全是倒排索引。</p>
+
+<h3>BM25:命中之后,谁排前面?</h3>
+
+<p>但光"命中"还不够。一篇文章提了"召回"一次,另一篇提了二十次,显然后者更相关。怎么量化?这就是 <strong>BM25</strong> 出场的地方——它是过去二三十年里,文本相关性打分事实上的工业标准。</p>
+
+<p>BM25 的打分逻辑,你不用记公式,记住三个直觉就够了:</p>
+
+<ul>
+  <li><strong>词出现得越多越相关,但有上限</strong>(词频饱和):一篇文章提"召回"提了 100 次,并不比提 20 次相关 5 倍。BM25 用一个参数 <code>k1</code> 让得分增长"边际递减"。这是它比老土的 TF-IDF 聪明的地方。</li>
+  <li><strong>越稀有的词越值钱</strong>(IDF):"的、是、了"这种词哪篇都有,几乎不携带信息;而"召回"这种专业词,命中了就很说明问题。</li>
+  <li><strong>长文章要打个折</strong>(文档长度归一化,参数 <code>b</code>):一篇万字长文里出现"召回",和一条标题里出现"召回",含金量不同。BM25 会按文档长度做惩罚,避免长文靠"堆字数"占便宜。</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">打个比方</div>
+  BM25 就像一个老练的 HR 看简历。某个关键词反复出现会加分,但刷十遍也没用(词频饱和);越是别人简历里没有的稀缺技能越值钱(IDF);同样一句话,写在一页纸的简历里比塞在十页流水账里更醒目(长度归一化)。
+</div>
+
+<p>BM25 的优点是:<strong>极快、可解释、零训练成本</strong>。新上线一个搜索,不用任何数据,BM25 当天就能跑出像样的效果。直到今天,它依然是绝大多数搜索系统的默认基线,也是 RAG 系统里最稳的那一路召回。</p>
+
+<p>但它有一个致命的盲区。你搜"番茄炒蛋",它永远找不到只写了"西红柿炒鸡蛋"的菜谱——因为这两个词,字面上一个字都不沾。BM25 只认字,不认意思。</p>
+
+<p>这道横在"字面"和"语义"之间的鸿沟,我们叫它<strong>词汇鸿沟(Vocabulary Mismatch)</strong>。要跨过它,搜索必须学会一件全新的事:理解意思。这就要轮到向量检索登场了。</p>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、向量检索：让机器读懂"意思"</h2>
+
+<p>怎么让机器知道"番茄"约等于"西红柿"?</p>
+
+<p>办法是:把每一段文字,通过一个模型(Embedding 模型),映射成一个几百维的数字向量。这个映射有个神奇的性质——<strong>意思相近的文本,向量在空间里的位置也相近</strong>。"番茄"和"西红柿"的向量几乎重叠,而它俩离"汽车"则隔着十万八千里。</p>
+
+<p>于是,"找语义相关的文档"这个模糊问题,被翻译成了一个无比清晰的数学问题:<strong>给定一个查询向量,在几亿个文档向量里,找出离它最近的 K 个。</strong>这就是最近邻搜索(Nearest Neighbor Search)。</p>
+
+<h3>从"精确"到"近似":ANN 的妥协智慧</h3>
+
+<p>问题来了:最朴素的办法,是把查询向量和几亿个文档向量逐个算距离,取最近的——这叫暴力 KNN。准是绝对准,但慢得发指,几亿次浮点运算,根本塞不进 10 毫秒。</p>
+
+<p>所以工业界集体做了一个妥协,叫 <strong>ANN(Approximate Nearest Neighbor,近似最近邻)</strong>。注意那个"近似"——我们主动放弃"找到绝对最近的"这个执念,只要求"大概率找到很近的那几个"。用一点点精度,换回几百上千倍的速度。</p>
+
+<p>这个取舍,正是召回哲学的完美体现:召回要的从来不是完美,而是又快又不漏。那 ANN 具体怎么做到"既快又准"?最主流的答案,是一种叫 HNSW 的图结构。</p>
+
+<h3>HNSW:给向量世界修一套"高速公路网"</h3>
+
+<p>HNSW(Hierarchical Navigable Small World,分层可导航小世界)的思路,我用一个你天天在用的东西类比:<strong>跳表,或者说地图导航的分层。</strong></p>
+
+<p>想象你要从北京的一个胡同,导航到上海的一条小街。导航不会让你一格一格挪。它分层:</p>
+
+<ul>
+  <li><strong>最高层(高速公路)</strong>:节点稀疏,但每条边跨度极大。你先从北京"跳"到上海,一步千里。</li>
+  <li><strong>中间层(国道省道)</strong>:落到上海后,在城市间快速逼近目标区域。</li>
+  <li><strong>最底层(街道小巷)</strong>:节点最密,做最后的精细定位,找到那条小街。</li>
+</ul>
+
+<div class="diagram">
+  <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Layer 2 -->
+    <text x="20" y="40" style="font-size:12px;fill:#8b5cf6;font-weight:600;">第2层 · 高速</text>
+    <circle cx="120" cy="40" r="9" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+    <circle cx="480" cy="40" r="9" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="2"/>
+    <line x1="129" y1="40" x2="471" y2="40" stroke="#8b5cf6" stroke-width="1.5"/>
+    <!-- Layer 1 -->
+    <text x="20" y="140" style="font-size:12px;fill:#3b82f6;font-weight:600;">第1层 · 国道</text>
+    <circle cx="120" cy="140" r="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="280" cy="140" r="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="400" cy="140" r="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <circle cx="480" cy="140" r="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+    <line x1="128" y1="140" x2="272" y2="140" stroke="#3b82f6" stroke-width="1.2"/>
+    <line x1="288" y1="140" x2="392" y2="140" stroke="#3b82f6" stroke-width="1.2"/>
+    <line x1="408" y1="140" x2="472" y2="140" stroke="#3b82f6" stroke-width="1.2"/>
+    <!-- Layer 0 -->
+    <text x="20" y="240" style="font-size:12px;fill:#64748b;font-weight:600;">第0层 · 街道</text>
+    <circle cx="120" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="200" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="280" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="340" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="400" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="440" cy="240" r="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+    <circle cx="480" cy="240" r="9" fill="#f0fdf4" stroke="#10b981" stroke-width="2.5"/>
+    <line x1="127" y1="240" x2="193" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="207" y1="240" x2="273" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="287" y1="240" x2="333" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="347" y1="240" x2="393" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="407" y1="240" x2="433" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <line x1="447" y1="240" x2="471" y2="240" stroke="#cbd5e1" stroke-width="1"/>
+    <!-- 下降箭头 -->
+    <line class="arrow-line" x1="120" y1="52" x2="120" y2="128"/>
+    <line class="arrow-line" x1="480" y1="52" x2="480" y2="128"/>
+    <line class="arrow-line" x1="480" y1="152" x2="480" y2="226"/>
+    <text x="500" y="44" style="font-size:11px;fill:#8b5cf6;">入口</text>
+    <text x="498" y="244" style="font-size:11px;fill:#10b981;">目标</text>
+  </svg>
+  <div class="diagram-caption">HNSW 分层图:从稀疏的高层"大跳",逐层下沉到稠密底层"精定位"</div>
+</div>
+
+<p>HNSW 检索时,就是从最高层的入口点出发,贪心地往离目标更近的邻居走,走到头就下沉一层,继续逼近,直到最底层锁定结果。原本要比对几亿次的搜索,被压缩到几百次跳转。这就是它能在毫秒级返回的奥秘。</p>
+
+<p>HNSW 有三个你迟早会调的参数,顺手记一下:<code>M</code>(每个节点连多少邻居,越大越准也越占内存)、<code>efConstruction</code>(建图时的搜索宽度,影响索引质量)、<code>efSearch</code>(查询时的搜索宽度,这是线上调"精度/速度"最常用的旋钮——调大更准更慢,调小更快但可能漏)。</p>
+
+<h3>FAISS:把这一切变成工程现实</h3>
+
+<p>算法再漂亮,也得有趁手的工具落地。<strong>FAISS(Facebook AI Similarity Search)</strong>就是这个领域最知名的开源库,Meta 出品,几乎是向量检索的工业默认选项。</p>
+
+<p>FAISS 厉害在它不是一个算法,而是一整套"积木"。除了 HNSW,它还提供另一条主流路线 <strong>IVF(倒排文件)</strong>:先用 k-means 把所有向量聚成几千个簇,查询时只在最近的几个簇里搜(参数 <code>nprobe</code> 控制搜几个簇)——这又是一次"缩小范围"的经典操作。再配上 <strong>PQ(乘积量化)</strong>,把高维向量压缩存储,能让上亿向量塞进一台机器的内存。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  别一上来就认为"HNSW 一定最好"。经验法则是:<strong>万级到千万级、内存够、追求高召回率,选 HNSW;数据量极大、内存吃紧、能接受召回率在 85%~90% 封顶,选 IVF-PQ。</strong>还有个容易翻车的点——IVF 的簇中心是训练出来的,新向量插入到一定量后,簇会"漂移",召回率悄悄下降,需要定期重建索引;而 HNSW 支持增量插入,运维上更省心。这些都是上线后才会咬你一口的细节。
+</div>
+
+<p>讲到这,向量检索解决了"理解意思"和"快速找近邻"两件事。但有个根本问题我们一直绕过去了:<strong>那个把文本变成"好向量"的模型,到底长什么样、怎么训出来的?</strong>这就是双塔模型的主场。</p>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、双塔模型：召回的深度学习答案</h2>
+
+<p>向量检索能成立,前提是有人先把 query 和 document 都变成"靠谱的向量"。在搜索和推荐里,产出这些向量的主力模型,就是<strong>双塔模型(Two-Tower Model)</strong>。</p>
+
+<p>它的结构正如其名,两根柱子:一根是<strong>用户塔/查询塔</strong>,吃进用户特征或查询词,吐出一个用户向量;另一根是<strong>物品塔/文档塔</strong>,吃进物品特征,吐出一个物品向量。两个向量算个内积(或余弦相似度),分数高就代表"匹配"。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg">
+    <!-- 左塔 -->
+    <rect class="group-box" x="40" y="20" width="180" height="210"/>
+    <text class="group-label" x="90" y="42">用户 / 查询塔</text>
+    <rect class="node-rect-blue" x="70" y="180" width="120" height="34"/>
+    <text class="node-sublabel" x="130" y="197">用户/Query 特征</text>
+    <rect class="node-rect-blue" x="70" y="120" width="120" height="34"/>
+    <text class="node-sublabel" x="130" y="137">DNN 编码层</text>
+    <rect class="node-rect-blue" x="70" y="60" width="120" height="34"/>
+    <text class="node-label" x="130" y="77">用户向量 u</text>
+    <line class="arrow-line-blue" x1="130" y1="178" x2="130" y2="156"/>
+    <line class="arrow-line-blue" x1="130" y1="118" x2="130" y2="96"/>
+    <!-- 右塔 -->
+    <rect class="group-box" x="380" y="20" width="180" height="210"/>
+    <text class="group-label" x="430" y="42">物品 / 文档塔</text>
+    <rect class="node-rect-green" x="410" y="180" width="120" height="34"/>
+    <text class="node-sublabel" x="470" y="197">物品/文档 特征</text>
+    <rect class="node-rect-green" x="410" y="120" width="120" height="34"/>
+    <text class="node-sublabel" x="470" y="137">DNN 编码层</text>
+    <rect class="node-rect-green" x="410" y="60" width="120" height="34"/>
+    <text class="node-label" x="470" y="77">物品向量 v</text>
+    <line class="arrow-line" x1="470" y1="178" x2="470" y2="156"/>
+    <line class="arrow-line" x1="470" y1="118" x2="470" y2="96"/>
+    <!-- 顶部交互 -->
+    <rect class="node-rect-amber" x="250" y="58" width="100" height="40"/>
+    <text class="node-label" x="300" y="74">相似度</text>
+    <text class="node-sublabel" x="300" y="89">u · v</text>
+    <line class="arrow-line" x1="192" y1="77" x2="248" y2="77"/>
+    <line class="arrow-line" x1="528" y1="77" x2="352" y2="77"/>
+  </svg>
+  <div class="diagram-caption">双塔模型:两塔独立编码,顶层只用一次内积交互</div>
+</div>
+
+<h3>为什么是"两座分开的塔"?这是天才设计,不是偷懒</h3>
+
+<p>你可能会问:让 query 和 document 早点交互、充分纠缠,模型不是更准吗?没错,那种"交叉模型"(Cross-Encoder)确实更准。但它有个致命问题:<strong>必须拿到 query 才能算分</strong>,因为它的每一层都把 query 和 doc 揉在一起算。</p>
+
+<p>双塔的精髓,恰恰在于它<strong>故意不让两塔在中间交互</strong>,只在最顶层碰一次内积。这个"克制",换来了一个杀手锏能力:</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">打个比方</div>
+  双塔模型像一场"提前命题"的相亲。所有物品的"自我介绍"(物品向量)可以<strong>提前一晚全部写好、装进档案库(ANN 索引)</strong>。用户一来,只需现场写一句话介绍(算一次用户向量),再去档案库里秒搜最匹配的几百个。而交叉模型像"必须见面才能聊"——用户每来一次,都得和上亿个物品逐一面谈,线上根本算不过来。
+</div>
+
+<p>看懂这一层,你就理解了整个召回-排序架构的分工逻辑:<strong>双塔因为能离线预计算物品向量,所以适合做召回</strong>(海量、要快);<strong>交叉模型因为更准但算不快,所以留给精排</strong>(少量、要准)。还记得第一章那句铁律吗——"能离线算好的,绝不留到线上算"。双塔模型就是这句话的最佳代言人。</p>
+
+<h3>训练的胜负手:负样本怎么选</h3>
+
+<p>双塔模型怎么学?正样本好找——用户点过、买过的就是正例。难的是负样本:你不能只拿"用户看了没点"的当负例,那些样本太"接近正例",学不出区分度。</p>
+
+<p>工业界最经典的解法叫 <strong>In-Batch Negative(批内负采样)</strong>:在一个训练批次里,把别的样本对应的正例物品,当成当前用户的负例。一个 batch 有 256 个样本,就等于白嫖了 255 个负例,几乎零额外成本。这是 Google 2019 年那篇双塔论文带火的做法,至今是默认配置。</p>
+
+<p>但它有个偏差:越热门的物品越容易出现在 batch 里,就越容易被当成负例,导致模型"打压热门"。于是后来又有了 <strong>Mixed Negative Sampling(混合负采样)</strong>——批内负例之外,再从全库均匀采一批负例补进来,缓解这个偏差,Google Play 的线上实验证明确有提升。负样本工程,某种意义上比模型结构更决定双塔的成败。</p>
+
+<p>到这儿,四大主角里的三个——倒排/BM25、向量检索、双塔——都登场了。但真实的系统从不只用一个。它们怎么协同?这就是召回的最后一块拼图。</p>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、多路召回：没有银弹，只有合奏</h2>
+
+<p>讲了这么多算法,现在我要泼一盆冷水:<strong>没有任何一路召回,能搞定所有情况。</strong></p>
+
+<p>每一种召回都有天生的盲区:</p>
+
+<ul>
+  <li><strong>倒排/BM25</strong>:精确匹配之王,但跨不过词汇鸿沟,搜"番茄"找不到"西红柿"。</li>
+  <li><strong>向量/语义召回</strong>:懂意思,但有时"太懂了"——你搜一个精确的商品型号 "iPhone 15 Pro 256G",它可能给你返回一堆"语义相近"的别的手机,反而漏了那个精确 SKU。</li>
+  <li><strong>协同过滤</strong>:擅长"猜你喜欢",但碰到全新用户或新上架的物品,没有任何行为数据,直接抓瞎——这就是著名的<strong>冷启动</strong>问题。</li>
+</ul>
+
+<p>既然各有所长又各有盲区,那答案就很自然了:<strong>全都要。</strong>让多路召回并行跑,各自捞出一批候选,再汇到一起去重、合并,统一交给粗排。这就是<strong>多路召回(Multi-way Recall)</strong>。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 620 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- 输入 -->
+    <rect class="node-rect-amber" x="20" y="120" width="90" height="44"/>
+    <text class="node-label" x="65" y="138">用户请求</text>
+    <text class="node-sublabel" x="65" y="153">Query/User</text>
+    <!-- 四路 -->
+    <rect class="node-rect-blue" x="200" y="20" width="170" height="40"/>
+    <text class="node-label" x="285" y="40">倒排召回 (BM25)</text>
+    <rect class="node-rect-green" x="200" y="80" width="170" height="40"/>
+    <text class="node-label" x="285" y="100">语义召回 (双塔向量)</text>
+    <rect class="node-rect-purple" x="200" y="140" width="170" height="40"/>
+    <text class="node-label" x="285" y="160">协同过滤召回</text>
+    <rect class="node-rect-gray" x="200" y="200" width="170" height="40"/>
+    <text class="node-label" x="285" y="220">内容/标签召回</text>
+    <!-- 输入到四路 -->
+    <line class="arrow-line" x1="112" y1="135" x2="196" y2="42"/>
+    <line class="arrow-line" x1="112" y1="138" x2="196" y2="100"/>
+    <line class="arrow-line" x1="112" y1="146" x2="196" y2="158"/>
+    <line class="arrow-line" x1="112" y1="150" x2="196" y2="218"/>
+    <!-- 汇聚 -->
+    <rect class="node-rect-red" x="440" y="100" width="100" height="80"/>
+    <text class="node-label" x="490" y="132">融合</text>
+    <text class="node-sublabel" x="490" y="150">去重 + 合并</text>
+    <line class="arrow-line-blue" x1="372" y1="40" x2="436" y2="115"/>
+    <line class="arrow-line-blue" x1="372" y1="100" x2="436" y2="128"/>
+    <line class="arrow-line-blue" x1="372" y1="160" x2="436" y2="150"/>
+    <line class="arrow-line-blue" x1="372" y1="220" x2="436" y2="165"/>
+    <!-- 输出 -->
+    <text x="490" y="210" style="font-size:12px;fill:#64748b;">→ 送入粗排</text>
+  </svg>
+  <div class="diagram-caption">多路召回:多条通路并行,各取 TopK,汇聚去重后统一送往下游</div>
+</div>
+
+<h3>三路最常见的召回,各管一摊</h3>
+
+<p><strong>语义召回</strong>,我们前两章已经讲透了——就是用双塔/向量检索那一套,负责"懂意思",跨越词汇鸿沟。它是这几年增长最快的一路。</p>
+
+<p><strong>内容召回</strong>,是最朴素也最可靠的一路。基于物品自身的属性、标签、分类来匹配:你看了篇讲"露营"的文章,我就用"露营""户外"这些标签,去倒排索引里捞同标签的内容。它的好处是可解释、对新物品友好(只要打了标签就能被召回)。</p>
+
+<p><strong>协同过滤(Collaborative Filtering)</strong>,是推荐系统的灵魂一路,它的哲学一句话就能说清:<strong>"和你口味相似的人喜欢的,你大概也喜欢"</strong>,或者反过来,"经常被一起购买的东西,值得一起推荐"。它完全不看物品内容是什么,只看用户行为的共现模式。你刚看完露营视频就被推帐篷,八成就是它干的——因为"看露营的人，后来很多都买了帐篷"。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键区别</div>
+  内容召回和协同过滤,常被搞混,但思路截然相反。<strong>内容召回看的是"物品像不像"</strong>(帐篷和睡袋都属于户外用品);<strong>协同过滤看的是"行为像不像"</strong>(买帐篷的人也常买防晒霜——哪怕这俩东西八竿子打不着)。前者靠物品属性,后者靠群体智慧。正因为视角不同,它们才能互补补位。
+</div>
+
+<h3>合奏的艺术:召回多路,怎么融合?</h3>
+
+<p>多路召回最后要汇到一起。但每一路给的"分数"含义不同——BM25 的分和向量内积的分,根本不在一个量纲上,没法直接比大小。</p>
+
+<p>实务中常见两种做法。<strong>一种是配额制</strong>:不比分数,给每一路分配固定名额(比如语义路取 300 个、协同路取 200 个、内容路取 100 个),各取各的 TopK,去重后合并。简单、可控、好排查。<strong>另一种是统一打分</strong>:用 RRF(倒数排名融合)这类方法,只看每个候选在各路里的"排名",而不看原始分数,从而把不同量纲的结果公平地揉到一起。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  多路召回不是"路数越多越好"。每加一路,都意味着多一份计算开销、多一份维护成本,还会让下游粗排的候选池更脏(更多噪声)。我见过团队堆到十几路召回,结果线上效果还不如精简到四路——因为大量重复、低质的候选,反而稀释了真正优质的结果。<strong>召回设计的功夫,一半在"召得回",另一半在"舍得砍"。</strong>
+</div>
+
+<p>说到底,多路召回的本质,是一种<strong>承认局限的智慧</strong>。它不指望某个绝顶聪明的单一算法包打天下,而是让一群各有专长、各有偏见的"专家"分头去找,再用一套机制把它们的意见融合起来。这,才是现代搜索真正的样子。</p>
+
+<!-- ==================== SECTION: 章节 6 — 总结 ==================== -->
+<h2 id="s6">六、写在最后：召回的本质</h2>
+
+<p>我们从 10 毫秒的极限约束出发，走完了召回阶段的四大主流算法。回头看，它们其实是在用四种不同的方式，回答同一个问题:<strong>怎么在海量候选里，又快又不漏地圈出对的那一批。</strong></p>
+
+<ul>
+  <li><strong>倒排索引 + BM25</strong>:搜索的地基。靠字面精确匹配,极快、可解释、零训练,至今仍是不可替代的基线。</li>
+  <li><strong>向量检索(ANN/HNSW/FAISS)</strong>:跨越词汇鸿沟,用"近似"换速度,让机器第一次真正读懂"意思"。</li>
+  <li><strong>双塔模型</strong>:深度学习给召回的答案。靠"两塔不交互"的克制设计,换来物品向量可离线预计算的杀手锏。</li>
+  <li><strong>多路召回</strong>:把上面这些和协同过滤、内容召回编排成一场合奏,用互补对抗各自的盲区。</li>
+</ul>
+
+<p>如果要我把整篇浓缩成一句话:<strong>召回的进化史,就是搜索从"认字"到"懂意思"再到"懂你"的进化史。</strong>倒排认字,向量懂意思,协同过滤懂你。</p>
+
+<p>而真正的高手,从不在这四者里搞"路线之争",非要分出谁取代谁。BM25 没有死,向量也没有杀死它——它们今天就肩并肩跑在同一套多路召回里。<strong>承认每个算法的边界,再用工程把它们的优势拼起来,这才是召回工程的成熟。</strong></p>
+
+<p><strong>所以今天给你留一个能动手的挑战:</strong></p>
+
+<p>用 50 行左右的 Python,搭一个最小的"双路召回"玩具。一路用 <code>rank-bm25</code> 库做关键词召回,一路用 <code>sentence-transformers</code> 把文本编码成向量、再用 <code>faiss</code> 建一个 HNSW 索引做语义召回。准备十几条短文本当语料,然后构造两个查询:一个用"近义词不同字"(比如语料里写"自行车",你搜"单车"),一个用"精确术语"(比如某个型号编号)。</p>
+
+<p>跑一遍你会亲眼看到:语义那路能召回"单车→自行车",BM25 那路漏了;而精确术语那路,BM25 稳稳命中,向量反而给你返回一堆"差不多"的噪声。</p>
+
+<p>那一刻,这篇文章里所有的道理,会变成你指尖上的肌肉记忆。<strong>看懂多路召回为什么存在,最快的方式,就是亲手让其中一路漏掉一次。</strong></p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://en.wikipedia.org/wiki/Okapi_BM25" target="_blank">Okapi BM25 — Wikipedia（BM25 公式与参数详解）</a></li>
+    <li><a href="https://arxiv.org/abs/1603.09320" target="_blank">Malkov & Yashunin, Efficient and robust approximate nearest neighbor search using HNSW graphs (arXiv:1603.09320)</a></li>
+    <li><a href="https://github.com/facebookresearch/faiss/wiki" target="_blank">FAISS Wiki — Facebook AI Similarity Search 官方文档</a></li>
+    <li><a href="https://www.pingcap.com/article/approximate-nearest-neighbor-ann-search-explained-ivf-vs-hnsw-vs-pq/" target="_blank">ANN Search Explained: IVF vs HNSW vs PQ — TiDB</a></li>
+    <li><a href="https://dl.acm.org/doi/10.1145/3298689.3346996" target="_blank">Yi et al., Sampling-Bias-Corrected Neural Modeling for Large Corpus Item Recommendations (Google 双塔, RecSys 2019)</a></li>
+    <li><a href="https://dl.acm.org/doi/10.1145/3366424.3386195" target="_blank">Yang et al., Mixed Negative Sampling for Learning Two-tower Neural Networks (WWW 2020)</a></li>
+    <li><a href="https://arxiv.org/pdf/2110.15154" target="_blank">Cross-Batch Negative Sampling for Training Two-Tower Recommenders (arXiv:2110.15154)</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
