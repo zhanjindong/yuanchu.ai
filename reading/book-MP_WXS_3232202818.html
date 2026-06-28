@@ -64,6 +64,16 @@
         .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
             letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
         .note:hover .jump { color: rgba(0,0,0,0.4); }
+        /* 公众号笔记来源文章标题 */
+        .from-article { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            margin-bottom: 8px; }
+        .from-article::before { content: '\6765\81ea\300a'; }
+        .from-article::after { content: '\300b'; }
+        /* 不可定位的笔记（公众号划线）：不显示可点击态 */
+        .note.noloc { cursor: default; }
+        .note.noloc:hover { background: none; }
+        .loc-notice { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            padding: 10px 14px; margin-bottom: 6px; background: rgba(0,0,0,0.03); border-radius: 4px; }
         .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
         @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
 </style>
@@ -81,9 +91,10 @@
             </div>
         </div>
         
-        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">3</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">这种“空中换脑”依赖于一种被称为“政府参考自主架构”（A-GRA）的模块化标准。这意味着，如果敌方开发出了针对某种AI的电子干扰，无人机可以瞬间下载并运行另一种算法，就像在手机上更新APP一样。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">更残酷的是一个名为“爸爸在哪儿？”（Where&#x27;s Daddy?）的系统。它不像传统雷达那样追踪飞机，而是追踪目标与其家庭住所的关联。系统会自动监控被标记人员何时进入家宅。指挥官认为，在这些人员回家与家人团聚时发起攻击，比在军事据点发起攻击更为容易，尽管这意味着整栋建筑的平民都可能成为“附带伤亡”。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">讽刺的是，在针对哈梅内伊的行动中，帕兰提尔平台上运行的克劳德模型依然发挥了关键的辅助作用——尽管它拒绝直接扣动扳机，但它在处理此前针对委内瑞拉总统马杜罗的秘密行动和德黑兰截获的PB级数据中，已经为最终的打击扫清了情报迷雾。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">3</span></button></div><div class="panel active" id="panel-0"><div class="notes"><div class="loc-notice">公众号划线暂无法定位到具体文章，点击不跳转</div>
+<div class="note mark noloc"><div class="note-text">这种“空中换脑”依赖于一种被称为“政府参考自主架构”（A-GRA）的模块化标准。这意味着，如果敌方开发出了针对某种AI的电子干扰，无人机可以瞬间下载并运行另一种算法，就像在手机上更新APP一样。</div></div>
+<div class="note mark noloc"><div class="note-text">更残酷的是一个名为“爸爸在哪儿？”（Where&#x27;s Daddy?）的系统。它不像传统雷达那样追踪飞机，而是追踪目标与其家庭住所的关联。系统会自动监控被标记人员何时进入家宅。指挥官认为，在这些人员回家与家人团聚时发起攻击，比在军事据点发起攻击更为容易，尽管这意味着整栋建筑的平民都可能成为“附带伤亡”。</div></div>
+<div class="note mark noloc"><div class="note-text">讽刺的是，在针对哈梅内伊的行动中，帕兰提尔平台上运行的克劳德模型依然发挥了关键的辅助作用——尽管它拒绝直接扣动扳机，但它在处理此前针对委内瑞拉总统马杜罗的秘密行动和德黑兰截获的PB级数据中，已经为最终的打击扫清了情报迷雾。</div></div></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
     <script>

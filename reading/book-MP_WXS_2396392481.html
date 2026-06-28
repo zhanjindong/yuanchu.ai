@@ -64,6 +64,16 @@
         .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
             letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
         .note:hover .jump { color: rgba(0,0,0,0.4); }
+        /* 公众号笔记来源文章标题 */
+        .from-article { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            margin-bottom: 8px; }
+        .from-article::before { content: '\6765\81ea\300a'; }
+        .from-article::after { content: '\300b'; }
+        /* 不可定位的笔记（公众号划线）：不显示可点击态 */
+        .note.noloc { cursor: default; }
+        .note.noloc:hover { background: none; }
+        .loc-notice { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            padding: 10px 14px; margin-bottom: 6px; background: rgba(0,0,0,0.03); border-radius: 4px; }
         .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
         @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
 </style>
@@ -81,24 +91,25 @@
             </div>
         </div>
         
-        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">1</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">12</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2396392481&chapterUid=1952636990&rangeStart=4139&rangeEnd=4211&userVid=250023191"><div class="note-text">不要愤怒的表达，但是可以表达愤怒</div><div class="ref">一个情绪稳定的人，不是没有情绪。只不过，他的情绪，能够最终在自己的理性协调下，自洽平衡，成为优化决策的助力因素，而不变成导致冲动决策的破坏因素。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">而AI时代的主动性，是“主动定义问题”。老板下任务，先判断该不该做，哪个方向最值得做，该怎么做。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">因为，技术革命的收益，通常是慢慢分配的。但技术革命的代价，往往是立刻到来的。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">相对剥夺感。
-二战期间，美国社会学家萨缪尔·斯托弗研究美军士气时，发现了一个反直觉的现象：在晋升机会更多的航空兵里，抱怨“不公平”的人，反而比晋升机会少的宪兵更多。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">请赐我宁静，去接受我不能改变的一切；赐我勇气，去改变我所能改变的一切；并赐我智慧，去分辨两者的不同。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">别用焦虑代替准备，别用后悔代替复盘。别把沮丧当成人格失败，别用委屈去喂养流氓。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">所以，一个显而易见的事实是：如果你的工作本质是“在用户和数据之间做翻译”，那你就是一种GUI。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">第一次分配，讲效率。
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">1</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">12</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://reading?bId=MP_WXS_2396392481&chapterUid=1952636990"><div class="from-article">如何通过一场谈话，快速识别对方段位？</div><div class="note-text">不要愤怒的表达，但是可以表达愤怒</div><div class="ref">一个情绪稳定的人，不是没有情绪。只不过，他的情绪，能够最终在自己的理性协调下，自洽平衡，成为优化决策的助力因素，而不变成导致冲动决策的破坏因素。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><div class="loc-notice">公众号划线暂无法定位到具体文章，点击不跳转</div>
+<div class="note mark noloc"><div class="note-text">而AI时代的主动性，是“主动定义问题”。老板下任务，先判断该不该做，哪个方向最值得做，该怎么做。</div></div>
+<div class="note mark noloc"><div class="note-text">因为，技术革命的收益，通常是慢慢分配的。但技术革命的代价，往往是立刻到来的。</div></div>
+<div class="note mark noloc"><div class="note-text">相对剥夺感。
+二战期间，美国社会学家萨缪尔·斯托弗研究美军士气时，发现了一个反直觉的现象：在晋升机会更多的航空兵里，抱怨“不公平”的人，反而比晋升机会少的宪兵更多。</div></div>
+<div class="note mark noloc"><div class="note-text">请赐我宁静，去接受我不能改变的一切；赐我勇气，去改变我所能改变的一切；并赐我智慧，去分辨两者的不同。</div></div>
+<div class="note mark noloc"><div class="note-text">别用焦虑代替准备，别用后悔代替复盘。别把沮丧当成人格失败，别用委屈去喂养流氓。</div></div>
+<div class="note mark noloc"><div class="note-text">所以，一个显而易见的事实是：如果你的工作本质是“在用户和数据之间做翻译”，那你就是一种GUI。</div></div>
+<div class="note mark noloc"><div class="note-text">第一次分配，讲效率。
 这次分配的目标，是把蛋糕做大。创造财富，提供服务，提高整个社会的总福利。这次分配的主角，是商业。用收入和价格做指挥棒，把资源引导到最高效的地方。
 第二次分配，讲公平。
 这次分配的目标，是分好蛋糕。这次分配的主角，是政府。蛋糕做大之后，怎么分？通过税收、收费、补贴、救济等方式，在第一次分配基础上，进行第二次分配，提高整个社会的公平性。
 第三次分配，是补充。
-这次分配的目标，是查漏补缺。主角，是公益。社会自发的慈善力量，根据自己的资源、智慧、影响力，对前两次分配的结果，进行第三次分配，润滑社会的运转。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">低价不是竞争优势，低成本带来的低价才是。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">本质上，保险就是一群面临相同风险的人，发明出来的一种“同质风险共担”机制。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">价值＞价格＞成本，本价值模型才成立。因为价值大于价格，用户有动力买；价格大于成本，你才有利润做。而且差值越大，势能越大。所谓落地，就是这两件事，同时发生。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">房地产开发项目结算规模显著下降，毛利率仍处低位。报告期内，房地产开发业务结算利润主要对应2023年、2024年销售的项目及2025年消化的现房和准现房库存。这些项目的地价获取成本较高，导致报告期结算毛利总额大幅减少。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">所以，1）未来的核心价值，是AI；2）AI的核心瓶颈，是算力；3）算力的核心瓶颈，是能源；4）地球上的能源，是有限和昂贵的；5）太空中的太阳能，是无限和免费的。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
+这次分配的目标，是查漏补缺。主角，是公益。社会自发的慈善力量，根据自己的资源、智慧、影响力，对前两次分配的结果，进行第三次分配，润滑社会的运转。</div></div>
+<div class="note mark noloc"><div class="note-text">低价不是竞争优势，低成本带来的低价才是。</div></div>
+<div class="note mark noloc"><div class="note-text">本质上，保险就是一群面临相同风险的人，发明出来的一种“同质风险共担”机制。</div></div>
+<div class="note mark noloc"><div class="note-text">价值＞价格＞成本，本价值模型才成立。因为价值大于价格，用户有动力买；价格大于成本，你才有利润做。而且差值越大，势能越大。所谓落地，就是这两件事，同时发生。</div></div>
+<div class="note mark noloc"><div class="note-text">房地产开发项目结算规模显著下降，毛利率仍处低位。报告期内，房地产开发业务结算利润主要对应2023年、2024年销售的项目及2025年消化的现房和准现房库存。这些项目的地价获取成本较高，导致报告期结算毛利总额大幅减少。</div></div>
+<div class="note mark noloc"><div class="note-text">所以，1）未来的核心价值，是AI；2）AI的核心瓶颈，是算力；3）算力的核心瓶颈，是能源；4）地球上的能源，是有限和昂贵的；5）太空中的太阳能，是无限和免费的。</div></div></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
     <script>

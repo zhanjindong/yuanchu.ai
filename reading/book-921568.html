@@ -64,6 +64,16 @@
         .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
             letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
         .note:hover .jump { color: rgba(0,0,0,0.4); }
+        /* 公众号笔记来源文章标题 */
+        .from-article { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            margin-bottom: 8px; }
+        .from-article::before { content: '\6765\81ea\300a'; }
+        .from-article::after { content: '\300b'; }
+        /* 不可定位的笔记（公众号划线）：不显示可点击态 */
+        .note.noloc { cursor: default; }
+        .note.noloc:hover { background: none; }
+        .loc-notice { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 0.5px;
+            padding: 10px 14px; margin-bottom: 6px; background: rgba(0,0,0,0.03); border-radius: 4px; }
         .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
         @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
 </style>
