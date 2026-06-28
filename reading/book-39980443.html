@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,19 +81,29 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=208&rangeStart=3333&rangeEnd=3414&userVid=250023191"><div class="note-text">下次回答别人问题尤其比较晦涩的问题之前先确认下有没有理解别人的问题，可以快速复述下别人的问题询问自己理解的对不对，一方面确保不会答非所问，一方面给自己大脑点时间切换到系统2。</div><div class="ref">经常有人问我们一个问题，我们立刻不假思索地回答他们，往往怎么容易就怎么回答，也不管回答得对不对。也许我们根本就答非所问。我们在无意中用自己的问题替代了别人的问题。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">6</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">6</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=208&rangeStart=3333&rangeEnd=3414&userVid=250023191"><div class="note-text">下次回答别人问题尤其比较晦涩的问题之前先确认下有没有理解别人的问题，可以快速复述下别人的问题询问自己理解的对不对，一方面确保不会答非所问，一方面给自己大脑点时间切换到系统2。</div><div class="ref">经常有人问我们一个问题，我们立刻不假思索地回答他们，往往怎么容易就怎么回答，也不管回答得对不对。也许我们根本就答非所问。我们在无意中用自己的问题替代了别人的问题。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=187&rangeStart=1378&rangeEnd=1396&userVid=250023191"><div class="note-text">让我想到了大模型里面的“温度”</div><div class="ref">换一种呈现数据的方式可能会产生欺骗性</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=174&rangeStart=1531&rangeEnd=1603&userVid=250023191"><div class="note-text">之前看到公司关于产品的各种问卷调查总是感觉哪里不对但又很难说出来问题所在，现在逐渐清晰了：问卷样本过于少、随机性不够、调查方法有问题，比如邀请调查对象来公司里面测评、测评后给予小礼品等等。</div><div class="ref">请经常对遇到的科学研究提出这个问题：测量方法是否让人满意？同时还要问“有没有其他方法可以用来测量这个概念，如果有，它们是否可能提供不同的结果？”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=147&rangeStart=804&rangeEnd=872&userVid=250023191"><div class="note-text">也有可能只是一个“圣母”“键盘侠”，或者想维护自己“圣母”“键盘侠”的形象（提示：我这句话也隐含了我的价值倾向）</div><div class="ref">为什么这个后果在作者的思想中占有这么大的分量？防止污染有助于实现哪些更普遍的价值观？我们可以猜测，作者很可能特别重视公众健康或环境保护。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=141&rangeStart=2786&rangeEnd=2872&userVid=250023191"><div class="note-text">这里强调的是逻辑的自洽，切语义明确，幸福感=脑内啡。至于幸福感是不是就等于脑内啡，读者可以不认同，但如果你不认同想说服自己或者对方，你就得自己去了解和论证。这就是辩证性思维的好处，可以通过质疑和求证不断的“递归式”学习。</div><div class="ref">研究表明，幸福感会随着人们选择的增加而降低。在实验中，当受试者面对1个、5个或10个选择时，实验人员对其脑内啡的释放量进行了测量，结果表明，选择越多，脑内啡的释放量就越少。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=132&rangeStart=814&rangeEnd=829&userVid=250023191"><div class="note-text">非凡的结论需要非凡的证据</div><div class="ref">薄弱的理由必然导致薄弱的论证！</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=174&rangeStart=1440&rangeEnd=1474&userVid=250023191"><div class="note-text">并记住测量结果只能根据测量方法进行概括，你就能认识到研究结果的局限性</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=39980443&chapterUid=132&rangeStart=814&rangeEnd=829&userVid=250023191"><div class="note-text">非凡的结论需要非凡的证据</div><div class="ref">薄弱的理由必然导致薄弱的论证！</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=174&rangeStart=1440&rangeEnd=1474&userVid=250023191"><div class="note-text">并记住测量结果只能根据测量方法进行概括，你就能认识到研究结果的局限性</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=151&rangeStart=945&rangeEnd=1041&userVid=250023191"><div class="note-text">所谓描述性假设，是指对这个世界过去、现在或未来是什么样的信念；而规定性假设或者说价值观假设，你应该还记得，是指对这个世界应该是什么样的信念。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=141&rangeStart=3420&rangeEnd=3473&userVid=250023191"><div class="note-text">对于结论而言，文字犹如砺石，思想好比锋刃，两相砥砺将使思想更加锋利，长相砥砺，会生发出更加深思熟虑的论证。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=125&rangeStart=375&rangeEnd=421&userVid=250023191"><div class="note-text">本章已接近尾声，我们希望大家都能清醒地认识到，轻松而又简单地回答复杂问题的理想方式是不存在的</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=123&rangeStart=2082&rangeEnd=2121&userVid=250023191"><div class="note-text">而作为批判性思维者，你的目标就是不断追求更好的结论、更好的信念以及更好的决定。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=120&rangeStart=1686&rangeEnd=1733&userVid=250023191"><div class="note-text">批判性思维包括意识到一整套环环相扣的评价性问题，加上在适当时机提出和回答这些问题的能力和意愿。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=39980443&chapterUid=120&rangeStart=1686&rangeEnd=1733&userVid=250023191"><div class="note-text">批判性思维包括意识到一整套环环相扣的评价性问题，加上在适当时机提出和回答这些问题的能力和意愿。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

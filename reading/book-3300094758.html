@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=18&rangeStart=4378&rangeEnd=4462&userVid=250023191"><div class="note-text">这个定义的视角很独特</div><div class="ref">所谓“年轻的老干部”就是长年植根于企业实践（一线成长起来）、对企业忠诚、具备开拓精神的新生代，他们具备极强的事业创新精神，同时又能在企业内部依靠“刷脸”获取和整合资源。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">12</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">35</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=18&rangeStart=4378&rangeEnd=4462&userVid=250023191"><div class="note-text">这个定义的视角很独特</div><div class="ref">所谓“年轻的老干部”就是长年植根于企业实践（一线成长起来）、对企业忠诚、具备开拓精神的新生代，他们具备极强的事业创新精神，同时又能在企业内部依靠“刷脸”获取和整合资源。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=17&rangeStart=5451&rangeEnd=5555&userVid=250023191"><div class="note-text">是</div><div class="ref">我们通常发现很多企业“战略”与“落地”两张皮，其中很重要的原因在于企业在经营预算之外缺乏有效的战略预算体系，容易忽略对关键任务的战略专项投入，致使企业虽完成了战略设计，但是到了落地层面并未实现资源的重新配置。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=16&rangeStart=7782&rangeEnd=7807&userVid=250023191"><div class="note-text">好句 必须mark下</div><div class="ref">战略并不是未来要做什么，而是当下做什么才会有未来。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=12&rangeStart=30116&rangeEnd=30221&userVid=250023191"><div class="note-text">很多时候我们嘴上喊的，心里想的和实际行动的都不一致，我理解这就是BLM所说的不一致性。</div><div class="ref">而对机会差距来说，企业的战略重心在于第三曲线的跃迁式创新，在这种相对新型且需要探索的业务形态中，需要的是“重回创业状态”，因此创新业务需做适度隔离，避免强大的组织结构和文化惯性制约创新业务的发展。在这种情况下，</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -82,7 +92,7 @@
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=5403&rangeEnd=5435&userVid=250023191"><div class="note-text">90%企业会夭折在从小婴儿成长到具有独立人格自我意识这个阶段，组织管理跟不上业务发展这个阶段。</div><div class="ref">90%以上的企业会在这个阶段夭折，无法成为真正意义上的“企业”。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=3817&rangeEnd=4091&userVid=250023191"><div class="note-text">系统性的创新是最难的，华为最大的创新和竞争力不是技术、不是人才是管理机制的创新，机制有了环境有了，构建于之上的产品竞争力、技术突破、人才梯队自然而然也就有了。</div><div class="ref">我们对于增长和衰落的思想往往受植物的单一生命景象所左右：种子发芽，鲜花盛开，然后凋谢死亡，‘花开一时红，花谢永无踪’。然而就一个永远在更新之中的社会而言，其特有的景象是整个一座花园、一所布局合理的水族馆或者一个别的生态系统。一些事物正在生长，另一些正在盛年，还有一些则在衰亡——而整个生态系统永生。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=3597&rangeEnd=3647&userVid=250023191"><div class="note-text">按照第一性原理产品真正的竞争力要回归到产品和技术本身形成的竞争力，真正能解决用户什么刚需问题，其他都是锦上添花。</div><div class="ref">企业系统的打造是个没有止境的过程，这就需要从第一性原理出发，掌握客观规律，以科学的态度依照规律行事。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=5&rangeStart=3632&rangeEnd=3649&userVid=250023191"><div class="note-text">知易行难</div><div class="ref">把常识变成方法和习惯，是要付出的。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=27&rangeStart=1179&rangeEnd=1434&userVid=250023191"><div class="note-text">我经常被问到一个问题，‘未来十年，会有什么样的变化？’但我很少被问到：‘未来十年，什么是不变的？’我认为第二个问题比第一个问题更重要，因为你需要将你的战略建立在不变的事物上。”￼</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300094758&chapterUid=5&rangeStart=3632&rangeEnd=3649&userVid=250023191"><div class="note-text">知易行难</div><div class="ref">把常识变成方法和习惯，是要付出的。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=27&rangeStart=1179&rangeEnd=1434&userVid=250023191"><div class="note-text">我经常被问到一个问题，‘未来十年，会有什么样的变化？’但我很少被问到：‘未来十年，什么是不变的？’我认为第二个问题比第一个问题更重要，因为你需要将你的战略建立在不变的事物上。”￼</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=23&rangeStart=1944&rangeEnd=2033&userVid=250023191"><div class="note-text">规模红利，可以做组织、做管理、打造地基，实现系统性成长；与此同时，始终保持初创企业的那股劲儿，不断生长出规模化的新生势力。能够实现这种“对立统一”的企业，则是领先且持续领先的企业</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=21&rangeStart=17875&rangeEnd=17929&userVid=250023191"><div class="note-text">随着时间的推移，企业机能也会如人一般，逐步“衰老”。因此企业面临的最大挑战不是环境的变化，反而是成功的惰性。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=18&rangeStart=13954&rangeEnd=14010&userVid=250023191"><div class="note-text">管理者想得大(Think Big)、想得深(Think Deep)以及想得远(Think Long)的能力不够。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -118,9 +128,19 @@
 “但那不管用，真正的问题在于：走出去，确保每天的市场都发生一些变化。我们的产品并不差，我们的员工也很优秀，我们的客户也都是与我们有着长期成功合作关系的老顾客，我们所欠缺的就是没有把工作做到位。扭转颓势，重在实施。”￼</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=21571&rangeEnd=21624&userVid=250023191"><div class="note-text">先慢再快，恰恰成了领先企业的重要特征。之所以“慢”，就是在等待企业系统的构建，确保组织建设跟得上业务发展。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=12337&rangeEnd=12431&userVid=250023191"><div class="note-text">帮顾客省钱并不是让他们购买更劣质的商品，而是能够有机会享受和富人一样的商品和服务，也就是同样的品质，更低的价格，而这后来也成为沃尔玛的使命(Save money，Better life)。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=11094&rangeEnd=11155&userVid=250023191"><div class="note-text">外界对沃尔玛的关注更多在于其构建的强大零售系统、生态与竞争力，但它真正值得被学习的，是其穿越周期的系统性成长、进化与领先。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=3300094758&chapterUid=7&rangeStart=11094&rangeEnd=11155&userVid=250023191"><div class="note-text">外界对沃尔玛的关注更多在于其构建的强大零售系统、生态与竞争力，但它真正值得被学习的，是其穿越周期的系统性成长、进化与领先。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

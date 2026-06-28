@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,11 +81,21 @@
             </div>
         </div>
         
-        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=857288&chapterUid=7&rangeStart=3286&rangeEnd=3402&userVid=250023191"><div class="note-text">服务不需要“业务稳定”，而需要不停的滋养，只有在滋养中才能从最初仅提供单薄业务功能的服务逐渐成长为企业最为宝贵的IT资产，而服务所需的滋养正是来自新的业务不断进行服务的接入。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">3</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=857288&chapterUid=7&rangeStart=3286&rangeEnd=3402&userVid=250023191"><div class="note-text">服务不需要“业务稳定”，而需要不停的滋养，只有在滋养中才能从最初仅提供单薄业务功能的服务逐渐成长为企业最为宝贵的IT资产，而服务所需的滋养正是来自新的业务不断进行服务的接入。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=857288&chapterUid=6&rangeStart=11665&rangeEnd=11780&userVid=250023191"><div class="note-text">我们看到能力较强的员工能体现自己价值的地方在于负责的项目更大，甚至同时负责多个项目，而这在我看来终归是增加了项目经验，并不能在某一专业领域得到知识和经验的沉淀，我相信随着时间的流逝，越来越多的人会慢慢失去最初的工作积极性和创造性。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=857288&chapterUid=6&rangeStart=1518&rangeEnd=1624&userVid=250023191"><div class="note-text">2016年6月，中国腾讯公司以86亿美元收购了员工数不超过200人的Supercell公司84.3%的股权，每一名员工人均贡献的估值超过3.54亿人民币。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=857288&chapterUid=6&rangeStart=1518&rangeEnd=1624&userVid=250023191"><div class="note-text">2016年6月，中国腾讯公司以86亿美元收购了员工数不超过200人的Supercell公司84.3%的股权，每一名员工人均贡献的估值超过3.54亿人民币。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

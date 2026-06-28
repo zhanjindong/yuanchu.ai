@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,13 +81,23 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://reading?bId=3300086026"><div class="note-text">读完本书感觉像过完了自己的医生，还有回看了父亲的一生，很其妙的感觉</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">4</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">2</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://reading?bId=3300086026"><div class="note-text">读完本书感觉像过完了自己的医生，还有回看了父亲的一生，很其妙的感觉</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300086026&chapterUid=62&rangeStart=1406&rangeEnd=1481&userVid=250023191"><div class="note-text">如果我父亲能看到儿子出生得多好，他是那么喜欢小孩子的一个人。</div><div class="ref">注意到在爸爸和阿莱克斯亲吻告别的时候，两人的眼中，似乎都闪着光。在和儿子一同回家的路上，我觉得自己作为一个中间人，让爷爷将他对于生活的爱，传递给了孙子</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300086026&chapterUid=57&rangeStart=2589&rangeEnd=2606&userVid=250023191"><div class="note-text">特别有感触。我父亲患癌症在生命最后的时刻想的就是异地找一个很多年的故友，但是作为子女却没有帮助他完成他的愿望，因为觉得他不适合远门了，现在想起来真后悔啊</div><div class="ref">所以老年男性会尤其渴望男性同伴在旁</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=3300086026&chapterUid=40&rangeStart=1095&rangeEnd=1182&userVid=250023191"><div class="note-text">好伤感。我儿子才7岁不到，但已经经常伤感刚过去的周末美好时光。我也依稀记得我小时候每次过完年还在正月亲人远行他乡各奔东西的伤感。</div><div class="ref">更是需要哀悼生活中的诸多丧失：与父母的亲密关系、他们眼中曾经健康而有活力的爸爸妈妈、他们自己的儿童身份、他们所熟悉的小男孩的身体、之前那个安全可靠的世界，以及单纯的生活本身。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300086026&chapterUid=18&rangeStart=444&rangeEnd=481&userVid=250023191"><div class="note-text">父亲在孩子生命中最早所尽的职能，是帮助自己的儿女艰难地与他们的母亲进行分化</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=3300086026&chapterUid=17&rangeStart=1883&rangeEnd=2251&userVid=250023191"><div class="note-text">的心智发育，既是各种身体刺激的结果，也是与不同的人进行人际互动尝试的结果。￼西格尔的研究发现，母亲的人际能量是向心的(centripetal)，它把宝宝引向自己的内在，而父亲的能量是离心的(centrifugal)，它让宝宝离开中心，从而趋向外部世界</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note thought" href="weread://bestbookmark?bookId=3300086026&chapterUid=40&rangeStart=1095&rangeEnd=1182&userVid=250023191"><div class="note-text">好伤感。我儿子才7岁不到，但已经经常伤感刚过去的周末美好时光。我也依稀记得我小时候每次过完年还在正月亲人远行他乡各奔东西的伤感。</div><div class="ref">更是需要哀悼生活中的诸多丧失：与父母的亲密关系、他们眼中曾经健康而有活力的爸爸妈妈、他们自己的儿童身份、他们所熟悉的小男孩的身体、之前那个安全可靠的世界，以及单纯的生活本身。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300086026&chapterUid=18&rangeStart=444&rangeEnd=481&userVid=250023191"><div class="note-text">父亲在孩子生命中最早所尽的职能，是帮助自己的儿女艰难地与他们的母亲进行分化</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300086026&chapterUid=17&rangeStart=1883&rangeEnd=2251&userVid=250023191"><div class="note-text">的心智发育，既是各种身体刺激的结果，也是与不同的人进行人际互动尝试的结果。￼西格尔的研究发现，母亲的人际能量是向心的(centripetal)，它把宝宝引向自己的内在，而父亲的能量是离心的(centrifugal)，它让宝宝离开中心，从而趋向外部世界</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

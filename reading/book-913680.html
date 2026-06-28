@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=70&rangeStart=5876&rangeEnd=5943&userVid=250023191"><div class="note-text">想找到多个切入点，除了思维的灵活性以外，还需要“打破砂锅问到底”的精神。不要只满足于只找到一切入点，多想想还有没有其他更好的切入点吧。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">14</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=70&rangeStart=5876&rangeEnd=5943&userVid=250023191"><div class="note-text">想找到多个切入点，除了思维的灵活性以外，还需要“打破砂锅问到底”的精神。不要只满足于只找到一切入点，多想想还有没有其他更好的切入点吧。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=70&rangeStart=850&rangeEnd=941&userVid=250023191"><div class="note-text">而逻辑树就不同了，它的用处是将最上方的要素和主题系统地分解为更细小的构成要素。划分枝杈的过程中不会添加结论，纯粹是一个用来分解要素和主题的工具。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=66&rangeStart=4314&rangeEnd=4353&userVid=250023191"><div class="note-text">如果想更加慎重，可以尝试回到第一步，提出完全相反的主张作为假说，并制作金字塔。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=66&rangeStart=2104&rangeEnd=2217&userVid=250023191"><div class="note-text">文本和文章的形式存在多种模式，但在商务场合下，只要内容不会引起对方的不快，建议尽量在第一行挑明自己的主张。先陈述主张（结论），然后罗列根据，最后再把主张重点重复一遍，这样做是很有效果的。尤其面对外国人的时候，这种形式最为适用。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -84,9 +94,19 @@
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=53&rangeStart=745&rangeEnd=793&userVid=250023191"><div class="note-text">比如想知道产业的吸引力有多大，可以使用波特的五力模型；而如果要思考具体营销策略，则可以选择4P。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=49&rangeStart=1678&rangeEnd=1761&userVid=250023191"><div class="note-text">“五力模型”是商业计划中常用的关系图之一。通过对“竞争对手”、“卖方”、“买方”、“潜在竞争参与者”、“替代品”这五种力量的分析，就很容易掌握行业的竞争因素和收益结构</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=42&rangeStart=4009&rangeEnd=4151&userVid=250023191"><div class="note-text">说到底，判断是否事实的最终判定标准，在于“是否有足够让他人认同的逻辑依据”。在这方面，可以认为在一定程度上被世间所信赖的关键人物的言论，是足以作为事实来考量的。并且，如果搜集大量关键人物的发言并从中抽取出共通的意见，可信度就更高了。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=41&rangeStart=3226&rangeEnd=3325&userVid=250023191"><div class="note-text">原因就在于无论提出多么准确的根据，它们充其量不过是过去的事实。在这个瞬息万变的时代，未来未必就存在于过去的延长线上。而商业决策必须在预测未知的未来的基础上做出行动，所以没必要一味追求百分百的严密性。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=913680&chapterUid=41&rangeStart=3226&rangeEnd=3325&userVid=250023191"><div class="note-text">原因就在于无论提出多么准确的根据，它们充其量不过是过去的事实。在这个瞬息万变的时代，未来未必就存在于过去的延长线上。而商业决策必须在预测未知的未来的基础上做出行动，所以没必要一味追求百分百的严密性。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,9 +81,9 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=280135834&rangeStart=306&rangeEnd=340&userVid=250023191"><div class="note-text">这引力好像在月球</div><div class="ref">已经明显超出以往研究型 Demo 的范畴，在观感上直逼成熟游戏产品。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">3</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">20</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=280135834&rangeStart=306&rangeEnd=340&userVid=250023191"><div class="note-text">这引力好像在月球</div><div class="ref">已经明显超出以往研究型 Demo 的范畴，在观感上直逼成熟游戏产品。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=562184655&rangeStart=8239&rangeEnd=8261&userVid=250023191"><div class="note-text">这逻辑真是一言难尽</div><div class="ref">比如引入代码解释器来运行 Python 代码</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=562184655&rangeStart=1870&rangeEnd=1898&userVid=250023191"><div class="note-text">难评，辛顿不认识然后来讨论AI相关的内容。不说不可以，只是让我对这个人讲的内容可信度大大折扣。</div><div class="ref">Steve Eisman：Jeff Hinton 是谁？</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">我们正在进入一个世界：“你能不能执行”不再重要，真正重要的是——你能不能选对要做的事情。你的价值，变成了三件事：
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=562184655&rangeStart=1870&rangeEnd=1898&userVid=250023191"><div class="note-text">难评，辛顿不认识然后来讨论AI相关的内容。不说不可以，只是让我对这个人讲的内容可信度大大折扣。</div><div class="ref">Steve Eisman：Jeff Hinton 是谁？</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">我们正在进入一个世界：“你能不能执行”不再重要，真正重要的是——你能不能选对要做的事情。你的价值，变成了三件事：
 1）选择正确的问题让 AI 去解决
 2）把 AI 的产出转化为产品或价值
 3）获取资源（资本、算力、token）来放大这一切
@@ -97,9 +107,19 @@
 <a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">“从领域来看，我们更看好那些垂直属性强、发展空间广阔且行业纵深深的赛道。那些领域覆盖较浅、没有自身独特行业数据支撑的 Agent，会慢慢被通用 Agent 蚕食掉。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">。核心思路是构建 “通用基础层 + 领域知识层 + 场景适配层” 的三级架构</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">当前多数通用 Agent 聚焦低价值通用场景，此类场景要么存在成熟替代工具，要么用户不愿为轻微效率提升付费；而高价值通用场景的挖掘与适配不足，导致产品陷入 “能落地的不盈利，盈利的难落地” 的僵局。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">在各大论坛，关于 Agent 实际应用能力的讨论越来越多。不少长期关注该赛道的从业者及尝鲜用户反馈，厂商们和评测方把功能描述得非常强大，并放出了各种效果惊艳的演示案例。但普通用户上手时却如同“开盲盒”，尝试多次都很难成功且很多效果无法复现，能实现的多为基础操作，逻辑稍复杂就会跑崩。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">在各大论坛，关于 Agent 实际应用能力的讨论越来越多。不少长期关注该赛道的从业者及尝鲜用户反馈，厂商们和评测方把功能描述得非常强大，并放出了各种效果惊艳的演示案例。但普通用户上手时却如同“开盲盒”，尝试多次都很难成功且很多效果无法复现，能实现的多为基础操作，逻辑稍复杂就会跑崩。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

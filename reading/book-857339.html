@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,8 +81,8 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=10&rangeStart=16434&rangeEnd=16550&userVid=250023191"><div class="note-text">你在忙什么呢？额，瞎忙瞎忙</div><div class="ref">第三类是“忙碌奔波型”。这类人被资方聘请过来，负责管理工作。他们愿意每周工作80小时（也愿意鞭策别人这么做），因为他们觉得自己以后就会获得晋升，但等真的获得晋升之后，又会拿出更多时间去应付令人头疼的新问题，不过他们喜欢这种忙碌奔波。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">这就是我最近头脑里的想法</div><div class="ref">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=14521&rangeEnd=14658&userVid=250023191"><div class="note-text">但是为何一个人工时减少，却能做更多事情呢？表面上看起来毫无道理。马克斯韦尔表示，工作时间太长的人会开始犯错，正如我们先前提到的那样，改正错误可能会比创造新成绩花费更多的时间。工作超出负荷的员工比较不容易集中注意力，而且会影响别人也跟着分心，不久之后他们就会开始做出错误决策。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">2</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">13</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=10&rangeStart=16434&rangeEnd=16550&userVid=250023191"><div class="note-text">你在忙什么呢？额，瞎忙瞎忙</div><div class="ref">第三类是“忙碌奔波型”。这类人被资方聘请过来，负责管理工作。他们愿意每周工作80小时（也愿意鞭策别人这么做），因为他们觉得自己以后就会获得晋升，但等真的获得晋升之后，又会拿出更多时间去应付令人头疼的新问题，不过他们喜欢这种忙碌奔波。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">这就是我最近头脑里的想法</div><div class="ref">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=14521&rangeEnd=14658&userVid=250023191"><div class="note-text">但是为何一个人工时减少，却能做更多事情呢？表面上看起来毫无道理。马克斯韦尔表示，工作时间太长的人会开始犯错，正如我们先前提到的那样，改正错误可能会比创造新成绩花费更多的时间。工作超出负荷的员工比较不容易集中注意力，而且会影响别人也跟着分心，不久之后他们就会开始做出错误决策。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=13852&rangeEnd=14066&userVid=250023191"><div class="note-text">如果一个团队的领导者在休假时还要确保办公室一切正常，那么这就说明他没有管理好自己的团队。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=12275&rangeEnd=12315&userVid=250023191"><div class="note-text">如果你出了一个错误（我们都会出错），那就在发现错误时立即修改，不然就会付出代价。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=7216&rangeEnd=7253&userVid=250023191"><div class="note-text">事实上，许多研究表明，同时执行多项任务不仅浪费时间，还会使人变得麻木愚蠢。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -86,9 +96,19 @@
 <a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=11469&rangeEnd=11791&userVid=250023191"><div class="note-text">在武术中，有一种概念称为“守破离”，分别是指三种不同的修炼层次。在“守”的境界中，你懂得所有规则与动作，不断重复动作，以便让身体学会有关的动作，就像你在学习舞步时那样。“守”就是要求你不会出错。
 在“破”的境界中，你在完全熟悉有关动作之后开始学着创新，就像在地板上跳舞时在迈出一个舞步之后，自己再增添一个摆动动作。
 在“离”的境界中，你可以摆脱形式的束缚，算是真正掌握了要领，可以按照自己的意愿加以创新。因为你已经非常了解合气道或探戈了，所以你的一举一动都能表达出它的精髓。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

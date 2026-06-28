@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,10 +81,20 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=14324&rangeEnd=14382&userVid=250023191"><div class="note-text">跟我们的思路刚好相反，我们在做大的架构演进都是先选择相对不是那么重要的业务或场景进行试点，可能一是因为阿里的只允许成功不允许失败，先肯难啃的。</div><div class="ref">我们随后决定在一期中只选择交易链路中最核心的几个节点测试单元化方案，当成熟稳定后再明确指导业务方如何完成单元化改造。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=23734&rangeEnd=23837&userVid=250023191"><div class="note-text">问题的解决方案是，我们选择了在发布时镜像仍然要build和分发，但增加了一个hotfix的标识，对于有这种标识的实例，在拿到镜像后，不用再去新镜像组建新容器，而只是从镜像中获取相应需要更新的文件进行更新即可</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=2810&rangeEnd=2842&userVid=250023191"><div class="note-text">以业务目标为驱动的架构演进方式也成为阿里后续很多项目实施的参考。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">1</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">2</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=14324&rangeEnd=14382&userVid=250023191"><div class="note-text">跟我们的思路刚好相反，我们在做大的架构演进都是先选择相对不是那么重要的业务或场景进行试点，可能一是因为阿里的只允许成功不允许失败，先肯难啃的。</div><div class="ref">我们随后决定在一期中只选择交易链路中最核心的几个节点测试单元化方案，当成熟稳定后再明确指导业务方如何完成单元化改造。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=23734&rangeEnd=23837&userVid=250023191"><div class="note-text">问题的解决方案是，我们选择了在发布时镜像仍然要build和分发，但增加了一个hotfix的标识，对于有这种标识的实例，在拿到镜像后，不用再去新镜像组建新容器，而只是从镜像中获取相应需要更新的文件进行更新即可</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=914297&chapterUid=10&rangeStart=2810&rangeEnd=2842&userVid=250023191"><div class="note-text">以业务目标为驱动的架构演进方式也成为阿里后续很多项目实施的参考。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

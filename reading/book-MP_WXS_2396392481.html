@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2396392481&chapterUid=1952636990&rangeStart=4139&rangeEnd=4211&userVid=250023191"><div class="note-text">不要愤怒的表达，但是可以表达愤怒</div><div class="ref">一个情绪稳定的人，不是没有情绪。只不过，他的情绪，能够最终在自己的理性协调下，自洽平衡，成为优化决策的助力因素，而不变成导致冲动决策的破坏因素。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">而AI时代的主动性，是“主动定义问题”。老板下任务，先判断该不该做，哪个方向最值得做，该怎么做。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">1</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">12</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2396392481&chapterUid=1952636990&rangeStart=4139&rangeEnd=4211&userVid=250023191"><div class="note-text">不要愤怒的表达，但是可以表达愤怒</div><div class="ref">一个情绪稳定的人，不是没有情绪。只不过，他的情绪，能够最终在自己的理性协调下，自洽平衡，成为优化决策的助力因素，而不变成导致冲动决策的破坏因素。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">而AI时代的主动性，是“主动定义问题”。老板下任务，先判断该不该做，哪个方向最值得做，该怎么做。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">因为，技术革命的收益，通常是慢慢分配的。但技术革命的代价，往往是立刻到来的。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">相对剥夺感。
 二战期间，美国社会学家萨缪尔·斯托弗研究美军士气时，发现了一个反直觉的现象：在晋升机会更多的航空兵里，抱怨“不公平”的人，反而比晋升机会少的宪兵更多。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -88,9 +98,19 @@
 <a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">本质上，保险就是一群面临相同风险的人，发明出来的一种“同质风险共担”机制。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">价值＞价格＞成本，本价值模型才成立。因为价值大于价格，用户有动力买；价格大于成本，你才有利润做。而且差值越大，势能越大。所谓落地，就是这两件事，同时发生。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">房地产开发项目结算规模显著下降，毛利率仍处低位。报告期内，房地产开发业务结算利润主要对应2023年、2024年销售的项目及2025年消化的现房和准现房库存。这些项目的地价获取成本较高，导致报告期结算毛利总额大幅减少。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">所以，1）未来的核心价值，是AI；2）AI的核心瓶颈，是算力；3）算力的核心瓶颈，是能源；4）地球上的能源，是有限和昂贵的；5）太空中的太阳能，是无限和免费的。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2396392481"><div class="note-text">所以，1）未来的核心价值，是AI；2）AI的核心瓶颈，是算力；3）算力的核心瓶颈，是能源；4）地球上的能源，是有限和昂贵的；5）太空中的太阳能，是无限和免费的。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

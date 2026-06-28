@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=25031485&chapterUid=128&rangeStart=15986&rangeEnd=16024&userVid=250023191"><div class="note-text">陈乔兵变标志五代十国大结束</div><div class="ref">这就是所谓“陈桥兵变”的经过，历史上的“五代”时期，也随着这次兵变而告结束。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">2</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">2</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=25031485&chapterUid=128&rangeStart=15986&rangeEnd=16024&userVid=250023191"><div class="note-text">陈乔兵变标志五代十国大结束</div><div class="ref">这就是所谓“陈桥兵变”的经过，历史上的“五代”时期，也随着这次兵变而告结束。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=25031485&chapterUid=96&rangeStart=11041&rangeEnd=11070&userVid=250023191"><div class="note-text">现代的税也很多：
 一、五大类
 1. 流转税（做生意、买卖必交）
@@ -102,10 +112,20 @@
 5. 车船税（每年车险一起交）
 6. 消费税
 三、极简口诀
-卖货交增值，赚钱交所得，买房交契税，买车交车船，高档消费交消费税</div><div class="ref">除以上五种重要杂税外，尚有种种苛敛，大都为供应政府的急需。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=25031485&chapterUid=96&rangeStart=15407&rangeEnd=15480&userVid=250023191"><div class="note-text">唐代法典的形式，共分四种：一曰律，是国家刑法的总则。二曰令，是国家制度的总则。三曰格，是政府各机关工作范围的条例。四曰式，是政府各机关的单行法规。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=25031485&chapterUid=120&rangeStart=17405&rangeEnd=17465&userVid=250023191"><div class="note-text">这种中央地方相制相克的局面，从东晋初年一直维持到末年，是晋室不能有为的最大原因。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+卖货交增值，赚钱交所得，买房交契税，买车交车船，高档消费交消费税</div><div class="ref">除以上五种重要杂税外，尚有种种苛敛，大都为供应政府的急需。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=25031485&chapterUid=96&rangeStart=15407&rangeEnd=15480&userVid=250023191"><div class="note-text">唐代法典的形式，共分四种：一曰律，是国家刑法的总则。二曰令，是国家制度的总则。三曰格，是政府各机关工作范围的条例。四曰式，是政府各机关的单行法规。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=25031485&chapterUid=120&rangeStart=17405&rangeEnd=17465&userVid=250023191"><div class="note-text">这种中央地方相制相克的局面，从东晋初年一直维持到末年，是晋室不能有为的最大原因。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

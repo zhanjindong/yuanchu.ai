@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,10 +81,20 @@
             </div>
         </div>
         
-        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300037073&chapterUid=17&rangeStart=5423&rangeEnd=5750&userVid=250023191"><div class="note-text">身体表面有一道设计巧妙、能自我修复的城墙，它固若金汤，极难逾越，非常好地保护着人体。而一旦敌人攻破了城墙，先天性免疫系统就会立刻反应。首先出战的是“黑犀牛”巨噬细胞，它们体型庞大，能把敌人整个吞下，结果它们的性命。要是发现敌人太多，巨噬细胞就会分泌细胞因子，这是一种信息蛋白，能召唤来中性粒细胞，这种“端着机枪的黑猩猩疯狂敢死队”。中性粒细胞活不了多久，而且它们在战斗中会误伤无辜，因而伤害身体。巨噬细胞和中性粒细胞都可以引发炎症，炎症会把大量的体液和援军带到感染部位，使得患处局部肿胀。援军之一就是补体，它们是几百万微小蛋白组成的部队，可以辅助免疫细胞杀敌，还参与标记、黏附、削弱和清除敌人。对大多数小伤口和感染来说，有这些强力的队伍协同工作就足够了。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=3300037073&chapterUid=14&rangeStart=1299&rangeEnd=1347&userVid=250023191"><div class="note-text">简而言之，炎症就是血管壁细胞变形，于是血液的液体组分“血浆”大量渗出，涌到受损或感染部位的过程。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">2</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300037073&chapterUid=17&rangeStart=5423&rangeEnd=5750&userVid=250023191"><div class="note-text">身体表面有一道设计巧妙、能自我修复的城墙，它固若金汤，极难逾越，非常好地保护着人体。而一旦敌人攻破了城墙，先天性免疫系统就会立刻反应。首先出战的是“黑犀牛”巨噬细胞，它们体型庞大，能把敌人整个吞下，结果它们的性命。要是发现敌人太多，巨噬细胞就会分泌细胞因子，这是一种信息蛋白，能召唤来中性粒细胞，这种“端着机枪的黑猩猩疯狂敢死队”。中性粒细胞活不了多久，而且它们在战斗中会误伤无辜，因而伤害身体。巨噬细胞和中性粒细胞都可以引发炎症，炎症会把大量的体液和援军带到感染部位，使得患处局部肿胀。援军之一就是补体，它们是几百万微小蛋白组成的部队，可以辅助免疫细胞杀敌，还参与标记、黏附、削弱和清除敌人。对大多数小伤口和感染来说，有这些强力的队伍协同工作就足够了。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300037073&chapterUid=14&rangeStart=1299&rangeEnd=1347&userVid=250023191"><div class="note-text">简而言之，炎症就是血管壁细胞变形，于是血液的液体组分“血浆”大量渗出，涌到受损或感染部位的过程。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

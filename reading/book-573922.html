@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,13 +81,13 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=46&rangeStart=14608&rangeEnd=14783&userVid=250023191"><div class="note-text">划重点</div><div class="ref">其实最大的问题存在于职能主管层面。要发现这一领导层级的问题较有难度。职能主管只要成功地解决了技术难题，并且在争夺资源的过程中领导本职能部门获胜，就会被认为是成功的。然而，职能主管要避免陷入日常的职能工作中，他们应当致力于开发竞争优势。他们应该授权下属去解决艰巨的技术性问题。职能主管通常会重视职能工作而非企业的发展成败，这往往会对公司的业务发展不利。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">7</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">15</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=46&rangeStart=14608&rangeEnd=14783&userVid=250023191"><div class="note-text">划重点</div><div class="ref">其实最大的问题存在于职能主管层面。要发现这一领导层级的问题较有难度。职能主管只要成功地解决了技术难题，并且在争夺资源的过程中领导本职能部门获胜，就会被认为是成功的。然而，职能主管要避免陷入日常的职能工作中，他们应当致力于开发竞争优势。他们应该授权下属去解决艰巨的技术性问题。职能主管通常会重视职能工作而非企业的发展成败，这往往会对公司的业务发展不利。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=45&rangeStart=10153&rangeEnd=10233&userVid=250023191"><div class="note-text">教练着眼于当下，导师着眼于未来。</div><div class="ref">教练辅导一般关注的是解决现有工作问题，如何在现有职位上获得成功，其中大概10%～15%的重点放在下一个职位之上。导师制则相反，它将大部分的重点放在今后的发展之上</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=44&rangeStart=6746&rangeEnd=6802&userVid=250023191"><div class="note-text">授权不是放任不管，管是和对方对齐目标后让其做正确的事情，不管的是如何正确的做事。</div><div class="ref">权力下放意味着可以自主决定做正确的事情，而不是随意做想做的事情。如果一个人坚持不做某项新工作，他永远不会重视它。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=44&rangeStart=3337&rangeEnd=3474&userVid=250023191"><div class="note-text">双重角色如何平衡好很关键，不能屁股决定脑袋，个人的经验感觉是跳出来思考，站在更高一层思考，比如站在你职能上级和业务上级的上级角度思考</div><div class="ref">比方说，他们会允许职能主管在他们和事业部总经理之间无所适从。为了对付两个老板，职能主管的位置非常尴尬。如果职能主管选择了事业部总经理，那么职能方面的关系就中断了。如果他选择了集团职能主管，事业部总经理通常就不再理会这一职能，这不仅会危害职能本身，还会严重影响职能主管的发展。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=42&rangeStart=3660&rangeEnd=3661&userVid=250023191"><div class="note-text">潜能的几种类型</div><div class="ref">[插图]</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=41&rangeStart=2627&rangeEnd=2692&userVid=250023191"><div class="note-text">获取资源或者说争取资源，是上级很重要的工作，这个资源包括有形的比如预算，比如人力等；也包括无形的，比如研发的话语权等。</div><div class="ref">由于缺乏资源，计划无力执行；该计划由上级制定，并且要求下属执行，但他们都觉得评估计划所需资源以及获取这一资源不属于自己的职责范围。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=37&rangeStart=9829&rangeEnd=9887&userVid=250023191"><div class="note-text">试试</div><div class="ref">建议事业部总经理培养这样一个习惯，每次商务出差都带一名部门经理随行，这可以帮助他更好地了解各个部门的作用和实际情况。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=44&rangeStart=6746&rangeEnd=6802&userVid=250023191"><div class="note-text">权力下放意味着可以自主决定做正确的事情，而不是随意做想做的事情。如果一个人坚持不做某项新工作，他永远不会重视它。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=573922&chapterUid=37&rangeStart=9829&rangeEnd=9887&userVid=250023191"><div class="note-text">试试</div><div class="ref">建议事业部总经理培养这样一个习惯，每次商务出差都带一名部门经理随行，这可以帮助他更好地了解各个部门的作用和实际情况。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=44&rangeStart=6746&rangeEnd=6802&userVid=250023191"><div class="note-text">权力下放意味着可以自主决定做正确的事情，而不是随意做想做的事情。如果一个人坚持不做某项新工作，他永远不会重视它。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=38&rangeStart=13047&rangeEnd=13123&userVid=250023191"><div class="note-text">当公司高管团队群策群力时，首席执行官能够全面了解公司的真实状况，整个团队就像一支篮球队一样，当篮球被抛向高空，每位成员都明白这意味着什么，并立即各就各位</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=38&rangeStart=6498&rangeEnd=6516&userVid=250023191"><div class="note-text">戴维的下属不到万不得已，绝不找戴维。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=37&rangeStart=9829&rangeEnd=9887&userVid=250023191"><div class="note-text">建议事业部总经理培养这样一个习惯，每次商务出差都带一名部门经理随行，这可以帮助他更好地了解各个部门的作用和实际情况。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -96,9 +106,19 @@
 <a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=33&rangeStart=1056&rangeEnd=1194&userVid=250023191"><div class="note-text">同样，你可能会想为什么从团队成员到团队领导者不是一个转折阶段。第一，这通常是第一阶段（从管理自我到管理他人）的一个部分。第二，团队领导者常常在人员选择和奖励上不像一线经理那样有决定权。第三，团队领导者的工作重点通常是技术或专业问题（例如，完成一个项目），而不包括其他管理职能。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=573922&chapterUid=32&rangeStart=5799&rangeEnd=5928&userVid=250023191"><div class="note-text">◆ 领导技能——胜任新职务所需要的新能力。
 ◆ 时间管理——新的时间分配结构，决定如何工作。
-◆ 工作理念——信念和价值观非常重要，让工作聚焦。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+◆ 工作理念——信念和价值观非常重要，让工作聚焦。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

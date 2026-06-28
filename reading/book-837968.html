@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=47&rangeStart=4251&rangeEnd=4306&userVid=250023191"><div class="note-text">团队内需要有不同意见者，一个方案、一次评审如果没有任何不同意见那说明还考虑不够充分。</div><div class="ref">但在我发言的时候，每个人都会表现出足够的重视，这倒并不是因为我的级别高，而是因为我看待问题的角度与他们不同。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">31</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">15</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=47&rangeStart=4251&rangeEnd=4306&userVid=250023191"><div class="note-text">团队内需要有不同意见者，一个方案、一次评审如果没有任何不同意见那说明还考虑不够充分。</div><div class="ref">但在我发言的时候，每个人都会表现出足够的重视，这倒并不是因为我的级别高，而是因为我看待问题的角度与他们不同。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=39&rangeStart=831&rangeEnd=901&userVid=250023191"><div class="note-text">之前总是强调结果的重要性，但有时候更应该追求过程的正确性，因为只看结果可能有偶然性，而且无法从结果去倒推怎么达到结果的方式，而过程是具备可复制性的，从过程中可以学习、总结经验和方法，从而可以使一次成功变成可持续的成功。</div><div class="ref">他们完成任务的方式至少和他们“是否完成了这个任务”这个问题同样重要。在很多情况下，以一种错误的方式完成任务甚至会给这个组织带来毁灭性的打击。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=38&rangeStart=1369&rangeEnd=1502&userVid=250023191"><div class="note-text">Mark 面试的一种方法。</div><div class="ref">这个人喜欢谈些什么？他是否喜欢具体的执行工作，还是只停留在对一些战略或理念性的东西夸夸其谈的层面上？他是否能够详细描述出自己在以往的工作中遇到了哪些困难？他是否能够描述出在以前的工作中，他的同事都起到了怎样的作用？他是否有能力说服和召集其他人共同完成一项艰巨的任务？</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=37&rangeStart=7233&rangeEnd=7275&userVid=250023191"><div class="note-text">决断力体现在快速分析、目标明确、风险管理、果断行动、情绪控制、结果导向、责任感和灵活应变等方面。具备良好决断力的人能在复杂的环境中迅速做出高质量决策并有效执行。</div><div class="ref">所以在每次进行决策的时候，我都会再三强调我们对该项目的信心以及我们实施该项目的决心。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -101,7 +111,7 @@
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=43&rangeStart=4473&rangeEnd=4497&userVid=250023191"><div class="note-text">值得深思的问题</div><div class="ref">他并没有任何大的过失，但问题是他没有遇到什么逆境</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=37&rangeStart=2760&rangeEnd=2844&userVid=250023191"><div class="note-text">赞同</div><div class="ref">那些能够带领公司实现目标的领导者总是能激发起人们的士气。这种人能够脚踏实地，把目光集中在一些短期的任务之上，并通过一个个地完成这些阶段性的任务来实现公司的长远发展目标。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=37&rangeStart=1253&rangeEnd=1310&userVid=250023191"><div class="note-text">认同</div><div class="ref">实干的人通常都比较善于激励别人，他们决策果断，能够敦促下属完成工作，并习惯于在做出决策之后继续对执行情况进行跟踪。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=5&rangeStart=1079&rangeEnd=1132&userVid=250023191"><div class="note-text">靠书本学习的只是知识，靠实践学习的是能力。</div><div class="ref">执行本身就是一门学问，因为人们永远不可能通过思考养成一种新的实践习惯，只能通过实践来学会一种新的思考方式。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=28&rangeStart=876&rangeEnd=971&userVid=250023191"><div class="note-text">肯定已经注意到，那些最优秀的领导者通常并不是组织中最聪明的人，甚至也不是那些对自己所处的行业最为了解的人。那么，到底是什么力量使得这个人成为领导者，而那些能力比他更强的人反而对其俯首听命呢？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=837968&chapterUid=5&rangeStart=1079&rangeEnd=1132&userVid=250023191"><div class="note-text">靠书本学习的只是知识，靠实践学习的是能力。</div><div class="ref">执行本身就是一门学问，因为人们永远不可能通过思考养成一种新的实践习惯，只能通过实践来学会一种新的思考方式。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=28&rangeStart=876&rangeEnd=971&userVid=250023191"><div class="note-text">肯定已经注意到，那些最优秀的领导者通常并不是组织中最聪明的人，甚至也不是那些对自己所处的行业最为了解的人。那么，到底是什么力量使得这个人成为领导者，而那些能力比他更强的人反而对其俯首听命呢？</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=19&rangeStart=1986&rangeEnd=2046&userVid=250023191"><div class="note-text">布朗要求他的经理们“一定要坦诚，在对前景乐观的同时一定要注意实事求是。在考虑问题的时候，一定要兼顾问题的正面和负面效应”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=18&rangeStart=1934&rangeEnd=1993&userVid=250023191"><div class="note-text">这就是所谓“革新者的僵局”的一个经典案例——那些在成熟技术行业中最具优势的公司，在掌握新技术的过程中往往是最不成功的。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=17&rangeStart=1802&rangeEnd=1882&userVid=250023191"><div class="note-text">尤其是当一家企业处于重大转折期的时候，一些关键的岗位上必须用对人，企业的核心流程也必须足够强大，因为只有这样才能消弭那些抵制变革的力量，计划也才能得到真正的落实</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -115,9 +125,19 @@
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=28&rangeStart=2743&rangeEnd=2821&userVid=250023191"><div class="note-text">在心理学当中，“真诚”这个词的含义非常简单：率真坦白而不虚伪造作，言行一致，做到真正的表里如一。只有真诚才能帮助建立信任，因为虚伪的人迟早会被人们揭下面具。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=27&rangeStart=832&rangeEnd=937&userVid=250023191"><div class="note-text">有效的教练辅导方式就是：首先仔细观察一个人的行为，然后向他提供具体而有用的反馈。在进行教练辅导的时候，你首先需要指出对方行为当中的不足，这时你需要给出具体的例子，告诉对方他们哪些表现是正确的，哪些是需要改进的。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=23&rangeStart=456&rangeEnd=629&userVid=250023191"><div class="note-text">实事求是是执行文化的核心，但对于大多数组织来说，员工常常是在尽量避免或掩盖现实。为什么呢？因为实事求是的态度有时会使生活变得非常残酷。没有人喜欢打开潘多拉的盒子，他们总是希望能够掩盖错误，或者拖延时间来寻找新的解决方案（而不愿意承认自己此刻没有找到任何答案）。他们希望能够避免对抗，大家都希望汇报好消息，没有人愿意成为制造麻烦、对抗上级的倒霉蛋。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=12&rangeStart=5077&rangeEnd=5123&userVid=250023191"><div class="note-text">而我们所说的不为人知的鸿沟就是企业领导者希望取得的目标和该企业实现这些目标的能力之间的差距。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=837968&chapterUid=12&rangeStart=5077&rangeEnd=5123&userVid=250023191"><div class="note-text">而我们所说的不为人知的鸿沟就是企业领导者希望取得的目标和该企业实现这些目标的能力之间的差距。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

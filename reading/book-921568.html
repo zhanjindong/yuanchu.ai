@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=74&rangeStart=2741&rangeEnd=2773&userVid=250023191"><div class="note-text">所以在工作中不要随便给员工画饼，要真诚的和他们沟通。</div><div class="ref">“给公众以虚假的期望，而期望又很快破灭，这是最糟糕的领导方式。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">8</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">8</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=74&rangeStart=2741&rangeEnd=2773&userVid=250023191"><div class="note-text">所以在工作中不要随便给员工画饼，要真诚的和他们沟通。</div><div class="ref">“给公众以虚假的期望，而期望又很快破灭，这是最糟糕的领导方式。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=20331&rangeEnd=20355&userVid=250023191"><div class="note-text">给自己立一个潜意识的flag：我是一个塑造者。</div><div class="ref">塑造者”=“理想家”+“务实思考者”+“坚毅者”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=12838&rangeEnd=12859&userVid=250023191"><div class="note-text">晚睡（看游戏视频），对已经发生的不好的事情不停想，情商低不擅长沟通</div><div class="ref">我建议你写下自己最大的三个坏习惯。现在就写</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=12698&rangeEnd=12759&userVid=250023191"><div class="note-text">习惯在生理上的机制</div><div class="ref">习惯能让你的大脑进入“自动导航模式”。用神经科学术语说，就是你让基底核从大脑皮层那里接管控制权，这样你想都不用想就能执行。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -80,16 +90,26 @@
 <a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=59&rangeStart=8386&rangeEnd=8421&userVid=250023191"><div class="note-text">什么是格局，什么叫open，着就是</div><div class="ref">换言之，我的目标只是让自己正确——我并不关心正确的答案是不是来源于我。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=55&rangeStart=5075&rangeEnd=5143&userVid=250023191"><div class="note-text">1、凡事实事求是，讲究事实
 2、对人不要有偏见，接纳不同的人
-3、遇到问题首先想的是解决问题，不是推卸责任</div><div class="ref">你自己的原则是不是系统化或者计算机化的，并不是最重要的。最重要的事情是总结出你自己的原则，最好将其写下来，尤其是在你与其他人共事的情况下</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=80&rangeStart=1087&rangeEnd=1128&userVid=250023191"><div class="note-text">在一家健康的机构中，应该是员工与其低层次的自我进行竞争，而不是员工与员工相互竞争。</div><span class="jump">在微信读书中查看 ↗</span></a>
+3、遇到问题首先想的是解决问题，不是推卸责任</div><div class="ref">你自己的原则是不是系统化或者计算机化的，并不是最重要的。最重要的事情是总结出你自己的原则，最好将其写下来，尤其是在你与其他人共事的情况下</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=80&rangeStart=1087&rangeEnd=1128&userVid=250023191"><div class="note-text">在一家健康的机构中，应该是员工与其低层次的自我进行竞争，而不是员工与员工相互竞争。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=72&rangeStart=32850&rangeEnd=32938&userVid=250023191"><div class="note-text">优秀的人具备高尚的品格和出色的能力。我所说的高尚的品格，是指能够实事求是、开诚布公，致力于所在机构的事业；出色的能力，是指他们具备能力和技艺，能够出色地完成工作。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=20905&rangeEnd=20994&userVid=250023191"><div class="note-text">人人都有长处和短处，人人都能在生活中扮演重要角色。大自然塑造万事万物皆有目的。你最需要的勇气不是驱使你战胜别人的勇气，而是不管其他人对你有何冀望，你始终坚持做最真实的自我的勇气。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=16447&rangeEnd=16492&userVid=250023191"><div class="note-text">内向者聚焦于内心世界，从思想、记忆和经验中汲取能量；外向者聚焦于外部，从与人相处中汲取能量</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=8521&rangeEnd=8568&userVid=250023191"><div class="note-text">人类永远处在塑造人类的两极力量之间：“一极是激发罪恶的个体选择，另一极是激发美德的群体选择。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=1387&rangeEnd=1455&userVid=250023191"><div class="note-text">理念型的人大略地设想出要做什么，并希望细节型的人自己找到办法，当后者找不到办法时，前者就觉得后者毫无想象力，而后者觉得前者自己都没搞清楚</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=64&rangeStart=2474&rangeEnd=2508&userVid=250023191"><div class="note-text">我看到的情况是，发现自己的性格，过与性格相适应的生活，才是最幸福的。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=61&rangeStart=10048&rangeEnd=10114&userVid=250023191"><div class="note-text">一个管理者能够实现的最大成功就是能够组织其他人在没有你的情况下把事情做好。次好的情况是你自己能把事情做好，最糟糕的是连你自己都做不好</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=61&rangeStart=10048&rangeEnd=10114&userVid=250023191"><div class="note-text">一个管理者能够实现的最大成功就是能够组织其他人在没有你的情况下把事情做好。次好的情况是你自己能把事情做好，最糟糕的是连你自己都做不好</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

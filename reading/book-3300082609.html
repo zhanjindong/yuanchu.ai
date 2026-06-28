@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,12 +81,22 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=4971&rangeEnd=5058&userVid=250023191"><div class="note-text">这里看不懂的建议去看吴恩达的机器学习课程，更直观易懂</div><div class="ref">微积分的链式法则实际上让我们解开了神经网络中连续各层所做操作的谜团。结果是，我们可以—至少在某些局部近似中—“反转”神经网络的操作，并逐步找到使与输出相关的损失最小化的权重。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=8&rangeStart=4997&rangeEnd=5094&userVid=250023191"><div class="note-text">就像架构设计，先进行抽像，定义概念和模块，再想办法具象化和实现</div><div class="ref">最佳思路是建立一个模型，让我们能够估计序列出现的概率—即使我们从未在已有的文本语料库中明确看到过这些序列。ChatGPT的核心正是所谓的“大语言模型”，后者已经被构建得能够很好地估计这些概率了。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=5184&rangeEnd=5248&userVid=250023191"><div class="note-text">深度学习”在2012年左右的重大突破与如下发现有关：与权重相对较少时相比，在涉及许多权重时，进行最小化（至少近似）可能会更容易。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">2</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">2</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=4971&rangeEnd=5058&userVid=250023191"><div class="note-text">这里看不懂的建议去看吴恩达的机器学习课程，更直观易懂</div><div class="ref">微积分的链式法则实际上让我们解开了神经网络中连续各层所做操作的谜团。结果是，我们可以—至少在某些局部近似中—“反转”神经网络的操作，并逐步找到使与输出相关的损失最小化的权重。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=8&rangeStart=4997&rangeEnd=5094&userVid=250023191"><div class="note-text">就像架构设计，先进行抽像，定义概念和模块，再想办法具象化和实现</div><div class="ref">最佳思路是建立一个模型，让我们能够估计序列出现的概率—即使我们从未在已有的文本语料库中明确看到过这些序列。ChatGPT的核心正是所谓的“大语言模型”，后者已经被构建得能够很好地估计这些概率了。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=5184&rangeEnd=5248&userVid=250023191"><div class="note-text">深度学习”在2012年左右的重大突破与如下发现有关：与权重相对较少时相比，在涉及许多权重时，进行最小化（至少近似）可能会更容易。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300082609&chapterUid=5&rangeStart=4573&rangeEnd=4679&userVid=250023191"><div class="note-text">最高效的方式是发掘新的可能性，定义对自己有价值的东西。
-●从现在的回答问题转向学会如何提出问题，以及如何确定哪些问题值得提出。也就是从知识执行转向知识战略。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+●从现在的回答问题转向学会如何提出问题，以及如何确定哪些问题值得提出。也就是从知识执行转向知识战略。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,12 +81,22 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=104&rangeStart=7988&rangeEnd=8005&userVid=250023191"><div class="note-text">再见，这么晚才认识你！</div><div class="ref">2004年拍摄于他在帕洛奥图的家中</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">4</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">1</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=104&rangeStart=7988&rangeEnd=8005&userVid=250023191"><div class="note-text">再见，这么晚才认识你！</div><div class="ref">2004年拍摄于他在帕洛奥图的家中</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=99&rangeStart=2183&rangeEnd=2209&userVid=250023191"><div class="note-text">2025年11月25日凌晨12点整</div><div class="ref">2011年10月5日，星期三——史蒂夫·乔布斯走了。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=86&rangeStart=11944&rangeEnd=12014&userVid=250023191"><div class="note-text">怪不得iTunes跟一坨屎一样难用</div><div class="ref">为了让iPod真正易于操作——关于这一点，我内心经过了很多挣扎——我们需要限制它本身的功能。相反，我们把这些功能放在了计算机里的iTunes</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=86&rangeStart=6514&rangeEnd=6571&userVid=250023191"><div class="note-text">iTunes我一直认为是反人类的设计</div><div class="ref">从iMovie开始，团队把这个系列的软件界面改成了统一的拉丝金属风格的外框，并给音乐软件取了名字——iTunes。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=635722&chapterUid=81&rangeStart=1374&rangeEnd=1419&userVid=250023191"><div class="note-text">其创意目的并不是赞美计算机可以做什么，而是赞美富有创造力的人们在计算机的辅助下可以做什么。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note thought" href="weread://bestbookmark?bookId=635722&chapterUid=86&rangeStart=6514&rangeEnd=6571&userVid=250023191"><div class="note-text">iTunes我一直认为是反人类的设计</div><div class="ref">从iMovie开始，团队把这个系列的软件界面改成了统一的拉丝金属风格的外框，并给音乐软件取了名字——iTunes。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=635722&chapterUid=81&rangeStart=1374&rangeEnd=1419&userVid=250023191"><div class="note-text">其创意目的并不是赞美计算机可以做什么，而是赞美富有创造力的人们在计算机的辅助下可以做什么。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

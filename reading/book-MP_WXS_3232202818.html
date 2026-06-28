@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,11 +81,21 @@
             </div>
         </div>
         
-        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">这种“空中换脑”依赖于一种被称为“政府参考自主架构”（A-GRA）的模块化标准。这意味着，如果敌方开发出了针对某种AI的电子干扰，无人机可以瞬间下载并运行另一种算法，就像在手机上更新APP一样。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">3</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">这种“空中换脑”依赖于一种被称为“政府参考自主架构”（A-GRA）的模块化标准。这意味着，如果敌方开发出了针对某种AI的电子干扰，无人机可以瞬间下载并运行另一种算法，就像在手机上更新APP一样。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">更残酷的是一个名为“爸爸在哪儿？”（Where&#x27;s Daddy?）的系统。它不像传统雷达那样追踪飞机，而是追踪目标与其家庭住所的关联。系统会自动监控被标记人员何时进入家宅。指挥官认为，在这些人员回家与家人团聚时发起攻击，比在军事据点发起攻击更为容易，尽管这意味着整栋建筑的平民都可能成为“附带伤亡”。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">讽刺的是，在针对哈梅内伊的行动中，帕兰提尔平台上运行的克劳德模型依然发挥了关键的辅助作用——尽管它拒绝直接扣动扳机，但它在处理此前针对委内瑞拉总统马杜罗的秘密行动和德黑兰截获的PB级数据中，已经为最终的打击扫清了情报迷雾。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3232202818"><div class="note-text">讽刺的是，在针对哈梅内伊的行动中，帕兰提尔平台上运行的克劳德模型依然发挥了关键的辅助作用——尽管它拒绝直接扣动扳机，但它在处理此前针对委内瑞拉总统马杜罗的秘密行动和德黑兰截获的PB级数据中，已经为最终的打击扫清了情报迷雾。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,13 +81,23 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300150805&chapterUid=51&rangeStart=13300&rangeEnd=13397&userVid=250023191"><div class="note-text">RNN的缺点</div><div class="ref">需要强调的是RNN模式的缺点：循环结构导致它在处理数据时需要按时间逐步展开，每个时间步的计算必须等待前一个时间步的计算完成，因此速度缓慢且无法并行计算，也就无法将GPU并行计算的威力发挥到最大。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=58&rangeStart=1641&rangeEnd=1709&userVid=250023191"><div class="note-text">他认为，人类思维是通过许多较小的、具有专门功能的智能体的相互作用而产生的，智能的本质就是在许多有着各异能力的智能体之间进行受管理的互动。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">1</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">5</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300150805&chapterUid=51&rangeStart=13300&rangeEnd=13397&userVid=250023191"><div class="note-text">RNN的缺点</div><div class="ref">需要强调的是RNN模式的缺点：循环结构导致它在处理数据时需要按时间逐步展开，每个时间步的计算必须等待前一个时间步的计算完成，因此速度缓慢且无法并行计算，也就无法将GPU并行计算的威力发挥到最大。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=58&rangeStart=1641&rangeEnd=1709&userVid=250023191"><div class="note-text">他认为，人类思维是通过许多较小的、具有专门功能的智能体的相互作用而产生的，智能的本质就是在许多有着各异能力的智能体之间进行受管理的互动。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=58&rangeStart=1007&rangeEnd=1054&userVid=250023191"><div class="note-text">未来有两种类型的人工智能会非常受欢迎：数字人工智能工作者（智能体）和物理人工智能（机器人技术）</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=57&rangeStart=2299&rangeEnd=2387&userVid=250023191"><div class="note-text">微调技术可以分为两类：全量参数微调和高效参数微调。全量参数微调，即对所有参数进行调整。高效参数微调，即将原参数全部冻结，增加网络结构和参数，微调仅更新新增参数部分（见图2-2）</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=51&rangeStart=13627&rangeEnd=14008&userVid=250023191"><div class="note-text">一是“自我注意力”机制，只关心输入信息之间的关系，不再关注输入和对应输出的关系。这样既节省了之前需要的人工数据标注费用，也可以更准确地猜测哪些信息影响最大、最有关联、最应该被展示。二是摒弃了递归结构，可以同时处理序列中的所有元素，实现并行计算。这不仅是算法的提升，更可以充分挖掘GPU的优势，与算力结合更加紧密。[插图]</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=51&rangeStart=9200&rangeEnd=9218&userVid=250023191"><div class="note-text">逐层预训练使神经网络变得可控、高效。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=3300150805&chapterUid=51&rangeStart=9200&rangeEnd=9218&userVid=250023191"><div class="note-text">逐层预训练使神经网络变得可控、高效。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

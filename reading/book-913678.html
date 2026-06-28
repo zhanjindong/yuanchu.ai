@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,7 +81,7 @@
             </div>
         </div>
         
-        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=28&rangeStart=1405&rangeEnd=1461&userVid=250023191"><div class="note-text">员工的薪水支付是最优先的，接着是商业债务的供货商。然后在对债权者支付了利息和本金等之后，才开始对股东的资产分配。</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">9</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=28&rangeStart=1405&rangeEnd=1461&userVid=250023191"><div class="note-text">员工的薪水支付是最优先的，接着是商业债务的供货商。然后在对债权者支付了利息和本金等之后，才开始对股东的资产分配。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=18&rangeStart=2961&rangeEnd=3030&userVid=250023191"><div class="note-text">反过来说，这也是金钱，所以流动资产多也就意味着“未产生利益的钱多”。但资金募集需要花费资本成本，所以这一状态也被财务负责人认为是“亏损”。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=13&rangeStart=5784&rangeEnd=5821&userVid=250023191"><div class="note-text">对于股票持有人来说，他们不仅关注经营稳定性，也关注收益性（以及成长性）。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=13&rangeStart=5559&rangeEnd=5688&userVid=250023191"><div class="note-text">债务提供者与股票投资提供者的风险承担方式截然不同。债务提供者能按约定收回本金与利息，但无论业绩多好，其回报都是定额的。而股票投资提供者虽然没有返还本金的约定，但当事业回报高时，他们也同样能得到高回报。</div><span class="jump">在微信读书中查看 ↗</span></a>
@@ -79,9 +89,19 @@
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=8&rangeStart=1236&rangeEnd=1332&userVid=250023191"><div class="note-text">风险首先是从“将钱存入银行后，这笔钱无法使用的不自由”和“回报的不稳定性”中产生的。而贴现率则是以这两种风险为基础进行计算。我们将前者称为无风险收益率（%），将后者称为市场风险溢价（%）。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=5&rangeStart=6977&rangeEnd=7081&userVid=250023191"><div class="note-text">正如大家所知的那样，无视“现金”的话，仅创造巨大销售额是非常容易的。假如明知会亏损却依旧出售，将100日元成本的物品以50日元的价格售出，这非常轻松。换言之，仅从销售额的高低来证明其商业价值，并没有什么说服力</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=4&rangeStart=2932&rangeEnd=2957&userVid=250023191"><div class="note-text">金融角度来说，价格仅由“今后能产生多少现金”来决定</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=4&rangeStart=1917&rangeEnd=1958&userVid=250023191"><div class="note-text">更具体而言，如果你能详细说明该事物拥有怎样的价值，那么就等于掌握了重要的商业技能。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=913678&chapterUid=4&rangeStart=1917&rangeEnd=1958&userVid=250023191"><div class="note-text">更具体而言，如果你能详细说明该事物拥有怎样的价值，那么就等于掌握了重要的商业技能。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

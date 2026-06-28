@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,16 +81,26 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=36&rangeStart=2124&rangeEnd=2134&userVid=250023191"><div class="note-text">这么爽，下班这么早。虽然上班早点。总体来说老师这个职业算自己时间已经比较多的了</div><div class="ref">六点半，今晚不用值班</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">5</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">4</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=36&rangeStart=2124&rangeEnd=2134&userVid=250023191"><div class="note-text">这么爽，下班这么早。虽然上班早点。总体来说老师这个职业算自己时间已经比较多的了</div><div class="ref">六点半，今晚不用值班</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=33&rangeStart=1025&rangeEnd=1094&userVid=250023191"><div class="note-text">我是做教育软件的，有时候我们习以为常的常识，老师就真的不知道</div><div class="ref">讲座结束后，电脑老师上前，一脸茫然地问朱老师，播放视频时，应先把小音箱的插头插到电源上，你不知道啊？朱老师也一脸茫然，答道，我怎么知道啊！</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=32&rangeStart=3408&rangeEnd=3413&userVid=250023191"><div class="note-text">起来不愿做奴隶的人们</div><div class="ref">满眼皆奴隶</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=30&rangeStart=3179&rangeEnd=3212&userVid=250023191"><div class="note-text">我觉得比喻的很恰当啊，认为不合适的是不是多少有点认同丰胸的呢</div><div class="ref">原来“好教师”的头衔，一如假胸，本质上不是让教育皈依美，而是相反。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=29&rangeStart=1838&rangeEnd=1874&userVid=250023191"><div class="note-text">哎，深有感触，因为工作原因有一次一天分别去了三所学校听课。刚好是小学初中再到高中，给我印象最深的是越是低年级小孩子们脸上越是活泼快乐，越是高年级脸上笑容就越少，尤其是高中很多学生脸上甚至是木讷</div><div class="ref">为什么孩子上学以后，很快就丢失了九十九种语言，只剩下千篇一律的话语方式。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=37&rangeStart=3032&rangeEnd=3054&userVid=250023191"><div class="note-text">“读书如秉烛，固不能照亮每个角落，但总比摸黑</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=22747982&chapterUid=29&rangeStart=1838&rangeEnd=1874&userVid=250023191"><div class="note-text">哎，深有感触，因为工作原因有一次一天分别去了三所学校听课。刚好是小学初中再到高中，给我印象最深的是越是低年级小孩子们脸上越是活泼快乐，越是高年级脸上笑容就越少，尤其是高中很多学生脸上甚至是木讷</div><div class="ref">为什么孩子上学以后，很快就丢失了九十九种语言，只剩下千篇一律的话语方式。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=37&rangeStart=3032&rangeEnd=3054&userVid=250023191"><div class="note-text">“读书如秉烛，固不能照亮每个角落，但总比摸黑</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=25&rangeStart=5740&rangeEnd=5830&userVid=250023191"><div class="note-text">他说：“不要把学生的文章当做自己的‘政绩’，用来吹牛抬轿子。再说，‘寄到国务院去’做什么呢？国务院不负责改中学生作文的。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=10&rangeStart=2249&rangeEnd=2324&userVid=250023191"><div class="note-text">所以，苏霍姆林斯基常常语重心长地对教师“灌输”这样的观念：“你不是教物理，而是教人学物理。”</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=3&rangeStart=1915&rangeEnd=1976&userVid=250023191"><div class="note-text">我们无能改变整体的教育体制和环境，但是任何体制和环境都取消不了个人的相对自由，而这个自由正是体现在你如何处理一个个细节上。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=22747982&chapterUid=3&rangeStart=1915&rangeEnd=1976&userVid=250023191"><div class="note-text">我们无能改变整体的教育体制和环境，但是任何体制和环境都取消不了个人的相对自由，而这个自由正是体现在你如何处理一个个细节上。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,10 +81,20 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=13569&rangeEnd=13659&userVid=250023191"><div class="note-text">我觉得这个路线注定不会成功，最起码在现在AI日新月异的背景下不可能，大厂钱多但不傻</div><div class="ref">ASIC芯片一旦开始批量生产，就无法再改动里面的硬件架构。万一市场对AI芯片功能的需求出现重大变化，或者研发成功了新的AI算法，那这款芯片就只能被淘汰而由芯片设计者继续开发新的芯片</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=2101&rangeEnd=2145&userVid=250023191"><div class="note-text">对这段科学史感兴趣的可以看《芯片简史》非常精彩的一本书，感叹摩尔定律都因为相信所以看见</div><div class="ref">世界上第一块芯片是由美国德州仪器（TI）公司的杰克·基尔比（Jack Kilby）发明的</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=7647&rangeEnd=7684&userVid=250023191"><div class="note-text">AI芯片（这里指用于深度学习加速的芯片）的本质是“高速张量运算及并行处理”</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">2</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">1</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=13569&rangeEnd=13659&userVid=250023191"><div class="note-text">我觉得这个路线注定不会成功，最起码在现在AI日新月异的背景下不可能，大厂钱多但不傻</div><div class="ref">ASIC芯片一旦开始批量生产，就无法再改动里面的硬件架构。万一市场对AI芯片功能的需求出现重大变化，或者研发成功了新的AI算法，那这款芯片就只能被淘汰而由芯片设计者继续开发新的芯片</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=2101&rangeEnd=2145&userVid=250023191"><div class="note-text">对这段科学史感兴趣的可以看《芯片简史》非常精彩的一本书，感叹摩尔定律都因为相信所以看见</div><div class="ref">世界上第一块芯片是由美国德州仪器（TI）公司的杰克·基尔比（Jack Kilby）发明的</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=36985175&chapterUid=6&rangeStart=7647&rangeEnd=7684&userVid=250023191"><div class="note-text">AI芯片（这里指用于深度学习加速的芯片）的本质是“高速张量运算及并行处理”</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

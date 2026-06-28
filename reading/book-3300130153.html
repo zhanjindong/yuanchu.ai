@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,12 +81,22 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=8&rangeStart=5532&rangeEnd=5568&userVid=250023191"><div class="note-text">是这样的，我之前也观察到这样的现象但却没有想到这点</div><div class="ref">他只能以手语表示，因此如果没有经常环顾左右的习惯，根本察觉不到有人想插话</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">4</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=8&rangeStart=5532&rangeEnd=5568&userVid=250023191"><div class="note-text">是这样的，我之前也观察到这样的现象但却没有想到这点</div><div class="ref">他只能以手语表示，因此如果没有经常环顾左右的习惯，根本察觉不到有人想插话</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=6&rangeStart=7023&rangeEnd=7080&userVid=250023191"><div class="note-text">奥本海默传里好像有费曼打开保险箱的故事</div><div class="ref">面对谜题时，我有一股不服输的死劲。这是为什么后来我会想把玛雅象形文字翻译成现代文字或者是碰到保险箱就想办法打开它。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=4&rangeStart=595&rangeEnd=633&userVid=250023191"><div class="note-text">经历这样的事情，费曼还能保持那么乐观的心态太难得了</div><div class="ref">1941年我跟阿琳结婚，她于1945年我还在罗沙拉摩斯工作期间，因肺病逝世。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=3&rangeStart=487&rangeEnd=532&userVid=250023191"><div class="note-text">从奥本海默那过来临时串个门，一会回去。但我还会回来的。</div><div class="ref">在严密的保安系统监控之下，他以破解安全锁自娱。取得机密资料以后，留下字条告诫政府小心安全。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note thought" href="weread://bestbookmark?bookId=3300130153&chapterUid=3&rangeStart=487&rangeEnd=532&userVid=250023191"><div class="note-text">从奥本海默那过来临时串个门，一会回去。但我还会回来的。</div><div class="ref">在严密的保安系统监控之下，他以破解安全锁自娱。取得机密资料以后，留下字条告诫政府小心安全。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

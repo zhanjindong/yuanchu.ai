@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,17 +81,27 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300061154&chapterUid=111&rangeStart=423&rangeEnd=427&userVid=250023191"><div class="note-text">太过刻意的翻译反而显得不够自信</div><div class="ref">中国台湾</div><span class="jump">在微信读书中查看 ↗</span></a>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">3</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">7</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300061154&chapterUid=111&rangeStart=423&rangeEnd=427&userVid=250023191"><div class="note-text">太过刻意的翻译反而显得不够自信</div><div class="ref">中国台湾</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note thought" href="weread://bestbookmark?bookId=3300061154&chapterUid=91&rangeStart=2575&rangeEnd=2577&userVid=250023191"><div class="note-text">终于没加中国两个字</div><div class="ref">台湾</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=3300061154&chapterUid=77&rangeStart=8722&rangeEnd=8726&userVid=250023191"><div class="note-text">反复看到中国台湾总感觉别扭，不是我不爱国，就是别扭</div><div class="ref">中国台湾</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=134&rangeStart=6948&rangeEnd=6977&userVid=250023191"><div class="note-text">“我们的根本问题是，我们的头号客户是我们的头牌竞争对手。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300061154&chapterUid=77&rangeStart=8722&rangeEnd=8726&userVid=250023191"><div class="note-text">反复看到中国台湾总感觉别扭，不是我不爱国，就是别扭</div><div class="ref">中国台湾</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=134&rangeStart=6948&rangeEnd=6977&userVid=250023191"><div class="note-text">“我们的根本问题是，我们的头号客户是我们的头牌竞争对手。”</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=130&rangeStart=5361&rangeEnd=5391&userVid=250023191"><div class="note-text">学习先进技术，赢得全球市场，投资研发，挑战美国科技领袖地位。</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=128&rangeStart=2277&rangeEnd=2330&userVid=250023191"><div class="note-text">世界上只有三家公司拥有生产x86芯片所需的知识产权：美国的英特尔和AMD，以及中国台湾的小公司威盛(Via</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=111&rangeStart=423&rangeEnd=427&userVid=250023191"><div class="note-text">中国台湾</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=103&rangeStart=4555&rangeEnd=4597&userVid=250023191"><div class="note-text">格鲁夫受到一种挥之不去的担忧的驱使，他的余生都沉浸在公司制造流程和业务的每一个细节中</div><span class="jump">在微信读书中查看 ↗</span></a>
 <a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=103&rangeStart=1300&rangeEnd=1335&userVid=250023191"><div class="note-text">担心竞争、担心破产、担心被人误解、担心丢掉工作，这些担忧都是强大的动力</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=102&rangeStart=5970&rangeEnd=6020&userVid=250023191"><div class="note-text">美光拼命地关注成本，因为它别无选择。对于爱达荷州的一家小型初创公司来说，根本没有其他方法来赢得客户。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+<a class="note mark" href="weread://bestbookmark?bookId=3300061154&chapterUid=102&rangeStart=5970&rangeEnd=6020&userVid=250023191"><div class="note-text">美光拼命地关注成本，因为它别无选择。对于爱达荷州的一家小型初创公司来说，根本没有其他方法来赢得客户。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>

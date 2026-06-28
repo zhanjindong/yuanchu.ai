@@ -36,8 +36,18 @@
         .book-link:hover { color: #1a1a1a; }
         .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
             padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
-        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
-            text-transform: uppercase; margin: 50px 0 26px; }
+        .tabs { display: flex; gap: 36px; border-bottom: 1px solid rgba(0,0,0,0.08);
+            margin: 44px 0 30px; }
+        .tab { background: none; border: none; padding: 0 0 14px; font-family: inherit;
+            font-size: 15px; letter-spacing: 3px; color: rgba(0,0,0,0.38); cursor: pointer;
+            position: relative; transition: color 0.25s; }
+        .tab .cnt { font-size: 12px; letter-spacing: 0; color: rgba(0,0,0,0.28); margin-left: 5px; }
+        .tab:hover { color: rgba(0,0,0,0.65); }
+        .tab.active { color: #1a1a1a; }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1a1a1a; }
+        .panel { display: none; }
+        .panel.active { display: block; }
         .notes { display: flex; flex-direction: column; gap: 24px; }
         .note { display: block; text-decoration: none; color: inherit; position: relative;
             transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
@@ -71,10 +81,20 @@
             </div>
         </div>
         
-        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://reading?bId=538129"><div class="note-text">被阿西莫夫的逻辑深深这幅，所有伏笔都能自圆其说。 大刘受阿西莫夫的影响很深，三体叙事中有很多基地的影子。</div><span class="jump">在微信读书中查看 ↗</span></a>
-<a class="note thought" href="weread://bestbookmark?bookId=538129&chapterUid=24&rangeStart=10105&rangeEnd=10183&userVid=250023191"><div class="note-text">达瑞尔已经被改造了？</div><div class="ref">当两人紧紧拥抱时，达瑞尔欣喜若狂，喋喋不休地说：“这间屋子有最强的‘精神杂讯’，而你的脑波仍然正常。艾嘉蒂娅，我们真的逮到他们了，我们可以恢复正常生活了。”</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=538129&chapterUid=11&rangeStart=3268&rangeEnd=3308&userVid=250023191"><div class="note-text">最无可救药的笨蛋，就是聪明却不自知的人。你知道自己够资格，正是你够资格的原因之一</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">2</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">1</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://reading?bId=538129"><div class="note-text">被阿西莫夫的逻辑深深这幅，所有伏笔都能自圆其说。 大刘受阿西莫夫的影响很深，三体叙事中有很多基地的影子。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=538129&chapterUid=24&rangeStart=10105&rangeEnd=10183&userVid=250023191"><div class="note-text">达瑞尔已经被改造了？</div><div class="ref">当两人紧紧拥抱时，达瑞尔欣喜若狂，喋喋不休地说：“这间屋子有最强的‘精神杂讯’，而你的脑波仍然正常。艾嘉蒂娅，我们真的逮到他们了，我们可以恢复正常生活了。”</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=538129&chapterUid=11&rangeStart=3268&rangeEnd=3308&userVid=250023191"><div class="note-text">最无可救药的笨蛋，就是聪明却不自知的人。你知道自己够资格，正是你够资格的原因之一</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
+    <script>
+        document.querySelectorAll('.tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (x) { x.classList.remove('active'); });
+                document.querySelectorAll('.panel').forEach(function (x) { x.classList.remove('active'); });
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+    </script>
     <script defer src="/tracker.js"></script>
 </body>
 </html>
