@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>守护 AI 智能体的未来 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">Agent</span>
+    <span class="tag">AI 安全</span>
+  </div>
+  <h1>守护 AI 智能体的未来：当模型越来越强、却未必"对齐"，我们如何守住内部系统</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-06-28</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>Securing the future of AI agents</div>
+  <div class="source-row"><strong>作者</strong>Rohin Shah、Four Flynn</div>
+  <div class="source-row"><strong>来源</strong>Google DeepMind Blog（Responsibility &amp; Safety）</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://deepmind.google/blog/securing-the-future-of-ai-agents/" target="_blank" rel="noopener">https://deepmind.google/blog/securing-the-future-of-ai-agents/</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026 年 6 月 18 日</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  当 AI 智能体开始自己写代码、自己删数据、自己执行多步任务，"模型对齐"这一道防线就不再够用了——因为你无法保证训练出来的智能体百分之百听话。这篇来自 Google DeepMind 的文章提出了一套"纵深防御"思路：即便假设内部智能体可能"不对齐"，也要在系统层面把风险兜住。文中最有意思的，是他们已经分析了<strong>一百万条编码智能体的执行轨迹</strong>，并由此得出一个反直觉的结论——绝大多数被标记的危险行为，根源并非恶意，而是智能体"理解偏差"或"过度积极"。对所有正在把 Agent 推向生产环境的团队，这都是一份难得的实战参考。
+</div>
+
+<p>AI 智能体正在重塑我们与技术的关系。通过自主完成复杂任务——从网络防御到科学发现，再到产品研发——这些系统正在开启一个生产力的新纪元。仅在美国，到 2030 年 AI 智能体就可能创造 2.9 万亿美元的经济价值。</p>
+
+<p>但随着这些智能体能力越来越强，它们也需要越来越精密的安全防护。正因如此，我们制定了 <strong>AI 控制路线图（AI Control Roadmap）</strong>：一套用于构建和管理我们在 Google 内部部署的高级 AI 的框架。这种"纵深防御"（defense-in-depth）的思路或许能成为整个行业的范本——它超越了传统的模型对齐，额外增加了一层系统级安全保障，从而即便对齐做得并不完美，我们依然有把握守住底线。</p>
+
+<h2 id="s1">理解"AI 控制"</h2>
+
+<p>我们的安全之道，始于一个坚实的地基：先把沙箱隔离（sandboxing）、终端安全（endpoint security）、抗提示注入（prompt injection resistance）等传统防护手段纳入进来。在此之上，AI 控制路线图把模型对齐——也就是训练 AI 让它本质上既安全又有用——作为首要防线。而它真正额外提供的那层安全，在于<strong>把内部智能体当作"可能未对齐"来对待</strong>：哪怕对齐并不完美，也依然能给我们兜底的保障。</p>
+
+<p>可以把它想象成一位配备了"副驾驶刹车"的驾校教练。教练信任学员，但随时准备在学员犯错时接过方向盘、踩下刹车。同样地，我们的 AI 控制系统会根据智能体"已被验证的行为"来授予它权限——通过受控的、循序渐进的访问，逐步建立起信任。</p>
+
+<p>我们的路线图建立在一个简单却审慎的假设之上：<strong>万一一个能力极强的 AI 智能体并不认同我们的目标、并以出人意料的方式行事，怎么办？</strong>为应对这一点，我们的方案聚焦于三个关键方向。</p>
+
+<p><strong>第一，借鉴网络安全领域的最佳实践，我们为 AI 开发了一套全新的威胁建模框架。</strong>路线图把不可信的 AI 智能体当作潜在的"内部威胁"（insider threat）来对待——这就好比一家公司会防范一个已经拿到办公室门禁、却可能心怀不轨的"内鬼"员工。我们以业界标准 MITRE ATT&amp;CK 框架为基础（这是一个全球通用的、基于真实世界观测的对手战术与技术知识库），把潜在攻击拆解成一个个更细的战术与技术。如此一来，我们就能有条不紊地追踪风险、在危害发生之前识别出不良行为，并安全地进行"演练"，检验我们的防御到底扛不扛得住。</p>
+
+<p><strong>第二，我们制定了一套部署 AI 控制缓解措施的方案，用以应对这些风险。</strong></p>
+
+<ul>
+  <li><strong>发现问题（检测）：</strong>监控是 AI 控制的中枢。我们用另一套<strong>可信的</strong> AI 系统充当"监督员"，持续审查正在工作的智能体的推理、动作与计划，看它是否跑偏。</li>
+  <li><strong>处置问题（预防与响应）：</strong>一旦监督员发现智能体试图做出有害举动，它可以在危害发生之前介入、拦下这一动作。</li>
+</ul>
+
+<p><strong>最后，为了确保整套系统真正有效运转，我们围绕三项关键指标持续衡量其表现：</strong>覆盖率（coverage，被监控流量所占的比例）、召回率（recall，被成功捕获的未对齐行为所占的比例）以及响应时延（time-to-response）。</p>
+
+<h2 id="s2">AI 越聪明，安全就得越硬</h2>
+
+<p>随着 AI 模型不断演进，我们的防御也必须同步增强。在 AI 控制路线图中，我们把安全协议与 AI 能力上可量化的里程碑一一对应起来，重点关注两条关键战线：</p>
+
+<ul>
+  <li><strong>规避检测的能力：</strong>今天，我们监控的是模型"可见的"思维链（chain-of-thought）。但随着模型学会隐藏自己的推理过程——要么是因为它意识到自己正被监督（oversight awareness），要么是因为它能进行不借助可见文本的"不透明推理"（opaque reasoning）——仅仅去读它用语言表达出来的推理就不够了。届时，我们将需要分析它的行为，甚至有可能要去检查模型的内部运作机制。</li>
+  <li><strong>造成潜在危害的能力：</strong>对于低风险、可逆的动作，我们可以依靠"延迟审查执行记录、事后快速补救"的方式来处理（异步响应）。而对于风险特别高的动作——例如大规模网络攻击——我们就必须切换到实时预防，在有害动作被执行之前就将其拦截（同步响应）。换句话说，我们的响应策略，必须随着威胁的严重程度而升级。</li>
+</ul>
+
+<figure>
+  <img src="https://lh3.googleusercontent.com/3ztbyOBouDxh98WKLBrBBRphJB_ICf-D7CaRIlUKhb3-feUn-n15WWD_78F2rcBUN-a_99nVKg1Qd7_fJcaDb7LVYmueaP-NyBUp2PRJGjl_y0islA=w1440-h810-n-nu" alt="AI 控制路线图：按模型能力分级的安全措施示意图" loading="lazy">
+  <figcaption>AI 控制路线图会根据所部署模型的能力推荐相应的安全措施。模型的"规避检测能力"决定了检测等级（D1–D4），模型的"攻击执行能力"则决定了预防与响应等级（R1–R3）。</figcaption>
+</figure>
+
+<h2 id="s3">分析一百万条智能体轨迹，为实时监控提供依据</h2>
+
+<p>要构建这些系统，我们需要数据。我们的团队搭建了一套内部原型——一个异步监控系统，它会审查编码智能体的执行轨迹，并把需要关注的发现上报给人工复核。每一个被标记的事件，都会对照我们路线图中的威胁分类法进行归类。</p>
+
+<p>我们已经分析了<strong>一百万项编码智能体任务</strong>，由此获得了宝贵的洞见，用来不断打磨我们的安全协议，也让我们得以超越简单的关键词过滤，转而去识别那些"高信号"的行为模式。举例来说，这项研究对于我们为 Gemini Spark 智能体构建实时监控器起到了关键作用——它让我们能够实时响应新出现的问题，比如无意中的数据删除。</p>
+
+<p>有一点必须指出：我们的数据显示，<strong>绝大多数被标记的事件并非源于恶意</strong>；相反，它们往往是智能体的理解偏差，或是为达成用户目标而表现得过于积极所致。理解这些细微差别，对于打磨我们的安全与防护协议至关重要。</p>
+
+<h2 id="s4">守护智能体生态，是全行业的共同责任</h2>
+
+<p>AI 控制路线图，只是我们多层次智能体安全方法中至关重要的一环。通过把这些协议与我们更广泛的基础设施整合在一起，我们正在把内部安全能力扩展到足以安全地管理我们最先进的 AI 模型。</p>
+
+<p>此外，这种多层次的智能体安全方法，理应成为产业界、政策制定者与学术界共同的优先事项。只有让整个生态系统围绕最佳实践与标准对齐，我们才能赋能网络防御者、增强整个社会的韧性。正因如此，我们在今天同步发布了一份面向政策制定者的技术框架——《智能体安全的三个层次》（Three Layers of Agent Security）。这份文件详细阐述了我们需要如何在三个层面提升安全：单个智能体层面、多智能体系统层面，以及赋能网络防御者、在更广阔的生态中构建韧性这一层面。</p>
+
+<p>我们打算在这些框架的基础上继续前行——在为未来打造安全地基的同时，让我们今天就能放心地部署有能力的 AI。</p>
+
+<p>阅读完整技术报告：<a href="https://deepmind.google/blog/securing-the-future-of-ai-agents/" target="_blank" rel="noopener">AI 控制路线图（AI Control Roadmap）</a></p>
+
+<hr>
+
+<h3>研究作者</h3>
+<p>Mary Phuong、Erik Jenner、Laurent Simon、Lewis Ho、Rohin Shah、Sebastian Farquhar、Scott Coull。</p>
+
+<h3>致谢</h3>
+<p>Four Flynn、Anca Dragan、Alan Cooney、Bilal Chughtai、Buck Shlegeris、Cody Wild、David Lindner、Julian Stastny、Kevin Klyman、Li Ding、Myriam Khan、Raluca Ada Popa、Roland Zimmermann、Ryan Greenblatt、Senthooran Rajamanoharan、Victoria Krakovna、Xerxes Dotiwalla。</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
