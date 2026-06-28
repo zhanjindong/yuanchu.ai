@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent设计模式 图解可复用智能体架构 - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="https://cdn.weread.qq.com/weread/cover/28/cpplatform_k5rcyc2ivvdzavk1extlef/t6_cpplatform_k5rcyc2ivvdzavk1extlef1774326861.jpg" alt="Agent设计模式 图解可复用智能体架构" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">Agent设计模式 图解可复用智能体架构</h1>
+                <div class="book-author">黄佳</div>
+                <div class="book-meta2"><span>划线 13</span><span>想法 13</span></div>
+                <a class="book-link" href="weread://reading?bId=3300199180">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300199180&chapterUid=94&rangeStart=5152&rangeEnd=5173&userVid=250023191"><div class="note-text">是不是可以说各种模式都是以算力换取可信度</div><div class="ref">辩论模式是一种以算力换取可信度的有效范式。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300199180&chapterUid=85&rangeStart=2210&rangeEnd=2233&userVid=250023191"><div class="note-text">太阳系和原子完全不相似，这个是典型的基于错误的知识得出来误导性的描述</div><div class="ref">Agent能够发现“原子”与“太阳系”的相似性</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300199180&chapterUid=82&rangeStart=6175&rangeEnd=6237&userVid=250023191"><div class="note-text">蒸馏之所以有效，是因为它把大模型的“思考过程”提炼成小模型能学的“解题步骤”。大模型先像老师一样详细演示推理（如分步算数学题），小模型再模仿学习这些步骤，而非只记答案。这样小模型就能用更少的算力，掌握接近大模型的推理能力，实现“瘦身不减智”。</div><div class="ref">蒸馏(Distillation)：DeepSeek-R1的另一项工程贡献在于证明了“大型模型的思考过程可以有效教导小型模型”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300199180&chapterUid=82&rangeStart=2589&rangeEnd=2605&userVid=250023191"><div class="note-text">1、概率大重新分配，从数学角度大模型就是概率的预测，P（answer｜question），对于复杂问题这个概率分布是扁平和噪声比较多的，通过思维链将这个概率计算转换为P（answer｜question，step1，step2…）这种条件化过程显著的收敛了概率空间；
+2、显示分解，在单次前向传播，LLM难以处理多重逻辑冲突，思维链模式遵循从简到繁，将复杂问题序列化降维，确保模型一次只要处理一个简单问题；
+3、自我校准，当模型将推理步骤显式地呈现出来时，实际上是借助其注意力机制“回看”上一步的输出。这一过程构建了一种微型的短期记忆回路，有助于抑制幻觉的累积。</div><div class="ref">而是基于以下3个维度的底层重构。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300199180&chapterUid=82&rangeStart=1635&rangeEnd=1693&userVid=250023191"><div class="note-text">最早的大模型是需要显示的prompt引导的，从2024念openai o1为代表的推理模型出来之后就不需要这个魔法指令</div><div class="ref">“让我们一步步思考”等显式的Prompt，引导模型进入问题拆解路径，也可通过微调实现隐式引导，自动激活深度思考能力。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=97&rangeStart=2764&rangeEnd=2827&userVid=250023191"><div class="note-text">群体模式看似混乱，实则有着严密的数学逻辑。支撑其运行的三大支柱是：留痕、动态交接和涌现。它们分别解决了通信、流程和能力的问题。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=94&rangeStart=3515&rangeEnd=3641&userVid=250023191"><div class="note-text">让模型进行辩论可显著提升其在数学和逻辑问题上的准确率。其核心原因在于：编造一个谎言很容易，但要维持一个逻辑自洽的谎言极为困难。在多轮高强度的质询下，幻觉往往因前后矛盾、无法形成闭环而“自爆”；而真实、正确的结论则因其内在一致性得以经受住挑战，屹立不倒。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=94&rangeStart=4714&rangeEnd=4818&userVid=250023191"><div class="note-text">OpenAI等机构提出了一种名为“Debate for Alignment”（对齐辩论）的方法，即让两个AI系统就某一问题展开辩论，通过相互挑错来提升回答的可靠性。这被视为解决“超级对齐”问题的关键路径之一。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=94&rangeStart=2581&rangeEnd=2664&userVid=250023191"><div class="note-text">辩论模式通过引入立场偏置、强制观点互斥以及多轮一致性校验等机制，有效打破了单体模型在推理过程中容易陷入的“平滑陷阱”——倾向于生成概率最高、语义流畅却可能错误的文本。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=59&rangeStart=2581&rangeEnd=2664&userVid=250023191"><div class="note-text">辩论模式通过引入立场偏置、强制观点互斥以及多轮一致性校验等机制，有效打破了单体模型在推理过程中容易陷入的“平滑陷阱”——倾向于生成概率最高、语义流畅却可能错误的文本。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=58&rangeStart=1994&rangeEnd=2077&userVid=250023191"><div class="note-text">协作模式通过多Agent系统的拓扑连接，突破了单体模型在上下文窗口限制、能力偏差和幻觉方面的瓶颈。借助社会化分工，多Agent系统实现了从个体智能到系统级智能的涌现。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=81&rangeStart=6767&rangeEnd=6856&userVid=250023191"><div class="note-text">RAG模块提供“读万卷书”的能力：注入世界知识（如Python语法文档、法律条文等）。
+• 情节记忆模块提供“行万里路”的能力</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=81&rangeStart=6362&rangeEnd=6435&userVid=250023191"><div class="note-text">技能泛化(Skill Generalization)：这是记忆的“智能时代”的代表。在机制上，系统不仅存储行为轨迹，更进一步提炼并保存为代码或规则</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=81&rangeStart=5906&rangeEnd=5963&userVid=250023191"><div class="note-text">情节记忆并非简单的日志堆砌，而是从原始的文本流逐步演化而来的：首先形成可检索的语义快照，最终升华为可执行的技能库。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=76&rangeStart=3211&rangeEnd=3237&userVid=250023191"><div class="note-text">依据香农信息论，信息量的大小与事件发生的概率成反比。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=74&rangeStart=2945&rangeEnd=2971&userVid=250023191"><div class="note-text">多Agent系统正逐步成为下一代软件架构的默认范式。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=72&rangeStart=10473&rangeEnd=10551&userVid=250023191"><div class="note-text">架构师的新职责是设计一套机制，以便能够实时将现实世界的状态序列化为文本，并将其投射到Agent的上下文中。这正是上下文工程的本质——为Agent搭建数字感官</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300199180&chapterUid=18&rangeStart=437&rangeEnd=515&userVid=250023191"><div class="note-text">这不仅是AI的胜利，更是一种新的问题解决设计模式的胜利。AlphaGo没有依靠预设的“定式”（模式），而是通过数百万局的自我对弈，涌现出了超越人类理解的策略</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

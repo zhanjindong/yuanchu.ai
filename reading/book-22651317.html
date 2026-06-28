@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度学习 - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="https://cdn.weread.qq.com/weread/cover/15/YueWen_22651317/t6_YueWen_22651317.jpg" alt="深度学习" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">深度学习</h1>
+                <div class="book-author">伊恩·古德费洛 约书亚·本吉奥</div>
+                <div class="book-meta2"><span>划线 6</span><span>想法 6</span></div>
+                <a class="book-link" href="weread://reading?bId=22651317">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=15&rangeStart=38872&rangeEnd=38919&userVid=250023191"><div class="note-text">信息论的基本想法是一个不太可能的事件居然发生了，要比一个非常可能的事件发生，能提供更多的信息。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=15&rangeStart=21775&rangeEnd=22073&userVid=250023191"><div class="note-text">第一，我们想要建模的很多分布的真实情况是比较接近正态分布的。中心极限定理（central limit theorem）说明很多独立随机变量的和近似服从正态分布。这意味着在实际中，很多复杂系统都可以被成功地建模成正态分布的噪声，即使系统可以被分解成一些更结构化的部分。
+第二，在具有相同方差的所有可能的概率分布中，正态分布在实数上具有最大的不确定性。因此，我们可以认为正态分布是对模型加入的先验知识量最少的分布。充分利用和证明这个想法需要更多的数学工具，我们推迟到第19.4.2节进行讲解。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=15&rangeStart=2932&rangeEnd=3079&userVid=250023191"><div class="note-text">前面那种概率直接与事件发生的频率相联系，被称为频率派概率（frequentist probability）；而后者涉及确定性水平，被称为贝叶斯概率（Bayesian probability）</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=15&rangeStart=799&rangeEnd=857&userVid=250023191"><div class="note-text">概率论使我们能够提出不确定的声明以及在不确定性存在的情况下进行推理，而信息论使我们能够量化概率分布中的不确定性总量。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=12&rangeStart=19987&rangeEnd=20046&userVid=250023191"><div class="note-text">在更小的数据集上获得成功是一个重要的研究领域，为此我们应特别侧重于如何通过无监督或半监督学习充分利用大量的未标注样本。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=22651317&chapterUid=12&rangeStart=19579&rangeEnd=19753&userVid=250023191"><div class="note-text">目前在复杂的任务中达到人类水平的学习算法，与20世纪80年代努力解决玩具问题（toy problem）的学习算法几乎是一样的，尽管我们使用这些算法训练的模型经历了变革，即简化了极深架构的训练。最重要的新进展是，现在我们有了这些算法得以成功训练所需的资源。图1.8展示了基准数据集的大小如何随着时间的推移而显著增加。这种趋势是由社会日益数字化驱动的。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

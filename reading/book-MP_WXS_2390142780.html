@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoQ - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="http://wx.qlogo.cn/mmhead/Xmnun9Io49S6LMTz6n8ibw0ey6eLFwEGIqMTvLBoqZvSoxG02kuJYicZjRNofpiazBRDKdic5OvdIia4/0" alt="InfoQ" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">InfoQ</h1>
+                <div class="book-author">公众号</div>
+                <div class="book-meta2"><span>划线 20</span><span>想法 20</span></div>
+                <a class="book-link" href="weread://reading?bId=MP_WXS_2390142780">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=280135834&rangeStart=306&rangeEnd=340&userVid=250023191"><div class="note-text">这引力好像在月球</div><div class="ref">已经明显超出以往研究型 Demo 的范畴，在观感上直逼成熟游戏产品。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=562184655&rangeStart=8239&rangeEnd=8261&userVid=250023191"><div class="note-text">这逻辑真是一言难尽</div><div class="ref">比如引入代码解释器来运行 Python 代码</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_2390142780&chapterUid=562184655&rangeStart=1870&rangeEnd=1898&userVid=250023191"><div class="note-text">难评，辛顿不认识然后来讨论AI相关的内容。不说不可以，只是让我对这个人讲的内容可信度大大折扣。</div><div class="ref">Steve Eisman：Jeff Hinton 是谁？</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">我们正在进入一个世界：“你能不能执行”不再重要，真正重要的是——你能不能选对要做的事情。你的价值，变成了三件事：
+1）选择正确的问题让 AI 去解决
+2）把 AI 的产出转化为产品或价值
+3）获取资源（资本、算力、token）来放大这一切
+这也解释了为什么“最新模型的访问权”变得如此关键。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">举个简单的例子，如果我以 1 美元卖给你一条信息，你之所以愿意买，是因为这条信息能帮你赚超过 1 美元。所以，本质上你从我这里“套利”了，你赚得比我多。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">这背后其实是模型训练方式的变化：通过强化学习，让模型变得更“agentic”。关键不只是 LLM，而是专门训练过的 agent 型 LLM。
+而这种训练过程，本质上就是像我们这样的人坐下来，和模型一起把这些对话会话一条条写出来——也就是我们现在每天都在和各种 vibe coding agent 反复进行的那类对话。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">在总结演讲时，黄仁勋表示，AI 产业正同时经历三大变革：AI 推理与 AI 工厂、智能体系统革命，以及物理 AI 与机器人时代。随着这些技术逐渐成熟，计算能力、AI 模型和基础设施将共同推动全球产业进入新的发展阶段。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">所以我给那些想推进 AI 的公司的建议是：找到——甚至专门配备——一个全职的小团队，作为内部的 tiger team。这支队伍负责把能力摸透、落到具体 workflow 上，做持续的知识分享，在组织内部制造兴奋感，让更多人愿意尝试。没有这种机制，AI 真的很难被“捡起来用”。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">为模型将要到达的能力提前设计工作流，产品现在只有 80% 好用也能上线，等下一代模型升级，直接跨过那条门槛。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">我一直给大家的总体建议——到今天我仍然觉得成立——是：为模型将要去的地方而构建，而不是只为模型今天能做到什么而构建。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">所以这类 tiger team 的典型画像是：技术相邻、编码相邻，整体技术能力不弱，愿意试、愿意学、愿意带人。你通常可以以他们为核心搭起一个小团队。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">很多时候，编码智能体做不好，并不是“它不行”，而是上下文出了问题。要么是你给的信息不够明确，要么是 agent 根本拿不到完成这件事所需要的信息。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">而最先被放大的，是具备“管理者思维”的资深工程师。他们更擅长拆解问题、判断取舍、以及在正确的节点上向智能体下达指令。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">真正的 “聪明”，是那种兼具技术洞察力与人文同理心的能力，是能够洞察弦外之音、预判未知风险、看透表象背后本质的能力。那些能 “见人所未见” 的人，才是真正的聪明人</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">但还有一样东西，是无法通过旁观习得的，那就是坚韧的意志，是直面痛苦与挫折时，懂得如何应对的底气；是熬过精神内耗、挺过煎熬时刻、战胜内心恐惧的勇气</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">企业看到这种效率提升后，可能首先想到的是削减人力，而不是把工程师重新配置到更高层次的工作上。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">因此，他认为第一步是建立“可观测性”和“可控性”：系统要能清晰展示每一步的变化和决策路径。就像程序员与产品经理协作时，不会简单地说“我改了一版，你再试试”，而是会说明“在 1.1 版本中新增了哪些功能”。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">投资人 Theo 就是典型代表。他坦言，他其实也并不赞成面向非开发者：“千万别把产品卖给‘准’用户，要卖给‘真正’的用户。这是我见过太多人踩过的坑。也因此，像 Cursor（我也投了）这类产品更可能穿越周期，而 Lovable 这类就更危险”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">他直言不讳地指出，行业内存在一些过于乐观的预测。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">“从领域来看，我们更看好那些垂直属性强、发展空间广阔且行业纵深深的赛道。那些领域覆盖较浅、没有自身独特行业数据支撑的 Agent，会慢慢被通用 Agent 蚕食掉。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">。核心思路是构建 “通用基础层 + 领域知识层 + 场景适配层” 的三级架构</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">当前多数通用 Agent 聚焦低价值通用场景，此类场景要么存在成熟替代工具，要么用户不愿为轻微效率提升付费；而高价值通用场景的挖掘与适配不足，导致产品陷入 “能落地的不盈利，盈利的难落地” 的僵局。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_2390142780"><div class="note-text">在各大论坛，关于 Agent 实际应用能力的讨论越来越多。不少长期关注该赛道的从业者及尝鲜用户反馈，厂商们和评测方把功能描述得非常强大，并放出了各种效果惊艳的演示案例。但普通用户上手时却如同“开盲盒”，尝试多次都很难成功且很多效果无法复现，能实现的多为基础操作，逻辑稍复杂就会跑崩。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

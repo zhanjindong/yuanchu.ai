@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原则 - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="https://cdn.weread.qq.com/weread/cover/23/YueWen_921568/t6_YueWen_921568.jpg" alt="原则" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">原则</h1>
+                <div class="book-author">瑞·达利欧</div>
+                <div class="book-meta2"><span>划线 1</span><span>想法 8</span></div>
+                <a class="book-link" href="weread://reading?bId=921568">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=74&rangeStart=2741&rangeEnd=2773&userVid=250023191"><div class="note-text">所以在工作中不要随便给员工画饼，要真诚的和他们沟通。</div><div class="ref">“给公众以虚假的期望，而期望又很快破灭，这是最糟糕的领导方式。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=20331&rangeEnd=20355&userVid=250023191"><div class="note-text">给自己立一个潜意识的flag：我是一个塑造者。</div><div class="ref">塑造者”=“理想家”+“务实思考者”+“坚毅者”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=12838&rangeEnd=12859&userVid=250023191"><div class="note-text">晚睡（看游戏视频），对已经发生的不好的事情不停想，情商低不擅长沟通</div><div class="ref">我建议你写下自己最大的三个坏习惯。现在就写</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=12698&rangeEnd=12759&userVid=250023191"><div class="note-text">习惯在生理上的机制</div><div class="ref">习惯能让你的大脑进入“自动导航模式”。用神经科学术语说，就是你让基底核从大脑皮层那里接管控制权，这样你想都不用想就能执行。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=64&rangeStart=1556&rangeEnd=1587&userVid=250023191"><div class="note-text">太对了。写在新疆旅游途中：我儿子一路上都在问什么时候到达目的地，我跟他说没有目的地，现在这沿途的一路风景就是我们旅游的目的。</div><div class="ref">我逐渐认识到，成功的满足感并不来自实现目标，而是来自努力奋斗。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=60&rangeStart=3280&rangeEnd=3358&userVid=250023191"><div class="note-text">不是预测而是捕捉变化</div><div class="ref">我们并不是预测经济环境中发生的变化，然后根据这些预测调整投资组合，而是在变化发生时捕捉它们，不断调整我们的投资对象，以使投资始终集中在当时表现最好的市场上。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=59&rangeStart=8386&rangeEnd=8421&userVid=250023191"><div class="note-text">什么是格局，什么叫open，着就是</div><div class="ref">换言之，我的目标只是让自己正确——我并不关心正确的答案是不是来源于我。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=921568&chapterUid=55&rangeStart=5075&rangeEnd=5143&userVid=250023191"><div class="note-text">1、凡事实事求是，讲究事实
+2、对人不要有偏见，接纳不同的人
+3、遇到问题首先想的是解决问题，不是推卸责任</div><div class="ref">你自己的原则是不是系统化或者计算机化的，并不是最重要的。最重要的事情是总结出你自己的原则，最好将其写下来，尤其是在你与其他人共事的情况下</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=80&rangeStart=1087&rangeEnd=1128&userVid=250023191"><div class="note-text">在一家健康的机构中，应该是员工与其低层次的自我进行竞争，而不是员工与员工相互竞争。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=72&rangeStart=32850&rangeEnd=32938&userVid=250023191"><div class="note-text">优秀的人具备高尚的品格和出色的能力。我所说的高尚的品格，是指能够实事求是、开诚布公，致力于所在机构的事业；出色的能力，是指他们具备能力和技艺，能够出色地完成工作。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=20905&rangeEnd=20994&userVid=250023191"><div class="note-text">人人都有长处和短处，人人都能在生活中扮演重要角色。大自然塑造万事万物皆有目的。你最需要的勇气不是驱使你战胜别人的勇气，而是不管其他人对你有何冀望，你始终坚持做最真实的自我的勇气。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=16447&rangeEnd=16492&userVid=250023191"><div class="note-text">内向者聚焦于内心世界，从思想、记忆和经验中汲取能量；外向者聚焦于外部，从与人相处中汲取能量</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=8521&rangeEnd=8568&userVid=250023191"><div class="note-text">人类永远处在塑造人类的两极力量之间：“一极是激发罪恶的个体选择，另一极是激发美德的群体选择。”</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=68&rangeStart=1387&rangeEnd=1455&userVid=250023191"><div class="note-text">理念型的人大略地设想出要做什么，并希望细节型的人自己找到办法，当后者找不到办法时，前者就觉得后者毫无想象力，而后者觉得前者自己都没搞清楚</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=64&rangeStart=2474&rangeEnd=2508&userVid=250023191"><div class="note-text">我看到的情况是，发现自己的性格，过与性格相适应的生活，才是最幸福的。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=921568&chapterUid=61&rangeStart=10048&rangeEnd=10114&userVid=250023191"><div class="note-text">一个管理者能够实现的最大成功就是能够组织其他人在没有你的情况下把事情做好。次好的情况是你自己能把事情做好，最糟糕的是连你自己都做不好</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datawhale - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="http://wx.qlogo.cn/mmhead/Q3auHgzwzM54elYMTg5ONEmPUibdDTx3qsDvunJcoTXF1OEte6lOxGw/0" alt="Datawhale" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">Datawhale</h1>
+                <div class="book-author">公众号</div>
+                <div class="book-meta2"><span>划线 11</span><span>想法 11</span></div>
+                <a class="book-link" href="weread://reading?bId=MP_WXS_3226363426">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=1187&rangeEnd=1240&userVid=250023191"><div class="note-text">一、主流开源框架速览
+• 训练/微调类：Hugging Face Transformers（生态最全，支持多框架多模型）；PyTorch Lightning（简化训练流程，聚焦科研与工程）；Colossal-AI（高效并行，适配超大规模模型）；DeepSpeed（微软，低内存训练与推理优化）；Megatron-LM（英伟达，千亿级模型分布式训练）。
+• 推理部署类：vLLM（高吞吐推理，KV缓存优化）；TensorRT-LLM（英伟达，推理加速与量化）；llama.cpp（本地轻量部署，CPU/GPU通用）；ONNX Runtime（跨平台推理优化）。
+• 全栈开发类：LangChain（大模型应用开发，链与工具调用）；LlamaIndex（检索增强，文档理解与问答）。
+二、Qwen（阿里）论文核心创新
+• 统一思考/非思考双模式（Qwen3）：单模型支持复杂推理（/think）与快速响应（/no_think），可按query动态切换并设思考预算，平衡精度与速度。
+• 高效MoE架构（Qwen3 MoE）：总参235B，每token仅激活22B；128专家+8活跃，无共享专家+全局负载均衡，避免负载均衡损失。
+• 强到弱蒸馏：大模型logits指导小模型，训练成本降80%+，小模型性能反超前代大模型（如Qwen3-4B＞Qwen2.5-7B）。
+• GSPO强化学习算法：解决RL训练崩溃，训练更稳、效率更高。
+• 交错MRoPE与DeepStack（Qwen3-VL）：交错MRoPE优化长视频时空理解；DeepStack实现视觉-语言多阶段深度融合。
+• 数据与训练优化：Qwen2.5预训练数据至18万亿token；两阶段预训练+渐进式上下文扩展；ParScale并行计算提升效率。
+三、DeepSeek论文核心创新
+• mHC流形约束超连接（2026最新）：在超连接（HC）基础上加入双随机矩阵流形约束，恢复恒等映射特性，抑制信号爆炸/梯度震荡，训练波动降40%，仅增3%计算量。
+• DeepSeek-MoE（V3）：细粒度专家划分+1共享专家+256路由专家+8活跃，无辅助损失负载均衡，避免性能损失。
+• 多头潜在注意力（MLA）：KV缓存低秩压缩，推理内存降，性能与MHA相当。
+• FP8混合精度训练（V3）：超大规模模型验证FP8有效性，分块量化+高精度累加，内存与计算开销大减。
+• 多标记预测（MTP）：单次生成多候选token，支持推测解码，推理加速。
+• DualPipe并行：计算-通信重叠，跨节点MoE通信开销近零，训练14.8万亿token仅266.4万H800 GPU小时。
+四、Qwen vs DeepSeek创新侧重
+• Qwen：聚焦双模式灵活性、MoE效率、蒸馏与RL稳定，兼顾通用能力与训练成本。
+• DeepSeek：聚焦底层架构（mHC）、MoE细粒度优化、推理/训练效率（MLA/FP8/MTP），强调超大规模训练的稳定性与硬件适配。</div><div class="ref">15. 开源框架了解过哪些？Qwen，Deepseek的论文是否有研读过，说一下其中的创新点主要体现在哪？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=1071&rangeEnd=1125&userVid=250023191"><div class="note-text">混合专家模型（MoE）的核心工作原理
+混合专家模型（MoE）的核心是“分而治之”+“动态激活”，通过“专家网络+门控网络”的架构，在扩大参数总量的同时，控制单次推理的计算开销。
+1. 架构组成
+◦ 专家网络（Experts）：多个独立的、功能专一的子模型（如 Transformer 层），每个专家负责处理数据的某一类模式或任务子集，模型的总参数量等于所有专家参数量之和，以此实现参数规模的大幅扩展。
+◦ 门控网络（Gating Network）：一个轻量级的路由模型，其输入为当前样本的特征，输出为一组权重，用于决定哪些专家参与当前样本的计算，以及各专家输出的权重占比。
+2. 核心机制：动态稀疏激活
+◦ 门控网络会为每个输入样本，筛选出少量（通常是 1~2 个）最匹配的专家，仅激活这部分专家进行计算，其余专家在本次推理中完全闲置，不产生计算消耗。
+◦ 对选中专家的输出进行加权求和，得到最终的预测结果，权重由门控网络输出的匹配度决定。
+不显著增加推理成本的关键
+• 参数规模与计算成本解耦：传统模型扩大参数时，所有参数都会参与每次推理，计算成本随参数规模线性增长；而 MoE 总参数量虽大，但单次推理仅激活小部分专家，计算量仅与激活的专家数量相关，与总参数量几乎无关。
+• 门控网络开销极低：门控网络的参数量远小于单个专家，其带来的额外计算成本可以忽略不计。</div><div class="ref">13. 混合专家模型（MoE）是如何在不显著增加推理成本的情况下，有效扩大模型参数规模的？请简述其工作原理。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=1034&rangeEnd=1070&userVid=250023191"><div class="note-text">一、对激活函数的理解
+激活函数是大模型神经网络中引入非线性变换的核心组件，它能打破线性层的叠加局限，让模型具备拟合复杂非线性关系（如自然语言的语义关联、逻辑推理）的能力；若没有激活函数，多层线性层等价于单层线性变换，无法建模复杂任务。
+二、LLM 常用的激活函数及选用原因
+1. ReLU（Rectified Linear Unit）
+◦ 公式：f(x)=\max(0,x)
+◦ 选用原因：计算速度极快，无指数、三角函数等复杂运算，能显著降低大模型的训练和推理开销；有效缓解梯度消失问题（正区间梯度为1），适合深层 Transformer 架构的训练稳定性；实现简单，几乎所有深度学习框架都有原生优化。
+2. GELU（Gaussian Error Linear Units）
+◦ 公式：f(x)=x \cdot \Phi(x)（\Phi(x) 是标准正态分布的累积分布函数，近似为 0.5x(1+\tanh(\sqrt{2/\pi}(x+0.044715x^3)))）
+◦ 选用原因：当前 LLM 的主流激活函数（如 GPT 系列、BERT 均采用），是平滑版的 ReLU，非线性变换更柔和，能更好地捕捉文本中的细微语义差异；输出具有非单调性和非对称性，更符合自然语言数据的分布特性；梯度流动更顺畅，相比 ReLU 能减少神经元“死亡”的概率。
+3. Swish
+◦ 公式：f(x)=x \cdot \sigma(x)（\sigma(x) 是 Sigmoid 函数）
+◦ 选用原因：同样是平滑的非线性函数，性能与 GELU 接近；可看作是带参数的 ReLU 变体，能自适应任务数据；在部分小参数量 LLM 或轻量化模型中，表现优于 ReLU，且计算开销低于 GELU。
+4. SiLU（Sigmoid Linear Unit）
+◦ 公式与 Swish 完全一致，是 Swish 的官方命名变体
+◦ 选用原因：被 Transformer-XL、PaLM 等模型采用，在长文本建模任务中表现出色；与硬件的兼容性更好，部分 GPU 框架对 SiLU 有专门的加速优化，适合大模型的高效推理。</div><div class="ref">12. 激活函数有了解吗，你知道哪些LLM常用的激活函数？为什么选用它？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=977&rangeEnd=1033&userVid=250023191"><div class="note-text">1. 对涌现能力的理解
+涌现能力指的是大型模型在规模（参数量、训练数据量）增长到一定阈值后，突然表现出的、在小规模模型中完全不存在或极微弱的能力，这类能力无法通过小规模模型的性能线性外推得到，是一种质变而非量变的现象。
+具体来说，它不是模型“学会了更多知识”，而是模型具备了跨任务的泛化、复杂推理、抽象理解等高阶能力，比如大模型的数学推理、代码生成、上下文对话、少样本/零样本学习等，这些能力在中小模型中难以稳定实现。
+2. 涌现能力出现的规模阈值
+涌现能力没有绝对统一的规模阈值，会随任务类型、模型架构、训练数据质量的不同而变化，常见的规模区间参考如下：
+• 基础语言能力（如通顺文本生成）：通常在10亿~100亿参数量的模型中开始显现，小规模模型（如1亿~10亿参）的文本生成容易出现逻辑混乱、语句不通的问题。
+• 复杂推理能力（如数学解题、代码调试）：需要千亿级参数量的模型才能稳定实现，例如GPT-3（1750亿参）首次展现出较强的少样本推理能力，而千亿级以下的模型在这类任务上的表现会显著下降。
+• 跨模态涌现能力（如图文理解、文生图）：参数量门槛同样在千亿级，且需要配套大规模跨模态训练数据，模型才能建立起文本与图像之间的语义关联。
+需要注意的是，规模不是唯一决定因素，训练数据的多样性、质量、模型架构设计（如Transformer的改进变体）也会影响涌现能力的出现时机和强度。</div><div class="ref">11. “涌现能力”是大型模型中一个备受关注的现象，请问你如何理解这个概念？它通常在模型规模达到什么程度时出现？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=500&rangeEnd=548&userVid=250023191"><div class="note-text">什么是位置编码
+位置编码（Positional Encoding） 是一种向 Transformer 输入中注入序列位置信息的机制，它会生成与词嵌入维度相同的向量，与词嵌入向量相加后输入模型，以此让模型感知到序列中 token 的顺序关系。
+为什么位置编码在 Transformer 中是必需的
+Transformer 的核心自注意力机制是置换不变性的——它计算注意力权重时只关注 token 之间的关联，不区分 token 在序列中的位置。如果没有位置编码，将序列中 token 的顺序打乱后，模型的输出结果不会发生变化，而自然语言等序列数据的语义高度依赖于顺序，因此必须通过位置编码显式注入位置信息。
+位置编码的两种实现方式
+1. 正弦余弦位置编码（Sinusoidal Positional Encoding）
+这是 Transformer 原论文提出的方案，利用正弦和余弦函数生成位置编码，公式如下：
+\begin{split} PE_{(pos,2i)} &amp;= \sin\left(pos / 10000^{2i/d_{\text{model}}}\right) \\ PE_{(pos,2i+1)} &amp;= \cos\left(pos / 10000^{2i/d_{\text{model}}}\right) \end{split}
+其中 pos 是 token 在序列中的位置索引，i 是位置编码向量的维度索引，d_{\text{model}} 是词嵌入的维度。该编码的优势是可泛化到训练时未见过的超长序列。
+2. 可学习位置编码（Learned Positional Encoding）
+这种方式将位置编码视为模型的可训练参数，初始化一个大小为 [\text{max_seq_len}, d_{\text{model}}] 的参数矩阵，在训练过程中与模型其他参数一起更新。它的优势是能自适应任务数据的特点，但泛化能力受限于训练时设定的最大序列长度。</div><div class="ref">2. 什么是位置编码？在 Transformer 中，为什么它是必需的？请列举至少两种实现方式。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=152093275&rangeStart=440&rangeEnd=499&userVid=250023191"><div class="note-text">自注意力机制的工作原理
+自注意力机制（Self-Attention）的核心是让序列中的每个位置，都能计算与序列内所有位置的关联权重，再通过加权求和得到该位置的新表征，具体分为三步：
+1. 生成 Query、Key、Value 向量
+对输入序列的每个词嵌入向量 x_i，分别通过三个独立的可学习权重矩阵 W_Q、W_K、W_V，生成对应的 Query（查询）向量 q_i=W_Qx_i、Key（键）向量 k_i=W_Kx_i、Value（值）向量 v_i=W_Vx_i。
+2. 计算注意力权重
+用 Query 与所有 Key 做点积，衡量当前位置与其他位置的匹配度；为了避免点积结果过大导致梯度饱和，除以 \sqrt{d_k}（d_k 是 Key 向量的维度）；再通过 Softmax 函数将权重归一化，得到所有位置对当前位置的注意力权重 \alpha_{ij}：
+\alpha_{ij} = \frac{\exp(q_i \cdot k_j^T / \sqrt{d_k})}{\sum_{t=1}^n \exp(q_i \cdot k_t^T / \sqrt{d_k})}
+3. 加权求和得到输出
+用归一化后的注意力权重 \alpha_{ij}，对所有位置的 Value 向量 v_j 加权求和，得到当前位置的自注意力输出 z_i：
+z_i = \sum_{j=1}^n \alpha_{ij} v_j
+实际应用中，还会引入多头注意力（Multi-Head Attention），即并行执行多组上述操作，再将各组输出拼接后线性变换，进一步提升表征能力。
+自注意力机制比 RNN 更适合长序列的原因
+1. 并行计算能力
+RNN 是串行计算，必须按序列顺序依次处理每个位置，前一个位置的输出是后一个位置的输入，无法并行；而自注意力机制计算所有位置的 Query、Key、Value 以及注意力权重时，所有位置可以同时处理，训练效率随序列长度提升呈线性增长，适合长序列。
+2. 长距离依赖建模能力
+RNN 依赖隐藏状态传递信息，长序列中早期信息会被逐渐稀释，出现梯度消失或爆炸问题，难以捕捉超过数十步的长距离依赖；自注意力机制通过直接计算任意两个位置的注意力权重，不管两个位置间隔多远，关联权重的计算复杂度都是 O(1)，能轻松建模长距离依赖。
+3. 计算复杂度更优
+RNN 处理长度为 n 的序列，计算复杂度是 O(n \cdot d^2)（d 是隐藏层维度）；自注意力机制的计算复杂度是 O(n^2 \cdot d)，当序列长度 n 小于隐藏层维度 d 时（长序列场景下更常见），自注意力的实际计算效率更高。</div><div class="ref">1. 请详细解释一下 Transformer 模型中的自注意力机制是如何工作的？它为什么比 RNN 更适合处理长序列？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=950712061&rangeStart=1655&rangeEnd=1760&userVid=250023191"><div class="note-text">我觉得太理想化了，不可能，除非AI能实现真正的平权，但回看几千年都人类历史，可能吗？（疑问句）</div><div class="ref">这就像现在的体育运动或电子游戏。你想工作可以，不想工作也行。这就好比你可以去超市买菜，也可以选择自己在后院种菜。后院种菜显然更累、效率更低，但有些人仍然这样做，因为这是一种乐趣。未来，工作就是那种“后院种菜”。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=1910024019&rangeStart=7442&rangeEnd=7530&userVid=250023191"><div class="note-text">人类一出生已经被“进化”这个强大的算法预训练了</div><div class="ref">关于人类样本效率极高这一点，最可能的解释之一就是进化。 进化在视觉、听觉、运动（Locomotion）这些核心能力上，为我们提供了极少量但最关键的“先验知识”（Priors）。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=1910024019&rangeStart=6380&rangeEnd=6408&userVid=250023191"><div class="note-text">回到了同一起跑线</div><div class="ref">当算力巨大到一定程度，我们其实又重新回到了“科研时代”。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=MP_WXS_3226363426&chapterUid=1910024019&rangeStart=1059&rangeEnd=1105&userVid=250023191"><div class="note-text">同样的感觉，好奇这中间少了什么？</div><div class="ref">那你觉得这种冲击什么时候来？现在的怪像是：模型看起来比它们实际产生的经济影响要“聪明得多”。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">基于这些批判，团队提出了 Manus 的 Ul 设计哲学：
+渐进式披露（Progressive Disclosure）：默认呈现给用户的应该是一个极其简洁的界面（可能只有一个对话框）。随着任务的展开，Agent 所使用的工具（如 Shell，Browser）才作为独立的窗口或标签页「浮现」出来</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">企业最头疼的问题之一，就是那些堆积如山的老系统、老接口。它们可能是十年前写的，文档早就找不到了，但业务还离不开它们。AgentKit Gateway做的事情很直接——把这些“哑巴”接口变成Agent能听懂、能调用的工具。依托字节内部5000+微服务治理经验，只需要零代码或少量代码就能完成转换。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">领域模型的存在本质上是应用企业不愿意在ai企业面前认输，希望构建领域know how的护城河，不希望ai入侵，希望把ai驯化为工具。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">Agent Skills 是一种标准化的程序性知识封装格式。如果说 MCP 为智能体提供了&quot;手&quot;来操作工具，那么 Skills 就提供了&quot;操作手册&quot;或&quot;SOP（标准作业程序）&quot;，教导智能体如何正确使用这些工具。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">Skill 和 MCP 是两种东西，Skill 是领域知识，告诉模型该如何做，本质上是高级 Prompt；而 MCP 对接外部工具和数据</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">主持人： 考虑到现在如此疯狂的资本投入，最后一个问题：我们会迎来 AI 泡沫吗？
+黄仁勋：这问题很好。但要回答它，我们需要回归计算机科学的第一性原理，看看底层到底发生了什么。目前有三股力量在同时作用：
+第一，摩尔定律的失效与计算范式的更替。这是一个硬性事实：通用计算（CPU）已经推不动了。六年前，全球 TOP500 超级计算机里 90% 是 CPU；今年，这个比例掉到了 10%，剩下的 90% 全是加速计算（GPU）。即便没有 AI，世界也必须完成这次基础设施的更替，否则连处理基本的数据（SQL、数据表）都难以为继。
+第二，推荐系统的进化。过去15年互联网的引擎是“推荐系统”。为什么你刷手机能看到你想看的新闻、广告、商品？全靠它。现在，这个旧引擎正在全面升级为“生成式 AI”。以前这部分跑在 CPU 上，现在必须全部迁移到 GPU 上。
+第三，才是大家看到的“代理型 AI”（Agentic AI）。也就是 Grok、OpenAI、Claude 这些。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">而进化竟然能把这种高维度的抽象欲望，硬编码进我们的基因里。它是怎么做到的？</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">但如果你仔细想，人类并不是 AGI。人类虽然有基础能力，但我们的知识储备其实很有限。我们真正强的是持续学习。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">复杂的东西可能在特定场景非常有用，但简单的东西在更广泛的情况下往往更鲁棒</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">Ilya Sutskever：预训练最大的优势在于两点：第一，数据量极其庞大；第二，你不用纠结“选哪些数据”，因为全都要。 这些数据非常“自然”，里面包含了人类活动的方方面面：人们的想法、经验，以及大量关于世界的特征。可以说，它是“人类将世界投射到文本上的全息影像”。预训练的目标就是：用巨量数据去捕捉这层投射。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://reading?bId=MP_WXS_3226363426"><div class="note-text">你定义的超级智能，不是一个“已经学会所有工作”的系统，而是一个“能学会任何工作”的可成长心智。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

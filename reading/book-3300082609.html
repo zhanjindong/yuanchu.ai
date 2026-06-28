@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>这就是ChatGPT - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="https://cdn.weread.qq.com/weread/cover/24/cpplatform_4cn8w4tmgzntjobg9ffeny/t6_cpplatform_4cn8w4tmgzntjobg9ffeny1703648785.jpg" alt="这就是ChatGPT" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">这就是ChatGPT</h1>
+                <div class="book-author">斯蒂芬·沃尔弗拉姆</div>
+                <div class="book-meta2"><span>划线 2</span><span>想法 2</span></div>
+                <a class="book-link" href="weread://reading?bId=3300082609">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=4971&rangeEnd=5058&userVid=250023191"><div class="note-text">这里看不懂的建议去看吴恩达的机器学习课程，更直观易懂</div><div class="ref">微积分的链式法则实际上让我们解开了神经网络中连续各层所做操作的谜团。结果是，我们可以—至少在某些局部近似中—“反转”神经网络的操作，并逐步找到使与输出相关的损失最小化的权重。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300082609&chapterUid=8&rangeStart=4997&rangeEnd=5094&userVid=250023191"><div class="note-text">就像架构设计，先进行抽像，定义概念和模块，再想办法具象化和实现</div><div class="ref">最佳思路是建立一个模型，让我们能够估计序列出现的概率—即使我们从未在已有的文本语料库中明确看到过这些序列。ChatGPT的核心正是所谓的“大语言模型”，后者已经被构建得能够很好地估计这些概率了。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300082609&chapterUid=12&rangeStart=5184&rangeEnd=5248&userVid=250023191"><div class="note-text">深度学习”在2012年左右的重大突破与如下发现有关：与权重相对较少时相比，在涉及许多权重时，进行最小化（至少近似）可能会更容易。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300082609&chapterUid=5&rangeStart=4573&rangeEnd=4679&userVid=250023191"><div class="note-text">最高效的方式是发掘新的可能性，定义对自己有价值的东西。
+●从现在的回答问题转向学会如何提出问题，以及如何确定哪些问题值得提出。也就是从知识执行转向知识战略。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

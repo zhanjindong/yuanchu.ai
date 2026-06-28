@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>敏捷革命 - 读书笔记 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        .book-head { display: flex; gap: 24px; align-items: flex-start; margin: 10px 0 16px; }
+        .cover { width: 80px; height: 110px; object-fit: cover; border-radius: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12); flex-shrink: 0; background: #f2f2f2; }
+        .book-author { font-size: 15px; color: rgba(0,0,0,0.4); margin: 14px 0 14px; }
+        .book-meta2 { display: flex; gap: 20px; font-size: 13px; color: rgba(0,0,0,0.35); letter-spacing: 1px; margin-bottom: 14px; }
+        .book-link { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; transition: color 0.3s; }
+        .book-link:hover { color: #1a1a1a; }
+        .intro2 { font-size: 14px; line-height: 1.7; color: rgba(0,0,0,0.4); margin: 22px 0 50px;
+            padding: 18px 22px; background: rgba(0,0,0,0.02); border-radius: 6px; }
+        .group-label { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 6px;
+            text-transform: uppercase; margin: 50px 0 26px; }
+        .notes { display: flex; flex-direction: column; gap: 24px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s, padding 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+        .empty { font-size: 15px; color: rgba(0,0,0,0.35); padding: 40px 0; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 26px; letter-spacing: 4px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="book-head">
+            <img class="cover" src="https://cdn.weread.qq.com/weread/cover/83/YueWen_857339/t6_YueWen_857339.jpg" alt="敏捷革命" loading="lazy">
+            <div>
+                <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">敏捷革命</h1>
+                <div class="book-author">杰夫·萨瑟兰</div>
+                <div class="book-meta2"><span>划线 1</span><span>想法 13</span></div>
+                <a class="book-link" href="weread://reading?bId=857339">在微信读书中打开 →</a>
+            </div>
+        </div>
+        
+        <div class="group-label">我的想法</div><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=10&rangeStart=16434&rangeEnd=16550&userVid=250023191"><div class="note-text">你在忙什么呢？额，瞎忙瞎忙</div><div class="ref">第三类是“忙碌奔波型”。这类人被资方聘请过来，负责管理工作。他们愿意每周工作80小时（也愿意鞭策别人这么做），因为他们觉得自己以后就会获得晋升，但等真的获得晋升之后，又会拿出更多时间去应付令人头疼的新问题，不过他们喜欢这种忙碌奔波。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">这就是我最近头脑里的想法</div><div class="ref">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div><div class="group-label">划线</div><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=14521&rangeEnd=14658&userVid=250023191"><div class="note-text">但是为何一个人工时减少，却能做更多事情呢？表面上看起来毫无道理。马克斯韦尔表示，工作时间太长的人会开始犯错，正如我们先前提到的那样，改正错误可能会比创造新成绩花费更多的时间。工作超出负荷的员工比较不容易集中注意力，而且会影响别人也跟着分心，不久之后他们就会开始做出错误决策。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=13852&rangeEnd=14066&userVid=250023191"><div class="note-text">如果一个团队的领导者在休假时还要确保办公室一切正常，那么这就说明他没有管理好自己的团队。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=12275&rangeEnd=12315&userVid=250023191"><div class="note-text">如果你出了一个错误（我们都会出错），那就在发现错误时立即修改，不然就会付出代价。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=7216&rangeEnd=7253&userVid=250023191"><div class="note-text">事实上，许多研究表明，同时执行多项任务不仅浪费时间，还会使人变得麻木愚蠢。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=8&rangeStart=3695&rangeEnd=3748&userVid=250023191"><div class="note-text">人们之所以同时执行多项任务，并不是因为他们擅长这样做，而是因为他们容易分心，难以克制自己去做另一件事的冲动</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=19508&rangeEnd=19557&userVid=250023191"><div class="note-text">“基本归因错误”有助于激发我们的正义感，因为如果我们指责某个人，似乎表明我们自己不会做那样的事情。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=19117&rangeEnd=19188&userVid=250023191"><div class="note-text">它揭示出，每个人都是制度的产物，而Scrum方法会承认和接受这个现实，进而审视导致失败的制度，最后着力改良制度，而不是非要找出一个人来承担责任</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=16012&rangeEnd=16181&userVid=250023191"><div class="note-text">当你指责别人时，你会说别人的性格有问题。你被别人指责时，往往不是从自身性格方面找原因，而是从客观方面找原因，即认为是“情境因素”促使自己那么做的。对于这一点，你意识到了吗？当你说起自己时，往往觉得自己正确；说起别人时，却往往习惯于妄加评论。这是人类最容易犯的一个最具有毁灭性的错误。对于这种倾向，甚至有一个专门的名称，叫“基本归因错误”。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=13595&rangeEnd=13619&userVid=250023191"><div class="note-text">普通人在短期记忆里记住的东西不是7样，而是4样。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=13178&rangeEnd=13273&userVid=250023191"><div class="note-text">他根据团队规模对这些项目进行了分类，很快就发现，一旦团队规模超过了8人，那么项目耗费的时间往往就会非常多。要完成同样的工作量，3~7人的团队所需时间只有9~20人的团队所需时间的25%左右。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=6&rangeStart=13981&rangeEnd=14155&userVid=250023191"><div class="note-text">当他试图研究为什么项目中增加人数反而会降低进度时，他发现了两点原因。第一，要培养一个新成员，使其跟上其他成员的速度，需要耗费一定的时间。你也可以想象得到，带领一个新成员步入正轨会拖累其他成员的速度。第二个原因不仅与我们思考问题的方式有关，而且与我们的思考能力有关。团队成员增加之后，沟通渠道就会大幅增加，我们的大脑可能根本无法应付这么多的沟通渠道。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=11469&rangeEnd=11791&userVid=250023191"><div class="note-text">在武术中，有一种概念称为“守破离”，分别是指三种不同的修炼层次。在“守”的境界中，你懂得所有规则与动作，不断重复动作，以便让身体学会有关的动作，就像你在学习舞步时那样。“守”就是要求你不会出错。
+在“破”的境界中，你在完全熟悉有关动作之后开始学着创新，就像在地板上跳舞时在迈出一个舞步之后，自己再增添一个摆动动作。
+在“离”的境界中，你可以摆脱形式的束缚，算是真正掌握了要领，可以按照自己的意愿加以创新。因为你已经非常了解合气道或探戈了，所以你的一举一动都能表达出它的精髓。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=857339&chapterUid=5&rangeStart=4175&rangeEnd=4359&userVid=250023191"><div class="note-text">先后经历了在军队和学术界的职业生涯之后，我发现自己有点像商业界的门外汉。但门外汉的视角恰恰是我最宝贵的财富之一。从第一天开始，我就发现了一个奇怪的现象：人们明知道一些工作方式效率非常低，浪费人力物力，缺乏人性，令人沮丧，却依然坚持这么做。我猜想可能是因为他们觉得大家都是这么做的，所以才认为这必定是最佳的办法。</div><span class="jump">在微信读书中查看 ↗</span></a></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>
