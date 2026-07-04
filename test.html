@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API 链路验证 · yuanchu.ai → api.yuanchu.ai</title>
+  <style>
+    body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+           max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }
+    h1 { font-size: 20px; }
+    .meta { color: #666; font-size: 13px; margin-bottom: 20px; }
+    .card { border: 1px solid #e2e2e2; border-radius: 10px; padding: 18px 20px; margin: 16px 0; }
+    .status { font-weight: 600; font-size: 15px; }
+    .ok { color: #0a7d2c; }
+    .fail { color: #c0392b; }
+    .pending { color: #b8860b; }
+    .row { display: flex; gap: 10px; font-size: 14px; margin: 4px 0; }
+    .row .k { color: #888; min-width: 90px; }
+    pre { background: #f6f8fa; border-radius: 8px; padding: 14px; overflow-x: auto;
+          font-size: 13px; margin: 10px 0 0; }
+    button { font-size: 14px; padding: 8px 16px; border: 1px solid #ccc; border-radius: 8px;
+             background: #fff; cursor: pointer; }
+    button:hover { background: #f2f2f2; }
+    code { background: #f0f0f0; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>API 链路验证</h1>
+  <div class="meta">
+    前端 <code id="origin"></code> → 后端 <code>https://api.yuanchu.ai/api/hello</code>
+  </div>
+
+  <div class="card">
+    <div class="status pending" id="status">⏳ 正在请求…</div>
+    <div id="details"></div>
+    <pre id="body" style="display:none"></pre>
+  </div>
+
+  <button onclick="run()">重新测试</button>
+
+  <script>
+    const API = "https://api.yuanchu.ai/api/hello";
+    document.getElementById("origin").textContent = window.location.origin;
+
+    async function run() {
+      const $status = document.getElementById("status");
+      const $details = document.getElementById("details");
+      const $body = document.getElementById("body");
+      $status.className = "status pending";
+      $status.textContent = "⏳ 正在请求…";
+      $details.innerHTML = "";
+      $body.style.display = "none";
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(API, { method: "GET" });
+        const ms = Math.round(performance.now() - t0);
+        const text = await res.text();
+        let json;
+        try { json = JSON.parse(text); } catch (_) {}
+
+        const rows = [
+          ["HTTP 状态", res.status + " " + res.statusText],
+          ["耗时", ms + " ms"],
+          ["Content-Type", res.headers.get("content-type") || "—"],
+        ];
+        $details.innerHTML = rows.map(r =>
+          `<div class="row"><span class="k">${r[0]}</span><span>${r[1]}</span></div>`
+        ).join("");
+
+        $body.textContent = json ? JSON.stringify(json, null, 2) : text;
+        $body.style.display = "block";
+
+        if (res.ok && json && json.ok) {
+          $status.className = "status ok";
+          $status.textContent = "✅ 链路打通！接口返回正常，CORS 已放行本页面。";
+        } else {
+          $status.className = "status fail";
+          $status.textContent = "⚠️ 收到响应，但内容不符合预期（见下方原文）。";
+        }
+      } catch (err) {
+        $status.className = "status fail";
+        $status.textContent = "❌ 请求失败：" + err.message;
+        $details.innerHTML =
+          `<div class="row"><span class="k">可能原因</span><span>网络不通、CORS 未放行当前来源，或接口未部署</span></div>`;
+      }
+    }
+
+    run();
+  </script>
+</body>
+</html>
