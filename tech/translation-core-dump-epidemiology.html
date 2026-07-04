@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1.0">
+<title>Core dump 流行病学：修复一个 18 年前的 bug - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:24px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header .tag.tag-trans{color:#7c3aed;background:#f5f3ff;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;flex-wrap:wrap;}
+
+/* ---- Source Card (原文出处) ---- */
+.source-card{background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #7c3aed;border-radius:8px;padding:18px 22px;margin-bottom:40px;}
+.source-card .source-label{font-size:12px;font-weight:600;color:#7c3aed;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.source-card .source-row{font-size:14px;line-height:1.9;color:#475569;}
+.source-card .source-row strong{color:#1e293b;font-weight:600;margin-right:6px;}
+.source-card a{color:#3b82f6;text-decoration:none;word-break:break-all;border-bottom:1px solid transparent;transition:border-color .2s;}
+.source-card a:hover{border-bottom-color:#3b82f6;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose h4{font-size:17px;font-weight:600;margin-top:24px;margin-bottom:10px;color:#334155;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+/* 译者注 */
+.callout-note{background:#faf5ff;border-left:4px solid #a855f7;color:#6b21a8;}
+.callout-note .callout-title{color:#a855f7;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Media（图片 / 视频） ---- */
+.prose figure{margin:24px 0;text-align:center;}
+.prose figure img{max-width:100%;border-radius:8px;margin:0 auto;display:block;}
+.prose figure video{display:block;width:100%;max-width:620px;margin:0 auto;border-radius:8px;background:#000;}
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose figcaption,.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag tag-trans">译文</span>
+    <span class="tag">AI 工程</span>
+    <span class="tag">调试优化</span>
+  </div>
+  <h1>Core dump 流行病学：修复一个 18 年前的 bug</h1>
+  <div class="meta">
+    <span>译者：Jackie Zhan</span>
+    <span>2026-07-04</span>
+  </div>
+</div>
+
+<!-- ==================== SOURCE CARD（原文出处，必填） ==================== -->
+<div class="source-card">
+  <div class="source-label">原文出处</div>
+  <div class="source-row"><strong>原标题</strong>Core dump epidemiology: fixing an 18-year-old bug</div>
+  <div class="source-row"><strong>作者</strong>OpenAI</div>
+  <div class="source-row"><strong>来源</strong>OpenAI Engineering Blog</div>
+  <div class="source-row"><strong>原文链接</strong><a href="https://openai.com/index/core-dump-epidemiology-data-infrastructure-bug/" target="_blank" rel="noopener">https://openai.com/index/core-dump-epidemiology-data-infrastructure-bug/</a></div>
+  <div class="source-row"><strong>发布日期</strong>2026-06-30</div>
+</div>
+
+<!-- ==================== PROSE（译文正文） ==================== -->
+<div class="prose">
+
+<!-- 译者按语 -->
+<div class="callout callout-note">
+  <div class="callout-title">译者按</div>
+  这是一篇极为精彩的调试实战文章。OpenAI 的工程师面对两个看似"不可能"的崩溃问题——一个是由于 Azure 主机上的硬件静默损坏，另一个是一个在 GNU libunwind 中存在了 18 年之久的竞态条件 bug。关键洞察在于：把单个崩溃当作"病例"来诊治是远远不够的，需要用流行病学的方法论，建立高质量的崩溃数据集，从整体人口层面发现规律。文章展示了如何通过系统化的数据分析，把两个完全不同的 bug 区分开来，最终定位并修复问题。
+</div>
+
+<p>OpenAI 的模型和智能体越来越依赖可扩展的数据基础设施，以便在推理时（也就是模型在思考你的问题时）搜索相关数据。其中一些服务是用 C++ 编写的，这种语言对系统的底层控制能让我们最大化性能并最小化内存使用。这些效率优势在我们规模化时非常重要，但 C++ 缺乏内存安全性意味着 bug 可能通过写入错误或不存在的内存地址而导致崩溃。</p>
+
+<p>几个月前，我们观察到 Rockset 服务内部发生了一些崩溃。Rockset 是我们为 ChatGPT 数据基础设施定制的一个关键组件，对许多数据插件和在对话中搜索都至关重要。在每一次崩溃中，一个正常的 C++ 函数似乎已经完成执行，然后返回到了一个伪造的地址，导致内核停止了程序，因为指令指针不再指向代码。有时，栈帧中的返回地址槽是 NULL。有时，栈指针 CPU 寄存器本身似乎偏移了 8 字节，就像 %rsp 在正常执行过程中被递减了一样。这两种情况都发生在返回时。</p>
+
+<p>这些都不是应用程序代码的正常故障模式。一个偶然写入只落到保存的返回地址上是可能的，但极不可能。一个让 %rsp 偏移 8 字节而不涉及内联汇编、setcontext 或 longjmp（我们都没有使用）的 bug 更加奇怪，因为编译后的代码只在函数序言和尾声部分直接调整这个寄存器。我们（或 ChatGPT）能想到的每一个假设都有强有力的证据反对它，所以这个 bug 似乎不可能。</p>
+
+<p>我们最初认为是一个问题，最终证明是两个不相关的 bug，恰好在同一时间被发现。首先是一台 Azure 主机上的静默硬件损坏，CPU 只是不正确地进行数学运算。其次是 GNU libunwind 中一个存在了 18 年的竞态条件，这是一个广泛使用的开源库中一个未被注意到的 bug。</p>
+
+<p>这篇文章是关于如何像流行病学家一样思考并建立高质量的崩溃数据集，来识别和修复那些看似无法解释的崩溃的故事。</p>
+
+<h2 id="s1">第一次调试尝试：仔细检查几个 core dump</h2>
+
+<p>首先，让我们深入了解一下 Rockset。它是一个用于搜索和实时分析的云原生数据系统，我们在 OpenAI 的许多内部用例中使用它，比如同步连接器（Rockset 于 2024 年被 OpenAI 收购）。流式更新用于维护工作区知识库的实时索引，以便 ChatGPT 在回答问题或执行操作时能够搜索到相关信息。</p>
+
+<p>Rockset 的执行层是用 C++ 编写的。C++ 语言提供了对 CPU 的底层访问，这对性能和效率很有好处，但这意味着应用程序 bug 可能导致无效的内存访问和段错误。为了帮助追踪这些问题，我们使用 folly 的致命信号处理器在崩溃发生时记录栈跟踪，并将相应的 core dump（崩溃时程序状态的快照）上传到 Azure blob 存储以供后续分析。Rockset 的所有查询处理叶都是复制的，这最小化了崩溃对客户端的影响。然而，每个段错误都对应一个需要修复的 bug，以达到我们的可靠性和质量目标。</p>
+
+<p>我们的最初方法是把这些 core 当作常规调试问题来处理：非常仔细地检查几个 core dump，形成假设，然后逐一排除。</p>
+
+<p>大多数崩溃发生在一个叫做 DocumentTree::updateDocument 的方法中。在这些崩溃中，updateDocument 似乎调用了某个未知函数 X，栈在 X 活动时被破坏，然后 X 返回到了一个不是可执行代码的地址。在某些情况下，X 刚弹出的帧看起来是有效的，只是保存的返回地址是 NULL。在其他情况下，栈指针本身看起来是错误的，但下一个有效的帧仍然是 updateDocument。</p>
+
+<p>我们不知道栈什么时候被破坏，这留下了一个巨大的搜索空间。updateDocument 是一个大型方法，会发生大量内联，所以 X 的候选数量势不可挡。</p>
+
+<p>这是我们 C++ 代码中的 bug？编译器或链接问题？我们运行时库中的问题？Linux 内核中关于信号传递或上下文切换的 bug？甚至是更罕见的东西？如果这是偶然写入，为什么我们的 ASAN 预发环境没有捕获到？</p>
+
+<p>我们尝试使用应用程序级日志来识别问题的所有出现，但栈破坏 bug 很难仅从日志中分类，因为记录的栈跟踪本身是损坏或缺失的。我们无法构建一个没有假阳性和假阴性的日志查询。我们手动检查了更多的 core，发现了一些额外的例子，但这个过程太劳动密集，无法给我们一个可信的数据集。</p>
+
+<p>在这个调查阶段，我们（错误地）排除了硬件 bug，因为我们在多个地区和多种硬件类型上都看到了崩溃，所以我们仍在寻找纯软件原因。有几天，我们深入研究了一个单一的 %rsp 未对齐的崩溃，使用栈和寄存器内容重建崩溃前的历史。这产生了一些可能的线索，但因为我们没有放弃最初的结论——所有 bug 都有相同的原因——这并没有让我们取得进展。</p>
+
+<h2 id="s2">来自栈的线索</h2>
+
+<p>在我们进入调查的转折点之前，解释一下我们从 core 文件中提取了什么信息是很重要的。</p>
+
+<p>Rockset 用 -fno-omit-frame-pointer 编译，所以活动栈帧总是可以通过 %rbp 到达，调用者形成一个帧指针链表。</p>
+
+<p>在 Linux x86_64 上，AMD64 System V ABI 也在 %rsp 下方保留了 128 字节作为红色区域（red zone）。这个区域对用户空间代码可用，重要的是，内核承诺在传递信号时不破坏它，作为 ABI 合约的一部分。</p>
+
+<p>红色区域对我们调试返回后崩溃至关重要，因为它保留了返回前的一些信息。当 SIGSEGV 触发时，folly 的致命信号处理器在崩溃线程的栈上运行。那些不再活动的栈帧（因为它们的函数已经返回）将被信号处理器破坏，除了最后 128 字节。这就是为什么我们可以说"X 刚弹出的栈帧看起来是有效的，只是返回地址是 NULL"。红色区域保留了一些不活动的帧，或者有时只是一个不活动帧的尾部。</p>
+
+<p>我们发现了一个栈未对齐的崩溃，其中所有涉及的函数都非常小。这让我们看到 %rsp 在一个相对简单的函数执行过程中变得不对齐，之后更多的调用成功了。程序只在活动函数最终尝试返回时才崩溃。这些代码路径都没有使用异常、内联汇编、setcontext 或 longjmp，所以如果栈指针真的按 core 建议的方式改变了，没有任何用户空间代码中可信的 bug 可以解释这个问题。</p>
+
+<p>这把我们推向了内核。</p>
+
+<p>Rockset 比大多数程序更激进地使用信号。查询执行被分解成许多轻量级任务来交换数据。这对于高效处理高 QPS 工作负载很重要，但使得按查询的 CPU 计量变得尴尬，因为许多查询的工作被复用到同一个线程池上。</p>
+
+<p>我们的解决方案叫做 coarse_thread_cputime_clock，它以足够低的成本近似 clock_gettime(CLOCK_THREAD_CPUTIME_ID, ...)，以便在每个任务边界采样。timer_create API 可用于根据时间的几种概念（包括 CPU 时间的累积）安排周期性信号传递。我们安排每过几毫秒 CPU 时间就传递一个信号（SIGUSR2），此时信号处理器更新一个线程本地值。虽然许多任务在执行时看不到粗时钟前进，但将所有增量相加会产生查询实际 CPU 时间的无偏估计。</p>
+
+<p>因为我们如此频繁地传递信号，内核中关于上下文切换或信号传递的罕见 bug 似乎是可能的。我们花时间阅读了 bug 报告、内核源代码和 Azure 特定的内核补丁。我们尝试了压力测试。我们找不到任何看起来相关的东西。</p>
+
+<p>在这一点上，我们决定退后一步，尝试一种不同的方法。</p>
+
+<h2 id="s3">医生还是流行病学家？</h2>
+
+<p>调试这样一个问题有两种广泛的方法。</p>
+
+<p>一种是像某种医生一样行事：专注于一个病人，进行大量测试，并试图从详细证据中诊断单个病例。</p>
+
+<p>另一种是更像流行病学家的行事方式：观察整个人口，问是否存在单个病例无法揭示的模式。bug 是在特定版本开始的吗？它是否与一个硬件 SKU（特定的 CPU 和服务器型号）、一个地区或一个内核版本相关？在看起来像一种综合征的东西内部是否有多个不同的簇？</p>
+
+<p>我们大部分时间都在医生模式。关键转变是决定我们需要收集高质量的人口数据。</p>
+
+<h2 id="s4">清理数据</h2>
+
+<p>我们之前自动找到问题所有实例的尝试失败了，因为我们试图对日志进行文本搜索。core dump 本身有更多信息，但手动查看它们无法扩展。我们决定投入精力构建一个可以自动分析 core dump 的管道。</p>
+
+<p>我们让 ChatGPT 编写了一个脚本，下载每个 core 文件的前缀，提取寄存器，使用日志过滤已知的假阳性，并自动将崩溃标记为返回到 NULL、栈未对齐或其他。然后我们对去年所有的生产 Rockset core 运行了这个脚本。</p>
+
+<p>这是转折点。</p>
+
+<p>一旦我们有了干净的数据集，相关性立即出现。我们当作一个奇怪 bug 处理的实际上是两个不同的崩溃群体。</p>
+
+<p>返回到 NULL 的 core 分布在许多集群和地理区域中。它们的频率最近增加了，但没有明确的开始日期，也没有清晰的基础设施边界。</p>
+
+<p>栈未对齐的崩溃看起来完全不同。它们都来自一个地区，有一个明确的开始日期，而且从未发生在运行了很长时间的节点上。尽管涉及多个 Azure VM（托管在云中的虚拟机），但模式看起来像一台有问题的物理机器导致问题，不管哪个 VM 恰好落在它上面。</p>
+
+<p>那就是我们意识到我们一直在精神上混淆两个 bug 的时刻。因为我们一直在混合两个 bug 的反例，我们无法找到一个连贯的解释。</p>
+
+<h2 id="s5">Bug #1: 坏主机</h2>
+
+<p>有了干净的 Kubernetes 节点和时间戳列表，我们能够将栈未对齐的崩溃追溯到一台物理主机，很容易就把它加入了黑名单。</p>
+
+<p>我们无法在受控环境中在那台主机上重现寄存器损坏，即使经过数周的压力测试。然而，一旦有问题的主机停止服务，栈未对齐的崩溃就消失了。</p>
+
+<p>移除坏主机不是一个永久的解决方案，因为它不能防止同一问题的再次发生。然而，我们可以改变软件，以便如果类似的问题再次发生，很容易检测和处理。我们改进了致命信号处理器，使其包含寄存器状态，这样我们就可以只从日志中检测复发（不需要 core dump）。我们更改了控制平面，以便 VM 通常被重用而不是被回收，这在我们的基础设施层面使坏节点检测变得更加容易。我们还更新了操作手册（和团队的心智模型）来包含这种可能性。</p>
+
+<p>随着坏主机崩溃被分离出来，剩下的返回到 NULL 的 core 变得更容易推理了。之前我们排除了异常展开，因为我们认为我们有反例：崩溃发生在绝对不使用异常的代码路径中。但那些反例都来自硬件损坏集群。</p>
+
+<p>一旦我们带着这种想法重新审视剩余的 core，我们发现这个结论完全反过来了：崩溃都发生在异常展开期间。</p>
+
+<h2 id="s6">异常处理是一种动态控制转移</h2>
+
+<p>当 C++ 抛出异常时，运行时必须发现哪个 catch 块应该接收它，以及沿途应该运行哪些析构函数或清理处理器。编译器发出这些元数据，但实际匹配发生在运行时。</p>
+
+<p>异常展开实际上不是由调用 throw 的函数执行的，而是由 resulting 编译代码调用的辅助函数执行的。这些运行时例程检查栈，获取栈上函数的元数据，动态寻找清理处理器和 catch 块，然后将控制转移到这些位置之一。控制转移包括展开所有中间栈帧（包括辅助函数的栈帧）。</p>
+
+<p>在操作上，这更像是 longjmp 或 fiber 切换，而不是正常的调用和返回。必须恢复被调用者保存的寄存器，以及栈帧寄存器 %rbp 和 %rsp。</p>
+
+<p>我们的二进制文件链接了两个包含执行 C++ 异常展开的函数实现的库：libgcc 和 GNU libunwind。GNU libunwind 的定义是动态链接器选择的。这让我们惊讶；我们期望 libgcc 实现因为符号版本规则而胜出；然而，检查运行中的二进制文件显示情况并非如此。</p>
+
+<h2 id="s7">撤销最后一个假设</h2>
+
+<p>在这一点上，我们的工作假设发生了变化，因为我们放松了另一个假设，当时我们认为只有一个 bug。</p>
+
+<p>也许我们看到的不是普通的返回到 NULL。也许我们看到的是一次展开转移——实际上是类似 setcontext 的寄存器恢复——目标指令指针在控制转移之前变成了 NULL。换句话说，来自展开库的错误数据，而不是栈上错误的返回地址槽。</p>
+
+<p>这大大缩小了问题范围。或者是 GNU libunwind 计算了错误的目标状态，或者是它计算了正确的状态但在应用之前被破坏了。</p>
+
+<p>我们阅读了 GNU libunwind 源代码，发现它在栈上合成一个 ucontext_t，填写目标清理处理器帧的所需寄存器状态，然后向内部例程传递一个指向该结构的指针：_Ux86_64_setcontext。</p>
+
+<p>在这一点上，我们有了所有的线索。</p>
+
+<p>合成的 ucontext_t 位于被 _Ux86_64_setcontext 展开的栈帧之一，在该函数执行期间。_Ux86_64_setcontext 是在 %rsp 改变后从结构体读取的，此时结构体不再属于活动栈？那会使它容易被信号传递破坏，比如我们频繁的 SIGUSR2？</p>
+
+<h2 id="s8">Bug #2: libunwind bug</h2>
+
+<p>答案是肯定的。</p>
+
+<p>以下是我们使用的 GNU libunwind 版本中 _Ux86_64_setcontext 的最后六条指令，主要是由从内存加载到目标寄存器的 mov 指令组成：</p>
+
+<p>（%rdi 指向栈分配的 ucontext_t，UC_MCONTEXT_* 宏只是展开到存储特定寄存器的固定偏移量。）</p>
+
+<p>第一条指令是竞态窗口的开始。它更新 %rsp 指向活动栈的新底部。一旦发生这种情况，%rdi 指向的结构体就不再属于活动栈（或红色区域），内核也不再禁止访问它。</p>
+
+<p>通常这不会造成问题，但如果信号在恰好正确（错误）的时刻到达，内核将在 %rsp-128 处构建信号帧。那可能会覆盖 %rdi 指向的内存。</p>
+
+<p>如果那发生在下一条指令读取 UC_MCONTEXT_GREGS_RIP(%rdi) 之前，那么恢复的指令指针可能会被破坏。在我们的崩溃中，它变成了 NULL。</p>
+
+<p>这就是那个 bug。</p>
+
+<h2 id="s9">为什么 core 伪装成普通的错误返回</h2>
+
+<p>这个汇编还解释了我们困惑的一个观察：为什么函数 X 在前一个栈帧的返回地址槽中有 NULL。</p>
+
+<p>setcontext 被编写为恢复所有寄存器，包括 %rsp，所以它不能在控制转移的最后时刻使用该寄存器读取 UC_MCONTEXT_GREGS_RIP(%rdi)。相反，它更早地读取该值，保存到栈上，恢复更多寄存器，然后使用 retq 读取保存的值并转移控制。</p>
+
+<p>在 core 中看起来像"函数返回到 NULL"的东西实际上是"展开器在栈上合成了一个目标返回地址，但在转移完成前该目标已被破坏"。我们假设返回地址槽的破坏必须就地发生，因为我们不知道有在任何地方故意将（可破坏的）数据写入返回地址槽的情况。</p>
+
+<h2 id="s10">单指令竞态窗口</h2>
+
+<p>让这个 bug 看起来荒谬的是这个竞态窗口有多窄。在这种竞态条件中，外部事件（信号）需要发生在另一个线程采取的两步之间。这两步越接近，竞态条件发生的可能性越小。</p>
+
+<p>在这种情况下，易受攻击的窗口 literally 只有一条指令宽！信号必须在 %rsp 改变之后、下一条指令加载 %rip 之前传递。在现代超标量乱序 CPU 上，这样的简单指令每秒可以运行几个周期，所以竞态窗口大约是一百皮秒。</p>
+
+<p>当我们发现这个竞态时，我们的第一个反应是它一定太稀有了，无法解释观察到的崩溃率。我们每天在整个 fleet 中看到超过一打返回到 NULL 的崩溃。异常清理期间的一个单指令竞态真的能解释吗？</p>
+
+<p>我们转向费米估计。如果易受攻击的窗口是 10⁻¹⁰ 秒量级，而 SIGUSR2 每 10⁻² 秒 CPU 时间到达一次，那么每个异常清理处理器或 catch 块丢失竞态的概率大约是 10⁻⁸。</p>
+
+<p>Rockset 将异常作为其内部摄取背压机制的一部分使用。单台过载主机每秒可以抛出约 10⁴ 个异常。这意味着使用背压的主机的平均故障间隔时间是 10⁴ 秒，或者每小时崩溃几次。在 fleet 规模上，这足以解释观察到的崩溃频率。</p>
+
+<h2 id="s11">为什么 libunwind bug 现在才出现？</h2>
+
+<p>GNU libunwind bug 已经有 18 年历史了——存在于第一个支持 C++ 异常展开的 x86_64 版本中。</p>
+
+<p>那为什么现在才出现？</p>
+
+<p>崩溃率大致与抛出的异常数量和传递的信号数量成正比。它还取决于信号处理器消耗多少栈。</p>
+
+<p>Rockset 在所有三个轴上都不寻常。我们以高速率抛出异常作为正常过载控制的一部分；我们因为 coarse_thread_cputime_clock 而异常频繁地传递 SIGUSR2；而且今年年初，我们通过添加对 timer_getoverrun 的调用，使 SIGUSR2 处理器使用了更多栈，以便我们可以计算合并的信号。</p>
+
+<p>最后一个变化似乎很重要。如果处理器使用很少的栈，它可能无法触及并覆盖过时的 ucontext_t 内存。在那个变化之前，我们根本没有观察到这些崩溃。在那个变化之后，速率保持较低，直到我们为一些给背压机制带来压力的用例增加了负载。</p>
+
+<p>换句话说，libunwind bug 一直存在，但我们的异常率、信号率和处理器栈使用量的乘积只是最近才跨越了它变得在操作上可见的阈值。</p>
+
+<p>这个机制也解释了两个硬件 bug 和 libunwind bug 巧合地主要在 DocumentTree::updateDocument 内崩溃。libunwind 的崩溃严重偏向这个方法，因为它在我们抛出异常以应用摄取背压时总是活动的。它也被严重选择用于 %rsp 偏移崩溃，因为坏硬件节点是一种我们用于批量摄取的 SKU，它的大部分 CPU 时间花在这个方法上。</p>
+
+<p>我们的即时缓解措施是从 GNU libunwind 切换到 libgcc 的展开器。这本身就是一个很好的权衡：libgcc 的实现受益于大量减少锁争相的工作，这在扩展大型 VM 时很重要。</p>
+
+<p>我们还向 GNU libunwind 上游提交了一个自包含的重现器和修复，并验证其他展开器没有类似的问题。</p>
+
+<h2 id="s12">人口层面诊断的力量</h2>
+
+<p>这次调试之旅让我们学到了很多关于动态链接、DWARF 展开元数据、Linux 信号传递、System V ABI 和 C++ 异常机制的细节。但主要教训比任何这些都更简单。</p>
+
+<p>最重要的步骤不是巧妙的汇编阅读或对细节的深层知识。它是建立高质量的数据集。在没有这个数据集的情况下，我们把两个不同的现象混合成一个故事，并试图从困惑中找出理由。一旦我们有了准确和完整的人口数据，问题的结构就变得显而易见：一个崩溃群体属于一台坏主机，另一个属于 libunwind 中的竞态。一旦数据变好，调试就变得更容易了。</p>
+
+<p>对于像 Rockset 这样的基础设施系统来说，这非常重要。这次调查加强了我们对深度仪器化、自动调查和持续改进操作工具的承诺。可靠性不仅仅是事后修复 bug——而是构建数据、工作流程和技能，将不可能的问题转化为可以诊断和解决的东西。</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>本文为译文，版权归原作者所有，仅供学习交流 &middot; &copy; 2026 元初AI</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
