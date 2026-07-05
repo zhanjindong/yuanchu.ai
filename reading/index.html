@@ -32,18 +32,8 @@
             border-top: 1px solid rgba(0,0,0,0.08); border-bottom: 1px solid rgba(0,0,0,0.08); margin-bottom: 16px; }
         .stat .num { font-size: 36px; font-weight: 300; letter-spacing: 1px; }
         .stat .label { font-size: 12px; color: rgba(0,0,0,0.4); letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; }
-        .prefer { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 2px; margin-bottom: 32px; }
+        .prefer { font-size: 13px; color: rgba(0,0,0,0.4); letter-spacing: 2px; margin-bottom: 70px; }
         .prefer span { color: rgba(0,0,0,0.7); }
-        /* 文章批注入口 */
-        .tech-entry { display: flex; align-items: center; justify-content: space-between;
-            gap: 16px; text-decoration: none; color: inherit; margin-bottom: 60px;
-            padding: 20px 24px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px;
-            transition: border-color 0.25s, background 0.25s; }
-        .tech-entry:hover { border-color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.015); }
-        .tech-entry .te-main { font-size: 16px; letter-spacing: 1px; color: rgba(0,0,0,0.82); }
-        .tech-entry .te-sub { font-size: 13px; color: rgba(0,0,0,0.4); margin-top: 5px; letter-spacing: 0.5px; }
-        .tech-entry .te-arrow { font-size: 20px; color: rgba(0,0,0,0.3); transition: color 0.25s, transform 0.25s; }
-        .tech-entry:hover .te-arrow { color: #1a1a1a; transform: translateX(3px); }
         /* 书架网格 */
         .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 48px 36px; }
@@ -89,20 +79,12 @@
         <p class="intro">这里是我在微信读书里划下的句子，与读到某处时写下的想法。书是输入，想法才是真正留下来的东西。点击任一本书查看全部笔记。</p>
 
         <div class="stats">
-            <div class="stat"><div class="num">452</div><div class="label">Hours</div></div>
-            <div class="stat"><div class="num">868</div><div class="label">Days</div></div>
+            <div class="stat"><div class="num">453</div><div class="label">Hours</div></div>
+            <div class="stat"><div class="num">869</div><div class="label">Days</div></div>
             <div class="stat"><div class="num">65</div><div class="label">Books</div></div>
             <div class="stat"><div class="num">514</div><div class="label">Notes</div></div>
         </div>
         <p class="prefer">偏好领域　<span>经济理财 · 人物传记 · 文学 · 历史 · 计算机 · 影视原著</span></p>
-
-        <a href="tech.html" class="tech-entry">
-            <div>
-                <div class="te-main">文章批注</div>
-                <div class="te-sub">我在自己的技术文章里划下的句子与写下的想法</div>
-            </div>
-            <span class="te-arrow">→</span>
-        </a>
 
         <div class="shelf">
             <a href="book-3300189589.html" class="book-card" title="半小时讲透《枪炮、细菌与钢铁》">
