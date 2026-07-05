@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>动态规划深度解析：从"傻递归"到"空间魔术师"的进化之路 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;}.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;}.back:hover{color:#1a1a1a;}.back::before{content:'← ';}.article-header{margin-bottom:48px;}.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;}.toc a:hover{color:#3b82f6;}.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}.prose li strong{color:#1e293b;}.prose strong{color:#1e293b;}.prose a{color:#3b82f6;text-decoration:none;}.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}.callout-title{font-weight:600;margin-bottom:6px;}.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}.callout-info .callout-title{color:#3b82f6;}.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}.callout-warn .callout-title{color:#f59e0b;}.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}.callout-tip .callout-title{color:#10b981;}.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}.prose th{background:#f8fafc;font-weight:600;color:#1e293b;}.prose tr:hover td{background:#f8fafc;}.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin:16px 0 24px;text-align:center;overflow-x:auto;}.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;}svg text.cell{font-size:11px;}svg text.header{font-size:11px;font-weight:600;fill:#64748b;}svg text.row-label{font-size:12px;font-weight:600;fill:#3b82f6;}svg text.cell-hl{font-size:11px;font-weight:700;fill:#10b981;}svg text.cell-dark{font-size:11px;font-weight:700;fill:#1e293b;}svg text.cell-blue{font-size:11px;font-weight:700;fill:#3b82f6;}svg text.cell-purple{font-size:11px;font-weight:700;fill:#8b5cf6;}svg text.cell-amber{font-size:11px;font-weight:700;fill:#f59e0b;}svg text.cell-red{font-size:11px;font-weight:700;fill:#ef4444;}svg text.label-sm{font-size:10px;fill:#64748b;}svg text.title-sm{font-size:14px;font-weight:700;fill:#1e293b;}svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}svg .arrow-line-green{stroke:#10b981;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-green);}svg .arrow-line-purple{stroke:#8b5cf6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-purple);}svg .arrow-line-amber{stroke:#f59e0b;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-amber);}.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}.references ol{padding-left:24px;}.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}.references a{color:#3b82f6;font-size:14px;}footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}@media(max-width:768px){.content{padding:20px 20px;} .article-header h1{font-size:26px;} .prose h2{font-size:22px;} .prose h3{font-size:18px;} .prose pre{padding:14px 16px;}}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/></marker><marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/></marker><marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="#10b981"/></marker><marker id="arrowhead-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="#8b5cf6"/></marker><marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><path d="M0,0 L10,3.5 L0,7 Z" fill="#f59e0b"/></marker></defs></svg>
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+<div class="article-header">
+  <div class="tags"><span class="tag">算法</span><span class="tag">动态规划</span><span class="tag">LeetCode</span></div>
+  <h1>动态规划深度解析：从"傻递归"到"空间魔术师"的进化之路</h1>
+  <div class="meta"><span>Jackie Zhan</span><span>2026-07-05</span></div>
+</div>
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、从一个问题说起</a>
+  <a href="#s2">二、DP 的四要素：一个都不能少</a>
+  <a href="#s3">三、入门第一关：斐波那契数列</a>
+  <a href="#s4">四、经典战役：背包问题</a>
+  <a href="#s5">五、经典双子星：LCS 与 LIS</a>
+  <a href="#s6">六、最烧脑挑战：编辑距离</a>
+  <a href="#s7">七、终极奥义：空间优化</a>
+  <a href="#s8">八、实战路线图</a>
+</div>
+<div class="prose">
+
+<h2 id="s1">一、从一个问题说起</h2>
+
+<p>上周有个朋友给我发了条消息：</p>
+
+<blockquote>
+"动态规划？不就是把递归结果存起来吗，这有什么好讲的？"<br>
+——我那位"以为懂了但其实没懂"的朋友
+</blockquote>
+
+<p>我问他："那你说，编辑距离怎么用动态规划解？"<br>
+他沉默了三分钟，发了个表情包。</p>
+
+<p>动态规划（Dynamic Programming，简称 DP）大概是算法世界里被误解最深的概念。每个人都觉得自己会用，但面试的时候一提"空间优化"就卡壳，一遇到"股票买卖"就崩溃。</p>
+
+<p>这篇文章，就是要让这种尴尬消失。我们不只讲"是什么"，更要讲透"为什么这么想"。看完之后，你对 DP 的理解会从"会用"升级到"能教别人"的程度。</p>
+
+<p>顺便说一句，这是算法入门系列的第二篇。第一篇我们聊了算法的宇宙观和复杂度分析，如果还没读过，建议先收藏这篇，然后回去补补课。</p>
+
+<h2 id="s2">二、DP 的四要素：一个都不能少</h2>
+
+<p>动态规划的本质是什么？我的定义是：<strong>把一个复杂问题拆成互相重叠的子问题，只算一次，记录答案，然后用它算出更大问题的答案。</strong></p>
+
+<p>听起来简单，但真正的高手和普通人的差距，藏在四个关键决策里。</p>
+
+<h3>要素一：状态定义——这是最难的一步</h3>
+
+<p>状态，就是你用什么样的"视角"去描述问题。选对了状态，问题就解了一半；选错了状态，你可能写到两百行还跑不通。</p>
+
+<p>举个例子。背包问题的状态怎么定义？</p>
+
+<p>菜鸟的思路："状态就是第 i 个物品选不选"——这个描述的是动作，不是问题的数学状态。</p>
+
+<p>高手的思路：<code>dp[i][j]</code> = 考虑前 i 个物品，容量为 j 的背包能装的最大价值。这就是状态。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  状态定义没有标准答案，但有一个检验标准：<strong>你的状态能不能推导出最终答案？</strong> 如果状态定义完之后，你发现从它到问题答案还需要绕很多弯，那大概率定义得不够本质。
+</div>
+
+<h3>要素二：状态转移方程——DP 的灵魂</h3>
+
+<p>如果说状态是地基，那状态转移方程就是连接每个房间的楼梯。它描述的是：已知小问题的答案，如何得到大问题的答案。</p>
+
+<p>写状态转移方程的核心思路就一句话：<strong>新问题 = 选或不选 + 子问题的答案</strong></p>
+
+<p>以斐波那契为例：<code>dp[n] = dp[n-1] + dp[n-2]</code>。第 n 项的值，取决于前面两个子问题的答案相加。</p>
+
+<h3>要素三：初始化——万丈高楼从哪起</h3>
+
+<p>状态转移方程是递推公式，它需要一个或多个"已知真相"作为起点。这个起点就是初始化。</p>
+
+<p>斐波那契的初始化是 <code>dp[0] = 0, dp[1] = 1</code>。如果初始化错了，整个 DP 都会歪掉。</p>
+
+<h3>要素四：遍历顺序——顺序不对，全盘皆错</h3>
+
+<p>动态规划的遍历顺序必须满足一个条件：<strong>计算每个状态时，它依赖的所有子状态都已经被计算完了</strong>。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 650 165" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="25" class="title-sm">DP 解题四步法与实现路径对比</text>
+    <rect x="10" y="38" width="115" height="44" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+    <text x="67" y="56" font-size="12" font-weight="700" fill="#3b82f6" text-anchor="middle">① 状态定义</text>
+    <text x="67" y="70" class="label-sm" text-anchor="middle">选视角描述问题</text>
+    <line class="arrow-line-blue" x1="133" y1="60" x2="158" y2="60"/>
+    <rect x="163" y="38" width="115" height="44" rx="8" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5"/>
+    <text x="220" y="56" font-size="12" font-weight="700" fill="#8b5cf6" text-anchor="middle">② 状态转移</text>
+    <text x="220" y="70" class="label-sm" text-anchor="middle">子问题推大问题</text>
+    <line class="arrow-line-purple" x1="286" y1="60" x2="311" y2="60"/>
+    <rect x="316" y="38" width="115" height="44" rx="8" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="373" y="56" font-size="12" font-weight="700" fill="#f59e0b" text-anchor="middle">③ 初始化</text>
+    <text x="373" y="70" class="label-sm" text-anchor="middle">递推的起点</text>
+    <line class="arrow-line-amber" x1="439" y1="60" x2="464" y2="60"/>
+    <rect x="469" y="38" width="115" height="44" rx="8" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5"/>
+    <text x="526" y="56" font-size="12" font-weight="700" fill="#10b981" text-anchor="middle">④ 遍历顺序</text>
+    <text x="526" y="70" class="label-sm" text-anchor="middle">保证依赖已计算</text>
+    <line class="arrow-line-green" x1="592" y1="60" x2="617" y2="60"/>
+    <rect x="592" y="38" width="52" height="44" rx="8" fill="#10b981"/>
+    <text x="618" y="56" font-size="12" font-weight="700" fill="#fff" text-anchor="middle">答案</text>
+    <text x="618" y="70" font-size="14" fill="#fff" text-anchor="middle">✓</text>
+    <text x="10" y="108" font-size="11" font-weight="600" fill="#64748b">暴力递归</text>
+    <rect x="10" y="116" width="155" height="20" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1"/>
+    <text x="87" y="129" font-size="10" fill="#ef4444" text-anchor="middle">同一子问题算 N 次 → O(2^n)</text>
+    <text x="180" y="108" font-size="11" font-weight="600" fill="#64748b">记忆化递归</text>
+    <rect x="180" y="116" width="140" height="20" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1"/>
+    <text x="250" y="129" font-size="10" fill="#3b82f6" text-anchor="middle">HashMap 缓存 → O(n)</text>
+    <text x="335" y="108" font-size="11" font-weight="600" fill="#64748b">自底向上 DP</text>
+    <rect x="335" y="116" width="155" height="20" rx="4" fill="#f0fdf4" stroke="#10b981" stroke-width="1"/>
+    <text x="412" y="129" font-size="10" fill="#10b981" text-anchor="middle">循环取代递归 → 更稳更快</text>
+    <text x="505" y="108" font-size="11" font-weight="600" fill="#64748b">空间优化</text>
+    <rect x="505" y="116" width="140" height="20" rx="4" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1"/>
+    <text x="575" y="129" font-size="10" fill="#8b5cf6" text-anchor="middle">只存需要的 → O(1)</text>
+    <text x="10" y="160" font-size="11" fill="#94a3b8">核心思想：把重叠子问题的结果存起来，只算一次</text>
+  </svg>
+  <div class="diagram-caption">DP 核心四要素与三种实现路径对比</div>
+</div>
+
+<p>这四个要素搞清楚了，你对 DP 的理解就已经超过 80% 的面试者了。接下来，我们用经典问题把它们一一落地。</p>
+
+<h2 id="s3">三、入门第一关：斐波那契数列</h2>
+
+<p>很多人觉得斐波那契太简单了，不值得讲。但我的观点正好相反——<strong>越是简单的问题，越藏着最本质的洞见</strong>。</p>
+
+<h3>从暴力递归到 DP 的完整进化</h3>
+
+<p>先看暴力递归版本：</p>
+
+<pre><code class="language-python"># ❌ 暴力递归：时间 O(2^n)，空间 O(n) 递归栈
+def fib1(n):
+    if n <= 1:
+        return n
+    return fib1(n-1) + fib1(n-2)</code></pre>
+
+<p>这个版本的问题在哪？画一下递归树你就知道了——<code>fib(4)</code> 被算了一次，<code>fib(3)</code> 被算了两次，<code>fib(2)</code> 被算了三次……指数爆炸。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误区</div>
+  斐波那契递归的问题不是"递归太慢"，而是"重复计算"。同样一个子问题，被算了指数级别那么多遍。如果只是慢在递归调用次数，那还好；慢在重复算同样的东西，这才是真正要优化的点。
+</div>
+
+<p>加上记忆化，把算过的结果存起来：</p>
+
+<pre><code class="language-python"># ✅ 记忆化递归：时间 O(n)，空间 O(n)
+from functools import lru_cache
+
+@lru_cache(maxsize=None)
+def fib2(n):
+    if n <= 1:
+        return n
+    return fib2(n-1) + fib2(n-2)</code></pre>
+
+<p>改成自底向上的 DP，消除递归栈：</p>
+
+<pre><code class="language-python"># ✅ 自底向上 DP：时间 O(n)，空间 O(n)
+def fib3(n):
+    if n <= 1:
+        return n
+    dp = [0] * (n + 1)
+    dp[1] = 1
+    for i in range(2, n + 1):
+        dp[i] = dp[i-1] + dp[i-2]
+    return dp[n]</code></pre>
+
+<p>到这里，很多教程就停了。但我要再进一步——这就是<strong>空间优化</strong>的起点。</p>
+
+<h3>空间优化：一维到两个变量</h3>
+
+<p>你注意到没有？在 <code>fib3</code> 的循环里，<code>dp[i]</code> 只依赖 <code>dp[i-1]</code> 和 <code>dp[i-2]</code>。换句话说，<strong>我不需要存整个数组</strong>，只需要记住最近的两个值就够了。</p>
+
+<pre><code class="language-python"># ✅ 空间优化版：时间 O(n)，空间 O(1)
+def fib4(n):
+    if n <= 1:
+        return n
+    prev, curr = 0, 1
+    for _ in range(2, n + 1):
+        prev, curr = curr, prev + curr
+    return curr</code></pre>
+
+<p>从 O(n) 空间压缩到 O(1) 空间，这个技巧叫<strong>滚动数组</strong>。斐波那契这一关，藏着整个 DP 空间优化的核心思想——只保留真正需要的那些状态。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  面试官问斐波那契，通常醉翁之意不在酒。他真正想看的是：<strong>你能不能意识到从递归到记忆化到 DP 再到空间优化的完整进化路径</strong>。直接写出 O(1) 空间的版本不难，难的是你能讲清楚"为什么 O(n) 空间可以优化成 O(1)"。
+</div>
+
+<h2 id="s4">四、经典战役：背包问题</h2>
+
+<p>如果说斐波那契是 DP 的热身，那背包问题就是 DP 的主战场。面试中出现频率极高，而且变体极多——0-1 背包、完全背包、多维背包……但只要掌握了核心思想，万变不离其宗。</p>
+
+<h3>0-1 背包：每个物品只能选一次</h3>
+
+<p><strong>问题定义：</strong>有 n 件物品，每件物品有重量 w[i] 和价值 v[i]，背包容量为 C，求不超过容量能装下的最大价值。</p>
+
+<p><strong>状态定义：</strong><code>dp[i][j]</code> = 考虑前 i 件物品，背包容量为 j 时能获得的最大价值。</p>
+
+<p><strong>状态转移：</strong>对于第 i-1 件物品，选或不选，取价值更大的那个。</p>
+
+<pre><code class="language-python">def knapsack_01(weights, values, capacity):
+    n = len(weights)
+    dp = [[0] * (capacity + 1) for _ in range(n + 1)]
+    
+    for i in range(1, n + 1):
+        w, v = weights[i-1], values[i-1]
+        for j in range(capacity + 1):
+            dp[i][j] = dp[i-1][j]          # 不选
+            if j >= w:
+                dp[i][j] = max(dp[i][j], dp[i-1][j-w] + v)  # 选
+    return dp[n][capacity]</code></pre>
+
+<p>这段代码里，<strong>关键在第 8 行</strong>：<code>dp[i-1][j-w]</code> 指的是"考虑前 i-1 件物品、容量减少 w 之后的最大价值"，再加上当前物品的价值 v，就是选这件物品的总价值。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 650 210" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="25" class="title-sm">0-1 背包 DP 表（w=[2,3,4,5], v=[3,4,5,6], C=8）</text>
+    <text class="header" x="12" y="52">i\j</text>
+    <text class="cell" x="50" y="52">0</text><text class="cell" x="82" y="52">1</text><text class="cell" x="114" y="52">2</text><text class="cell" x="146" y="52">3</text><text class="cell" x="178" y="52">4</text><text class="cell" x="210" y="52">5</text><text class="cell" x="242" y="52">6</text><text class="cell" x="274" y="52">7</text><text class="cell-hl" x="306" y="52">8</text>
+    <text class="row-label" x="12" y="85">0</text>
+    <text class="cell" x="50" y="85">0</text><text class="cell" x="82" y="85">0</text><text class="cell" x="114" y="85">0</text><text class="cell" x="146" y="85">0</text><text class="cell" x="178" y="85">0</text><text class="cell" x="210" y="85">0</text><text class="cell" x="242" y="85">0</text><text class="cell" x="274" y="85">0</text><text class="cell" x="306" y="85">0</text>
+    <text class="row-label" x="12" y="118">1</text>
+    <text class="cell" x="50" y="118">0</text><text class="cell" x="82" y="118">0</text><text class="cell-hl" x="114" y="118">3</text><text class="cell-hl" x="146" y="118">3</text><text class="cell-hl" x="178" y="118">3</text><text class="cell-hl" x="210" y="118">3</text><text class="cell-hl" x="242" y="118">3</text><text class="cell-hl" x="274" y="118">3</text><text class="cell-hl" x="306" y="118">3</text>
+    <text class="row-label" x="12" y="151">2</text>
+    <text class="cell" x="50" y="151">0</text><text class="cell" x="82" y="151">0</text><text class="cell-hl" x="114" y="151">3</text><text class="cell-hl" x="146" y="151">4</text><text class="cell-hl" x="178" y="151">4</text><text class="cell-hl" x="210" y="151">7</text><text class="cell-hl" x="242" y="151">7</text><text class="cell-hl" x="274" y="151">7</text><text class="cell-hl" x="306" y="151">7</text>
+    <text class="row-label" x="12" y="184">3</text>
+    <text class="cell" x="50" y="184">0</text><text class="cell" x="82" y="184">0</text><text class="cell-hl" x="114" y="184">3</text><text class="cell-hl" x="146" y="184">4</text><text class="cell-hl" x="178" y="184">5</text><text class="cell-hl" x="210" y="184">7</text><text class="cell-hl" x="242" y="184">8</text><text class="cell-hl" x="274" y="184">9</text><text class="cell-hl" x="306" y="184">9</text>
+    <text x="400" y="52" font-size="12" font-weight="600" fill="#3b82f6">dp[i][j] = max(dp[i-1][j], dp[i-1][j-w]+v)</text>
+    <text x="400" y="78" font-size="11" fill="#64748b">i=2, w=3, v=4, j=5:</text>
+    <text x="400" y="98" font-size="11" fill="#64748b">dp[2][5] = max(dp[1][5]=3, dp[1][2]+4=7)</text>
+    <text x="400" y="118" font-size="11" fill="#64748b">→ 选物品2（w=3），价值7</text>
+    <text x="400" y="145" font-size="12" font-weight="600" fill="#8b5cf6">i=3, w=4, v=5, j=8:</text>
+    <text x="400" y="165" font-size="11" fill="#64748b">dp[3][8] = max(dp[2][8]=7, dp[2][4]+5=9)</text>
+    <text x="400" y="185" font-size="11" fill="#64748b">→ 选物品3（w=4），价值9</text>
+  </svg>
+  <div class="diagram-caption">0-1 背包 DP 表：每行只依赖上一行，高亮为该行新增/更新的值</div>
+</div>
+
+<p>注意表格中一个关键规律：<strong>第 i 行只依赖第 i-1 行</strong>。这意味着我们不需要保存整个二维数组，用一行就够了。</p>
+
+<pre><code class="language-python"># ✅ 空间优化版：时间 O(n*C)，空间 O(C)
+def knapsack_01_optimized(weights, values, capacity):
+    dp = [0] * (capacity + 1)
+    for w, v in zip(weights, values):
+        # ⚠️ 必须倒序遍历容量！
+        for j in range(capacity, w - 1, -1):
+            dp[j] = max(dp[j], dp[j-w] + v)
+    return dp[capacity]</code></pre>
+
+<p>这里有个极其容易出错的地方：<strong>容量必须倒序遍历</strong>。为什么？如果正序遍历，<code>dp[j-w]</code> 已经被当前物品更新过了（相当于一个物品选了两次），而倒序遍历保证每次都用上一行的旧值。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</div>
+  <code>for j in range(w, capacity + 1):</code> 是错的，<code>for j in range(capacity, w - 1, -1):</code> 才是对的。这个坑我见过无数人面试时踩进去——包括我自己当年。
+</div>
+
+<h3>完全背包：物品无限选</h3>
+
+<p>和 0-1 背包的唯一区别：每件物品可以选无限次。解决方案就是容量遍历方向反过来——<strong>正序</strong>，因为正序时 <code>dp[j-w]</code> 已经被当前物品更新过，正好代表"选了若干件当前物品"的情况。</p>
+
+<pre><code class="language-python"># ✅ 完全背包：时间 O(n*C)，空间 O(C)
+def knapsack_complete(weights, values, capacity):
+    dp = [0] * (capacity + 1)
+    for w, v in zip(weights, values):
+        for j in range(w, capacity + 1):  # 正序！
+            dp[j] = max(dp[j], dp[j-w] + v)
+    return dp[capacity]</code></pre>
+
+<p>一个遍历方向的差异，决定了 0-1 背包还是完全背包。魔鬼藏在细节里。</p>
+
+<h2 id="s5">五、经典双子星：LCS 与 LIS</h2>
+
+<p>两个字符串/序列的问题，是 DP 的另一大王牌领域。</p>
+
+<h3>最长公共子序列（LCS）</h3>
+
+<p><strong>问题定义：</strong>给定两个字符串，求它们的最长公共子序列（Subsequence，不要求连续）的长度。</p>
+
+<p>这个问题的应用场景极其广泛：diff 工具（比较两个文件差异）、生物信息学（DNA 序列比对）、文本查重……</p>
+
+<p><strong>状态定义：</strong><code>dp[i][j]</code> = 字符串 A 的前 i 个字符和字符串 B 的前 j 个字符的最长公共子序列长度。</p>
+
+<p><strong>状态转移：</strong></p>
+
+<ul>
+<li>如果 <code>A[i-1] == B[j-1]</code>：<code>dp[i][j] = dp[i-1][j-1] + 1</code>（两个字符匹配上，等于各自去掉最后一个字符的 LCS 长度加 1）</li>
+<li>否则：<code>dp[i][j] = max(dp[i-1][j], dp[i][j-1])</code>（去掉其中一个字符串的最后一个字符，取较大的 LCS）</li>
+</ul>
+
+<pre><code class="language-python">def lcs(s1, s2):
+    n, m = len(s1), len(s2)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            if s1[i-1] == s2[j-1]:
+                dp[i][j] = dp[i-1][j-1] + 1
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+    return dp[n][m]
+
+# 示例：lcs("abcde", "ace") = 3 ("ace")
+# 示例：lcs("abcabc", "defabc") = 3 ("abc")</code></pre>
+
+<p>这里有个特别有意思的地方：<strong>dp[i][j] 要么等于 dp[i-1][j-1] + 1（当前字符匹配上了），要么等于 dp[i-1][j] 或 dp[i][j-1]（至少有一个字符串的最后一个字符不参与匹配）</strong>。这个决策逻辑本身就是一种"分治"——要么匹配这两个字符，要么放弃其中一个。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 650 210" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="25" class="title-sm">LCS 状态转移（s1="ABCD", s2="AEBD"）</text>
+    <text class="header" x="12" y="52">i\j</text><text class="cell" x="50" y="52"></text>
+    <text class="cell" x="82" y="52">0</text><text class="cell" x="114" y="52">A</text><text class="cell" x="146" y="52">E</text><text class="cell" x="178" y="52">B</text><text class="cell" x="210" y="52">D</text>
+    <text class="row-label" x="12" y="85">0</text>
+    <text class="cell" x="50" y="85"></text><text class="cell" x="82" y="85">0</text><text class="cell" x="114" y="85">0</text><text class="cell" x="146" y="85">0</text><text class="cell" x="178" y="85">0</text><text class="cell" x="210" y="85">0</text>
+    <text class="row-label" x="12" y="118">A</text>
+    <text class="cell" x="50" y="118">0</text><text class="cell" x="82" y="118">0</text><text class="cell-hl" x="114" y="118">1</text><text class="cell" x="146" y="118">1</text><text class="cell" x="178" y="118">1</text><text class="cell" x="210" y="118">1</text>
+    <text class="row-label" x="12" y="151">B</text>
+    <text class="cell" x="50" y="151">0</text><text class="cell" x="82" y="151">0</text><text class="cell" x="114" y="151">1</text><text class="cell" x="146" y="151">1</text><text class="cell-hl" x="178" y="151">2</text><text class="cell" x="210" y="151">2</text>
+    <text class="row-label" x="12" y="184">C</text>
+    <text class="cell" x="50" y="184">0</text><text class="cell" x="82" y="184">0</text><text class="cell" x="114" y="184">1</text><text class="cell" x="146" y="184">1</text><text class="cell" x="178" y="184">2</text><text class="cell" x="210" y="184">2</text>
+    <text class="row-label" x="12" y="217">D</text>
+    <text class="cell" x="50" y="217">0</text><text class="cell" x="82" y="217">0</text><text class="cell" x="114" y="217">1</text><text class="cell" x="146" y="217">1</text><text class="cell" x="178" y="217">2</text><text class="cell-hl" x="210" y="217">3</text>
+    <text x="290" y="52" font-size="12" font-weight="600" fill="#3b82f6">s1[i-1]==s2[j-1]?</text>
+    <text x="290" y="78" font-size="11" fill="#64748b">"A"=="A" → dp[i][j] = dp[i-1][j-1]+1</text>
+    <text x="290" y="98" font-size="11" fill="#64748b">"B"=="E" → 不等，取 max(dp[i-1][j], dp[i][j-1])</text>
+    <text x="290" y="125" font-size="12" font-weight="600" fill="#8b5cf6">LCS = "ABD"，长度 3</text>
+    <text x="290" y="150" font-size="11" fill="#64748b">s1[3]="D" == s2[4]="D" → 匹配！</text>
+    <text x="290" y="170" font-size="11" fill="#64748b">dp[4][5] = dp[3][4] + 1 = 2 + 1 = 3</text>
+    <text x="290" y="197" font-size="11" fill="#94a3b8">"D" 在两串中都出现，且是最后一个匹配的字符</text>
+  </svg>
+  <div class="diagram-caption">LCS DP 表：匹配字符对角线推进，不匹配时取上/左最大值</div>
+</div>
+
+<h3>最长递增子序列（LIS）</h3>
+
+<p><strong>问题定义：</strong>给定一个序列，找出其中最长的递增子序列的长度。Subsequence 可以不连续，但顺序必须保持。</p>
+
+<p><strong>状态定义：</strong><code>dp[i]</code> = 以第 i 个元素结尾的最长递增子序列长度。</p>
+
+<p><strong>状态转移：</strong>遍历所有在 i 之前的元素 j，如果 <code>nums[j] < nums[i]</code>，说明可以把 nums[i] 接在以 nums[j] 结尾的递增序列后面。</p>
+
+<pre><code class="language-python"># ✅ LIS：时间 O(n^2)，空间 O(n)
+def lis(nums):
+    if not nums:
+        return 0
+    n = len(nums)
+    dp = [1] * n  # 每个元素自己构成长度为 1 的递增子序列
+    for i in range(n):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+
+# 示例：lis([10,9,2,5,3,7,101,18]) = 4（[2,3,7,101] 或 [2,3,7,18]）</code></pre>
+
+<p>这个 O(n^2) 的版本好理解，但面试官通常还会追问：有没有更快的做法？答案是<strong>二分查找优化</strong>，把时间复杂度降到 O(n log n)，这就是传说中的"贪心 + 二分"解法。</p>
+
+<pre><code class="language-python"># ✅ LIS 二分优化：时间 O(n log n)，空间 O(n)
+import bisect
+
+def lis_binary(nums):
+    d = []  # d[i] = 长度为 i+1 的递增子序列的最小结尾元素
+    for x in nums:
+        i = bisect.bisect_left(d, x)  # 找第一个 >= x 的位置
+        if i == len(d):
+            d.append(x)   # x 比所有元素都大，可以延长序列
+        else:
+            d[i] = x      # 用更小的 x 替换，保持 d 的最小性
+    return len(d)</code></pre>
+
+<p>二分优化的核心思想是：维护一个数组 d，其中 d[i] 表示长度为 i+1 的递增子序列的<strong>最小可能结尾值</strong>。这个数组是严格递增的，所以可以用二分查找。对于每个新元素，找到它在 d 中的位置——要么延长最长序列，要么用更小的值替换，让后续元素有更大的可能性接上来。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">对比一下</div>
+  O(n^2) 的 DP 版本好理解，适合面试时先写出来证明思路正确；O(n log n) 的二分版本展示了你对算法优化的追求。两个都要会。
+</div>
+
+<h2 id="s6">六、最烧脑挑战：编辑距离</h2>
+
+<p>编辑距离是 LeetCode 上的 Hard 级别问题，也是面试官的最爱。它把 DP 的状态定义能力压榨到了极限。</p>
+
+<p><strong>问题定义：</strong>给定两个字符串 word1 和 word2，通过插入、删除、替换三种操作，把 word1 变成 word2 的最少步数。</p>
+
+<p><strong>状态定义：</strong><code>dp[i][j]</code> = word1 的前 i 个字符变成 word2 的前 j 个字符所需的最少操作数。</p>
+
+<p><strong>状态转移（最烧脑的部分）：</strong></p>
+
+<ul>
+<li>如果 <code>word1[i-1] == word2[j-1]</code>：<code>dp[i][j] = dp[i-1][j-1]</code>（最后一个字符相同，不需要操作）</li>
+<li>否则（三选一，取最小值）：
+  <ul>
+    <li>替换：<code>dp[i-1][j-1] + 1</code>（把 word1 的最后一个字符换成 word2 的）</li>
+    <li>删除：<code>dp[i-1][j] + 1</code>（删掉 word1 的最后一个字符）</li>
+    <li>插入：<code>dp[i][j-1] + 1</code>（在 word1 末尾插入 word2 的最后一个字符）</li>
+  </ul>
+</ul>
+
+<pre><code class="language-python">def edit_distance(word1, word2):
+    n, m = len(word1), len(word2)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    
+    # 初始化：第一行/列
+    for i in range(n + 1):
+        dp[i][0] = i  # word1 前 i 个字符变成空串，需要 i 次删除
+    for j in range(m + 1):
+        dp[0][j] = j  # 空串变成 word2 前 j 个字符，需要 j 次插入
+    
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            if word1[i-1] == word2[j-1]:
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                dp[i][j] = 1 + min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1])
+    
+    return dp[n][m]
+
+# 示例：edit_distance("horse", "ros") = 3
+# horse → ros（删除 h, 删除 e, 删除 e）或者替换 r→r, o→o, s→s 等多种路径</code></pre>
+
+<div class="diagram">
+  <svg viewBox="0 0 650 220" xmlns="http://www.w3.org/2000/svg">
+    <text x="10" y="25" class="title-sm">编辑距离 DP 表（word1="horse", word2="ros"）</text>
+    <text class="header" x="12" y="52">i\j</text><text class="cell" x="50" y="52"></text>
+    <text class="cell" x="82" y="52">0</text><text class="cell" x="114" y="52">r</text><text class="cell" x="146" y="52">o</text><text class="cell" x="178" y="52">s</text>
+    <text class="row-label" x="12" y="85">0</text>
+    <text class="cell" x="50" y="85"></text><text class="cell" x="82" y="85">0</text><text class="cell" x="114" y="85">1</text><text class="cell" x="146" y="85">2</text><text class="cell" x="178" y="85">3</text>
+    <text class="row-label" x="12" y="118">h</text>
+    <text class="cell" x="50" y="118">1</text><text class="cell" x="82" y="118">1</text><text class="cell" x="114" y="118">1</text><text class="cell" x="146" y="118">2</text>
+    <text class="row-label" x="12" y="151">o</text>
+    <text class="cell" x="50" y="151">2</text><text class="cell" x="82" y="151">2</text><text class="cell" x="114" y="151">1</text><text class="cell-hl" x="146" y="151">2</text>
+    <text class="row-label" x="12" y="184">r</text>
+    <text class="cell" x="50" y="184">3</text><text class="cell" x="82" y="184">2</text><text class="cell" x="114" y="184">2</text><text class="cell" x="146" y="184">2</text>
+    <text class="row-label" x="12" y="217">s</text>
+    <text class="cell" x="50" y="217">4</text><text class="cell" x="82" y="217">3</text><text class="cell" x="114" y="217">3</text><text class="cell-hl" x="146" y="217">2</text>
+    <text class="row-label" x="12" y="250">e</text>
+    <text class="cell" x="50" y="250">5</text><text class="cell" x="82" y="250">4</text><text class="cell" x="114" y="250">4</text><text class="cell" x="146" y="250">3</text>
+    <text x="260" y="52" font-size="12" font-weight="600" fill="#3b82f6">dp[i][j] = dp[i-1][j-1]（匹配）</text>
+    <text x="260" y="78" font-size="11" fill="#64748b">或 1 + min(替换, 删除, 插入)</text>
+    <text x="260" y="105" font-size="12" font-weight="600" fill="#8b5cf6">horse → ros 的最少操作数 = 3</text>
+    <text x="260" y="130" font-size="11" fill="#64748b">dp[5][3] = 3</text>
+    <text x="260" y="158" font-size="11" fill="#64748b">horse 删除 h → orse（1步）</text>
+    <text x="260" y="178" font-size="11" fill="#64748b">orse 删除 e → ors（1步）</text>
+    <text x="260" y="198" font-size="11" fill="#64748b">ors 删除 r？不对，应该是：</text>
+    <text x="260" y="218" font-size="11" fill="#64748b">horse 的 r 匹配 ros 的 r（0步）</text>
+    <text x="260" y="238" font-size="11" fill="#64748b">horse 的 o 匹配 ros 的 o（0步）</text>
+    <text x="260" y="258" font-size="11" fill="#64748b">horse 的 s 匹配 ros 的 s（0步）</text>
+    <text x="260" y="278" font-size="11" fill="#64748b">horse 删除 h、e、e → ros（3步）✓</text>
+  </svg>
+  <div class="diagram-caption">编辑距离 DP 表：结果 dp[5][3] = 3，三种操作取最优</div>
+</div>
+
+<p>编辑距离的难点在于：三种操作的物理含义要理解清楚——<strong>替换是"改"，删除是"少一个"，插入是"多一个"</strong>。理解了操作本质，状态转移方程就不难写出来。</p>
+
+<h2 id="s7">七、终极奥义：空间优化</h2>
+
+<p>前面我们已经见过很多空间优化的例子了（斐波那契、背包）。现在我们来系统地总结一下空间优化的通用技巧。</p>
+
+<h3>技巧一：滚动数组——只保留必要的行</h3>
+
+<p>如果 <code>dp[i][j]</code> 只依赖 <code>dp[i-1][*]</code>（即当前行只依赖上一行），那么我们只需要维护一维数组。</p>
+
+<p>0-1 背包和完全背包的优化就是这个原理。</p>
+
+<h3>技巧二：状态压缩到极致</h3>
+
+<p>如果一维数组中，每个位置只依赖它左边的某个位置（比如 <code>dp[j] = max(dp[j], dp[j-w] + v)</code>），那么这个 j 的遍历方向就决定了是 0-1 背包（倒序）还是完全背包（正序）。</p>
+
+<h3>技巧三：两个变量代替整个数组</h3>
+
+<p>斐波那契就是最经典的例子。当 dp[i] 只依赖 dp[i-1] 和 dp[i-2] 时，用 prev 和 curr 两个变量就够了。</p>
+
+<pre><code class="language-python"># 斐波那契：两个变量
+prev, curr = 0, 1
+for _ in range(2, n + 1):
+    prev, curr = curr, prev + curr
+
+# LCS：两行交替
+prev = [0] * (m + 1)
+curr = [0] * (m + 1)
+for i in range(1, n + 1):
+    for j in range(1, m + 1):
+        if s1[i-1] == s2[j-1]:
+            curr[j] = prev[j-1] + 1
+        else:
+            curr[j] = max(prev[j], curr[j-1])
+    prev, curr = curr, [0] * (m + 1)</code></pre>
+
+<h3>空间优化的取舍</h3>
+
+<p>空间优化虽好，但要注意场景：</p>
+
+<ul>
+<li><strong>需要回溯路径</strong>（比如输出具体选了哪些物品）时，必须用二维数组记录决策过程</li>
+<li><strong>空间不是瓶颈</strong>时，二维数组代码更清晰、更不容易出错</li>
+<li><strong>工程代码</strong>中，可读性往往比极致优化更重要</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话记住</div>
+  空间优化是锦上添花，不是必须追求的目标。先保证正确性和可读性，再考虑优化。面试时先写二维版本，再优化成一维，是个很好的展示思路的方式。
+</div>
+
+<h2 id="s8">八、实战路线图</h2>
+
+<p>聊了这么多，最后给你一个可操作的练习路线。</p>
+
+<h3>必刷经典题（按难度排序）</h3>
+
+<table>
+<thead>
+<tr><th>题目</th><th>LeetCode</th><th>核心技巧</th><th>难度</th></tr>
+</thead>
+<tbody>
+<tr><td>爬楼梯</td><td>#70</td><td>斐波那契变体</td><td>⭐</td></tr>
+<tr><td>打家劫舍</td><td>#198</td><td>一维 DP，空间优化</td><td>⭐</td></tr>
+<tr><td>不同路径</td><td>#62</td><td>二维 DP 入门</td><td>⭐⭐</td></tr>
+<tr><td>三角形最小路径和</td><td>#120</td><td>自底向上 DP</td><td>⭐⭐</td></tr>
+<tr><td>最长递增子序列</td><td>#300</td><td>DP + 二分优化</td><td>⭐⭐</td></tr>
+<tr><td>最长公共子序列</td><td>#1143</td><td>双串 DP</td><td>⭐⭐</td></tr>
+<tr><td>编辑距离</td><td>#72</td><td>三操作 DP</td><td>⭐⭐⭐</td></tr>
+<tr><td>背包问题</td><td>#416 等</td><td>状态定义 + 空间优化</td><td>⭐⭐⭐</td></tr>
+<tr><td>股票买卖</td><td>#121-123, 188</td><td>状态机 DP</td><td>⭐⭐⭐</td></tr>
+</tbody>
+</table>
+
+<h3>我的学习建议</h3>
+
+<ol>
+<li><strong>先理解四要素</strong>：状态定义、状态转移、初始化、遍历顺序。这四个搞清楚了，任何 DP 题都能有思路</li>
+<li><strong>从简单题入手</strong>：爬楼梯、打家劫舍都是斐波那契的变体，先把这些做熟建立信心</li>
+<li><strong>画表理解</strong>：拿到题先在纸上画 DP 表，比直接写代码更能理解状态转移</li>
+<li><strong>先二维后优化</strong>：面试时先写二维数组确保正确，再优化空间展示能力</li>
+<li><strong>反复咀嚼经典题</strong>：LCS、编辑距离、背包刷三遍，每遍都有新收获</li>
+</ol>
+
+<p><strong>我认为：</strong>动态规划不是一种"算法模板"，而是一种"思维方式"。它教会你的不只是怎么解题，更是怎么把一个大问题分解成小问题、如何找到问题的最小视角。这种能力，才是 DP 真正给你的礼物。</p>
+
+<p><strong>下一步建议：</strong>打开 LeetCode，从 #70 爬楼梯开始，把上面的必刷题列表刷完。刷完之后，你对 DP 的理解会彻底不同。</p>
+
+<hr>
+
+<p>最后留个小彩蛋：斐波那契数列有个鲜为人知的秘密——它的时间复杂度其实可以用<strong>矩阵快速幂</strong>优化到 O(log n)。如果你的面试官特别"变态"，可能会问到这个。提示：斐波那契矩阵形式是 [[1,1],[1,0]] 的 n 次幂。有兴趣的话去研究一下。</p>
+
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://leetcode.cn/tag/dynamic-programming/" target="_blank">LeetCode 动态规划题目列表</a></li>
+    <li><a href="https://time.geekbang.org/column/intro/100017201" target="_blank">极客时间《算法面试通关40讲》</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Dynamic_programming" target="_blank">Dynamic Programming - Wikipedia</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>© 2026 元初AI · ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
