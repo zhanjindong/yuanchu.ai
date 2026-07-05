@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>大模型核心算法解剖 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;}
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;}
+.back::before{content:"← ";}
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;}
+.toc a:hover{color:#3b82f6;}
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong,.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;}
+.prose tr:hover td{background:#f8fafc;}
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+@media(max-width:768px){.content{padding:20px 20px;}.article-header h1{font-size:26px;}.prose h2{font-size:22px;}.prose h3{font-size:18px;}}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0;"><defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/></marker><marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/></marker></defs></svg>
+<div class="content"><a href="index.html" class="back">TECH ARTICLES</a>
+<div class="article-header">
+  <div class="tags"><span class="tag">LLM</span><span class="tag">Transformer</span><span class="tag">AI</span></div>
+  <h1>大模型核心算法解剖：Attention is All You Need，七年后的我们在做什么</h1>
+  <div class="meta"><span>Jackie Zhan</span><span>2026-07-05</span></div>
+</div>
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、从"记住一切"到"知道该看什么"</a>
+  <a href="#s2">二、词的数学：Embedding 与位置编码</a>
+  <a href="#s3">三、Transformer：拆开看看到底是什么</a>
+  <a href="#s4">四、预训练与微调：大模型的成长之路</a>
+  <a href="#s5">五、让模型"听话"：RLHF、LoRA 与 P-tuning</a>
+  <a href="#s6">六、总结</a>
+</div>
+<div class="prose">
+<p>我要说一个可能颠覆你认知的观点：大模型最神奇的地方，不在它的"大脑"，而在它的<strong>"学习方式"</strong>。</p>
+<p>2017 年，Google 发表了那篇改变 AI 历史的论文——标题叫《Attention is All You Need》。七年后的今天，几乎所有的大语言模型（GPT、Claude、DeepSeek、Qwen……）都建立在这篇论文的框架之上。但如果你以为大模型只是"更大的神经网络"，那你只看到了故事的表层。</p>
+<p>今天，我们来把大模型的核心算法一层层拆开。不是教科书式的罗列，而是像解剖一台精密仪器——每个零件为什么要这样设计？它解决了什么问题？理解这些，你才能真正看懂 AI 行业的底层逻辑。</p>
+<hr>
+<h2 id="s1">一、从"记住一切"到"知道该看什么"</h2>
+<p>在 Transformer 出现之前，AI 工程师们面临一个极其尴尬的局面：让机器理解一句话，传统做法是逐字逐句地"记住"——前面的词处理完了，才能处理下一个。这听起来很合理，但问题在于，如果一句话有 100 个词，模型在处理第 50 个词的时候，第 1 个词的信息已经模糊得像隔了一层雾。</p>
+<p>这叫<strong>长距离依赖问题</strong>。就像你在读一本侦探小说，第 10 章出现的凶手线索和第 1 章埋下的伏笔遥相呼应，但你读到第 10 章时，第 1 章的内容已经记不清了。传统 RNN/LSTM 就是这么个"金鱼脑"。</p>
+<p>注意力机制（Attention Mechanism）解决的就是这个问题。它的核心思想是：<strong>处理每个词的时候，不要只看相邻的词，而是让模型自己决定它应该"关注"前面的哪些词。</strong></p>
+<p>打一个形象的比喻：想象你在一个嘈杂的鸡尾酒会上听一个人说话。你的耳朵并不是把所有声音一视同仁地接收——你会自动"屏蔽"背景噪音，把注意力聚焦在说话人身上。注意力机制干的，就是给模型装上这样一双"智能耳朵"。</p>
+<div class="diagram">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+<rect class="node-rect" x="10" y="80" width="60" height="40"/><text class="node-label" x="40" y="100">词1</text>
+<rect class="node-rect" x="80" y="80" width="60" height="40"/><text class="node-label" x="110" y="100">词2</text>
+<rect class="node-rect-blue" x="150" y="80" width="60" height="40"/><text class="node-label" x="180" y="100">词3</text>
+<rect class="node-rect" x="220" y="80" width="60" height="40"/><text class="node-label" x="250" y="100">词4</text>
+<rect class="node-rect" x="290" y="80" width="60" height="40"/><text class="node-label" x="320" y="100">词5</text>
+<line class="arrow-line" x1="70" y1="90" x2="145" y2="70" stroke-dasharray="4,2"/>
+<line class="arrow-line" x1="210" y1="90" x2="215" y2="70" stroke-dasharray="4,2"/>
+<line class="arrow-line" x1="280" y1="90" x2="215" y2="70" stroke-dasharray="4,2"/>
+<line class="arrow-line" x1="350" y1="90" x2="215" y2="70" stroke-dasharray="4,2"/>
+<rect class="node-rect-purple" x="370" y="20" width="140" height="50"/><text class="node-label" x="440" y="35">Query (Q)</text><text class="node-sublabel" x="440" y="52">我在找什么</text>
+<rect class="node-rect-green" x="370" y="130" width="140" height="50"/><text class="node-label" x="440" y="145">Key-Value (K-V)</text><text class="node-sublabel" x="440" y="162">我是什么</text>
+<line class="arrow-line-blue" x1="330" y1="80" x2="360" y2="45"/>
+<line class="arrow-line-blue" x1="330" y1="120" x2="360" y2="155"/>
+<rect class="node-rect-amber" x="550" y="60" width="130" height="60"/><text class="node-label" x="615" y="80">注意力输出</text><text class="node-sublabel" x="615" y="97">Softmax(QK/sqrt(d))V</text>
+<line class="arrow-line-blue" x1="510" y1="45" x2="540" y2="90"/>
+<line class="arrow-line-blue" x1="510" y1="165" x2="540" y2="120"/>
+</svg>
+<div class="diagram-caption">自注意力机制：词3 在生成表示时，对所有词计算注意力权重（虚线），权重越大=越关注</div>
+</div>
+<p>数学上，注意力分数是这样计算的：</p>
+<pre><code class="language-python">import torch
+import torch.nn.functional as F
+
+def scaled_dot_product_attention(Q, K, V, mask=None):
+    d_k = Q.size(-1)  # 缩放因子
+    scores = Q @ K.transpose(-2, -1) / (d_k ** 0.5)  # QK^T / sqrt(d)
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+    attention_weights = F.softmax(scores, dim=-1)
+    return attention_weights @ V, attention_weights
+
+Q = x @ W_q  # Query: 我在找什么
+K = x @ W_k  # Key: 我是什么
+V = x @ W_v  # Value: 我的内容
+output, weights = scaled_dot_product_attention(Q, K, V)</code></pre>
+<p>那个 <code>sqrt(d)</code>（d 是向量维度）的缩放，看起来不起眼，但它防止了当维度很大时，点积结果过大导致 softmax 梯度消失。细节魔鬼，这句话就是了。</p>
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  在一个 100 词的句子中，"Transformer" 这个词可能需要对 "attention" 给予 0.3 的注意力权重，对 "mechanism" 给 0.2，对 "the" 只给 0.01——权重是模型自己学出来的，不是人工设定的。这就是它的厉害之处。
+</div>
+<p>更重要的是，注意力机制是可以"并行"的。所有词的关系可以同时计算，不需要等前一个处理完再处理下一个。这让 GPU 的算力得以充分发挥，也让训练真正大规模的网络成为可能。</p>
+<h2 id="s2">二、词的数学：Embedding 与位置编码</h2>
+<p>大模型不认字。它只认数字。</p>
+<p>所以，第一步就是<strong>把词变成向量</strong>——这就是词嵌入（Word Embedding）。一个词被表示成一个高维向量（比如 768 维），在这个向量空间里，意思相近的词靠得近，"国王"减去"男人"再加上"女人"，约等于"女王"。</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+vocab_size = 50000  # 词表大小
+embedding_dim = 768  # 嵌入维度
+
+embedding = nn.Embedding(vocab_size, embedding_dim)
+# input: (batch_size, seq_len) -> 每个词是一个整数 ID
+# output: (batch_size, seq_len, embedding_dim) -> 每个词变成 768 维向量
+
+input_ids = torch.tensor([[1, 5423, 892, 0]])  # "I love cats"
+word_vectors = embedding(input_ids)
+print(word_vectors.shape)  # torch.Size([1, 4, 768])</code></pre>
+<p>但这里有个问题：词嵌入只告诉你"这个词是什么意思"，不告诉你"这个词在句子的哪个位置"。</p>
+<p>"狗咬了我"和"我咬了狗"，词完全一样，但意思完全相反。顺序不同，语义天差地别。</p>
+<p>传统 RNN 靠时间步的顺序传递来解决这个问题。但 Transformer 没有循环结构，怎么注入位置信息？答案就是<strong>位置编码（Positional Encoding）</strong>。</p>
+<pre><code class="language-python">import numpy as np
+
+def positional_encoding(seq_len, d_model):
+    PE = np.zeros((seq_len, d_model))
+    position = np.arange(0, seq_len).reshape(-1, 1)
+    div_term = np.exp(np.arange(0, d_model, 2) * -(np.log(10000.0) / d_model))
+    PE[:, 0::2] = np.sin(position * div_term)  # 偶数维度用 sin
+    PE[:, 1::2] = np.cos(position * div_term)  # 奇数维度用 cos
+    return PE
+# 每个位置都有唯一的位置编码，能泛化到更长序列</code></pre>
+<p>为什么用 sin/cos？因为它们有一个优雅的性质——任意两个位置的相对关系，可以通过线性变换推导出来。</p>
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  2020 年之后，很多模型开始用"旋转位置编码"（RoPE）替代原始 sin/cos 编码，比如 LLaMA、DeepSeek 都用 RoPE。它的核心思想是把位置编码融进注意力计算里，让相对位置关系在数学上更优雅地融入 attention score。
+</div>
+<h2 id="s3">三、Transformer：拆开看看到底是什么</h2>
+<p>Transformer 的架构，表面上看起来复杂，实际上逻辑非常清晰。我把它拆成三个核心模块来讲。</p>
+<h3>3.1 编码器与解码器：两种理解世界的角度</h3>
+<p>Transformer 最初是为机器翻译设计的，所以它有编码器（Encoder）和解码器（Decoder）两个部分。</p>
+<ul>
+<li><strong>编码器</strong>：把输入序列转成一个"理解向量"，看完整个句子后形成对语义的全局把握。</li>
+<li><strong>解码器</strong>：在编码器的理解基础上，一个词一个词地生成输出，像一位同声传译员——听一段，翻译一段。</li>
+</ul>
+<p>但今天的大语言模型，比如 GPT 系列，其实只用了<strong>解码器部分</strong>——单向、自回归地生成下一个词。为什么？因为"阅读理解"和"写作文"，本质上是同一件事：你需要理解语言，然后创造语言。解码器足够了。</p>
+<div class="diagram">
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+<rect class="node-rect" x="10" y="100" width="100" height="36"/><text class="node-label" x="60" y="118">输入文本</text>
+<rect class="node-rect-blue" x="10" y="150" width="100" height="36"/><text class="node-label" x="60" y="168">Token Embedding</text>
+<rect class="node-rect-purple" x="10" y="200" width="100" height="36"/><text class="node-label" x="60" y="218">+ 位置编码</text>
+<line class="arrow-line" x1="120" y1="168" x2="165" y2="168"/>
+<rect class="group-box" x="170" y="60" width="180" height="220"/><text class="group-label" x="180" y="80">x N 层</text>
+<rect class="node-rect-blue" x="195" y="95" width="130" height="36"/><text class="node-label" x="260" y="113">多头自注意力</text>
+<rect class="node-rect-green" x="195" y="145" width="130" height="36"/><text class="node-label" x="260" y="163">Add &amp; LayerNorm</text>
+<rect class="node-rect-blue" x="195" y="195" width="130" height="36"/><text class="node-label" x="260" y="213">前馈网络 FFN</text>
+<rect class="node-rect-green" x="195" y="245" width="130" height="36"/><text class="node-label" x="260" y="263">Add &amp; LayerNorm</text>
+<line class="arrow-line" x1="355" y1="168" x2="385" y2="168"/>
+<rect class="group-box" x="390" y="60" width="180" height="220"/><text class="group-label" x="400" y="80">x N 层</text>
+<rect class="node-rect-amber" x="415" y="95" width="130" height="36"/><text class="node-label" x="480" y="113">掩码多头注意力</text>
+<rect class="node-rect-green" x="415" y="145" width="130" height="36"/><text class="node-label" x="480" y="163">Add &amp; LayerNorm</text>
+<rect class="node-rect-blue" x="415" y="195" width="130" height="36"/><text class="node-label" x="480" y="213">交叉注意力</text>
+<rect class="node-rect-green" x="415" y="245" width="130" height="36"/><text class="node-label" x="480" y="263">Add &amp; LayerNorm</text>
+<rect class="node-rect-red" x="580" y="145" width="120" height="46"/><text class="node-label" x="640" y="163">输出概率</text><text class="node-sublabel" x="640" y="180">下一个Token</text>
+<line class="arrow-line" x1="355" y1="90" x2="480" y2="90"/><line class="arrow-line" x1="480" y1="90" x2="480" y2="195"/>
+<text class="arrow-label" x="415" y="82">编码器输出</text>
+<text x="260" y="30" font-size="12" fill="#94a3b8" text-anchor="middle">编码器：理解输入</text>
+<text x="480" y="30" font-size="12" fill="#94a3b8" text-anchor="middle">解码器：生成输出</text>
+</svg>
+<div class="diagram-caption">Transformer 编码器-解码器架构（现代 LLM 如 GPT 主要使用右侧解码器部分）</div>
+</div>
+<h3>3.2 多头注意力：让模型"多角度思考"</h3>
+<p>只做一次注意力够吗？不够。</p>
+<p>一个词在不同语境下，角色是不同的。"苹果"可能是水果，可能是手机公司，也可能是股票代码。如果只用一组 QKV，模型只能学到一种"关注方式"。</p>
+<p><strong>多头注意力（Multi-Head Attention）</strong> 就是让模型同时运行多组注意力，每组关注不同的语义关系：</p>
+<pre><code class="language-python">class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model=768, num_heads=12):
+        super().__init__()
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads  # 每头的维度
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)  # 输出投影
+
+    def forward(self, x):
+        B, T, C = x.shape  # batch, seq_len, d_model
+        Q = self.W_q(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+        K = self.W_k(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+        V = self.W_v(x).view(B, T, self.num_heads, self.d_k).transpose(1, 2)
+        out, _ = scaled_dot_product_attention(Q, K, V)
+        out = out.transpose(1, 2).contiguous().view(B, T, C)
+        return self.W_o(out)
+# 12 头注意力 = 12 组不同的 QKV
+# 有的头学语法关系，有的学语义关系，有的学指代关系</code></pre>
+<div class="callout callout-info">
+  <div class="callout-title">对比一下</div>
+  GPT-3 有 96 层，12288 维嵌入，96 个注意力头，参数量达 1750 亿。这不是简单的"更大"，而是层数、宽度、头数、上下文长度的系统性工程。
+</div>
+<h3>3.3 Add & Norm 与 FFN：被低估的功臣</h3>
+<p>在每个注意力层之间，你总能看到"Add & LayerNorm"——把输入和输出相加（残差连接），再做层归一化。这两件事看起来不起眼，但它们是深度学习训练的定海神针。</p>
+<p><strong>残差连接</strong>：让梯度畅通无阻地流回前面的层，解决深层网络的梯度消失问题。想象成一条高速公路——即使某个中间层学坏了，信息仍然可以从旁边的"捷径"绕过去。</p>
+<p><strong>层归一化</strong>：把每层的输出"拉平"，让数值稳定在合理范围。没有它，大模型训练几步就会数值爆炸。</p>
+<p><strong>前馈网络（FFN）</strong>：每个位置独立做两次线性变换 + 激活函数。本质上是一个"两步升维再降维"的操作——把信息投影到更高维空间，激活，再投影回来。可以理解为对每个词的"非线性思考"。</p>
+<p>有意思的是，研究者后来发现 FFN 在 Transformer 中承担了记忆知识的功能，而注意力机制更多负责检索这些记忆。这两者配合，才构成了一个完整的"理解+记忆"系统。</p>
+<h2 id="s4">四、预训练与微调：大模型的成长之路</h2>
+<p>一个人从小学读到博士，不是靠一个老师教的，而是分阶段、有目标地学习。大模型也一样。</p>
+<h3>4.1 预训练：吞下整个互联网</h3>
+<p>预训练的目标很简单：让模型学会"语言本身"。用海量的文本数据，让模型预测下一个词——这叫<strong>语言建模（Language Modeling）</strong>。</p>
+<p>GPT-3 的训练数据据说有 3000 亿个 token，DeepSeek-V3 的训练用了 14.8 万亿 token。用这些数据训练后，模型学会了语法、语义、世界知识、甚至推理模式。</p>
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  预训练不是"记住"数据——模型不是把所有文本一字不差地背下来。它的本质是学会语言的<strong>统计规律</strong>和<strong>潜在结构</strong>。这也是为什么大模型有时会"幻觉"，因为它生成的是统计上最可能的词，而不是事实数据库。
+</div>
+<h3>4.2 预训练关键技术一览</h3>
+<table>
+<thead>
+<tr><th>技术</th><th>作用</th><th>代表模型</th></tr>
+</thead>
+<tbody>
+<tr><td>海量语料混合</td><td>让模型同时学习代码、数学、论文、对话等多类型文本</td><td>GPT-4、DeepSeek</td></tr>
+<tr><td>更长上下文窗口</td><td>从 2K 扩展到 128K token，让模型"看"得更远</td><td>Claude 3、GPT-4 Turbo</td></tr>
+<tr><td>稀疏注意力</td><td>不计算所有 token 对的注意力，降低计算复杂度</td><td>Longformer、BigBird</td></tr>
+<tr><td>Flash Attention</td><td>IO感知的注意力实现，训练速度提升 2-4 倍</td><td>几乎所有新模型</td></tr>
+</tbody>
+</table>
+<div class="callout callout-tip">
+  <div class="callout-title">延伸思考</div>
+  预训练的 Scaling Law（扩展定律）告诉我们：模型越大、训练数据越多、算力越强，模型能力就越强。但 2024-2025 年遇到了"数据墙"——高质量互联网数据快用完了。所以各大厂开始转向合成数据和"后训练"优化，这是一场新的军备竞赛。
+</div>
+<h3>4.3 微调：从通才到专才</h3>
+<p>预训练完的模型，是一个"通才"——什么都会一点，但什么都不精。微调（Fine-tuning）就是把它训练成"专才"的过程。</p>
+<p>全参数微调效果好，但代价是：1750 亿参数的模型，需要对应 1750 亿参数的梯度存储、optimizer 状态和更新。在消费级硬件上基本不可能。</p>
+<p>这就是为什么 LoRA、P-tuning 这类<strong>参数高效微调</strong>技术变得如此重要。我们后面单独讲。</p>
+<h2 id="s5">五、让模型"听话"：RLHF、LoRA 与 P-tuning</h2>
+<p>预训练模型会说话，但不一定"说对话"。RLHF 和各种微调技术，解决的是怎么让模型"听人类的话"。</p>
+<h3>5.1 RLHF：让 AI 的价值观对齐人类</h3>
+<p>RLHF（Reinforcement Learning from Human Feedback，基于人类反馈的强化学习）是让 GPT-3 进化到 ChatGPT 的关键技术。</p>
+<p>它的三步走战略非常有意思：</p>
+<div class="diagram">
+<svg viewBox="0 0 700 160" xmlns="http://www.w3.org/2000/svg">
+<rect class="node-rect-blue" x="10" y="60" width="160" height="50"/><text class="node-label" x="90" y="78">SFT 微调</text><text class="node-sublabel" x="90" y="95">有监督学习</text><text class="node-sublabel" x="90" y="107">让模型学会"答对"</text>
+<line class="arrow-line" x1="175" y1="85" x2="205" y2="85"/>
+<text class="arrow-label" x="190" y="75">Step 1</text>
+<rect class="node-rect-purple" x="210" y="60" width="160" height="50"/><text class="node-label" x="290" y="78">奖励模型训练</text><text class="node-sublabel" x="290" y="95">人类排序比较</text><text class="node-sublabel" x="290" y="107">学习"什么是好答案"</text>
+<line class="arrow-line" x1="375" y1="85" x2="405" y2="85"/>
+<text class="arrow-label" x="390" y="75">Step 2</text>
+<rect class="node-rect-green" x="410" y="60" width="160" height="50"/><text class="node-label" x="490" y="78">PPO 强化学习</text><text class="node-sublabel" x="490" y="95">用 Reward 优化策略</text><text class="node-sublabel" x="490" y="107">让模型持续进化</text>
+<text class="arrow-label" x="590" y="75">Step 3</text>
+<rect class="node-rect-amber" x="200" y="130" width="300" height="30"/><text class="node-label" x="350" y="150" style="font-size:12px;">人类反馈（人工标注排序）</text>
+<line class="arrow-line" x1="350" y1="130" x2="350" y2="110" stroke-dasharray="3,2"/>
+</svg>
+<div class="diagram-caption">RLHF 三步走：SFT -> 奖励模型 -> PPO 强化学习，最终让模型回答符合人类偏好</div>
+</div>
+<p>第一步，<strong>SFT（有监督微调）</strong>：用人工精心标注的高质量问答数据，训练模型学会"什么样的回答是对的"。</p>
+<p>第二步，<strong>训练奖励模型（Reward Model）</strong>：让人类对同一个问题的多个答案排序打分。模型学到一个"奖励函数"——能判断一个回答好还是不好。</p>
+<p>第三步，<strong>PPO 强化学习</strong>：用奖励模型的反馈来优化模型的输出策略，让它越来越多地产生"人类认为好的"回答。</p>
+<div class="callout callout-info">
+  <div class="callout-title">反例警示</div>
+  RLHF 不是万能药。它的效果高度依赖人类标注的质量和多样性。如果标注员的世界观有偏差，模型也会继承这些偏差。所以 Anthropic 在 Constitutional AI（宪法AI）上更进一步——用一套明确的规则（"宪法"）来约束模型行为，而不是依赖人工逐一评判。
+</div>
+<h3>5<h3>5.2 LoRA：低成本微调的魔法</h3>
+<p>回到全参数微调的问题：1750 亿参数，存储梯度、优化器状态、每个参数更新——简直是硬件噩梦。LoRA（Low-Rank Adaptation）的聪明之处在于：<strong>不要动原始权重，而是学习"权重更新"</strong>。</p>
+<p>它的核心思想是：训练时不直接更新原始权重矩阵 W，而是学习 W 的"低秩分解"：W + BA。其中 A 和 B 是两个小矩阵，参数量远小于 W。</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+class LoRALinear(nn.Module):
+    def __init__(self, original_layer, rank=4, alpha=8):
+        super().__init__()
+        self.original = original_layer
+        self.rank = rank
+        self.alpha = alpha
+        d_in, d_out = original_layer.weight.shape
+        # A: (d_in, rank), B: (rank, d_out)
+        # 比原始矩阵参数量小得多
+        self.lora_A = nn.Parameter(torch.zeros(d_in, rank))
+        self.lora_B = nn.Parameter(torch.zeros(rank, d_out))
+        nn.init.kaiming_uniform_(self.lora_A, a=5**0.5)
+        nn.init.zeros_(self.lora_B)
+
+    def forward(self, x):
+        # W + BA 的低秩更新
+        return self.original(x) + 
+            (x @ self.lora_A @ self.lora_B) * (self.alpha / self.rank)
+
+# 1750亿参数的模型，原来需要更新全部权重
+# 用了 LoRA（rank=8），只需要更新约 0.1% 的参数量
+# 一块消费级 RTX 4090 就能微调一个大模型！</code></pre>
+<p>LoRA 的精髓在于：<strong>大模型的"知识"大部分已经在了，训练只是在原有的知识框架上做微调</strong>。BA 两个小矩阵的乘积，代表了对原始权重的"修正量"。原始权重被冻结，只更新 BA——参数量从数十亿降到几百万。</p>
+<h3>5.3 P-tuning：让模型自己学会"提示"</h3>
+<p>P-tuning（Prompt Tuning）的思路又不一样。它的核心是：<strong>不改变模型的任何权重，而是在输入序列前面插入一组可学习的"虚拟 token"</strong>。</p>
+<p>这些 token 在原始词表中不存在，它们的嵌入是随机初始化的，然后在训练过程中学习。和 LoRA 相比，P-tuning 改变的是模型的"输入提示"而不是内部权重。</p>
+<p>为什么有效？因为大模型足够强大，它能根据输入提示"理解"你想让它做什么。P-tuning 相当于把"怎么用好这个模型"的know-how，编码进了提示本身。</p>
+<div class="callout callout-tip">
+  <div class="callout-title">踩坑记录</div>
+  LoRA 和 P-tuning 不是互斥的。实际上，很多人把 LoRA + P-tuning 结合使用——LoRA 调整模型内部权重，P-tuning 优化输入提示。双管齐下，效果往往比单独使用更好。但注意：组合使用时要控制好学习率，否则容易出现"灾难性遗忘"。
+</div>
+<h3>5.4 其他微调技术对比</h3>
+<table>
+<thead>
+<tr><th>技术</th><th>修改什么</th><th>参数量</th><th>适用场景</th></tr>
+</thead>
+<tbody>
+<tr><td>全参数微调</td><td>所有权重</td><td>100%</td><td>数据充足、有高端算力</td></tr>
+<tr><td>LoRA</td><td>低秩矩阵 BA</td><td>0.1%-5%</td><td>消费级硬件、快速适配</td></tr>
+<tr><td>P-tuning</td><td>输入端虚拟 token</td><td>0.01%-1%</td><td>提示工程、探索模型能力</td></tr>
+<tr><td>Adapter</td><td>插入的小网络</td><td>1%-5%</td><td>多任务学习</td></tr>
+<tr><td>QLoRA</td><td>量化+LoRA</td><td>极低</td><td>单卡微调超大模型</td></tr>
+</tbody>
+</table>
+<h2 id="s6">六、总结</h2>
+<p>好，我们从注意力机制一路讲到 LoRA，把大模型的"五脏六腑"都翻了个遍。来做个快速回顾。</p>
+<ul>
+<li><strong>注意力机制</strong>：让模型自己决定关注哪些词，解决了长距离依赖问题——这是整个 Transformer 的灵魂。</li>
+<li><strong>词嵌入 + 位置编码</strong>：把语言翻译成数学，让模型既知道"说什么"，又知道"在哪说"。</li>
+<li><strong>Transformer 架构</strong>：多头注意力、残差连接、层归一化、FFN——四个模块相互配合缺一不可。</li>
+<li><strong>预训练 + 微调</strong>：学会语言，再用人类反馈对齐，大模型才能从"能说话"到"说对话"。</li>
+<li><strong>RLHF / LoRA / P-tuning</strong>：分别从"价值观对齐"和"低成本微调"两个维度，把大模型从实验室拉到了每个人都能用的现实。</li>
+</ul>
+<p><strong>我的看法：</strong>大模型的核心算法，说白了就是三件事——怎么理解语言（注意力）、怎么学习语言（预训练）、怎么服从指令（RLHF/微调）。这三条线交织在一起，构成了今天 AI 革命的技术基础。理解它们，不只是技术人员的需求——每一个用 AI 工具的人，都值得知道屏幕背后到底发生了什么。</p>
+<p><strong>下一步建议：</strong></p>
+<ol>
+<li>今天去 Hugging Face 上找一个预训练模型，用 LoRA 对它做一次微调实验——亲手跑一遍代码，感受会更深。</li>
+<li>阅读《Attention is All You Need》原文，这篇 2017 年的论文至今读起来依然令人叹为观止。</li>
+</ol>
+<blockquote>
+大模型不是魔法。它的背后，是人类几十年 AI 研究积累的工程奇迹。理解了它的算法，你就理解了这个时代最大的技术变革。
+</blockquote>
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/abs/1706.03762" target="_blank">Vaswani et al. - Attention is All You Need (2017)</a></li>
+    <li><a href="https://arxiv.org/abs/2005.14165" target="_blank">Brown et al. - Language Models are Few-Shot Learners (GPT-3)</a></li>
+    <li><a href="https://arxiv.org/abs/2203.02155" target="_blank">Hu et al. - LoRA: Low-Rank Adaptation of Large Language Models</a></li>
+    <li><a href="https://arxiv.org/abs/2103.10385" target="_blank">Liu et al. - PTuning: Prompt Tuning Can Be Comparable to Fine-tuning</a></li>
+    <li><a href="https://arxiv.org/abs/2204.07705" target="_blank">Ouyang et al. - Training language models to follow instructions with human feedback</a></li>
+  </ol>
+</div>
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
