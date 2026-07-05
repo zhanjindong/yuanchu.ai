@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章批注 - 元初AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden;
+        }
+        .content { position: relative; z-index: 1; padding: 40px 60px; max-width: 900px; margin: 0 auto; }
+        .back {
+            display: inline-block; font-size: 14px; color: rgba(0,0,0,0.4);
+            text-decoration: none; letter-spacing: 4px; margin-bottom: 60px; transition: color 0.3s;
+        }
+        .back:hover { color: #1a1a1a; }
+        .back::before { content: '\2190 '; }
+        .section-title {
+            font-size: 14px; color: rgba(0,0,0,0.4); letter-spacing: 12px;
+            text-transform: uppercase; margin-bottom: 20px;
+        }
+        h1 { font-size: 48px; font-weight: 300; letter-spacing: 12px; margin-bottom: 24px; }
+        .intro { font-size: 16px; color: rgba(0,0,0,0.45); line-height: 1.7; max-width: 640px; margin-bottom: 50px; }
+        footer {
+            margin-top: 100px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.1);
+            text-align: center; font-size: 12px; color: rgba(0,0,0,0.3);
+        }
+
+        /* 文章分组 */
+        .art { margin-bottom: 64px; }
+        .art-head { border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 14px; margin-bottom: 24px; }
+        .art-title { font-size: 22px; font-weight: 400; letter-spacing: 1px; line-height: 1.4; }
+        .art-title a { color: inherit; text-decoration: none; transition: color 0.25s; }
+        .art-title a:hover { color: #000; }
+        .art-meta { display: flex; gap: 18px; font-size: 13px; color: rgba(0,0,0,0.35);
+            letter-spacing: 1px; margin-top: 10px; }
+        .art-open { font-size: 13px; color: rgba(0,0,0,0.45); text-decoration: none; letter-spacing: 1px; }
+        .art-open:hover { color: #1a1a1a; }
+
+        .notes { display: flex; flex-direction: column; gap: 22px; }
+        .note { display: block; text-decoration: none; color: inherit; position: relative;
+            transition: background 0.25s; border-radius: 0 4px 4px 0; }
+        .note:hover { background: rgba(0,0,0,0.025); }
+        .note-text { font-size: 16px; line-height: 1.78; white-space: pre-wrap; }
+        .mark { padding: 4px 0 4px 18px; border-left: 2px solid rgba(0,0,0,0.15); }
+        .mark:hover { border-left-color: rgba(0,0,0,0.45); }
+        .mark .note-text { color: rgba(0,0,0,0.62); }
+        .thought { padding: 4px 0 4px 18px; border-left: 2px solid #1a1a1a; }
+        .thought .note-text { color: rgba(0,0,0,0.88); }
+        .thought .ref { font-size: 13px; line-height: 1.6; color: rgba(0,0,0,0.38);
+            margin-top: 8px; padding-left: 12px; border-left: 1px solid rgba(0,0,0,0.1); white-space: pre-wrap; }
+        .thought .ref::before { content: '\539f\6587\ff1a'; color: rgba(0,0,0,0.3); }
+        .group-label { font-size: 12px; color: rgba(0,0,0,0.32); letter-spacing: 3px;
+            text-transform: uppercase; margin: 4px 0 2px; }
+        .jump { display: inline-block; font-size: 12px; color: rgba(0,0,0,0.0);
+            letter-spacing: 0.5px; margin-top: 8px; transition: color 0.25s; }
+        .note:hover .jump { color: rgba(0,0,0,0.4); }
+
+        .state { font-size: 15px; color: rgba(0,0,0,0.4); padding: 40px 0; line-height: 1.8; }
+        @media (max-width: 768px) { .content { padding: 30px 22px; } h1 { font-size: 30px; letter-spacing: 6px; } }
+</style>
+</head>
+<body>
+    <div class="content">
+        <a href="index.html" class="back">读书笔记</a>
+        <div class="section-title">TECH NOTES</div>
+        <h1>文章批注</h1>
+        <p class="intro">这里是我在自己的技术文章里划下的句子，与读到某处时写下的想法。点击任一条可跳回文章中的划线位置。</p>
+
+        <div id="list"><div class="state">加载中…</div></div>
+        <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
+    </div>
+
+    <script>
+    (function () {
+        var API_BASE = (function () {
+            try { return localStorage.getItem("hl_api_base") || "https://api.yuanchu.ai"; }
+            catch (e) { return "https://api.yuanchu.ai"; }
+        })();
+        var listEl = document.getElementById("list");
+
+        function esc(s) {
+            return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+                return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+            });
+        }
+        function api(path) { return fetch(API_BASE + "/api/highlights" + path).then(function (r) { return r.json(); }); }
+
+        function noteHtml(hl) {
+            var href = esc((hl.url || ("/tech/" + hl.slug + ".html")) + "#hl-" + hl.id);
+            if (hl.note) {
+                return '<a class="note thought" href="' + href + '">' +
+                    '<div class="note-text">' + esc(hl.note) + '</div>' +
+                    '<div class="ref">' + esc(hl.exact) + '</div>' +
+                    '<span class="jump">回到文章 ↗</span></a>';
+            }
+            return '<a class="note mark" href="' + href + '">' +
+                '<div class="note-text">' + esc(hl.exact) + '</div>' +
+                '<span class="jump">回到文章 ↗</span></a>';
+        }
+
+        function renderArticle(meta, highlights) {
+            var thoughts = highlights.filter(function (h) { return h.note; })
+                .sort(function (a, b) { return (a.createTime || 0) - (b.createTime || 0); });
+            var marks = highlights.filter(function (h) { return !h.note; })
+                .sort(function (a, b) { return (a.createTime || 0) - (b.createTime || 0); });
+            var url = esc(meta.url || "");
+            var html = '<div class="art"><div class="art-head">' +
+                '<div class="art-title"><a href="' + url + '">' + esc(meta.title) + '</a></div>' +
+                '<div class="art-meta"><span>划线 ' + marks.length + '</span><span>想法 ' + thoughts.length + '</span>' +
+                '<a class="art-open" href="' + url + '">打开文章 →</a></div></div><div class="notes">';
+            if (thoughts.length) {
+                html += '<div class="group-label">我的想法</div>' + thoughts.map(noteHtml).join("");
+            }
+            if (marks.length) {
+                html += '<div class="group-label">划线</div>' + marks.map(noteHtml).join("");
+            }
+            html += '</div></div>';
+            return html;
+        }
+
+        api("").then(function (res) {
+            if (!res || !res.ok) { listEl.innerHTML = '<div class="state">暂时无法加载批注。</div>'; return; }
+            var index = res.index || {};
+            var slugs = Object.keys(index);
+            if (!slugs.length) {
+                listEl.innerHTML = '<div class="state">还没有任何文章批注。<br>打开一篇技术文章，选中文字即可划线或写想法。</div>';
+                return;
+            }
+            // 按最近更新排序
+            slugs.sort(function (a, b) { return (index[b].updated || 0) - (index[a].updated || 0); });
+            // 逐篇拉取该文章的划线/想法
+            Promise.all(slugs.map(function (slug) {
+                return api("?slug=" + encodeURIComponent(slug)).then(function (r) {
+                    return { meta: index[slug], highlights: (r && r.ok && r.highlights) || [] };
+                }).catch(function () { return { meta: index[slug], highlights: [] }; });
+            })).then(function (arts) {
+                var html = arts.filter(function (a) { return a.highlights.length; })
+                    .map(function (a) { return renderArticle(a.meta, a.highlights); }).join("");
+                listEl.innerHTML = html || '<div class="state">还没有任何文章批注。</div>';
+            });
+        }).catch(function () {
+            listEl.innerHTML = '<div class="state">网络错误，暂时无法加载批注。</div>';
+        });
+    })();
+    </script>
+    <script defer src="/tracker.js"></script>
+</body>
+</html>

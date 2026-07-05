@@ -1,0 +1,115 @@
+/* 技术文章阅读批注层样式 —— 配合 /reader.js。
+   视觉语言对齐 reading/ 笔记页：克制的黑白灰、细边框、低饱和。 */
+
+/* 划线高亮：命中的正文文字 */
+mark.hl {
+  background: rgba(255, 214, 10, 0.34);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0.5px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+mark.hl:hover { background: rgba(255, 196, 0, 0.55); }
+/* 带想法的划线：额外一条下划虚线 + 末尾小笔标记 */
+mark.hl-thought {
+  background: rgba(255, 214, 10, 0.24);
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.55);
+}
+mark.hl-thought:hover { background: rgba(255, 196, 0, 0.42); }
+
+/* 跳转命中时的闪烁强调 */
+@keyframes hl-flash {
+  0%, 100% { background: rgba(255, 214, 10, 0.34); }
+  25%, 75% { background: rgba(255, 138, 0, 0.75); }
+}
+mark.hl.hl-flash { animation: hl-flash 1.1s ease-in-out 2; }
+
+/* 选区浮动工具条（划线 / 写想法） */
+.hl-toolbar {
+  position: absolute;
+  z-index: 9999;
+  display: none;
+  gap: 2px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transform: translate(-50%, calc(-100% - 10px));
+}
+.hl-toolbar.show { display: flex; }
+.hl-toolbar button {
+  background: none; border: none; color: #fff; cursor: pointer;
+  font-size: 13px; letter-spacing: 1px; padding: 6px 12px; border-radius: 5px;
+  font-family: inherit; transition: background 0.18s;
+}
+.hl-toolbar button:hover { background: rgba(255, 255, 255, 0.16); }
+.hl-toolbar::after {
+  content: ''; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 6px solid #1a1a1a;
+}
+
+/* 想法编辑 / 查看弹窗 */
+.hl-popover {
+  position: absolute;
+  z-index: 10000;
+  display: none;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transform: translate(-50%, 12px);
+}
+.hl-popover.show { display: block; }
+.hl-popover .hl-ref {
+  font-size: 12px; line-height: 1.6; color: rgba(0, 0, 0, 0.42);
+  padding-left: 10px; border-left: 2px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: 10px; max-height: 84px; overflow: auto;
+}
+.hl-popover textarea {
+  width: 100%; min-height: 78px; resize: vertical; box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.14); border-radius: 6px; padding: 8px 10px;
+  font-family: inherit; font-size: 14px; line-height: 1.6; color: #1a1a1a; outline: none;
+}
+.hl-popover textarea:focus { border-color: rgba(0, 0, 0, 0.45); }
+.hl-popover .hl-note-view {
+  font-size: 14px; line-height: 1.7; color: rgba(0, 0, 0, 0.85); white-space: pre-wrap;
+  margin-bottom: 4px;
+}
+.hl-popover .hl-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.hl-popover .hl-actions button {
+  border: none; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: 1px;
+  padding: 6px 14px; border-radius: 6px; transition: opacity 0.18s, background 0.18s;
+}
+.hl-popover .hl-save { background: #1a1a1a; color: #fff; }
+.hl-popover .hl-save:hover { opacity: 0.82; }
+.hl-popover .hl-del { background: none; color: #c0392b; }
+.hl-popover .hl-del:hover { background: rgba(192, 57, 43, 0.08); }
+.hl-popover .hl-cancel { background: none; color: rgba(0, 0, 0, 0.45); }
+.hl-popover .hl-cancel:hover { background: rgba(0, 0, 0, 0.05); }
+
+/* 轻量提示条 */
+.hl-toast {
+  position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%);
+  z-index: 10001; background: rgba(26, 26, 26, 0.92); color: #fff;
+  font-size: 13px; letter-spacing: 1px; padding: 10px 18px; border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  opacity: 0; transition: opacity 0.25s; pointer-events: none;
+}
+.hl-toast.show { opacity: 1; }
+
+/* 移动端触屏适配：加大点击区域、防 iOS 输入框自动缩放 */
+@media (max-width: 768px), (pointer: coarse) {
+  .hl-toolbar { padding: 5px; transform: translate(-50%, calc(-100% - 12px)); }
+  .hl-toolbar button { padding: 10px 18px; font-size: 15px; }
+  .hl-popover { width: calc(100vw - 24px); padding: 16px; }
+  .hl-popover textarea { font-size: 16px; min-height: 92px; }
+  .hl-popover .hl-actions button { padding: 10px 18px; font-size: 15px; }
+  mark.hl { padding: 1px 0; }
+}
