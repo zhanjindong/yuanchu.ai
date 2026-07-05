@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agentic RAG：检索增强的下一个范式跃迁 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">Agent</span>
+    <span class="tag">RAG</span>
+    <span class="tag">AI</span>
+  </div>
+  <h1>Agentic RAG：检索增强的下一个范式跃迁</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-07-05</span>
+  </div>
+</div>
+
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、一次让我"摔跟头"的对话</a>
+  <a href="#s2">二、传统RAG的"三宗罪"</a>
+  <a href="#s3">三、Agentic RAG登场：从"工具"到"大脑"</a>
+  <a href="#s4">四、Self-RAG：让模型学会"三省吾身"</a>
+  <a href="#s5">五、Agent化检索：不止于"查资料"</a>
+  <a href="#s6">六、Multi-turn RAG：记住"上一句"有多难</a>
+  <a href="#s7">七、Tool-augmented RAG：十八般武艺样样精通</a>
+  <a href="#s8">八、总结：跃迁已经发生</a>
+</div>
+
+<div class="prose">
+
+<p>"你这个回答跟没说一样。"</p>
+
+<p>上周，我让一个基于 RAG 的 AI 助手帮我总结一下最新的人工智能发展趋势。它确实很努力地检索了一堆资料，最后给出了一个看起来像模像样的回答——但当我深入追问几个细节时，它直接傻眼了。</p>
+
+<p>"抱歉，我不太清楚您指的是什么。"</p>
+
+<p>你看，这就是传统 RAG 的尴尬处境：它像是一个记忆力超群但理解力有限的"书呆子"。它能准确地找到你想要的那段文字，但当你稍微换个问法，或者想让它在多轮对话中保持连贯的思路时，它就宕机了。</p>
+
+<p>但现在不一样了。</p>
+
+<p>2024 年下半年开始，"Agentic RAG" 这个词开始频繁出现在 AI 社区的讨论中。简单来说，它就是给传统的 RAG 系统装上了"大脑"——不再是机械地检索-返回，而是具备了理解、规划、反思和工具调用的能力。</p>
+
+<p>今天这篇文章，我会用最通俗的方式，帮你彻底搞懂 Agentic RAG 到底是什么，以及它将如何改变我们使用 AI 的方式。</p>
+
+<hr>
+
+<h2 id="s1">一、一次让我"摔跟头"的对话</h2>
+
+<p>让我先问你一个问题：你在用 ChatGPT 或者类似的 AI 助手时，有没有遇到过这种情况——</p>
+
+<p>你问了一个问题，它答了。你觉得答案不太对，于是换了个问法再问一次，结果它給出了一个完全不同的答案。你再追问，它就开始"装傻"了。</p>
+
+<p>这种情况，在传统 RAG 系统中尤为明显。</p>
+
+<p>我给你举个例子。前段时间我想了解某个开源项目的技术架构，我问 AI："这个项目用了什么数据库？"它检索了一圈，告诉我："用了 MySQL。"</p>
+
+<p>我觉得这个信息不够具体，于是追问："那它具体是怎么连接数据库的？"你猜怎么着？它居然开始编了。</p>
+
+<p>它跟我说"通过 ORM 框架连接"，但实际上这个项目根本没有用 ORM。这在 AI 领域有个专门的说法——<strong>"幻觉"</strong>（Hallucination）。传统 RAG 虽然减少了幻觉（因为它从真实文档中检索），但并没有从根本上解决这个问题。当检索结果不够完整或者检索质量下降时，模型依然会"胡言乱语"。</p>
+
+<p>更深层的问题在于：<strong>传统 RAG 是一个"单次"的系统</strong>。它的工作流程是：用户提问 → 检索相关文档 → 把文档和问题一起交给模型 → 模型生成回答。这就完了。</p>
+
+<p>但真实的对话从来不是这样的。真实的对话是：
+- 你可能会先问一个很宽泛的问题
+- 根据回答，再追问更具体的问题
+- 在对话过程中不断修正和深化自己的需求</p>
+
+<p>传统 RAG 根本无法处理这种"多轮"、"迭代"的需求。这就是为什么很多人觉得 RAG"听起来很强，但用起来也就那样"的原因。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">实战案例</div>
+  我在做一个企业内部知识库时，测试了市面上主流的 RAG 产品。发现一个共性问题：当用户用口语化的方式提问（比如"那个关于报销流程的文档在哪里？"），而知识库里的文档标题是"员工报销管理制度 v2.3"时，检索的准确率会断崖式下降。传统 RAG 对"语义匹配"的要求太高了，容错性极差。
+</div>
+
+<p>传统 RAG 的问题还有很多。让我给你总结一下它的"三宗罪"。</p>
+
+<h2 id="s2">二、传统RAG的"三宗罪"</h2>
+
+<p>如果你经常使用 RAG 系统，你大概率已经感受到它的局限性了。让我帮你把这些零散的感觉整理一下，变成清晰的认知。</p>
+
+<p><strong>第一宗罪：检索质量不稳定。</strong></p>
+
+<p>传统 RAG 依赖"语义相似度"来检索文档。简单来说，就是把问题和文档都转换成向量，然后在向量空间里找"最相似的"。</p>
+
+<p>这个逻辑听起来很美好，但现实很骨感。问题在于：<strong>用户提问的方式和文档的实际内容之间，往往存在巨大的语义鸿沟</strong>。用户说"怎么报销"，文档里写的是"费用报销流程"——在向量空间里这两个可能差得很远。</p>
+
+<p>更糟糕的是，当文档很长或者包含很多专业术语时，检索质量会进一步下降。因为向量表示可能会"稀释"关键信息。</p>
+
+<p><strong>第二宗罪：无法判断"检索结果够不够"。</strong></p>
+
+<p>传统 RAG 的逻辑是：不管三七二十一，先检索了再说。至于检索到的结果到底有没有用、能不能回答用户的问题——它根本不关心。</p>
+
+<p>这就导致一个很搞笑的现象：有时候明明检索结果里根本没有答案，但模型还是会硬着头皮"结合"这些无关信息来生成回答——结果当然是答非所问。</p>
+
+<p><strong>第三宗罪：只能"一次性"工作。</strong></p>
+
+<p>这是我认为最致命的问题。传统 RAG 没有任何"记忆"能力。每一次对话都是独立的，模型看不到之前的对话历史。</p>
+
+<p>所以当你追问"刚才那个方案的优势是什么"时，它完全不知道你在说什么。你必须把所有上下文都重复一遍，累不累？</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">对比一下</div>
+  传统 RAG 就像一个帮你找资料的图书馆管理员——你问什么，它就找什么，但仅此而已。而 Agentic RAG 更像是一个研究助手——它不仅会找资料，还会思考、验证、总结，甚至会主动去补充它不知道的信息。
+</div>
+
+<p>现在你明白传统 RAG 的问题了吗？这就是为什么业界开始关注 Agentic RAG 的原因。</p>
+
+<h2 id="s3">三、Agentic RAG登场：从"工具"到"大脑"</h2>
+
+<p>说了这么多传统 RAG 的问题，你可能已经不耐烦了："行了行了，我知道传统 RAG 不好使了，快告诉我 Agentic RAG 怎么解决这些问题的吧！"</p>
+
+<p>好，我们现在进入正题。</p>
+
+<p>先说清楚一个概念：<strong>Agentic RAG 到底是什么？</strong></p>
+
+<p>你可以理解为，它是在传统 RAG 的基础上，引入了一个"Agent"（智能体）。这个 Agent 会做什么呢？它会：</p>
+
+<ul>
+  <li><strong>理解</strong>用户真正想问的是什么</li>
+  <li><strong>规划</strong>需要调用哪些工具、检索哪些资料</li>
+  <li><strong>执行</strong>检索动作</li>
+  <li><strong>反思</strong>检索结果够不够、答案对不对</li>
+  <li><strong>迭代</strong>——如果第一次检索结果不好，就再检索一次</li>
+</ul>
+
+<p>听起来很美好，但落到实处，Agentic RAG 有几种不同的实现路径。让我给你介绍最主流的四种：Self-RAG、Agent 化检索、Multi-turn RAG 和 Tool-augmented RAG。</p>
+
+<p>接下来我会逐一解释它们各自的"绝活"。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg">
+    <text x="350" y="20" font-size="15" font-weight="700" fill="#1e293b" text-anchor="middle">传统 RAG vs Agentic RAG 工作流程对比</text>
+    <rect x="30" y="40" width="280" height="170" rx="8" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,2"/>
+    <text x="170" y="58" font-size="12" font-weight="600" fill="#64748b" text-anchor="middle">传统 RAG</text>
+    <rect class="node-rect-gray" x="50" y="75" width="70" height="30"/>
+    <text class="node-label" x="85" y="92">问题</text>
+    <line class="arrow-line" x1="120" y1="90" x2="160" y2="90"/>
+    <rect class="node-rect-amber" x="160" y="75" width="70" height="30"/>
+    <text class="node-label" x="195" y="92">检索</text>
+    <line class="arrow-line" x1="230" y1="90" x2="270" y2="90"/>
+    <rect class="node-rect-blue" x="220" y="125" width="80" height="30"/>
+    <text class="node-label" x="260" y="142">生成回答</text>
+    <text x="170" y="195" font-size="10" fill="#94a3b8" text-anchor="middle">一次性流程，无反思</text>
+    <rect x="350" y="40" width="320" height="170" rx="8" fill="none" stroke="#3b82f6" stroke-width="2"/>
+    <text x="510" y="58" font-size="12" font-weight="600" fill="#3b82f6" text-anchor="middle">Agentic RAG</text>
+    <rect class="node-rect-gray" x="370" y="75" width="60" height="30"/>
+    <text class="node-label" x="400" y="92">问题</text>
+    <line class="arrow-line-blue" x1="430" y1="90" x2="470" y2="90"/>
+    <rect class="node-rect-purple" x="470" y="75" width="60" height="30"/>
+    <text class="node-label" x="500" y="92">规划</text>
+    <line class="arrow-line-blue" x1="530" y1="90" x2="570" y2="90"/>
+    <rect class="node-rect-amber" x="570" y="75" width="60" height="30"/>
+    <text class="node-label" x="600" y="92">检索</text>
+    <line class="arrow-line-blue" x="600" y1="105" x2="600" y2="125"/>
+    <rect class="node-rect-green" x="530" y="125" width="140" height="30"/>
+    <text class="node-label" x="600" y="142">反思 + 迭代</text>
+    <path d="M 600 155 Q 600 180 560 180 Q 520 180 520 160" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="4,2"/>
+    <text x="660" y="175" font-size="10" fill="#10b981">可循环</text>
+  </svg>
+  <div class="diagram-caption">传统 RAG 是单行道，Agentic RAG 是环形公路——走不通可以掉头重来</div>
+</div>
+
+<h2 id="s4">四、Self-RAG：让模型学会"三省吾身"</h2>
+
+<p>如果说 Agentic RAG 是一类方法的统称，那 Self-RAG 就是其中最"自恋"的那个——因为它让模型时时刻虑自己在做什么。</p>
+
+<p>Self-RAG 的全称是"Self-Reflective Retrieval-Augmented Generation"（自反思检索增强生成）。这个名字已经说明了一切：<strong>让模型在生成回答的过程中，不断反思自己</strong>——我检索的资料够不够？我生成的回答有没有道理？</p>
+
+<p>具体是怎么做的呢？Self-RAG 引入了一个关键概念：<strong>特殊 token</strong>。模型在生成回答时，会在关键节点"暂停"一下，输出一些特殊的 token 来表明自己的"思考"。</p>
+
+<p>比如：
+- 当它觉得需要更多信息时，会输出一个 [Retrieval] token，表示"我需要去查一下"
+- 当它检索完资料后，会输出一个 [No RAG] 或 [RAG] token，表示"我用/不用这些资料"
+- 当它生成完一个回答后，会输出一个 [Is Good] 或 [Is Bad] token，表示"这个回答好不好"</p>
+
+<p>这就像一个学生在考试答题时会"自我检查"：写完一道题，想一想"这个答案靠谱吗？要不要再检查一下？"——只不过这个过程是在模型的"大脑"里自动完成的。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  Self-RAG 的论文（2024年）发布后，很多人惊呼"这才是 RAG 真正的样子"。因为它第一次把"检索"从被动的"工具调用"变成了主动的"自我判断"。模型不再盲目使用检索结果，而是真的会"三思而后行"。
+</div>
+
+<p>Self-RAG 带来的最大改变是：<strong>检索不再是无脑执行的任务，而变成了模型可以自主决策的步骤。</strong> 这意味着，即使检索系统本身的质量一般，模型也有能力"纠错"——它可以判断检索结果有没有用，没用的话就再检索一次。</p>
+
+<p>这听起来像是给 RAG 系统装了一个"智能导航"——它不仅知道目的地在哪里，还知道什么时候该换一条路。</p>
+
+<h2 id="s5">五、Agent化检索：不止于"查资料"</h2>
+
+<p>如果说 Self-RAG 是让模型"学会反思"，那 Agent 化检索就是让检索系统"学会做事"。</p>
+
+<p>什么叫"学会做事"？</p>
+
+<p>传统检索的工作是单向的：用户问问题 → 系统返回文档。仅此而已。但 Agent 化检索把这个流程变成了一个"任务"：用户给出一个目标 → Agent 规划步骤 → 逐步执行 → 最终达成目标。</p>
+
+<p>我给你举个例子。</p>
+
+<p>假设你问 AI："帮我整理一下这家公司的财务风险，并生成一份报告。"</p>
+
+<p>如果是传统 RAG，它可能会检索一些财务相关的文档，然后生成一段文字——至于这份"报告"长什么样、结构怎么设计，它可不管。</p>
+
+<p>但如果是 Agent 化检索，AI 会这样工作：</p>
+
+<ul>
+  <li>第一步：理解任务——"用户想要一份财务风险报告"</li>
+  <li>第二步：规划——"我需要检索财务报表、审计意见、行业分析等不同类型的文档"</li>
+  <li>第三步：执行检索——先检索财务报表，再检索审计意见……</li>
+  <li>第四步：分析——对检索结果进行整理和对比</li>
+  <li>第五步：生成报告——按照标准的报告结构输出</li>
+</ul>
+
+<p>看到区别了吗？Agent 化检索把"检索"从单纯的"找资料"升级成了"完成一个任务"。它不再是被动地响应问题，而是主动地规划、执行和交付。</p>
+
+<p>这就好比传统检索是一个"搜索引擎"，而 Agent 化检索是一个"私人助理"。搜索引擎只会告诉你"相关信息在这里"，而私人助理会帮你整理好、分析透、输出成你想要的样子。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话理解</div>
+  Agent 化检索 = 传统检索 + 任务规划 + 步骤执行 + 结果整合。核心是把"查资料"变成"办事"。
+</div>
+
+<h2 id="s6">六、Multi-turn RAG：记住"上一句"有多难</h2>
+
+<p>现在我们来聊聊 Multi-turn RAG。这个名字看起来很技术化，但它的核心问题你一定遇到过。</p>
+
+<p>你和 AI 对话时，有没有觉得它"没有记性"？你问了一个问题，它回答了。你根据它的回答追问了一个更深入的问题，结果它完全不知道你在说什么。</p>
+
+<p>这就是传统 RAG 的另一个痛点——<strong>无法处理多轮对话</strong>。</p>
+
+<p>Multi-turn RAG 解决的就是这个问题。它的核心思路是：在每一轮对话中，都把之前的对话历史"喂"给模型，让它能够理解上下文的来龙去脉。</p>
+
+<p>但这里有个技术难点：<strong>不是简单地把对话历史拼接在一起就够了</strong>。因为对话历史可能很长，如果全部塞给模型，一方面会导致上下文窗口溢出，另一方面也会稀释关键信息。</p>
+
+<p>所以 Multi-turn RAG 引入了一个关键机制——<strong>对话历史压缩</strong>。它会把之前的对话进行"摘要"：提取关键信息，过滤掉无关的细节，然后把这个"精简版"的历史传递给模型。</p>
+
+<p>你可以理解为：</p>
+
+<ul>
+  <li>传统 RAG 是"金鱼记忆"——只有 7 秒</li>
+  <li>简单的多轮 RAG 是"录音机"——原封不动记录所有内容</li>
+  <li>Multi-turn RAG 是"秘书"——只记重点，还会定期整理</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误解</div>
+  很多人以为 Multi-turn RAG 只是"把之前的对话一起发给模型"这么简单。实际上，<strong>如何压缩历史、如何提取关键信息、如何判断哪些信息值得保留</strong>——这些都是非常复杂的技术问题，也是当前研究的热点。
+</div>
+
+<p>Multi-turn RAG 特别适合哪些场景呢？比如：</p>
+
+<ul>
+  <li>客服系统——需要记住用户之前提过的问题和需求</li>
+  <li>研究助手——需要在一个主题下进行多轮深入探讨</li>
+  <li>代码审查——需要理解之前提出的修改意见</li>
+</ul>
+
+<p>本质上，任何需要"连续思考"的场景，都离不开 Multi-turn RAG。</p>
+
+<h2 id="s7">七、Tool-augmented RAG：十八般武艺样样精通</h2>
+
+<p>最后一种，Tool-augmented RAG，中文可以翻译成"工具增强的 RAG"。</p>
+
+<p>这个名字听起来有点抽象，让我用一个比喻来解释。</p>
+
+<p>想象一下：你让一个厨师帮你做一顿饭。如果他只懂得"把食材煮熟"，那他能做的菜就很有限。但如果他还会"炒、炖、蒸、炸、煎"，那能做的菜就丰富了。</p>
+
+<p>Tool-augmented RAG 就是给 RAG 系统配备了"十八般武艺"——它不再只能"检索文档"，还可以：</p>
+
+<ul>
+  <li>调用搜索引擎查最新信息</li>
+  <li>调用数据库查询结构化数据</li>
+  <li>调用计算器进行数学运算</li>
+  <li>调用代码解释器执行代码</li>
+  <li>调用 API 获取实时数据</li>
+</ul>
+
+<p>这些"工具"让 RAG 系统从一个"图书管理员"变成了一个"全能助手"。它不仅可以回答"知识性问题"（比如"什么是 RAG？"），还可以完成"任务型问题"（比如"帮我算一下这个投资组合的收益率"）。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 600 160" xmlns="http://www.w3.org/2000/svg">
+    <text x="300" y="18" font-size="14" font-weight="700" fill="#1e293b" text-anchor="middle">Tool-augmented RAG 架构</text>
+    <rect class="node-rect-purple" x="250" y="35" width="100" height="45" rx="6"/>
+    <text x="300" y="52" font-size="12" font-weight="600" fill="#1e293b" text-anchor="middle">Agent 核心</text>
+    <text x="300" y="68" font-size="10" fill="#64748b" text-anchor="middle">规划 &amp; 决策</text>
+    <line class="arrow-line-blue" x1="300" y1="80" x2="300" y2="105"/>
+    <rect x="30" y="105" width="540" height="45" rx="6" fill="none" stroke="#e2e8f0" stroke-dasharray="4,2"/>
+    <text x="45" y="118" font-size="10" fill="#94a3b8" text-anchor="start">工具库</text>
+    <rect class="node-rect-blue" x="50" y="118" width="65" height="25" rx="4"/>
+    <text x="82" y="133" font-size="10" fill="#1e293b" text-anchor="middle">搜索</text>
+    <rect class="node-rect-green" x="125" y="118" width="65" height="25" rx="4"/>
+    <text x="157" y="133" font-size="10" fill="#1e293b" text-anchor="middle">数据库</text>
+    <rect class="node-rect-amber" x="200" y="118" width="65" height="25" rx="4"/>
+    <text x="232" y="133" font-size="10" fill="#1e293b" text-anchor="middle">计算器</text>
+    <rect class="node-rect-red" x="275" y="118" width="65" height="25" rx="4"/>
+    <text x="307" y="133" font-size="10" fill="#1e293b" text-anchor="middle">代码</text>
+    <rect class="node-rect-gray" x="350" y="118" width="65" height="25" rx="4"/>
+    <text x="382" y="133" font-size="10" fill="#1e293b" text-anchor="middle">API</text>
+    <rect class="node-rect-gray" x="425" y="118" width="65" height="25" rx="4"/>
+    <text x="457" y="133" font-size="10" fill="#1e293b" text-anchor="middle">更多...</text>
+  </svg>
+  <div class="diagram-caption">Agent 根据任务需求，动态选择调用哪些工具</div>
+</div>
+
+<p>这就是 Agentic RAG 的完整图景：它不再是一个死板的"检索-返回"流程，而是一个能够<strong>理解、规划、反思、执行</strong>的智能系统。</p>
+
+<h2 id="s8">八、总结：跃迁已经发生</h2>
+
+<p>好，我们来总结一下今天聊的内容。</p>
+
+<p>传统 RAG 有三大问题：检索质量不稳定、无法判断结果够不够、只能一次性工作。这些问题让它在真实场景中的表现常常"差强人意"。</p>
+
+<p>而 Agentic RAG 通过引入 Agent 能力，从根本上改变了这个局面：</p>
+
+<ul>
+  <li><strong>Self-RAG</strong> 让模型学会自我反思，判断检索结果的质量</li>
+  <li><strong>Agent 化检索</strong> 把"查资料"变成"办任务"</li>
+  <li><strong>Multi-turn RAG</strong> 给 AI 装上了"记忆"，支持连续对话</li>
+  <li><strong>Tool-augmented RAG</strong> 让 AI 具备了调用各种工具的能力</li>
+</ul>
+
+<p><strong>我的观点是：Agentic RAG 不仅仅是 RAG 的"升级版"，它代表了一种范式的转变。</strong> 过去的 RAG 是"工具"，现在的 Agentic RAG 是"助手"。一字之差，背后的逻辑完全不同。</p>
+
+<p>如果你现在还在用传统 RAG，我的建议是：尽快关注并尝试 Agentic RAG 的方案。因为这场变革不是"未来时"，而是"现在进行时"。</p>
+
+<p><strong>下一步建议：</strong></p>
+<ol>
+  <li>如果你在构建 RAG 应用，尝试引入反思机制（比如 Self-RAG 的思路）</li>
+  <li>如果你需要多轮对话功能，开始研究对话历史管理的技术</li>
+  <li>关注开源社区的 Agentic RAG 框架，比如 LangChain Agent、LlamaIndex Agent 等</li>
+</ol>
+
+<p>RAG 的下一章，已经开始了。你准备好了吗？</p>
+
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://arxiv.org/abs/2310.11511" target="_blank">Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection</a></li>
+    <li><a href="https://www.langchain.com/langgraph" target="_blank">LangGraph - Agentic RAG Framework</a></li>
+    <li><a href="https://www.llamaindex.ai/blog/agentic-rag-with-llamaindex" target="_blank">Agentic RAG with LlamaIndex</a></li>
+    <li><a href="https://developer.anthropic.com/en/docs/claude-code/retrieval-augmented-generation" target="_blank">Anthropic - Building Effective RAG Applications</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<link rel="stylesheet" href="/reader.css">
+<script defer src="/reader.js"></script>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
