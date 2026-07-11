@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GPU卡全解析：国际厂商 vs 国产厂商，选型指南看这篇就够了 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">GPU</span>
+    <span class="tag">AI</span>
+    <span class="tag">硬件选型</span>
+  </div>
+  <h1>GPU卡全解析：国际厂商 vs 国产厂商，选型指南看这篇就够了</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-07-11</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、GPU市场格局：为什么一块显卡比黄金还贵？</a>
+  <a href="#s2">二、国际厂商三剑客：NVIDIA、AMD、Intel</a>
+  <a href="#s3">三、国产厂商崛起：华为昇腾、海光、燧原、摩尔线程</a>
+  <a href="#s4">四、训练 vs 推理：场景不同，GPU选择大不同</a>
+  <a href="#s5">五、大卡 vs 小卡：什么时候该上"核弹"？</a>
+  <a href="#s6">六、量化部署：INT8、FP16、FP8 带来的成本革命</a>
+  <a href="#s7">七、集群部署：NVLink、PCIe、多卡互联那些事儿</a>
+  <a href="#s8">八、选型总结：一张表帮你做决定</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== SECTION: 引言 ==================== -->
+<p>一块 H100 GPU，现在多少钱？答案是——30 万人民币起步。而且有钱还不一定能买到。这就是 2026 年 AI 时代的残酷现实。</p>
+
+<p>你可能听说过"算力就是新石油"这句话。但我想告诉你的是：<strong>算力不是石油，石油你还能囤着，算力买到手就开始贬值。</strong>因为 AI 模型越来越大，GPU 更新换代的速度远超你的想象——去年买的 A100，今年就变成"上一代"了。</p>
+
+<p>但更让人头疼的不是贵，而是<strong>选错</strong>。我见过太多团队花了冤枉钱：训练用错了卡，推理效率低得可怜；或者图便宜买了"性价比神卡"，结果连模型都跑不起来。今天这篇文章，就是来解决这个问题的。</p>
+
+<p>我会从以下几个维度彻底讲透 GPU 选型：国际厂商 vs 国产厂商、训练 vs 推理、大卡 vs 小卡、量化技术、集群部署……最后还会给你一张<strong>选型决策表</strong>，让你对号入座。</p>
+
+<p>准备好了吗？我们开始。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 1 ==================== -->
+<h2 id="s1">一、GPU市场格局：为什么一块显卡比黄金还贵？</h2>
+
+<p>要理解 GPU 为什么这么贵，你得先明白 AI 训练到底在干什么。</p>
+
+<p>想象一下你在教一个学生参加考试。传统编程是你直接给他一本《五年高考三年模拟》，告诉他"看到这个题型就套这个公式"。但 AI 训练不是——你是给他喂了 <strong>1000 万道题目和答案</strong>，让他自己去找规律。</p>
+
+<p>这个"找规律"的过程，就是<strong>矩阵乘法</strong>。而 GPU，恰恰是世界上做矩阵乘法最快的东西。</p>
+
+<p>CPU 就像一个大学教授，一个问题一个问题地处理，擅长复杂的逻辑推理。GPU 则像是<strong>一万个小学生</strong>，每人算一点点，最后汇总结果。一个教授再聪明，也不如一万个小学生同时算加减乘除快——这就是为什么深度学习必须用 GPU。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  训练一个 GPT-4 级别的模型，需要消耗约 <strong>2.5 亿美元</strong> 的算力成本。其中 GPU 采购费用占了 60% 以上。这就是为什么各大厂都在疯狂囤卡——OpenAI 估计拥有超过 10 万块 H100。
+</div>
+
+<p>2023 年之前，这个市场几乎是 NVIDIA 的<strong>一言堂</strong>。AMD 只能在旁边喝汤，Intel 更是连汤都喝不上。但 2022 年的出口管制彻底改变了游戏规则——中国无法获得高端 AI 芯片，这反而催生了国产 GPU 的黄金时代。</p>
+
+<p>现在的格局是：<strong>国际厂商（NVIDIA/AMD/Intel）+ 国产厂商（华为昇腾/海光/燧原/摩尔线程）</strong>，两大阵营正在激烈交锋。到底选哪个？看完这篇文章你就有答案。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 2 ==================== -->
+<h2 id="s2">二、国际厂商三剑客：NVIDIA、AMD、Intel</h2>
+
+<p>先说国际厂商。如果你没有被"卡脖子"的问题，国际厂商依然是首选。原因很简单——<strong>生态太完善了</strong>。CUDA 这个东西，真是 NVIDIA 的"核武器"。</p>
+
+<h3>1. NVIDIA：绝对霸主，但越来越贵</h3>
+
+<p>NVIDIA 在 AI 领域的地位，某种程度上比 Apple 在手机领域还要稳。因为它不是卖硬件的，它是卖<strong>完整生态</strong>的。</p>
+
+<p>CUDA——这个让无数开发者又爱又恨的东西，是 NVIDIA 的护城河。全球 95% 以上的 AI 框架、模型、工具，都是基于 CUDA 开发的。你说换个 GPU？先问问这些框架答不答应。</p>
+
+<p>来，看看 NVIDIA 当前的 产品线：</p>
+
+<table>
+<thead>
+<tr><th>型号</th><th>显存</th><th>算力 (FP32)</th><th>适用场景</th><th>参考价格</th></tr>
+</thead>
+<tbody>
+<tr><td>H100</td><td>80GB HBM3</td><td>51 TFLOPS</td><td>大规模训练旗舰</td><td>¥30万+</td></tr>
+<tr><td>H200</td><td>141GB HBM3e</td><td>51 TFLOPS</td><td>大模型训练</td><td>¥40万+</td></tr>
+<tr><td>A100</td><td>40/80GB HBM2</td><td>19.5 TFLOPS</td><td>训练/推理主力</td><td>¥15万+</td></tr>
+<tr><td>A6000</td><td>48GB GDDR6</td><td>38.7 TFLOPS</td><td>可视化/中小训练</td><td>¥6万+</td></tr>
+<tr><td>L40S</td><td>48GB GDDR6</td><td>46 TFLOPS</td><td>推理/推理+训练</td><td>¥5万+</td></tr>
+<tr><td>RTX 4090</td><td>24GB GDDR6X</td><td>82.6 TFLOPS</td><td>个人开发者/小规模</td><td>¥2万+</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  如果你训练的是 70B 以上的模型，H100 是标配。但如果你只是跑 7B、13B 的小模型，A100 甚至 RTX 4090 都够用。记住一句话：<strong>够用就好，别被营销带节奏</strong>。
+</div>
+
+<p>H100 为什么这么强？两个关键技术创新：<strong>Transformer Engine</strong>（专门加速 Transformer 模型）+ <strong>NVLink</strong>（超高速卡间互联，后面会详细说）。可以说，H100 就是为 LLM 量身定制的"核弹"。</p>
+
+<h3>2. AMD：性价比之选，但生态是硬伤</h3>
+
+<p>AMD 的 GPU，论技术指标其实不差。MI300X 的 HBM3E 显存高达 192GB，比 H200 还能打。但为什么卖不过 NVIDIA？</p>
+
+<p><strong>答案就两个字：生态。</strong></p>
+
+<p>ROCm 是 AMD 的计算平台，但说实话，用起来比 CUDA 难受太多。PyTorch 支持不稳定，TensorFlow 更是基本不支持。很多模型你得自己手动调优，有时候为了跑通一个开源项目，要花比在 NVIDIA 上多 3 倍的时间。</p>
+
+<table>
+<thead>
+<tr><th>型号</th><th>显存</th><th>算力 (FP32)</th><th>优势</th><th>劣势</th></tr>
+</thead>
+<tbody>
+<tr><td>MI300X</td><td>192GB HBM3E</td><td>163 TFLOPS</td><td>显存大、价格相对便宜</td><td>生态弱、驱动不稳定</td></tr>
+<tr><td>MI250X</td><td>128GB HBM2e</td><td>95.7 TFLOPS</td><td>性价比尚可</td><td>生态较弱</td></tr>
+</tbody>
+</table>
+
+<p>我的建议是：如果你<strong>预算有限</strong>，且<strong>有耐心折腾</strong>，AMD MI300X 可以考虑。但如果你要的是<strong>稳定产出</strong>，还是老实用 NVIDIA 吧。</p>
+
+<h3>3. Intel：数据中心的新玩家</h3>
+
+<p>Intel 进军 GPU 市场的故事挺有意思。之前它一直做 CPU，AI 浪潮来了之后，发现自己的 Xe 架构可以改造成 GPU。</p>
+
+<p>Gaudi 系列是 Intel 的 AI 加速器。Gaudi 3 的纸面数据很漂亮——BF16 算力 1835 TFLOPS，比 H100 还高。但实际性能嘛……</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">反例警示</div>
+  Intel Gaudi 在某些特定 benchmark 上确实很强，但实际应用中的软件栈成熟度远不如 NVIDIA。很多客户买了 Gaudi 之后，发现适配工作量太大，最后又回头买 NVIDIA。
+</div>
+
+<p>Intel 的优势是<strong>价格</strong>和<strong>CPU 协同</strong>。如果你已经是 Intel 系的服务器，买 Gaudi 可以降低运维复杂度。但对于大多数团队，我的建议是：<strong>等 Intel 生态成熟了再说</strong>。</p>
+
+<p><em>小结国际厂商：NVIDIA 是绝对首选，有预算无脑上；AMD 适合预算有限且愿意折腾的；Intel 暂时观望。</em></p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 3 ==================== -->
+<h2 id="s3">三、国产厂商崛起：华为昇腾、海光、燧原、摩尔线程</h2>
+
+<p>如果说国际厂商是"富二代"，那国产厂商就是"创业者"——起点低、起步晚，但增长速度惊人。</p>
+
+<p>2022 年的出口管制让中国无法购买 A100、H100 等高端芯片，但这反而成了国产 GPU 的"神助攻"。政府投钱、市场有需求、厂商有动力——天时地利人和全占了。</p>
+
+<h3>1. 华为昇腾：国产一哥</h3>
+
+<p>昇腾（Ascend）是华为的 AI 计算品牌。910B 是目前最成熟的国产 AI 芯片，没有之一。</p>
+
+<table>
+<thead>
+<tr><th>型号</th><th>显存</th><th>算力 (FP16)</th><th>生态</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>Ascend 910B</td><td>64GB HBM</td><td>400 TFLOPS</td><td>CANN + MindSpore</td><td>国产最强，生态较完善</td></tr>
+<tr><td>Ascend 910A</td><td>32GB HBM</td><td>256 TFLOPS</td><td>CANN + MindSpore</td><td>910B 降配版</td></tr>
+</tbody>
+</table>
+
+<p>昇腾的<strong>最大优势是生态</strong>。华为自己做了完整的软件栈：CANN（异构计算架构）+ MindSpore（深度学习框架）+ ModelArts（云平台）。虽然跟 CUDA 比还有差距，但已经能跑通大多数主流模型了。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  科大讯飞、百度等大厂都在用昇腾做推理。它的优势是<strong>功耗控制</strong>和<strong>国产替代</strong>。如果你需要"自主可控"，昇腾是首选。
+</div>
+
+<p>但昇腾也有硬伤：<strong>产能</strong>。由于被制裁，华为的芯片产能一直上不去。有时候你有钱也买不到，这是最头疼的。</p>
+
+<h3>2. 海光：兼容 CUDA 的务实派</h3>
+
+<p>海光（Hygon）可能是最"聪明"的国产厂商。它的策略是——<strong>兼容 CUDA</strong>。</p>
+
+<p>海光 DCU 深算系列基于 AMD 的 CDNA 架构（当年 AMD 授权的技术），所以理论上可以跑 CUDA 程序。虽然性能跟 AMD 原厂有差距，但<strong>迁移成本低</strong>啊！</p>
+
+<table>
+<thead>
+<tr><th>型号</th><th>显存</th><th>算力 (FP32)</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>DCU Z100</td><td>64GB HBM2</td><td>22 TFLOPS</td><td>兼容 CUDA，生态较好</td></tr>
+<parameter name="row2_col1">DCU Z100L</td><td>32GB HBM2</td><td>11 TFLOPS</td><td>性价比版</td></tr>
+</tbody>
+</table>
+
+<p>海光的目标用户是——<strong>不想重写代码</strong>的团队。买一块海光卡，把代码从 A100 迁移过来，改动量可能是最小的。</p>
+
+<h3>3. 燧原：专注训练的低调玩家</h3>
+
+<p>燧原（Enflame）是这几个厂商里最"专注"的——它只做 AI 训练芯片，不碰其他业务。</p>
+
+<p>云燧 T20/T21 是他们的旗舰产品。虽然纸面数据不如昇腾，但<strong>稳定性</strong>和<strong>功耗控制</strong>做得不错。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title"> insider 视角</div>
+  燧原的团队很多来自 AMD 和 NVIDIA，技术底子不错。它的问题是<strong>知名度低</strong>，很多客户没听说过。但实际上它在某些政企项目里用得挺好的。
+</div>
+
+<h3>4. 摩尔线程：全功能 GPU 的野心家</h3>
+
+<p>摩尔线程（Moore Threads）是这几家里最年轻的，但也最野心勃勃。它不只想做 AI 芯片，还想做<strong>真正的 GPU</strong>——既能跑 AI，又能玩游戏、做渲染。</p>
+
+<p>MTT X400 是他们的 AI 加速卡，定位有点类似 NVIDIA 的 A100。但说实话，<strong>现在还处于"追赶者"阶段</strong>，软件生态还需要时间完善。</p>
+
+<p><em>小结国产厂商：昇腾是综合最强的，海光是最务实的（兼容 CUDA），燧原是专注训练的，摩尔线程是潜力股但尚需时日。</em></p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg">
+    <!-- 国际厂商组 -->
+    <rect class="group-box" x="10" y="10" width="200" height="280"/>
+    <text class="group-label" x="20" y="30">国际厂商</text>
+    
+    <!-- NVIDIA -->
+    <rect class="node-rect-blue" x="30" y="50" width="160" height="55"/>
+    <text class="node-label" x="110" y="72">NVIDIA</text>
+    <text class="node-sublabel" x="110" y="88">AI霸主·生态最强</text>
+    
+    <!-- AMD -->
+    <rect class="node-rect-gray" x="30" y="120" width="160" height="55"/>
+    <text class="node-label" x="110" y="142">AMD</text>
+    <text class="node-sublabel" x="110" y="158">性价比·生态较弱</text>
+    
+    <!-- Intel -->
+    <rect class="node-rect-gray" x="30" y="190" width="160" height="55"/>
+    <text class="node-label" x="110" y="212">Intel</text>
+    <text class="node-sublabel" x="110" y="228">新玩家·待成熟</text>
+    
+    <!-- 箭头到国产 -->
+    <line class="arrow-line" x1="220" y1="150" x2="280" y2="150"/>
+    <text class="arrow-label" x="250" y="140">出口管制</text>
+    
+    <!-- 国产厂商组 -->
+    <rect class="group-box" x="290" y="10" width="200" height="280"/>
+    <text class="group-label" x="300" y="30">国产厂商</text>
+    
+    <!-- 昇腾 -->
+    <rect class="node-rect-green" x="310" y="50" width="160" height="55"/>
+    <text class="node-label" x="390" y="72">华为昇腾</text>
+    <text class="node-sublabel" x="390" y="88">国产一哥·生态较完善</text>
+    
+    <!-- 海光 -->
+    <rect class="node-rect-purple" x="310" y="120" width="160" height="55"/>
+    <text class="node-label" x="390" y="142">海光</text>
+    <text class="node-sublabel" x="390" y="158">兼容CUDA·务实之选</text>
+    
+    <!-- 燧原 -->
+    <rect class="node-rect-amber" x="310" y="190" width="160" height="55"/>
+    <text class="node-label" x="390" y="212">燧原</text>
+    <text class="node-sublabel" x="390" y="228">专注训练·低调务实</text>
+    
+    <!-- 摩尔线程 -->
+    <rect class="node-rect-red" x="310" y="240" width="160" height="35"/>
+    <text class="node-label" x="390" y="253">摩尔线程</text>
+    <text class="node-sublabel" x="390" y="263">全功能GPU·潜力股</text>
+    
+    <!-- 对比维度 -->
+    <rect class="group-box" x="510" y="10" width="180" height="280"/>
+    <text class="group-label" x="520" y="30">选型维度</text>
+    
+    <text class="node-label" x="600" y="60">生态成熟度</text>
+    <text class="node-sublabel" x="600" y="75">NVIDIA > 昇腾 > 海光</text>
+    
+    <text class="node-label" x="600" y="110">算力性价比</text>
+    <text class="node-sublabel" x="600" y="125">AMD > 国产 > NVIDIA</text>
+    
+    <text class="node-label" x="600" y="160">采购难度</text>
+    <text class="node-sublabel" x="600" y="175">昇腾 < 海光 < NVIDIA</text>
+    
+    <text class="node-label" x="600" y="210">适用场景</text>
+    <text class="node-sublabel" x="600" y="225">训练→NVIDIA/昇腾</text>
+    <text class="node-sublabel" x="600" y="240">推理→L40S/国产</text>
+    
+    <text class="node-label" x="600" y="265">推荐指数</text>
+    <text class="node-sublabel" x="600" y="280">★★★★★ NVIDIA</text>
+  </svg>
+  <div class="diagram-caption">GPU 厂商格局与选型维度对比</div>
+</div>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 4 ==================== -->
+<h2 id="s4">四、训练 vs 推理：场景不同，GPU选择大不同</h2>
+
+<p>很多人以为 GPU 就是 GPU，其实训练和推理对 GPU 的需求<strong>完全不同</strong>。这就像跑车和卡车都是车，但设计理念完全不同——一个追求速度，一个追求载重。</p>
+
+<h3>训练：烧显存就是烧钱</h3>
+
+<p>训练是一个"反向传播"的过程。简单说，就是模型看完数据后说"我猜错了"，然后<strong>所有参数都调整一点</strong>。这个过程需要：</p>
+
+<ul>
+<li><strong>巨大的显存</strong>：模型参数、梯度、优化器状态都要放在显存里。70B 的模型，光参数就要 140GB 显存（FP16），加上梯度、优化器状态，没 200GB 根本跑不起来。</li>
+<li><strong>高速互联</strong>：多卡训练时，卡之间要频繁同步数据。NVLink 是刚需。</li>
+<li><strong>长时间稳定运行</strong>：训练一个大模型可能要跑几周甚至几个月，稳定性比性能更重要。</li>
+</ul>
+
+<div class="callout callout-tip">
+  <div class="callout-title">选型建议</div>
+  训练场景首选 <strong>H100/H200</strong>（大模型）或 <strong>A100</strong>（中模型）。国产可以选 <strong>昇腾 910B</strong>。预算有限？用 <strong>A100 40GB</strong> + <strong>ZeRO-3 分布式</strong>，也能跑 70B 模型。
+</div>
+
+<h3>推理：响应速度是生命线</h3>
+
+<p>推理是"正向传播"——模型已经训练好了，输入数据直接出结果。跟训练完全不同：</p>
+
+<ul>
+<li><strong>显存要求低</strong>：只存模型参数，不需要梯度。7B 模型 FP16 只要 14GB。</li>
+<li><strong>延迟要求高</strong>：用户输入一个 query，你要在几百毫秒内返回结果。</li>
+<li><strong>吞吐量重要</strong>：一个模型服务成千上万的用户，并发能力决定成本。</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">关键洞察</div>
+  推理卡的选择<strong>不是</strong>算力越强越好，而是<strong>算力/价格比</strong>和<strong>INT8/FP8 推理性能</strong>最重要。这也就是为什么 L40S 在推理场景比 A100 更受欢迎——便宜、性能也不错。
+</div>
+
+<p>推理场景的性价比之王是 <strong>L40S</strong> 或者 <strong>RTX 4090</strong>（个人开发者）。国产的昇腾、海光做推理也完全没问题。</p>
+
+<table>
+<thead>
+<tr><th>场景</th><th>推荐 GPU</th><th>关键指标</th><th>理由</th></tr>
+</thead>
+<tbody>
+<tr><td>大模型训练 (70B+)</td><td>H100/H200</td><td>显存>80GB, NVLink</td><td>Transformer Engine 加速</td></tr>
+<tr><td>中模型训练 (7B-70B)</td><td>A100 80GB</td><td>80GB HBM2e</td><td>性价比最优</td></tr>
+<tr><td>小模型训练 (<7B)</td><td>A100 40GB / RTX 4090</td><td>40GB+ 显存</td><td>够用即可</td></tr>
+<tr><td>大规模推理</td><td>L40S / H100</td><td>INT8 性能</td><td>吞吐量大</td></tr>
+<tr><td>中小规模推理</td><td>RTX 4090 / 昇腾 910B</td><td>算力/价格比</td><td>成本优先</td></tr>
+</tbody>
+</table>
+
+<p>这里有个关键概念——<strong>Batch Size</strong>。训练时你希望 batch 越大越好（收敛更快），但推理时 batch 可以很小（甚至 1），追求的是延迟。理解这一点，你就知道为什么训练和推理的 GPU 选型逻辑完全不同了。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 5 ==================== -->
+<h2 id="s5">五、大卡 vs 小卡：什么时候该上"核弹"？</h2>
+
+<p>"大卡"和"小卡"的区别，不只是显存大小，而是<strong>计算架构</strong>的差异。</p>
+
+<p>大卡（H100、A100、昇腾 910B）用的是 <strong>HBM（High Bandwidth Memory）</strong>——这种显存直接封装在 GPU 芯片旁边，带宽能达到 <strong>2TB/s 以上</strong>。小卡（RTX 4090、L40S）用的是 <strong>GDDR</strong>，带宽只有 HBM 的 1/3 到 1/4。</p>
+
+<p>但 GDDR 便宜啊！这就是为什么 L40S 性价比高的原因——用相对低价的 GDDR，达到了 HBM 80% 的性能，价格却只要 1/3。</p>
+
+<h3>什么时候选大卡？</h3>
+
+<ul>
+<li><strong>模型太大</strong>：70B 以上的模型，FP16 就要 140GB 显存，小卡根本装不下。</li>
+<li><strong>多卡训练</strong>：NVLink 只能在 H 系列/A 系列上用，小卡只能用 PCIe，互联带宽差 5-10 倍。</li>
+<li><strong>延迟敏感</strong>：H100 的 Transformer Engine 对 Transformer 模型有特殊加速，推理延迟可以降低 2-3 倍。</li>
+</ul>
+
+<h3>什么时候选小卡？</h3>
+
+<ul>
+<li><strong>预算有限</strong>：L40S 只要 5 万，A100 要 15 万，性能差距没那么大。</li>
+<li><strong>模型较小</strong>：7B、13B 的模型，24GB 显存完全够用。</li>
+<li><strong>推理为主</strong>：推理对显存带宽要求没训练那么高，小卡完全够用。</li>
+</ul>
+
+<div class="callout callout-warn">
+  <div class="callout-title">常见误区</div>
+  很多人以为"买最贵的准没错"。其实对于 7B 模型，RTX 4090 和 H100 的训练速度差距<strong>不到 30%</strong>，但价格差了 15 倍。记住：<strong>够用就好，过度配置是最大的浪费</strong>。
+</div>
+
+<div class="diagram">
+  <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+    <!-- 大卡区域 -->
+    <rect class="node-rect-blue" x="20" y="30" width="170" height="80"/>
+    <text class="node-label" x="105" y="55">大卡 (H100/A100)</text>
+    <text class="node-sublabel" x="105" y="75">HBM 显存</text>
+    <text class="node-sublabel" x="105" y="90">NVLink 互联</text>
+    <text class="node-sublabel" x="105" y="105">¥15万+</text>
+    
+    <!-- 箭头 -->
+    <line class="arrow-line" x1="200" y1="70" x2="250" y2="70"/>
+    <line class="arrow-line" x1="200" y1="90" x2="250" y2="90"/>
+    
+    <!-- 场景标签 -->
+    <rect class="group-box" x="260" y="20" width="150" height="120"/>
+    <text class="group-label" x="270" y="40">适用场景</text>
+    <text class="node-sublabel" x="335" y="65">70B+ 大模型训练</text>
+    <text class="node-sublabel" x="335" y="85">多卡互联训练</text>
+    <text class="node-sublabel" x="335" y="105">延迟敏感场景</text>
+    <text class="node-sublabel" x="335" y="125">自主可控需求</text>
+    
+    <!-- 小卡区域 -->
+    <rect class="node-rect-green" x="420" y="30" width="160" height="80"/>
+    <text class="node-label" x="500" y="55">小卡 (4090/L40S)</text>
+    <text class="node-sublabel" x="500" y="75">GDDR 显存</text>
+    <text class="node-sublabel" x="500" y="90">PCIe 互联</text>
+    <text class="node-sublabel" x="500" y="105">¥2-5万</text>
+    
+    <!-- 底部总结 -->
+    <rect class="node-rect-amber" x="20" y="150" width="560" height="50"/>
+    <text class="node-label" x="300" y="170">选型原则：模型规模决定卡的大小，场景需求决定卡的类型</text>
+  </svg>
+  <div class="diagram-caption">大卡 vs 小卡选型决策</div>
+</div>
+
+<p>我的经验公式：<strong>显存需求 ≈ 模型参数 × 4</strong>（FP16 下）。7B 模型需要 28GB，13B 需要 52GB，70B 需要 280GB——70B 就必须上多卡了。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 6 ==================== -->
+<h2 id="s6">六、量化部署：INT8、FP16、FP8 带来的成本革命</h2>
+
+<p>如果你觉得 GPU 太贵，有一个办法可以让你<strong>用同样的卡跑更大的模型</strong>——这就是量化。</p>
+
+<p>量化本质上是<strong>用精度换显存</strong>。就像照片压缩——从 RAW 变成 JPEG，画面质量稍有损失，但文件大小小了几十倍。模型量化后，参数从 32 位浮点（FP32）变成 16 位（FP16）、8 位（INT8）甚至 4 位（INT4）。</p>
+
+<h3>主流量化精度对比</h3>
+
+<table>
+<thead>
+<tr><th>精度</th><th>显存占用</th><th>性能损失</th><th>适用场景</th><th>支持 GPU</th></tr>
+</thead>
+<tbody>
+<tr><td>FP32 (全精度)</td><td>1x</td><td>无</td><td>训练/高精度推理</td><td>所有</td></tr>
+<tr><td>FP16 (半精度)</td><td>1/2x</td><td>极小</td><td>训练/推理通用</td><td>所有</td></tr>
+<tr><td>BF16</td><td>1/2x</td><td>比 FP16 更稳定</td><td>训练首选</td><td>H100/A100/昇腾</td></tr>
+<tr><td>FP8</td><td>1/4x</td><td>可接受</td><td>H100 推理</td><td>H100/H200</td></tr>
+<tr><td>INT8</td><td>1/4x</td><td>5-10%</td><td>推理首选</td><td>所有</td></tr>
+<tr><td>INT4</td><td>1/8x</td><td>10-20%</td><td>大模型推理</td><td>部分支持</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">量化实战</div>
+  用 INT8 量化，一个 70B 模型可以从 140GB 显存降到 35GB——一张 A100 40GB 就能跑！这也是为什么现在"消费级 GPU 跑大模型"变成可能的原因。
+</div>
+
+<h3>不同量化格式对 GPU 的影响</h3>
+
+<p><strong>FP16</strong>：所有现代 GPU 都支持，性能损失几乎为零。训练和推理都可以用，是现在的<strong>默认选择</strong>。</p>
+
+<p><strong>BF16</strong>：Google 提出的格式，比 FP16 更"安全"——FP16 的动态范围窄，训练时容易溢出。BF16 增加了指数位，解决了这个问题。<strong>H100 和昇腾 910B 都原生支持 BF16</strong>。</p>
+
+<p><strong>FP8</strong>：NVIDIA H100 独占的格式。它把精度做到 8 位，但用特殊的表示方法让它能达到接近 FP16 的效果。<strong>这是 H100 最大的技术优势之一</strong>。</p>
+
+<p><strong>INT8/INT4</strong>：这是"有损压缩"，需要专门的 Tensor Core 加速。所有 Tensor Core GPU 都支持 INT8，但 INT4 的支持比较有限。</p>
+
+<div class="callout callout-info">
+  <div class="callout-title">insider 视角</div>
+  量化不是万能的。有些模型对量化敏感（比如某些数学相关的模型），量化后效果会明显下降。最佳实践是：<strong>先量化跑通，再测试效果，效果不好就换精度</strong>。
+</div>
+
+<p>量化带来的选型启示：<strong>买能支持更多量化格式的 GPU，就是买未来</strong>。H100 支持 FP8，这是一个巨大的优势。国产 GPU 里，昇腾 910B 对 BF16 的支持也比较完善。</p>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 7 ==================== -->
+<h2 id="s7">七、集群部署：NVLink、PCIe、多卡互联那些事儿</h2>
+
+<p>当一块 GPU 不够用的时候，你就要考虑<strong>多卡集群</strong>。这时候，显卡之间的互联方式就变得至关重要。</p>
+
+<h3>NVLink：卡间互联的"高速公路"</h3>
+
+<p>NVLink 是 NVIDIA 的私有协议，<strong>带宽能达到 900GB/s</strong>（H100 的第四代 NVLink）。这是什么概念？PCIe 5.0 x16 只有 128GB/s，NVLink 是它的 <strong>7 倍</strong>。</p>
+
+<p>为什么带宽这么重要？因为多卡训练时，卡之间要频繁同步梯度。一个 70B 的模型，一次前向传播产生的梯度数据是巨大的——如果带宽不够，卡就在"等数据"，利用率上不去。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 650 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- NVLink -->
+    <rect class="node-rect-blue" x="20" y="30" width="180" height="60"/>
+    <text class="node-label" x="110" y="50">NVLink (H100)</text>
+    <text class="node-sublabel" x="110" y="70">900 GB/s · 私有协议</text>
+    
+    <!-- 箭头 -->
+    <line class="arrow-line-blue" x1="210" y1="60" x2="280" y2="60"/>
+    
+    <!-- PCIe -->
+    <rect class="node-rect-green" x="290" y="30" width="180" height="60"/>
+    <text class="node-label" x="380" y="50">PCIe 5.0 x16</text>
+    <text class="node-sublabel" x="380" y="70">128 GB/s · 开放标准</text>
+    
+    <!-- 箭头 -->
+    <line class="arrow-line" x1="480" y1="60" x2="530" y2="60"/>
+    
+    <!-- 性能对比 -->
+    <rect class="node-rect-amber" x="540" y="30" width="90" height="60"/>
+    <text class="node-label" x="585" y="50">带宽差距</text>
+    <text class="node-sublabel" x="585" y="70">7x</text>
+    
+    <!-- 实际影响 -->
+    <rect class="group-box" x="20" y="110" width="610" height="70"/>
+    <text class="group-label" x="30" y="130">实际影响</text>
+    <text class="node-sublabel" x="325" y="150">多卡训练：NVLink 比 PCIe 快 2-5 倍</text>
+    <text class="node-sublabel" x="325" y="170">推理：NVLink 优势不明显，PCIe 够用</text>
+  </svg>
+  <div class="diagram-caption">NVLink vs PCIe 带宽对比</div>
+</div>
+
+<h3>NVSwitch：8 卡全互联</h3>
+
+<p>NVLink 解决了"两卡互联"的问题，但如果要 8 卡全互联呢？这时候就需要 <strong>NVSwitch</strong>——一个类似"交换机"的东西，让 8 块 H100 可以<strong>两两之间都以 900GB/s 带宽通信</strong>。</p>
+
+<p>DGX H100 服务器就是用了 8 块 H100 + NVSwitch。这东西是"富人的玩具"，一台服务器要 200 多万。但对于大模型训练来说，这是<strong>必需品</strong>。</p>
+
+<h3>国产集群方案</h3>
+
+<p>国产厂商也在做自己的互联方案。华为的 <strong> HCCS</strong>（华为集合通信库）+ <strong>超节点</strong>，海光的 <strong>HDC</strong>，都在试图解决多卡互联问题。但客观说，跟 NVIDIA 的 NVLink/NVSwitch 比，还有代际差距。</p>
+
+<div class="callout callout-warn">
+  <div class="callout-title">踩坑记录</h3>
+  有团队买了 8 块 A100 做训练，结果发现只用 PCIe 互联，训练速度比单卡快不了多少——因为卡间同步成了瓶颈。教训：<strong>多卡训练必须上 NVLink，否则就是浪费钱</strong>。
+</div>
+
+<h3>集群选型建议</h3>
+
+<ul>
+<li><strong>8 卡以内</strong>：有 NVLink 上 NVLink，没有就用 PCIe 凑合（会有性能损失）</li>
+<li><strong>8 卡以上</strong>：必须上 NVSwitch，或者用 InfiniBand 互联</li>
+<li><strong>国产方案</strong>：华为昇腾超节点是目前最成熟的国产集群方案</li>
+</ul>
+
+<hr>
+
+<!-- ==================== SECTION: 章节 8 ==================== -->
+<h2 id="s8">八、选型总结：一张表帮你做决定</h2>
+
+<p>好，铺垫了这么多，是时候给出<strong>选型决策表</strong>了。对号入座，看看你的场景应该选什么卡。</p>
+
+<table>
+<thead>
+<tr><th>你的场景</th><th>推荐 GPU</th><th>预算参考</th><th>备注</th></tr>
+</thead>
+<tbody>
+<tr><td>大模型训练 (70B+)</td><td>H100 80GB x 8 + NVSwitch</td><td>¥200万+</td><td>Transformer Engine 加速</td></tr>
+<tr><td>中模型训练 (7B-70B)</td><td>A100 80GB x 8</td><td>¥120万+</td><td>性价比最优</td></tr>
+<tr><td>小模型训练 (<7B)</td><td>A100 40GB / RTX 4090</td><td>¥5-15万</td><td>单卡或双卡</td></tr>
+<tr><td>大规模推理 (API服务)</td><td>H100 / L40S</td><td>¥5-30万</td><td>INT8/FP8 优化</td></tr>
+<tr><td>小规模推理 (自用)</td><td>RTX 4090 / 昇腾 910B</td><td>¥2-6万</td><td>个人开发者首选</td></tr>
+<tr><td>国产替代/自主可控</td><td>昇腾 910B / 海光 DCU</td><td>¥10-20万</td><td>生态逐步完善</td></tr>
+<tr><td>预算极其有限</td><td>RTX 4090 x 4</td><td>¥10万</td><td>消费级卡集群</td></tr>
+</tbody>
+</table>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话总结</div>
+  <strong>训练用 H/A 系列，推理用 L40S/RTX 4090，国产替代选昇腾，量化部署能省一半。</strong>
+</div>
+
+<p>最后说几点我的<strong>肺腑之言</strong>：</p>
+
+<ol>
+<li><strong>别超前消费</strong>：GPU 贬值速度超乎你的想象。今年买的 H100，明年可能就变成"上一代"。够用就好。</li>
+<li><strong>先小后大</strong>：从小规模开始跑通，再逐步扩展。大规模采购前，先租云资源验证。</li>
+<li><strong>关注生态</strong>：买卡只是开始，驱动、框架、优化、运维都是成本。NVIDIA 的贵，有一部分是贵在生态上。</li>
+<li><strong>考虑量化</strong>：同样的卡，量化后能跑大一倍的模型。这是性价比最高的"升级"方式。</li>
+</ol>
+
+<p>GPU 选型没有标准答案，只有<strong>适合不适合</strong>。希望这篇文章能帮你做出更明智的选择。</p>
+
+<p>如果还有具体问题，欢迎评论区聊。</p>
+
+<!-- ==================== REFERENCES ==================== -->
+<div class="references">
+  <h2>参考资料</h2>
+  <ol>
+    <li><a href="https://www.nvidia.com/" target="_blank">NVIDIA 官方产品目录</a></li>
+    <li><a href="https://www.huawei.com/" target="_blank">华为昇腾官网</a></li>
+    <li><a href="https://www.amd.com/" target="_blank">AMD Instinct 产品线</a></li>
+    <li><a href="https://www.intel.com/" target="_blank">Intel Gaudi AI 加速器</a></li>
+    <li><a href="https://www.hygon.cn/" target="_blank">海光 DCU 产品</a></li>
+  </ol>
+</div>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+<link rel="stylesheet" href="/reader.css">
+<script defer src="/reader.js"></script>
+<script defer src="/tracker.js"></script>
+</body>
+</html>
