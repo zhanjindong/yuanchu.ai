@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>长城防御战 · Great Wall Defense</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+    background: #000;
+    color: #fff;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  canvas { display: block; touch-action: none; }
+
+  /* ========== 菜单 ========== */
+  #menu {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; color: white; text-align: center; padding: 20px;
+  }
+  #menu h1 {
+    font-size: 72px; margin-bottom: 6px;
+    text-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    background: linear-gradient(90deg, #ffd700, #ff8c00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  #menu .subtitle { opacity: 0.8; margin-bottom: 36px; font-size: 18px; letter-spacing: 1px; }
+  .map-select { display: flex; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+  .map-card {
+    width: 200px; padding: 28px 16px; border-radius: 16px;
+    background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15);
+    cursor: pointer; transition: all 0.3s; backdrop-filter: blur(6px);
+  }
+  .map-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    background: rgba(255,255,255,0.18); border-color: #ffd700;
+    box-shadow: 0 12px 30px rgba(255,215,0,0.25);
+  }
+  .map-card .emoji { font-size: 60px; display: block; margin-bottom: 12px; }
+  .map-card h3 { font-size: 22px; margin-bottom: 6px; }
+  .map-card p { font-size: 13px; opacity: 0.7; }
+  .map-card .stat { font-size: 11px; opacity: 0.5; margin-top: 8px; }
+  .map-card .stat.up { color: #ff6b6b; }
+  .map-card .stat.down { color: #74b9ff; }
+  .menu-tip { opacity: 0.55; font-size: 13px; margin-top: 18px; max-width: 600px; }
+
+  /* ========== HUD ========== */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 14px 20px; pointer-events: none; z-index: 10;
+  }
+  .hud-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .hud-card {
+    background: rgba(0,0,0,0.55); padding: 10px 16px; border-radius: 12px;
+    backdrop-filter: blur(8px); pointer-events: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .wave-info { font-size: 18px; font-weight: bold; }
+  .wave-info .wave-num { color: #ffd700; font-size: 22px; }
+  .wall-hp { font-size: 13px; min-width: 240px; }
+  .wall-hp .bar { width: 100%; height: 10px; background: rgba(0,0,0,0.4); border-radius: 5px; overflow: hidden; margin-top: 6px; }
+  .wall-hp .fill { height: 100%; background: linear-gradient(90deg, #ff4757, #ff6b81); transition: width 0.3s; }
+  .score { font-size: 18px; color: #ffd700; min-width: 90px; text-align: center; }
+
+  /* ========== 武器栏 ========== */
+  #weapons-bar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 14px; z-index: 10; pointer-events: auto;
+  }
+  .weapon-card {
+    width: 96px; padding: 10px 8px; border-radius: 12px;
+    background: rgba(0,0,0,0.7); color: white; text-align: center;
+    cursor: not-allowed; position: relative; backdrop-filter: blur(8px);
+    border: 2px solid rgba(255,255,255,0.12); transition: all 0.2s;
+    opacity: 0.75;
+  }
+  .weapon-card.ready {
+    border-color: #2ed573;
+    box-shadow: 0 0 18px rgba(46,213,115,0.45);
+    cursor: grab;
+    opacity: 1;
+  }
+  .weapon-card.dragging { opacity: 0.4; }
+  .weapon-card .icon { font-size: 34px; }
+  .weapon-card .name { font-size: 13px; margin-top: 2px; font-weight: bold; }
+  .weapon-card .cd-text { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+  .weapon-card .cd-bar {
+    position: absolute; bottom: 0; left: 0;
+    height: 4px; background: #2ed573; border-radius: 0 0 10px 10px;
+    transition: width 0.1s linear;
+  }
+  .weapon-card .hint-cd {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: bold; color: #fff; text-shadow: 0 2px 6px #000;
+    pointer-events: none;
+  }
+
+  /* ========== 通用按钮 ========== */
+  #pause-btn {
+    position: fixed; top: 14px; right: 14px; width: 44px; height: 44px;
+    background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 11;
+    backdrop-filter: blur(8px);
+  }
+  #pause-btn:hover { background: rgba(0,0,0,0.8); }
+  #mute-btn {
+    position: fixed; top: 14px; right: 68px; width: 44px; height: 44px;
+    background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 11;
+    backdrop-filter: blur(8px);
+  }
+  #mute-btn:hover { background: rgba(0,0,0,0.8); }
+  #reset-cam-btn {
+    position: fixed; top: 14px; right: 122px; width: 44px; height: 44px;
+    background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 11;
+    backdrop-filter: blur(8px);
+  }
+  #reset-cam-btn:hover { background: rgba(0,0,0,0.8); }
+
+  /* ========== 横幅/提示 ========== */
+  #wave-banner {
+    position: fixed; top: 28%; left: 50%; transform: translateX(-50%);
+    font-size: 72px; font-weight: bold; color: #ffd700;
+    text-shadow: 0 0 30px rgba(255,215,0,0.8), 0 4px 8px rgba(0,0,0,0.8);
+    opacity: 0; pointer-events: none; z-index: 50;
+    transition: opacity 0.4s, transform 0.4s;
+    white-space: nowrap;
+  }
+  #wave-banner.show { opacity: 1; transform: translateX(-50%) scale(1); }
+  #wave-banner.boss { color: #ff4757; text-shadow: 0 0 30px rgba(255,71,87,0.8), 0 4px 8px rgba(0,0,0,0.8); }
+  #prep-banner {
+    position: fixed; top: 22%; left: 50%; transform: translateX(-50%);
+    font-size: 22px; color: #fff; text-align: center;
+    background: rgba(0,0,0,0.7); padding: 14px 28px; border-radius: 12px;
+    pointer-events: none; z-index: 40; display: none;
+    border: 1px solid rgba(255,215,0,0.3);
+  }
+  #prep-banner .big { font-size: 36px; color: #ffd700; font-weight: bold; }
+
+  #hint {
+    position: fixed; top: 84px; left: 50%; transform: translateX(-50%);
+    color: #fff; font-size: 14px; background: rgba(0,0,0,0.6);
+    padding: 8px 16px; border-radius: 8px; pointer-events: none; z-index: 10;
+    opacity: 0; transition: opacity 0.3s; border: 1px solid rgba(255,255,255,0.15);
+  }
+  #hint.show { opacity: 1; }
+
+  /* ========== 弹窗 ========== */
+  #pause-menu, #gameover, #victory {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; color: white; z-index: 200; text-align: center;
+    padding: 20px;
+  }
+  #pause-menu h2, #gameover h2, #victory h2 { font-size: 56px; margin-bottom: 16px; }
+  #gameover h2 { color: #ff4757; }
+  #victory h2 { color: #2ed573; }
+  #pause-menu p, #gameover p, #victory p { font-size: 18px; margin: 6px 0; opacity: 0.9; }
+  .btn {
+    padding: 14px 36px; font-size: 17px; background: #ffd700; color: #1a1a2e;
+    border: none; border-radius: 8px; cursor: pointer; margin: 8px;
+    font-weight: bold; transition: all 0.2s;
+  }
+  .btn:hover { background: #ffea70; transform: translateY(-2px); }
+  .btn.secondary { background: #555; color: #fff; }
+  .btn.secondary:hover { background: #777; }
+
+  /* ========== 拖拽幽灵 ========== */
+  #drag-ghost {
+    position: fixed; pointer-events: none; font-size: 56px;
+    z-index: 1000; display: none; transform: translate(-50%, -50%);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  }
+
+  /* ========== 槽位闪烁动画 ========== */
+  @keyframes slotPulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 0.95; transform: scale(1.15); }
+  }
+
+  /* ========== 武器卡片提示 ========== */
+  .weapon-card .drag-hint {
+    position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 14px; color: #ffd700; white-space: nowrap;
+    animation: bounce 1s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-4px); }
+  }
+
+  /* ========== 引导箭头 ========== */
+  #tutorial-arrow {
+    position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
+    font-size: 48px; z-index: 9; pointer-events: none;
+    animation: arrowBounce 1.2s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px #ffd700);
+  }
+  @keyframes arrowBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(-10deg); }
+    50%      { transform: translateX(-50%) translateY(-12px) rotate(10deg); }
+  }
+
+  /* ========== 浮动分数 ========== */
+  .score-popup {
+    position: fixed; pointer-events: none; z-index: 30;
+    color: #ffd700; font-size: 24px; font-weight: bold;
+    text-shadow: 0 2px 4px #000;
+    animation: floatup 1s ease-out forwards;
+  }
+  @keyframes floatup {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-60px) scale(1.3); }
+  }
+
+  /* ========== Loading ========== */
+  #loading {
+    position: fixed; inset: 0; background: #1a1a2e;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px; z-index: 9999;
+  }
+  #loading.hidden { display: none; }
+
+  /* ========== 移动端适配 ========== */
+  #rotate-hint {
+    position: fixed; inset: 0; background: #1a1a2e;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #fff; z-index: 300; padding: 20px; text-align: center;
+  }
+  #rotate-hint .icon { font-size: 80px; margin-bottom: 20px; animation: spinPhone 2s ease-in-out infinite; }
+  @keyframes spinPhone { 0%,100% { transform: rotate(-90deg); } 50% { transform: rotate(-100deg); } }
+  #rotate-hint h2 { font-size: 24px; margin-bottom: 12px; }
+  #rotate-hint p { opacity: 0.7; font-size: 14px; }
+
+  @media (max-width: 768px) {
+    .map-card { width: 150px; padding: 18px 10px; }
+    .map-card .emoji { font-size: 44px; }
+    .map-card h3 { font-size: 18px; }
+    #menu h1 { font-size: 44px; }
+    .weapon-card { width: 80px; padding: 8px 6px; }
+    .weapon-card .icon { font-size: 26px; }
+    .weapon-card .name { font-size: 11px; }
+    .weapon-card .cd-text { font-size: 10px; }
+    .weapon-card .drag-hint { font-size: 10px; bottom: -14px; }
+    #hud { padding: 8px 10px; }
+    .hud-card { padding: 6px 10px; font-size: 12px; }
+    .wave-info { font-size: 14px; }
+    .wave-info .wave-num { font-size: 18px; }
+    .wall-hp { min-width: 140px; font-size: 11px; }
+    .wall-hp .bar { height: 6px; }
+    .score { font-size: 14px; min-width: 60px; }
+    #pause-btn, #mute-btn, #reset-cam-btn { width: 36px; height: 36px; font-size: 14px; }
+    #mute-btn { right: 56px; top: 10px; }
+    #pause-btn { top: 10px; }
+    #reset-cam-btn { right: 100px; top: 10px; }
+    #wave-banner { font-size: 44px; top: 22%; }
+    #prep-banner { top: 16%; font-size: 16px; padding: 10px 20px; }
+    #prep-banner .big { font-size: 26px; }
+    #weapons-bar { bottom: 10px; gap: 8px; }
+    #tutorial-arrow { display: none !important; }  /* 移动端不需要 */
+  }
+  @media (orientation: portrait) and (max-width: 768px) {
+    #rotate-hint { display: flex; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">加载中…</div>
+
+<div id="rotate-hint">
+  <div class="icon">📱</div>
+  <h2>请横屏玩游戏</h2>
+  <p>把手机横过来获得最佳体验</p>
+</div>
+
+<div id="menu">
+  <h1>🐉 长城防御战</h1>
+  <p class="subtitle">Great Wall Defense · 击退 10 波恐龙大军</p>
+  <div class="map-select">
+    <div class="map-card" data-map="desert">
+      <span class="emoji">🏜️</span>
+      <h3>沙漠</h3>
+      <p>烈日黄沙</p>
+      <p class="stat up">敌人 +10% 速度</p>
+    </div>
+    <div class="map-card" data-map="grass">
+      <span class="emoji">🌾</span>
+      <h3>草原</h3>
+      <p>辽阔草原</p>
+      <p class="stat">平衡地形</p>
+    </div>
+    <div class="map-card" data-map="snow">
+      <span class="emoji">❄️</span>
+      <h3>雪地</h3>
+      <p>冰封雪原</p>
+      <p class="stat down">敌人 -10% 速度</p>
+    </div>
+  </div>
+  <p class="menu-tip">🖱️ 拖拽下方武器到长城垛口 · 右键/单指拖动转视角 · 滚轮/双指缩放</p>
+</div>
+
+<div id="hud" style="display:none">
+  <div class="hud-top">
+    <div class="hud-card wave-info">第 <span class="wave-num" id="wave-num">1</span> / 10 波</div>
+    <div class="hud-card wall-hp">
+      🏯 城墙 <span id="wall-hp-num">20</span> / <span id="wall-hp-max">20</span>
+      <div class="bar"><div class="fill" id="wall-hp-fill" style="width:100%"></div></div>
+    </div>
+    <div class="hud-card score">⭐ <span id="score-num">0</span></div>
+  </div>
+</div>
+
+<div id="weapons-bar" style="display:none">
+  <div class="weapon-card" data-weapon="bow" id="card-bow">
+    <div class="icon">🏹</div>
+    <div class="name">弓箭</div>
+    <div class="cd-text">冷却 10s</div>
+    <div class="cd-bar" id="cd-bow" style="width:0%"></div>
+    <div class="hint-cd" id="hint-bow" style="display:none"></div>
+    <div class="drag-hint" id="drag-hint-bow">👆 拖到长城上</div>
+  </div>
+  <div class="weapon-card" data-weapon="catapult" id="card-catapult">
+    <div class="icon">🪨</div>
+    <div class="name">投石机</div>
+    <div class="cd-text">冷却 20s</div>
+    <div class="cd-bar" id="cd-catapult" style="width:0%"></div>
+    <div class="hint-cd" id="hint-catapult" style="display:none"></div>
+    <div class="drag-hint" id="drag-hint-catapult">👆 拖到长城上</div>
+  </div>
+  <div class="weapon-card" data-weapon="cannon" id="card-cannon">
+    <div class="icon">💥</div>
+    <div class="name">大炮</div>
+    <div class="cd-text">冷却 50s</div>
+    <div class="cd-bar" id="cd-cannon" style="width:0%"></div>
+    <div class="hint-cd" id="hint-cannon" style="display:none"></div>
+    <div class="drag-hint" id="drag-hint-cannon">👆 拖到长城上</div>
+  </div>
+</div>
+
+<button id="pause-btn" style="display:none">⏸</button>
+<button id="mute-btn" style="display:none">🔊</button>
+<button id="reset-cam-btn" style="display:none">🔄</button>
+
+<div id="wave-banner"></div>
+<div id="prep-banner"><div>下一波准备中</div><div class="big"><span id="prep-time">15</span>s</div></div>
+<div id="hint"></div>
+<div id="tutorial-arrow" style="display:none">👇</div>
+<div id="drag-ghost"></div>
+
+<div id="pause-menu">
+  <h2>⏸ 暂停</h2>
+  <button class="btn" id="resume-btn">继续</button>
+  <button class="btn secondary" id="restart-btn">重新开始</button>
+</div>
+
+<div id="gameover">
+  <h2>💀 城墙陷落</h2>
+  <p>你撑到了第 <span id="over-wave">1</span> 波</p>
+  <p>得分：<span id="over-score">0</span></p>
+  <button class="btn" id="retry-btn">再来一次</button>
+</div>
+
+<div id="victory">
+  <h2>🏆 长城守住了！</h2>
+  <p>成功击退所有 10 波恐龙</p>
+  <p>最终得分：<span id="vic-score">0</span></p>
+  <button class="btn" id="play-again-btn">再玩一次</button>
+</div>
+
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+'use strict';
+
+// ============== 常量与配置 ==============
+const WEAPON_DEF = {
+  bow:     { name: '弓箭',   cd: 10, range: 40, damage: 1, projectile: 'arrow',     canAir: true,  splash: 0, fireRate: 1.4, color: 0x6b4423 },
+  catapult:{ name: '投石机', cd: 20, range: 35, damage: 2, projectile: 'stone',     canAir: false, splash: 0, fireRate: 2.4, color: 0x6b4423 },
+  cannon:  { name: '大炮',   cd: 50, range: 50, damage: 3, projectile: 'cannonball',canAir: false, splash: 3, fireRate: 3.5, color: 0x222222 }
+};
+
+const DINO_DEF = {
+  small: { hp: 3, speed: 4,   scale: 1,   color: 0x4a7c3a, name: '迅猛龙', flying: false, score: 10 },
+  big:   { hp: 5, speed: 2.5, scale: 1.7, color: 0x8b4513, name: '霸王龙', flying: false, score: 25 },
+  boss:  { hp: 8, speed: 1.4, scale: 2.4, color: 0x2d5016, name: '腕龙',   flying: false, score: 100 },
+  flyer: { hp: 2, speed: 5,   scale: 1,   color: 0x3a3a4a, name: '翼龙',   flying: true,  score: 30, flyHeight: 8 }
+};
+
+const WAVES = [
+  { small: 6,  big: 0, boss: 0, flyer: 0, prep: 5 },
+  { small: 10, big: 0, boss: 0, flyer: 0, prep: 5 },
+  { small: 8,  big: 0, boss: 0, flyer: 2, prep: 5 },
+  { small: 10, big: 2, boss: 0, flyer: 0, prep: 5 },
+  { small: 12, big: 1, boss: 0, flyer: 0, prep: 5 },
+  { small: 6,  big: 2, boss: 1, flyer: 0, prep: 7 },
+  { small: 10, big: 2, boss: 0, flyer: 2, prep: 5 },
+  { small: 14, big: 4, boss: 0, flyer: 1, prep: 5 },
+  { small: 8,  big: 6, boss: 0, flyer: 1, prep: 5 },
+  { small: 18, big: 6, boss: 1, flyer: 3, prep: 0 }
+];
+
+const MAP_MOD = { desert: 1.1, grass: 1.0, snow: 0.9 };
+
+const ARENA_HALF = 30;       // x 方向
+const WALL_X = 22;
+const WALL_LEN = 50;
+const SLOT_Z = [-19.5, -13.5, -7.5, -1.5, 4.5, 10.5, 16.5];  // 避开垛口位置
+const SLOT_RADIUS = 1.6;  // 大一点好瞄准
+const SPAWN_X = -28;
+
+// ============== 状态 ==============
+let scene, camera, renderer, raycaster, ndcMouse;
+let clock;
+let gameState = 'menu';      // menu | playing | paused | over | victory
+let paused = false;
+let mapType = 'grass';
+
+let cooldowns   = { bow: 10, catapult: 20, cannon: 50 };
+let maxCooldowns = { bow: 10, catapult: 20, cannon: 50 };
+let wallHP = 20, maxWallHP = 20;
+let score = 0;
+let currentWave = 0;
+let waveActive = false;
+let betweenWaves = false;
+let prepTime = 0;
+let spawnQueue = [];
+let spawnInterval = 1.0;
+let spawnTimer = 0;
+
+let wallSlots = [];          // {mesh, weapon: mesh3D|null, index}
+let placedWeapons = [];      // 武器的 Three.js Group
+let projectiles = [];        // 飞行物
+let dinosaurs = [];          // 恐龙 Group
+
+// 摄像机
+let camAzimuth = 0;          // 水平角
+let camDistance = 42;
+let camHeight = 26;
+let camLookAt = new THREE.Vector3(0, 4, 0);
+let isCamDragging = false;
+let camDragLastX = 0;
+let camDragLastY = 0;
+let activeTouches = new Map();  // 移动端多指追踪
+let pinchStartDist = 0;
+let pinchStartCamDist = 42;
+
+// 拖拽武器
+let isDraggingWeapon = false;
+let dragWeaponType = null;
+
+// ============== 音效 ==============
+let audioCtx = null;
+let muted = false;
+function ensureAudio() {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) { console.warn('AudioContext not supported'); }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone({ freq=440, freqEnd=null, dur=0.15, type='sine', vol=0.2, delay=0 }) {
+  if (!audioCtx || muted) return;
+  const t0 = audioCtx.currentTime + delay;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), t0 + dur);
+  gain.gain.setValueAtTime(vol, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.02);
+}
+function playNoise({ dur=0.1, vol=0.2, filter=2000, attack=0.005 }) {
+  if (!audioCtx || muted) return;
+  const len = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.3));
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.frequency.value = filter;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  src.connect(filt); filt.connect(gain); gain.connect(audioCtx.destination);
+  src.start();
+}
+// 武器专属音效
+function playBowSound() { playTone({ freq: 900, freqEnd: 200, dur: 0.15, type: 'triangle', vol: 0.15 }); }
+function playCatapultSound() {
+  playTone({ freq: 180, freqEnd: 60, dur: 0.3, type: 'sine', vol: 0.25 });
+  playNoise({ dur: 0.15, vol: 0.1, filter: 400 });
+}
+function playCannonSound() {
+  playTone({ freq: 90, freqEnd: 30, dur: 0.4, type: 'sawtooth', vol: 0.3 });
+  playNoise({ dur: 0.35, vol: 0.25, filter: 500 });
+}
+function playPlaceSound() { playTone({ freq: 500, freqEnd: 700, dur: 0.08, type: 'sine', vol: 0.12 }); }
+function playHitSound() { playTone({ freq: 350, dur: 0.04, type: 'square', vol: 0.08 }); }
+function playKillSound() {
+  [400, 600, 800].forEach((f, i) => playTone({ freq: f, dur: 0.08, type: 'sine', vol: 0.12, delay: i * 0.05 }));
+}
+function playWallHitSound() { playNoise({ dur: 0.1, vol: 0.15, filter: 200 }); }
+function playWaveStartSound() {
+  [600, 800, 1000].forEach((f, i) => playTone({ freq: f, dur: 0.12, type: 'triangle', vol: 0.18, delay: i * 0.08 }));
+}
+function playBossSound() {
+  playTone({ freq: 100, freqEnd: 50, dur: 0.6, type: 'sawtooth', vol: 0.3 });
+  playTone({ freq: 150, freqEnd: 80, dur: 0.6, type: 'sine', vol: 0.2, delay: 0.05 });
+}
+function playVictorySound() {
+  [523, 659, 784, 1047].forEach((f, i) => playTone({ freq: f, dur: 0.2, type: 'triangle', vol: 0.18, delay: i * 0.12 }));
+}
+function playGameOverSound() {
+  [400, 350, 300, 200].forEach((f, i) => playTone({ freq: f, dur: 0.25, type: 'sawtooth', vol: 0.15, delay: i * 0.15 }));
+}
+
+// ============== Three.js 初始化 ==============
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
+  scene.fog = new THREE.Fog(0x87ceeb, 60, 140);
+
+  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 500);
+  updateCameraTransform();
+
+  // 移动端性能优化
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const pixelCap = isMobile ? 1.5 : 2;
+
+  renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, pixelCap));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = !isMobile;  // 移动端关阴影省电
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  raycaster = new THREE.Raycaster();
+  ndcMouse = new THREE.Vector2();
+
+  clock = new THREE.Clock();
+  setupLights(isMobile);
+  setupUI();
+
+  window.addEventListener('resize', onResize);
+  document.getElementById('loading').classList.add('hidden');
+  animate();
+}
+
+function setupLights(isMobile = false) {
+  const amb = new THREE.AmbientLight(0xffffff, 0.55);
+  scene.add(amb);
+  const hemi = new THREE.HemisphereLight(0xb1e1ff, 0x8b7355, 0.35);
+  scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xfff4e0, 0.9);
+  dir.position.set(20, 40, 15);
+  if (!isMobile) {
+    dir.castShadow = true;
+    dir.shadow.mapSize.width = 2048;
+    dir.shadow.mapSize.height = 2048;
+    const c = dir.shadow.camera;
+    c.left = -40; c.right = 40; c.top = 30; c.bottom = -30; c.near = 0.5; c.far = 120;
+  }
+  scene.add(dir);
+}
+
+function setupUI() {
+  document.querySelectorAll('.map-card').forEach(card => {
+    card.addEventListener('click', () => { ensureAudio(); startGame(card.dataset.map); });
+  });
+
+  document.querySelectorAll('.weapon-card').forEach(card => {
+    card.addEventListener('mousedown', e => { ensureAudio(); onWeaponPointerDown(e, card.dataset.weapon); });
+    card.addEventListener('touchstart', e => { ensureAudio(); onWeaponPointerDown(e, card.dataset.weapon); }, { passive: false });
+  });
+
+  document.getElementById('pause-btn').addEventListener('click', togglePause);
+  document.getElementById('resume-btn').addEventListener('click', togglePause);
+  document.getElementById('restart-btn').addEventListener('click', () => location.reload());
+  document.getElementById('retry-btn').addEventListener('click', () => location.reload());
+  document.getElementById('play-again-btn').addEventListener('click', () => location.reload());
+
+  document.getElementById('mute-btn').addEventListener('click', () => {
+    muted = !muted;
+    document.getElementById('mute-btn').textContent = muted ? '🔇' : '🔊';
+    if (!muted) ensureAudio();
+  });
+
+  document.getElementById('reset-cam-btn').addEventListener('click', () => {
+    camAzimuth = -Math.PI / 6; camDistance = 42; camHeight = 26;
+    updateCameraTransform();
+  });
+
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+  window.addEventListener('touchmove', onTouchMove, { passive: false });
+  window.addEventListener('touchend', onTouchEnd);
+  window.addEventListener('touchcancel', onTouchEnd);
+
+  renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+  renderer.domElement.addEventListener('mousedown', onRendererMouseDown);
+  renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
+
+  // 移动端：直接在画布上单指拖动 = 旋转视角
+  renderer.domElement.addEventListener('touchstart', onCanvasTouchStart, { passive: false });
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function updateCameraTransform() {
+  const x = Math.sin(camAzimuth) * camDistance;
+  const z = Math.cos(camAzimuth) * camDistance;
+  camera.position.set(x, camHeight, z);
+  camera.lookAt(camLookAt);
+}
+
+// ============== 场景构建 ==============
+function clearScene() {
+  // 移除所有 mesh/group/light(保留 lights 是为了简化)
+  const toRemove = [];
+  scene.traverse(o => {
+    if (o.isMesh || o.isGroup) toRemove.push(o);
+  });
+  toRemove.forEach(o => {
+    if (o.parent) o.parent.remove(o);
+  });
+  // 上面会把 group 内嵌的 mesh 多次遍历到，dispose 没调但无所谓
+}
+
+function buildMap(type) {
+  const palettes = {
+    desert: { sky: 0x87ceeb, ground: 0xd2b48c, accent: 0x8b6f3a, fog: 0xddc89c },
+    grass:  { sky: 0x87ceeb, ground: 0x4a7c3a, accent: 0x2d4a26, fog: 0xa8c5a8 },
+    snow:   { sky: 0xb0c4de, ground: 0xe8e8e8, accent: 0x9bb0c4, fog: 0xc4d4e0 }
+  };
+  const p = palettes[type];
+  scene.background = new THREE.Color(p.sky);
+  scene.fog.color = new THREE.Color(p.fog);
+  scene.fog.near = 60; scene.fog.far = 140;
+
+  // 地面
+  const groundGeo = new THREE.PlaneGeometry(140, 90);
+  const groundMat = new THREE.MeshStandardMaterial({ color: p.ground, roughness: 0.95 });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // 远山
+  for (let i = 0; i < 8; i++) {
+    const m = new THREE.Mesh(
+      new THREE.ConeGeometry(12 + Math.random() * 8, 10 + Math.random() * 6, 5),
+      new THREE.MeshStandardMaterial({ color: p.accent, flatShading: true, roughness: 0.9 })
+    );
+    m.position.set(-70 + i * 20, 0, -55 - Math.random() * 10);
+    m.scale.y = 0.7 + Math.random() * 0.4;
+    scene.add(m);
+  }
+
+  // 装饰物
+  for (let i = 0; i < 18; i++) {
+    let deco;
+    const x = (Math.random() - 0.5) * 60;
+    const z = (Math.random() - 0.5) * 60;
+    if (x > 18) continue;  // 避开长城区域
+    if (type === 'desert') deco = makeCactus();
+    else if (type === 'grass') deco = makeTree();
+    else deco = makePine();
+    deco.position.set(x, 0, z);
+    deco.rotation.y = Math.random() * Math.PI * 2;
+    scene.add(deco);
+  }
+
+  // 云
+  for (let i = 0; i < 5; i++) {
+    const cloud = new THREE.Mesh(
+      new THREE.SphereGeometry(3 + Math.random() * 2, 8, 6),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.85 })
+    );
+    cloud.position.set(-30 + i * 15, 18 + Math.random() * 4, -20 - Math.random() * 15);
+    cloud.scale.y = 0.4;
+    scene.add(cloud);
+  }
+}
+
+function makeCactus() {
+  const g = new THREE.Group();
+  const m = new THREE.MeshStandardMaterial({ color: 0x2d5a2d, flatShading: true, roughness: 0.9 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 3, 8), m);
+  trunk.position.y = 1.5; trunk.castShadow = true; g.add(trunk);
+  const arm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 1, 8), m);
+  arm1.position.set(0.4, 2, 0); arm1.castShadow = true; g.add(arm1);
+  const arm2 = arm1.clone(); arm2.position.set(-0.4, 1.7, 0); g.add(arm2);
+  return g;
+}
+
+function makeTree() {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({ color: 0x5c4033, flatShading: true });
+  const leaf = new THREE.MeshStandardMaterial({ color: 0x2d5a2d, flatShading: true });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.45, 2, 8), wood);
+  trunk.position.y = 1; trunk.castShadow = true; g.add(trunk);
+  const top = new THREE.Mesh(new THREE.SphereGeometry(1.5, 8, 6), leaf);
+  top.position.y = 3; top.castShadow = true; g.add(top);
+  return g;
+}
+
+function makePine() {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({ color: 0x3a2820, flatShading: true });
+  const leaf = new THREE.MeshStandardMaterial({ color: 0x1a4d1a, flatShading: true });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 1.5, 6), wood);
+  trunk.position.y = 0.75; g.add(trunk);
+  for (let i = 0; i < 3; i++) {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(1.5 - i * 0.4, 2, 6), leaf);
+    cone.position.y = 1.5 + i * 1; cone.castShadow = true; g.add(cone);
+  }
+  return g;
+}
+
+function buildWall() {
+  wallSlots = [];
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x8b7355, roughness: 0.85, flatShading: true });
+  const topMat = new THREE.MeshStandardMaterial({ color: 0xa0825a, roughness: 0.8, flatShading: true });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x5a4a32, roughness: 0.95, flatShading: true });
+
+  // 主墙
+  const body = new THREE.Mesh(new THREE.BoxGeometry(4, 6, WALL_LEN), wallMat);
+  body.position.set(WALL_X, 3, 0);
+  body.castShadow = true; body.receiveShadow = true;
+  body.userData.isWall = true;
+  scene.add(body);
+
+  // 顶部走道
+  const top = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.4, WALL_LEN), topMat);
+  top.position.set(WALL_X, 6.1, 0);
+  top.castShadow = true;
+  top.userData.isWall = true;
+  scene.add(top);
+
+  // 垛口（错开槽位：放在槽位之间）
+  SLOT_Z.forEach(z => {
+    [-1.5, 1.5].forEach(dz => {
+      const cren = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.4, 1.2), topMat);
+      cren.position.set(WALL_X, 6.9, z + dz);
+      cren.castShadow = true;
+      cren.userData.isWall = true;
+      scene.add(cren);
+    });
+  });
+
+  // 烽火台（两端）
+  for (let s = -1; s <= 1; s += 2) {
+    const tower = new THREE.Mesh(new THREE.BoxGeometry(6, 8, 5), wallMat);
+    tower.position.set(WALL_X, 4, s * (WALL_LEN/2 - 2.5));
+    tower.castShadow = true;
+    tower.userData.isWall = true;
+    scene.add(tower);
+    const towerTop = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 5), topMat);
+    towerTop.position.set(WALL_X, 8.5, s * (WALL_LEN/2 - 2.5));
+    towerTop.userData.isWall = true;
+    scene.add(towerTop);
+  }
+
+  // 武器槽位（大金盘，明显凸起在走道上方）
+  SLOT_Z.forEach((z, i) => {
+    const ring = new THREE.Mesh(
+      new THREE.CylinderGeometry(SLOT_RADIUS, SLOT_RADIUS, 0.5, 24),
+      new THREE.MeshStandardMaterial({
+        color: 0xffd700, emissive: 0xffd700, emissiveIntensity: 0.7,
+        transparent: true, opacity: 0.85
+      })
+    );
+    ring.position.set(WALL_X - 1.6, 6.55, z);
+    ring.castShadow = true;
+    ring.userData = { index: i, occupied: false, weaponMesh: null };
+    scene.add(ring);
+    wallSlots.push(ring);
+  });
+}
+
+// ============== 武器 ==============
+function makeWeaponMesh(type) {
+  const g = new THREE.Group();
+  g.userData = { type, lastFire: 0, fireInterval: WEAPON_DEF[type].fireRate, aim: 0 };
+
+  if (type === 'bow') {
+    const wood = new THREE.MeshStandardMaterial({ color: 0x6b4423, flatShading: true });
+    const base = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.4, 0.7), wood);
+    base.position.y = 0.2; base.castShadow = true; g.add(base);
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.0, 8), wood);
+    post.position.y = 0.9; g.add(post);
+    const bow = new THREE.Mesh(
+      new THREE.TorusGeometry(0.5, 0.06, 6, 16, Math.PI * 1.3),
+      new THREE.MeshStandardMaterial({ color: 0x2a1a10, flatShading: true })
+    );
+    bow.position.set(0, 1.2, 0);
+    bow.rotation.z = -Math.PI / 2;
+    bow.rotation.y = Math.PI / 2;
+    g.add(bow);
+  } else if (type === 'catapult') {
+    const wood = new THREE.MeshStandardMaterial({ color: 0x6b4423, flatShading: true });
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.4, 1.2), wood);
+    base.position.y = 0.2; base.castShadow = true; g.add(base);
+    const side1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 1.2), wood);
+    side1.position.set(0, 0.6, 0.5); g.add(side1);
+    const side2 = side1.clone(); side2.position.z = -0.5; g.add(side2);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.6, 0.18), wood);
+    arm.position.set(0, 1.2, 0); g.add(arm);
+    const stone = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), new THREE.MeshStandardMaterial({ color: 0x666666, flatShading: true }));
+    stone.position.set(0, 2.0, 0); g.add(stone);
+  } else if (type === 'cannon') {
+    const iron = new THREE.MeshStandardMaterial({ color: 0x222222, flatShading: true });
+    const wood = new THREE.MeshStandardMaterial({ color: 0x3a2818, flatShading: true });
+    const wheel1 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.2, 14), wood);
+    wheel1.rotation.z = Math.PI / 2;
+    wheel1.position.set(0, 0.45, 0.65); g.add(wheel1);
+    const wheel2 = wheel1.clone(); wheel2.position.z = -0.65; g.add(wheel2);
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.65, 14, 10), iron);
+    body.position.y = 0.7; body.scale.set(1, 0.85, 1.2); body.castShadow = true; g.add(body);
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.28, 1.4, 12), iron);
+    barrel.rotation.z = Math.PI / 2;
+    barrel.position.set(-0.95, 0.85, 0); g.add(barrel);
+  }
+  return g;
+}
+
+function placeWeapon(type, slotIndex) {
+  if (cooldowns[type] > 0) return false;
+  if (placedWeapons.length >= 12) return false;
+
+  const slot = wallSlots[slotIndex];
+
+  // 替换：若槽位已被占用，移除旧武器
+  if (slot.userData.occupied && slot.userData.weaponMesh) {
+    const oldW = slot.userData.weaponMesh;
+    scene.remove(oldW);
+    const idx = placedWeapons.indexOf(oldW);
+    if (idx >= 0) placedWeapons.splice(idx, 1);
+    slot.userData.occupied = false;
+    slot.userData.weaponMesh = null;
+  }
+
+  // 放新武器
+  const w = makeWeaponMesh(type);
+  w.position.copy(slot.position);
+  w.position.x += 0.2;
+  w.position.y += 0.4;
+  w.rotation.y = Math.PI;
+  scene.add(w);
+  placedWeapons.push(w);
+  slot.userData.occupied = true;
+  slot.userData.weaponMesh = w;
+  slot.material.opacity = 0.25;
+  slot.material.emissiveIntensity = 0.15;
+
+  // 触发冷却
+  cooldowns[type] = maxCooldowns[type];
+  updateWeaponBar();
+  playPlaceSound();
+  return true;
+}
+
+// ============== 恐龙 ==============
+function makeDinoMesh(type) {
+  const def = DINO_DEF[type];
+  const g = new THREE.Group();
+
+  // 主体材质
+  const bodyMat = new THREE.MeshStandardMaterial({ color: def.color, flatShading: true, roughness: 0.75 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x1a1208, flatShading: true, roughness: 0.8 });
+  const bellyMat = new THREE.MeshStandardMaterial({ color: lightenColor(def.color, 0.35), flatShading: true, roughness: 0.8 });
+  const spikeMat = new THREE.MeshStandardMaterial({ color: darkenColor(def.color, 0.4), flatShading: true });
+
+  if (type === 'flyer') {
+    // 翼龙：流线型身体 + 大翅膀 + 长嘴
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), bodyMat);
+    body.scale.set(1.6, 0.7, 0.8); g.add(body);
+    // 肚子
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), bellyMat);
+    belly.scale.set(1.4, 0.5, 0.6);
+    belly.position.set(0, -0.15, 0);
+    g.add(belly);
+    // 长尖嘴
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.9, 6), bodyMat);
+    beak.rotation.z = -Math.PI / 2.5;
+    beak.position.set(0.95, 0.05, 0);
+    g.add(beak);
+    // 嘴尖
+    const beakTip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.25, 5), new THREE.MeshStandardMaterial({ color: 0x222222, flatShading: true }));
+    beakTip.rotation.z = -Math.PI / 2.5;
+    beakTip.position.set(1.35, 0.1, 0);
+    g.add(beakTip);
+    // 头顶冠（红色）
+    const crest = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 6), new THREE.MeshStandardMaterial({ color: 0xd63031, flatShading: true }));
+    crest.position.set(0.4, 0.35, 0);
+    crest.scale.set(0.5, 1, 0.7);
+    g.add(crest);
+    // 眼睛
+    addEye(g, 0.55, 0.18, 0.22, 1);
+    addEye(g, 0.55, 0.18, -0.22, -1);
+    // 翅膀（形状几何：模拟翼膜）
+    const wingShape = new THREE.Shape();
+    wingShape.moveTo(0, 0);
+    wingShape.lineTo(-1.5, 0.4);
+    wingShape.lineTo(-1.1, -0.1);
+    wingShape.lineTo(-0.5, -0.3);
+    wingShape.closePath();
+    const wingGeo = new THREE.ShapeGeometry(wingShape);
+    const wingMat = new THREE.MeshStandardMaterial({ color: def.color, side: THREE.DoubleSide, flatShading: true, roughness: 0.8 });
+    const wing1 = new THREE.Mesh(wingGeo, wingMat);
+    wing1.position.set(-0.2, 0.1, 0.5);
+    wing1.userData.flap = 1;
+    g.add(wing1);
+    const wing2 = new THREE.Mesh(wingGeo, wingMat);
+    wing2.position.set(-0.2, 0.1, -0.5);
+    wing2.scale.z = -1;
+    wing2.userData.flap = -1;
+    g.add(wing2);
+    g.userData.wings = [wing1, wing2];
+    // 长尾巴
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.15, 1.0, 6), bodyMat);
+    tail.rotation.z = Math.PI / 2;
+    tail.position.set(-0.85, 0.0, 0);
+    g.add(tail);
+    g.userData.parts = { body, tail, head: beak };
+  } else {
+    // 通用四足恐龙
+    // 身体：椭球（横向）
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 14, 10), bodyMat);
+    body.scale.set(1.5, 0.95, 0.95);
+    body.position.y = def.scale * 1.2;
+    body.castShadow = true;
+    g.add(body);
+    // 浅色肚子
+    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8), bellyMat);
+    belly.scale.set(1.3, 0.55, 0.7);
+    belly.position.set(0, def.scale * 0.85, 0);
+    g.add(belly);
+
+    // 脖子（向上倾斜的圆柱）
+    const neckPivot = new THREE.Group();
+    neckPivot.position.set(def.scale * 0.85, def.scale * 1.5, 0);
+    g.add(neckPivot);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.32, 0.7, 10), bodyMat);
+    neck.position.y = 0.35;
+    neckPivot.add(neck);
+    neckPivot.rotation.z = -0.5;
+    g.userData.neckPivot = neckPivot;
+
+    // 头（带嘴的盒子+牙齿）
+    const head = new THREE.Group();
+    head.position.set(0, 0.85, 0);
+    neckPivot.add(head);
+    const skull = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.42), bodyMat);
+    head.add(skull);
+    // 上嘴
+    const upperJaw = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.32), bodyMat);
+    upperJaw.position.set(0.25, -0.05, 0);
+    head.add(upperJaw);
+    // 下嘴（深色，模拟张嘴）
+    const lowerJaw = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 0.28), darkMat);
+    lowerJaw.position.set(0.22, -0.18, 0);
+    head.add(lowerJaw);
+    // 牙齿（上排）
+    for (let i = 0; i < 4; i++) {
+      const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.1, 4),
+        new THREE.MeshStandardMaterial({ color: 0xfffaf0, flatShading: true }));
+      tooth.rotation.z = -Math.PI / 2;
+      tooth.position.set(0.15 + i * 0.08, -0.1, (i - 1.5) * 0.1);
+      head.add(tooth);
+    }
+    // 眼睛
+    addEye(head, 0.05, 0.1, 0.22, 1);
+    addEye(head, 0.05, 0.1, -0.22, -1);
+    g.userData.head = head;
+
+    // 尾巴（多段：根部粗、尖部细）
+    const tail = new THREE.Group();
+    tail.position.set(-def.scale * 0.95, def.scale * 1.1, 0);
+    g.add(tail);
+    for (let i = 0; i < 3; i++) {
+      const r0 = 0.32 - i * 0.08;
+      const seg = new THREE.Mesh(
+        new THREE.ConeGeometry(r0, 0.55, 7),
+        bodyMat
+      );
+      seg.rotation.z = Math.PI / 2;
+      seg.position.x = -i * 0.45;
+      tail.add(seg);
+    }
+    g.userData.tail = tail;
+
+    // 4 条腿（大腿+小腿+脚）—— y 在 dino 局部坐标固定 0.9，让脚落地
+    const legPositions = [
+      [0.45, 0.32], [0.45, -0.32], [-0.45, 0.32], [-0.45, -0.32]
+    ];
+    legPositions.forEach(([x, z], idx) => {
+      const leg = new THREE.Group();
+      leg.position.set(x * def.scale, 0.9, z);
+      g.add(leg);
+      // 大腿
+      const thigh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.14, 0.4, 8),
+        bodyMat
+      );
+      thigh.position.y = -0.15;
+      leg.add(thigh);
+      // 小腿
+      const shin = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1, 0.13, 0.4, 8),
+        bodyMat
+      );
+      shin.position.set(z * 0.05, -0.5, 0);
+      leg.add(shin);
+      // 脚
+      const foot = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.1, 0.35),
+        bodyMat
+      );
+      foot.position.set(0, -0.75, z * 0.15);
+      leg.add(foot);
+      // 爪子
+      for (let k = 0; k < 3; k++) {
+        const claw = new THREE.Mesh(
+          new THREE.ConeGeometry(0.03, 0.12, 4),
+          darkMat
+        );
+        claw.rotation.z = Math.PI / 2;
+        claw.position.set(0.16, -0.75, (k - 1) * 0.12);
+        leg.add(claw);
+      }
+      g.userData['leg' + idx] = leg;
+    });
+
+    // 背脊（小三角刺）
+    const spikeCount = type === 'boss' ? 7 : 4;
+    for (let i = 0; i < spikeCount; i++) {
+      const spike = new THREE.Mesh(
+        new THREE.ConeGeometry(0.15, 0.45, 5),
+        spikeMat
+      );
+      spike.position.set(-0.4 + i * 0.25, def.scale * 1.65, 0);
+      g.add(spike);
+    }
+
+    if (type === 'boss') {
+      // 腕龙 BOSS：加长脖子 + 小头
+      const longNeck = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.3, 0.45, 2.5, 10),
+        bodyMat
+      );
+      longNeck.position.set(def.scale * 1.7, def.scale * 2.8, 0);
+      longNeck.rotation.z = -Math.PI / 5;
+      g.add(longNeck);
+      const bossHead = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 8), bodyMat);
+      bossHead.scale.set(1.2, 0.9, 0.9);
+      bossHead.position.set(def.scale * 2.6, def.scale * 3.8, 0);
+      g.add(bossHead);
+      // 小眼睛
+      addEye(g, def.scale * 2.5, def.scale * 3.9, def.scale * 0.18, 1);
+      addEye(g, def.scale * 2.5, def.scale * 3.9, -def.scale * 0.18, -1);
+    }
+  }
+
+  g.userData.type = type;
+  g.userData.hp = def.hp;
+  g.userData.maxHp = def.hp;
+  g.userData.baseSpeed = def.speed;
+  g.userData.flying = def.flying;
+  g.userData.score = def.score;
+  g.userData.attackCooldown = 0;
+  g.userData.walkPhase = Math.random() * Math.PI * 2;
+  g.userData.hpBar = null;
+  g.scale.setScalar(def.scale);
+  return g;
+}
+
+// 工具：加眼睛（白眼球+黑瞳）
+function addEye(parent, x, y, z, side) {
+  const white = new THREE.Mesh(
+    new THREE.SphereGeometry(0.09, 8, 6),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true })
+  );
+  white.position.set(x, y, z);
+  parent.add(white);
+  const pupil = new THREE.Mesh(
+    new THREE.SphereGeometry(0.05, 6, 4),
+    new THREE.MeshStandardMaterial({ color: 0x000000, flatShading: true })
+  );
+  pupil.position.set(x + 0.06 * side, y, z + 0.03 * side);
+  parent.add(pupil);
+}
+
+// 工具：颜色加亮/变暗
+function lightenColor(hex, amt) {
+  const c = new THREE.Color(hex);
+  c.r = Math.min(1, c.r + amt);
+  c.g = Math.min(1, c.g + amt);
+  c.b = Math.min(1, c.b + amt);
+  return c.getHex();
+}
+function darkenColor(hex, amt) {
+  const c = new THREE.Color(hex);
+  c.r = Math.max(0, c.r - amt);
+  c.g = Math.max(0, c.g - amt);
+  c.b = Math.max(0, c.b - amt);
+  return c.getHex();
+}
+
+function addHpBar(dino) {
+  const data = dino.userData;
+  const bar = new THREE.Group();
+  const bg = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.5, 0.12),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.6, depthTest: false })
+  );
+  const fg = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.4, 0.08),
+    new THREE.MeshBasicMaterial({ color: 0x2ed573, depthTest: false })
+  );
+  fg.position.z = 0.01;
+  bar.add(bg); bar.add(fg);
+  // 让血条永远朝向相机
+  bar.userData.lookCamera = true;
+  bar.userData.fg = fg;
+  bar.userData.bg = bg;
+  bar.position.y = DINO_DEF[data.type].flying ? 1.2 : (DINO_DEF[data.type].scale * 1.8 + 0.4);
+  bar.renderOrder = 999;
+  dino.add(bar);
+  data.hpBar = bar;
+}
+
+// ============== 飞行物 ==============
+function spawnProjectile(weaponMesh, target, weaponType) {
+  const from = weaponMesh.position.clone();
+  from.y += weaponType === 'bow' ? 1.2 : (weaponType === 'catapult' ? 1.5 : 0.9);
+  const to = target.position.clone();
+  if (target.userData.flying) to.y += 0.5; else to.y += target.userData.type === 'boss' ? 2 : 0.6;
+
+  let mesh, speed, isArc;
+  if (weaponType === 'bow') {
+    mesh = new THREE.Mesh(
+      new THREE.ConeGeometry(0.06, 0.5, 6),
+      new THREE.MeshStandardMaterial({ color: 0x8b6f3a, flatShading: true })
+    );
+    speed = 38; isArc = false;
+  } else if (weaponType === 'catapult') {
+    mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.32, 8, 6),
+      new THREE.MeshStandardMaterial({ color: 0x666666, flatShading: true })
+    );
+    speed = 18; isArc = true;
+  } else {
+    mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 12, 8),
+      new THREE.MeshStandardMaterial({ color: 0x111111, flatShading: true })
+    );
+    speed = 30; isArc = false;
+  }
+  mesh.position.copy(from);
+  scene.add(mesh);
+
+  const p = {
+    mesh, from, to, target, weaponType,
+    speed,
+    t: 0, isArc,
+    startTime: clock.elapsedTime,
+    splash: WEAPON_DEF[weaponType].splash,
+    damage: WEAPON_DEF[weaponType].damage,
+    dead: false
+  };
+  if (isArc) {
+    // 抛物线参数
+    const dist = from.distanceTo(to);
+    p.duration = Math.max(0.5, dist / 14);
+    p.peakY = Math.max(from.y, to.y) + Math.min(8, dist * 0.25);
+  }
+  projectiles.push(p);
+}
+
+function updateProjectile(p, dt) {
+  if (p.dead) return;
+  if (!p.target || !p.target.parent) {  // 目标死了
+    p.dead = true;
+    scene.remove(p.mesh);
+    return;
+  }
+
+  // 始终跟随目标位置（基础预测）
+  const tgtPos = p.target.position.clone();
+  if (p.target.userData.flying) tgtPos.y += 0.5;
+  else tgtPos.y += p.target.userData.type === 'boss' ? 2 : 0.6;
+
+  if (p.isArc) {
+    p.t += dt;
+    const k = Math.min(1, p.t / p.duration);
+    // 三点二次贝塞尔
+    const mid = p.from.clone().add(tgtPos).multiplyScalar(0.5);
+    mid.y = p.peakY;
+    const inv = 1 - k;
+    p.mesh.position.set(
+      inv * inv * p.from.x + 2 * inv * k * mid.x + k * k * tgtPos.x,
+      inv * inv * p.from.y + 2 * inv * k * mid.y + k * k * tgtPos.y,
+      inv * inv * p.from.z + 2 * inv * k * mid.z + k * k * tgtPos.z
+    );
+    if (k >= 1) hitProjectile(p, tgtPos);
+  } else {
+    // 直射
+    const cur = p.mesh.position;
+    const dir = tgtPos.clone().sub(cur).normalize();
+    cur.add(dir.multiplyScalar(p.speed * dt));
+    // 让箭/炮弹朝向运动方向
+    if (p.weaponType === 'bow') {
+      p.mesh.lookAt(cur.clone().add(dir));
+    } else if (p.weaponType === 'cannon') {
+      p.mesh.rotation.x += dt * 8;  // 炮弹自转
+    }
+    if (cur.distanceTo(tgtPos) < 0.5) hitProjectile(p, tgtPos);
+  }
+}
+
+function hitProjectile(p, hitPos) {
+  if (p.dead) return;
+  p.dead = true;
+  scene.remove(p.mesh);
+
+  // 找到最近的恐龙
+  if (p.splash > 0) {
+    // AOE
+    dinosaurs.forEach(d => {
+      if (d.userData.hp <= 0) return;
+      const dPos = d.position.clone();
+      dPos.y += d.userData.type === 'boss' ? 2 : 0.6;
+      if (dPos.distanceTo(hitPos) <= p.splash) {
+        damageDino(d, p.damage);
+      }
+    });
+    // 爆炸粒子（小球）
+    spawnExplosion(hitPos);
+  } else {
+    damageDino(p.target, p.damage);
+  }
+}
+
+function spawnExplosion(pos) {
+  for (let i = 0; i < 8; i++) {
+    const p = new THREE.Mesh(
+      new THREE.SphereGeometry(0.15, 6, 4),
+      new THREE.MeshBasicMaterial({ color: 0xff8c00, transparent: true, opacity: 1 })
+    );
+    p.position.copy(pos);
+    const v = new THREE.Vector3(
+      (Math.random() - 0.5) * 6,
+      Math.random() * 4,
+      (Math.random() - 0.5) * 6
+    );
+    scene.add(p);
+    projectiles.push({
+      mesh: p, dead: false, isExplosion: true,
+      vel: v, life: 0.6
+    });
+  }
+}
+
+function damageDino(dino, dmg) {
+  if (!dino || dino.userData.hp <= 0) return;
+  dino.userData.hp -= dmg;
+  playHitSound();
+  // 血条更新
+  const bar = dino.userData.hpBar;
+  if (bar) {
+    const ratio = Math.max(0, dino.userData.hp / dino.userData.maxHp);
+    bar.userData.fg.scale.x = ratio;
+    bar.userData.fg.material.color.setHex(ratio > 0.5 ? 0x2ed573 : (ratio > 0.25 ? 0xffa502 : 0xff4757));
+    bar.userData.fg.position.x = -(1.4 * (1 - ratio)) / 2;
+  }
+  if (dino.userData.hp <= 0) {
+    killDino(dino);
+  }
+}
+
+function killDino(dino) {
+  if (!dino.parent) return;
+  playKillSound();
+  scene.remove(dino);
+  const idx = dinosaurs.indexOf(dino);
+  if (idx >= 0) dinosaurs.splice(idx, 1);
+  score += dino.userData.score;
+  spawnScorePopup(dino.position, dino.userData.score);
+  updateHUD();
+  checkWaveEnd();
+}
+
+function spawnScorePopup(worldPos, sc) {
+  const screen = worldToScreen(worldPos);
+  if (!screen) return;
+  const el = document.createElement('div');
+  el.className = 'score-popup';
+  el.textContent = '+' + sc;
+  el.style.left = screen.x + 'px';
+  el.style.top = screen.y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function worldToScreen(worldPos) {
+  const v = worldPos.clone().project(camera);
+  if (v.z > 1) return null;
+  return {
+    x: (v.x * 0.5 + 0.5) * window.innerWidth,
+    y: (-v.y * 0.5 + 0.5) * window.innerHeight
+  };
+}
+
+// ============== 恐龙 AI ==============
+function spawnDino(type) {
+  const d = makeDinoMesh(type);
+  const z = (Math.random() - 0.5) * (WALL_LEN - 8);
+  d.position.set(SPAWN_X, type === 'flyer' ? 8 : 0, z);
+  d.rotation.y = 0;
+  scene.add(d);
+  dinosaurs.push(d);
+  addHpBar(d);
+}
+
+function updateDinos(dt) {
+  const mod = MAP_MOD[mapType];
+  const wallEdgeX = WALL_X - 2.5;
+  for (let i = dinosaurs.length - 1; i >= 0; i--) {
+    const d = dinosaurs[i];
+    const data = d.userData;
+    if (data.hp <= 0) { dinosaurs.splice(i, 1); continue; }
+
+    const speed = data.baseSpeed * mod;
+    d.position.x += speed * dt;
+    data.walkPhase += dt * 6 * (data.flying ? 1.5 : speed * 0.5);
+
+    // 通用动画：摆尾 + 抬头
+    if (data.tail) {
+      data.tail.rotation.y = Math.sin(data.walkPhase * 0.8) * 0.3;
+      data.tail.rotation.z = Math.sin(data.walkPhase * 0.6) * 0.05;
+    }
+    if (data.neckPivot) {
+      data.neckPivot.rotation.z = -0.5 + Math.sin(data.walkPhase * 0.7) * 0.08;
+    }
+    if (data.head) {
+      data.head.rotation.z = Math.sin(data.walkPhase * 1.1) * 0.06;
+    }
+    // 腿摆动（前后腿对角线步态）
+    for (let li = 0; li < 4; li++) {
+      const leg = data['leg' + li];
+      if (leg) {
+        const phase = data.walkPhase + li * (Math.PI / 2);
+        leg.rotation.x = Math.sin(phase) * 0.25;
+      }
+    }
+
+    if (data.wings) {
+      // 翼龙：翅膀拍打 + 上下浮动
+      const flap = Math.sin(data.walkPhase);
+      data.wings[0].rotation.x = flap * 0.6;
+      data.wings[1].rotation.x = -flap * 0.6;
+      d.position.y = DINO_DEF[data.type].flyHeight + Math.sin(data.walkPhase * 0.5) * 0.4;
+      if (d.position.x > wallEdgeX) {
+        data.attackCooldown -= dt;
+        if (data.attackCooldown <= 0) {
+          data.attackCooldown = 1.5;
+          damageWall(1);
+        }
+        if (d.position.x > WALL_X + 10) {
+          scene.remove(d);
+          dinosaurs.splice(i, 1);
+          checkWaveEnd();
+        }
+      }
+    } else {
+      if (d.position.x >= wallEdgeX) {
+        d.position.x = wallEdgeX;
+        data.attackCooldown -= dt;
+        if (data.attackCooldown <= 0) {
+          data.attackCooldown = 1.0;
+          damageWall(1);
+          d.position.z += (Math.random() - 0.5) * 0.2;
+          // 撞墙时咬合：上下嘴合拢
+          if (data.head) data.head.rotation.x = Math.sin(data.walkPhase * 2) * 0.15;
+        }
+      }
+      d.rotation.y = 0;
+    }
+  }
+}
+
+function damageWall(n) {
+  wallHP = Math.max(0, wallHP - n);
+  playWallHitSound();
+  updateHUD();
+  if (wallHP <= 0) {
+    gameOver();
+  }
+}
+
+// ============== 武器 AI ==============
+function updateWeapons(dt, now) {
+  for (const w of placedWeapons) {
+    const data = w.userData;
+    if (now - data.lastFire < data.fireInterval) continue;
+    // 找目标
+    const target = findTarget(w, data.type);
+    if (!target) continue;
+    // 转向
+    const dx = target.position.x - w.position.x;
+    const dz = target.position.z - w.position.z;
+    w.rotation.y = Math.atan2(dz, dx) + Math.PI;
+    // 发射
+    data.lastFire = now;
+    spawnProjectile(w, target, data.type);
+    // 音效
+    if (data.type === 'bow') playBowSound();
+    else if (data.type === 'catapult') playCatapultSound();
+    else if (data.type === 'cannon') playCannonSound();
+  }
+}
+
+function findTarget(weapon, type) {
+  const def = WEAPON_DEF[type];
+  const wPos = weapon.position;
+  let bestGround = null, bestGroundDist = def.range;
+  let bestAir = null, bestAirDist = def.range;
+  for (const d of dinosaurs) {
+    if (d.userData.hp <= 0) continue;
+    const isAir = d.userData.flying;
+    if (isAir && !def.canAir) continue;  // 投石机/大炮不能打飞行
+    const dPos = d.position.clone();
+    dPos.y += isAir ? 0.5 : (d.userData.type === 'boss' ? 2 : 0.6);
+    const dist = wPos.distanceTo(dPos);
+    if (isAir) {
+      if (dist < bestAirDist) { bestAirDist = dist; bestAir = d; }
+    } else {
+      if (dist < bestGroundDist) { bestGroundDist = dist; bestGround = d; }
+    }
+  }
+  // 弓优先打飞行（飞行难打），否则打最近地面
+  if (def.canAir) return bestAir || bestGround;
+  return bestGround;
+}
+
+// ============== 飞行物更新 ==============
+function updateAllProjectiles(dt) {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    if (p.dead) { projectiles.splice(i, 1); continue; }
+    if (p.isExplosion) {
+      p.life -= dt;
+      p.mesh.position.add(p.vel.clone().multiplyScalar(dt));
+      p.vel.y -= 12 * dt;  // 重力
+      p.mesh.material.opacity = Math.max(0, p.life / 0.6);
+      p.mesh.scale.setScalar(1 + (0.6 - p.life) * 1.5);
+      if (p.life <= 0) {
+        scene.remove(p.mesh);
+        projectiles.splice(i, 1);
+      }
+    } else {
+      updateProjectile(p, dt);
+      if (p.dead) projectiles.splice(i, 1);
+    }
+  }
+}
+
+// ============== 波次 ==============
+function startGame(type) {
+  mapType = type;
+  gameState = 'playing';
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('weapons-bar').style.display = 'flex';
+  document.getElementById('pause-btn').style.display = 'block';
+  document.getElementById('mute-btn').style.display = 'block';
+  document.getElementById('reset-cam-btn').style.display = 'block';
+
+  // 重置
+  wallHP = 20; maxWallHP = 20;
+  score = 0; currentWave = 0;
+  cooldowns = { bow: 0, catapult: 20, cannon: 50 };  // 第一把弓免费送
+  placedWeapons = []; projectiles = []; dinosaurs = [];
+  spawnQueue = []; waveActive = false; betweenWaves = false;
+
+  clearScene();
+  buildMap(type);
+  buildWall();
+  // 注：setupLights() 在 init() 已加入场景，clearScene 只清 mesh/group，灯光保留
+
+  // 重置摄像机
+  camAzimuth = -Math.PI / 6; camDistance = 42; camHeight = 26;
+  updateCameraTransform();
+
+  showHint('拖拽下方武器到长城垛口上开始战斗！');
+  setTimeout(hideHint, 5000);
+  updateHUD();
+  updateWeaponBar();
+
+  prepWave(1);
+}
+
+function prepWave(n) {
+  currentWave = n;
+  betweenWaves = true;
+  waveActive = false;
+  prepTime = WAVES[n - 1].prep;
+  document.getElementById('prep-banner').style.display = 'block';
+  document.getElementById('prep-time').textContent = Math.ceil(prepTime);
+  updateHUD();
+}
+
+function startWave() {
+  betweenWaves = false;
+  waveActive = true;
+  document.getElementById('prep-banner').style.display = 'none';
+  const w = WAVES[currentWave - 1];
+  // 构建生成队列（打散顺序）
+  spawnQueue = [];
+  for (let i = 0; i < w.small; i++) spawnQueue.push('small');
+  for (let i = 0; i < w.big;   i++) spawnQueue.push('big');
+  for (let i = 0; i < w.boss;  i++) spawnQueue.push('boss');
+  for (let i = 0; i < w.flyer; i++) spawnQueue.push('flyer');
+  // 洗牌
+  for (let i = spawnQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [spawnQueue[i], spawnQueue[j]] = [spawnQueue[j], spawnQueue[i]];
+  }
+  // boss 排到稍后出现
+  spawnQueue.sort((a, b) => (a === 'boss' ? 1 : 0) - (b === 'boss' ? 1 : 0));
+  spawnInterval = Math.max(0.6, 2.2 - currentWave * 0.12);
+  spawnTimer = 0;
+
+  // 横幅
+  const isBoss = (w.boss > 0);
+  const banner = document.getElementById('wave-banner');
+  banner.textContent = isBoss ? `⚠️ BOSS · 第 ${currentWave} 波` : `第 ${currentWave} 波`;
+  banner.classList.toggle('boss', isBoss);
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 1800);
+
+  if (isBoss) {
+    shakeCamera(0.4, 0.4);
+    playBossSound();
+  } else {
+    playWaveStartSound();
+  }
+}
+
+function checkWaveEnd() {
+  if (!waveActive) return;
+  if (spawnQueue.length === 0 && dinosaurs.length === 0) {
+    waveActive = false;
+    if (currentWave >= WAVES.length) {
+      victory();
+    } else {
+      prepWave(currentWave + 1);
+    }
+  }
+}
+
+function gameOver() {
+  gameState = 'over';
+  playGameOverSound();
+  document.getElementById('over-wave').textContent = currentWave;
+  document.getElementById('over-score').textContent = score;
+  document.getElementById('gameover').style.display = 'flex';
+}
+
+function victory() {
+  gameState = 'victory';
+  playVictorySound();
+  document.getElementById('vic-score').textContent = score;
+  document.getElementById('victory').style.display = 'flex';
+}
+
+// ============== UI ==============
+function updateHUD() {
+  document.getElementById('wave-num').textContent = currentWave;
+  document.getElementById('wall-hp-num').textContent = wallHP;
+  document.getElementById('wall-hp-max').textContent = maxWallHP;
+  document.getElementById('wall-hp-fill').style.width = (wallHP / maxWallHP * 100) + '%';
+  document.getElementById('score-num').textContent = score;
+}
+
+function updateWeaponBar() {
+  ['bow', 'catapult', 'cannon'].forEach(t => {
+    const cd = cooldowns[t];
+    const card = document.getElementById('card-' + t);
+    const bar = document.getElementById('cd-' + t);
+    const hint = document.getElementById('hint-' + t);
+    const ready = cd <= 0;
+    card.classList.toggle('ready', ready);
+    const max = maxCooldowns[t];
+    bar.style.width = (100 - (cd / max * 100)) + '%';
+    if (ready) {
+      hint.style.display = 'none';
+    } else {
+      hint.style.display = 'flex';
+      hint.textContent = Math.ceil(cd);
+    }
+  });
+}
+
+function showHint(text) {
+  const el = document.getElementById('hint');
+  el.textContent = text;
+  el.classList.add('show');
+}
+function hideHint() { document.getElementById('hint').classList.remove('show'); }
+
+// ============== 输入 ==============
+function onWeaponPointerDown(e, type) {
+  if (gameState !== 'playing') return;
+  if (cooldowns[type] > 0) return;
+  e.preventDefault();
+  isDraggingWeapon = true;
+  dragWeaponType = type;
+  const ghost = document.getElementById('drag-ghost');
+  const iconMap = { bow: '🏹', catapult: '🪨', cannon: '💥' };
+  ghost.textContent = iconMap[type];
+  ghost.style.display = 'block';
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  ghost.style.left = x + 'px';
+  ghost.style.top = y + 'px';
+  document.getElementById('card-' + type).classList.add('dragging');
+}
+
+function onPointerMove(e) {
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+
+  if (isDraggingWeapon) {
+    const ghost = document.getElementById('drag-ghost');
+    ghost.style.left = x + 'px';
+    ghost.style.top = y + 'px';
+    e.preventDefault();
+    // 高亮当前对准的槽位
+    const slotIdx = pickSlot(x, y);
+    wallSlots.forEach((s, i) => {
+      if (i === slotIdx) {
+        if (s.userData.occupied) {
+          // 红色 = 替换模式
+          s.material.emissiveIntensity = 1.3;
+          s.material.color.setHex(0xff4757);
+        } else {
+          // 绿色 = 新建
+          s.material.emissiveIntensity = 1.2;
+          s.material.color.setHex(0x00ff00);
+        }
+      } else if (!s.userData.occupied) {
+        s.material.emissiveIntensity = 0.7;
+        s.material.color.setHex(0xffd700);  // 金
+      } else {
+        // 已占用但没对准 → 暗红
+        s.material.emissiveIntensity = 0.4;
+        s.material.color.setHex(0x8b3a3a);
+      }
+    });
+    return;
+  }
+  if (isCamDragging) {
+    const dx = x - camDragLastX;
+    const dy = y - camDragLastY;
+    camAzimuth -= dx * 0.005;
+    camHeight = Math.max(8, Math.min(50, camHeight - dy * 0.1));
+    camDragLastX = x; camDragLastY = y;
+    updateCameraTransform();
+  }
+}
+
+function onPointerUp(e) {
+  if (isDraggingWeapon) {
+    isDraggingWeapon = false;
+    document.getElementById('drag-ghost').style.display = 'none';
+    if (dragWeaponType) {
+      document.getElementById('card-' + dragWeaponType).classList.remove('dragging');
+    }
+    // 找落点
+    const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    const slot = pickSlot(x, y);
+    if (slot !== -1) {
+      placeWeapon(dragWeaponType, slot);
+    } else {
+      // 没瞄准 → 提示一下
+      showHint('没瞄准到长城上 😅 再试一次');
+      setTimeout(hideHint, 1500);
+    }
+    // 恢复所有槽位颜色
+    wallSlots.forEach(s => {
+      if (s.userData.occupied) {
+        s.material.color.setHex(0xffd700);
+        s.material.emissiveIntensity = 0.15;  // 已占用：暗金
+      } else {
+        s.material.color.setHex(0xffd700);
+        s.material.emissiveIntensity = 0.7;   // 空槽：亮金
+      }
+    });
+    dragWeaponType = null;
+  }
+  if (isCamDragging) {
+    isCamDragging = false;
+  }
+}
+
+function onRendererMouseDown(e) {
+  if (e.button === 2 || e.button === 1) {  // 右键/中键拖视角
+    isCamDragging = true;
+    camDragLastX = e.clientX;
+    camDragLastY = e.clientY;
+  }
+}
+
+// 移动端：画布上的触摸开始
+function onCanvasTouchStart(e) {
+  e.preventDefault();
+  if (isDraggingWeapon) return;  // 正在拖武器就别动相机
+  for (const t of e.changedTouches) {
+    activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+  }
+  if (activeTouches.size === 1) {
+    const t = e.changedTouches[0];
+    isCamDragging = true;
+    camDragLastX = t.clientX;
+    camDragLastY = t.clientY;
+  } else if (activeTouches.size === 2) {
+    isCamDragging = false;
+    const arr = [...activeTouches.values()];
+    pinchStartDist = Math.hypot(arr[0].x - arr[1].x, arr[0].y - arr[1].y);
+    pinchStartCamDist = camDistance;
+  }
+}
+
+// 移动端：全局 touchmove
+function onTouchMove(e) {
+  e.preventDefault();
+
+  // 武器拖拽中：更新 ghost 和槽位高亮
+  if (isDraggingWeapon) {
+    const t = e.changedTouches[0];
+    if (t) {
+      const ghost = document.getElementById('drag-ghost');
+      ghost.style.left = t.clientX + 'px';
+      ghost.style.top = t.clientY + 'px';
+      const slotIdx = pickSlot(t.clientX, t.clientY);
+      wallSlots.forEach((s, i) => {
+        if (i === slotIdx) {
+          if (s.userData.occupied) {
+            s.material.emissiveIntensity = 1.3;
+            s.material.color.setHex(0xff4757);
+          } else {
+            s.material.emissiveIntensity = 1.2;
+            s.material.color.setHex(0x00ff00);
+          }
+        } else if (!s.userData.occupied) {
+          s.material.emissiveIntensity = 0.7;
+          s.material.color.setHex(0xffd700);
+        } else {
+          s.material.emissiveIntensity = 0.4;
+          s.material.color.setHex(0x8b3a3a);
+        }
+      });
+    }
+    return;
+  }
+
+  // 更新所有活动触点（用于相机控制）
+  for (const t of e.changedTouches) {
+    if (activeTouches.has(t.identifier)) {
+      activeTouches.set(t.identifier, { x: t.clientX, y: t.clientY });
+    }
+  }
+  // 单指：转视角
+  if (isCamDragging && activeTouches.size === 1) {
+    const t = [...activeTouches.values()][0];
+    const dx = t.x - camDragLastX;
+    const dy = t.y - camDragLastY;
+    camAzimuth -= dx * 0.005;
+    camHeight = Math.max(8, Math.min(50, camHeight - dy * 0.1));
+    camDragLastX = t.x; camDragLastY = t.y;
+    updateCameraTransform();
+  }
+  // 双指：缩放
+  if (activeTouches.size === 2) {
+    const arr = [...activeTouches.values()];
+    const dist = Math.hypot(arr[0].x - arr[1].x, arr[0].y - arr[1].y);
+    if (pinchStartDist > 0) {
+      const ratio = dist / pinchStartDist;
+      camDistance = Math.max(18, Math.min(80, pinchStartCamDist / ratio));
+      updateCameraTransform();
+    }
+  }
+}
+
+function onTouchEnd(e) {
+  for (const t of e.changedTouches) {
+    activeTouches.delete(t.identifier);
+  }
+
+  // 武器拖拽释放：复用 onPointerUp 的逻辑
+  if (isDraggingWeapon) {
+    // 构造兼容的事件对象
+    const fakeEvent = {
+      changedTouches: e.changedTouches,
+      touches: e.touches
+    };
+    onPointerUp(fakeEvent);
+  }
+
+  if (activeTouches.size === 0) {
+    isCamDragging = false;
+    pinchStartDist = 0;
+  } else if (activeTouches.size === 1) {
+    // 双指变单指，重置相机拖动起点
+    const t = [...activeTouches.values()][0];
+    camDragLastX = t.x;
+    camDragLastY = t.y;
+    isCamDragging = !isDraggingWeapon;
+  }
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  camDistance = Math.max(18, Math.min(80, camDistance + e.deltaY * 0.05));
+  updateCameraTransform();
+}
+
+function pickSlot(clientX, clientY) {
+  ndcMouse.x = (clientX / window.innerWidth) * 2 - 1;
+  ndcMouse.y = -(clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(ndcMouse, camera);
+  // 优先：直接打到金色圆盘
+  const slotHits = raycaster.intersectObjects(wallSlots, false);
+  if (slotHits.length > 0) return slotHits[0].object.userData.index;
+
+  // 兜底：打到墙顶 → 找最近的槽（不区分占用，方便替换）
+  const wallHits = raycaster.intersectObjects(scene.children, true)
+    .filter(h => h.object.userData && h.object.userData.isWall);
+  if (wallHits.length > 0) {
+    const hitPos = wallHits[0].point;
+    let bestIdx = -1, bestDist = Infinity;
+    wallSlots.forEach((s, i) => {
+      const d = Math.hypot(s.position.x - hitPos.x, s.position.z - hitPos.z);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    });
+    if (bestIdx !== -1 && bestDist < 5) return bestIdx;
+  }
+  return -1;
+}
+
+// ============== 暂停 ==============
+function togglePause() {
+  if (gameState === 'playing') {
+    gameState = 'paused';
+    document.getElementById('pause-menu').style.display = 'flex';
+  } else if (gameState === 'paused') {
+    gameState = 'playing';
+    document.getElementById('pause-menu').style.display = 'none';
+    clock.getDelta();  // 重置 dt
+  }
+}
+
+// ============== 摄像机抖动 ==============
+let shakeT = 0, shakeAmp = 0;
+function shakeCamera(dur, amp) { shakeT = dur; shakeAmp = amp; }
+function applyShake(dt) {
+  if (shakeT > 0) {
+    shakeT -= dt;
+    const k = shakeT > 0 ? shakeAmp * (shakeT / 0.4) : 0;
+    camera.position.x += (Math.random() - 0.5) * k;
+    camera.position.y += (Math.random() - 0.5) * k;
+  }
+}
+
+// ============== 主循环 ==============
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, clock.getDelta());
+  const now = clock.elapsedTime;
+
+  if (gameState === 'playing') {
+    // 冷却
+    ['bow', 'catapult', 'cannon'].forEach(t => {
+      if (cooldowns[t] > 0) {
+        cooldowns[t] = Math.max(0, cooldowns[t] - dt);
+      }
+    });
+    updateWeaponBar();
+
+    // 槽位脉冲（未占用才闪）
+    const pulse = 0.55 + 0.35 * (0.5 + 0.5 * Math.sin(now * 4));
+    wallSlots.forEach(s => {
+      if (!s.userData.occupied) {
+        s.material.opacity = pulse;
+        const sScale = 1 + 0.12 * Math.sin(now * 4);
+        s.scale.set(sScale, 1, sScale);
+      }
+    });
+
+    // 引导：第一次没放武器时显示箭头 + 拖动提示
+    const arrow = document.getElementById('tutorial-arrow');
+    if (placedWeapons.length === 0) {
+      arrow.style.display = 'block';
+      ['bow', 'catapult', 'cannon'].forEach(t => {
+        const hint = document.getElementById('drag-hint-' + t);
+        if (hint) hint.style.display = cooldowns[t] <= 0 ? 'block' : 'none';
+      });
+    } else {
+      arrow.style.display = 'none';
+      ['bow', 'catapult', 'cannon'].forEach(t => {
+        const hint = document.getElementById('drag-hint-' + t);
+        if (hint) hint.style.display = 'none';
+      });
+    }
+
+    // 备战倒计时
+    if (betweenWaves) {
+      prepTime -= dt;
+      document.getElementById('prep-time').textContent = Math.max(0, Math.ceil(prepTime));
+      if (prepTime <= 0) startWave();
+    }
+
+    // 生成
+    if (waveActive && spawnQueue.length > 0) {
+      spawnTimer -= dt;
+      if (spawnTimer <= 0) {
+        spawnDino(spawnQueue.shift());
+        spawnTimer = spawnInterval;
+      }
+    }
+
+    updateDinos(dt);
+    updateWeapons(dt, now);
+    updateAllProjectiles(dt);
+
+    // 血条朝向相机
+    dinosaurs.forEach(d => {
+      if (d.userData.hpBar) {
+        d.userData.hpBar.lookAt(camera.position);
+      }
+    });
+  }
+
+  if (gameState === 'playing' || gameState === 'paused') {
+    applyShake(dt);
+  }
+
+  renderer.render(scene, camera);
+}
+
+// ============== 启动 ==============
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof THREE === 'undefined') {
+    document.getElementById('loading').textContent = 'Three.js 加载失败，请检查网络';
+    return;
+  }
+  init();
+});
+</script>
+</body>
+</html>
