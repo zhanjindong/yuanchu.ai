@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DeepSeek Harness 深度解析：下一代 Agent 框架的崛起 - 元初AI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  background:#fff;color:#1a1a1a;min-height:100vh;line-height:1.8;
+}
+
+/* ---- Layout ---- */
+.content{position:relative;z-index:1;padding:40px 60px;max-width:820px;margin:0 auto;}
+.back{display:inline-block;font-size:14px;color:rgba(0,0,0,.4);text-decoration:none;letter-spacing:4px;margin-bottom:40px;transition:color .3s;}
+.back:hover{color:#1a1a1a;}
+.back::before{content:'← ';}
+
+/* ---- Article Header ---- */
+.article-header{margin-bottom:48px;}
+.article-header .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.article-header .tag{font-size:12px;color:#3b82f6;background:#eff6ff;padding:3px 12px;border-radius:20px;letter-spacing:1px;}
+.article-header h1{font-size:36px;font-weight:700;line-height:1.3;letter-spacing:1px;margin-bottom:16px;}
+.article-header .meta{font-size:14px;color:rgba(0,0,0,.4);display:flex;gap:20px;}
+
+/* ---- TOC ---- */
+.toc{background:#f8fafc;border-radius:8px;padding:20px 28px;margin-bottom:40px;}
+.toc-title{font-size:14px;font-weight:600;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:12px;}
+.toc a{display:block;font-size:15px;color:#1e293b;text-decoration:none;padding:4px 0;transition:color .2s;}
+.toc a:hover{color:#3b82f6;}
+.toc a.sub{padding-left:20px;font-size:14px;color:#64748b;}
+
+/* ---- Prose ---- */
+.prose h2{font-size:26px;font-weight:700;margin-top:48px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,.08);}
+.prose h3{font-size:20px;font-weight:600;margin-top:32px;margin-bottom:12px;}
+.prose p{font-size:16px;line-height:1.9;color:#334155;margin-bottom:16px;}
+.prose ul,.prose ol{padding-left:24px;margin-bottom:16px;}
+.prose li{font-size:16px;line-height:1.9;color:#334155;margin-bottom:4px;}
+.prose li strong{color:#1e293b;}
+.prose strong{color:#1e293b;}
+.prose a{color:#3b82f6;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s;}
+.prose a:hover{border-bottom-color:#3b82f6;}
+.prose hr{border:none;border-top:1px solid rgba(0,0,0,.08);margin:40px 0;}
+
+/* ---- Code ---- */
+.prose code{font-family:"SF Mono",Monaco,"Cascadia Code",Consolas,monospace;font-size:14px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:#e11d48;}
+.prose pre{background:#1e293b;border-radius:8px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;}
+.prose pre code{background:none;color:#e2e8f0;padding:0;font-size:14px;line-height:1.7;}
+
+/* ---- Blockquote ---- */
+.prose blockquote{border-left:3px solid rgba(0,0,0,.15);padding:12px 20px;margin:16px 0 24px;color:#64748b;font-size:15px;line-height:1.8;background:#fafafa;border-radius:0 6px 6px 0;}
+
+/* ---- Callouts ---- */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0 24px;font-size:15px;line-height:1.7;}
+.callout-title{font-weight:600;margin-bottom:6px;}
+.callout-info{background:#eff6ff;border-left:4px solid #3b82f6;color:#1e40af;}
+.callout-info .callout-title{color:#3b82f6;}
+.callout-warn{background:#fffbeb;border-left:4px solid #f59e0b;color:#92400e;}
+.callout-warn .callout-title{color:#f59e0b;}
+.callout-tip{background:#f0fdf4;border-left:4px solid #10b981;color:#065f46;}
+.callout-tip .callout-title{color:#10b981;}
+
+/* ---- Table ---- */
+.prose table{width:100%;border-collapse:collapse;font-size:15px;margin:16px 0 24px;}
+.prose th,.prose td{padding:10px 14px;text-align:left;border-bottom:1px solid #e2e8f0;}
+.prose th{background:#f8fafc;font-weight:600;color:#1e293b;white-space:nowrap;}
+.prose tr:hover td{background:#f8fafc;}
+
+/* ---- Diagram (SVG) ---- */
+.diagram{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:24px;margin:16px 0 24px;text-align:center;overflow-x:auto;}
+.diagram svg{max-width:100%;height:auto;display:block;margin:0 auto;}
+.diagram-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:8px;}
+/* SVG 通用样式 */
+svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC",sans-serif;}
+svg .node-rect{fill:#fff;stroke:#e2e8f0;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-blue{fill:#eff6ff;stroke:#3b82f6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-green{fill:#f0fdf4;stroke:#10b981;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-purple{fill:#f5f3ff;stroke:#8b5cf6;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-amber{fill:#fffbeb;stroke:#f59e0b;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-red{fill:#fef2f2;stroke:#ef4444;stroke-width:1.5;rx:8;ry:8;}
+svg .node-rect-gray{fill:#f8fafc;stroke:#94a3b8;stroke-width:1.5;rx:8;ry:8;}
+svg .node-label{font-size:13px;fill:#1e293b;font-weight:600;text-anchor:middle;dominant-baseline:central;}
+svg .node-sublabel{font-size:11px;fill:#64748b;text-anchor:middle;dominant-baseline:central;}
+svg .arrow-line{stroke:#94a3b8;stroke-width:1.5;fill:none;marker-end:url(#arrowhead);}
+svg .arrow-line-blue{stroke:#3b82f6;stroke-width:1.5;fill:none;marker-end:url(#arrowhead-blue);}
+svg .arrow-label{font-size:11px;fill:#64748b;text-anchor:middle;}
+svg .group-box{fill:none;stroke:#e2e8f0;stroke-width:1;stroke-dasharray:6,3;rx:12;ry:12;}
+svg .group-label{font-size:12px;fill:#94a3b8;font-weight:600;}
+
+/* ---- Image ---- */
+.prose img{max-width:100%;border-radius:8px;margin:16px 0 24px;}
+.prose .img-caption{text-align:center;font-size:13px;color:#94a3b8;margin-top:-16px;margin-bottom:24px;}
+
+/* ---- References ---- */
+.references{margin-top:48px;padding-top:24px;border-top:1px solid rgba(0,0,0,.08);}
+.references h2{font-size:20px;border-bottom:none;margin-top:0;padding-bottom:0;}
+.references ol{padding-left:24px;}
+.references li{font-size:14px;line-height:1.8;color:#64748b;margin-bottom:4px;}
+.references a{color:#3b82f6;font-size:14px;}
+
+/* ---- Footer ---- */
+footer{margin-top:80px;padding-top:32px;border-top:1px solid rgba(0,0,0,.1);text-align:center;font-size:12px;color:rgba(0,0,0,.3);padding-bottom:40px;}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .content{padding:20px 20px;}
+  .article-header h1{font-size:26px;}
+  .prose h2{font-size:22px;}
+  .prose h3{font-size:18px;}
+  .prose pre{padding:14px 16px;}
+  .prose pre code{font-size:13px;}
+  .prose table{font-size:13px;}
+  .prose th,.prose td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<!-- Shared SVG defs (箭头等复用标记) -->
+<svg style="position:absolute;width:0;height:0;">
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#94a3b8"/>
+  </marker>
+  <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+    <path d="M0,0 L10,3.5 L0,7 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+</svg>
+
+<div class="content">
+<a href="index.html" class="back">TECH ARTICLES</a>
+
+<!-- ==================== HEADER ==================== -->
+<div class="article-header">
+  <div class="tags">
+    <span class="tag">DeepSeek</span>
+    <span class="tag">Agent框架</span>
+    <span class="tag">AI</span>
+  </div>
+  <h1>DeepSeek Harness 深度解析：下一代 Agent 框架的崛起</h1>
+  <div class="meta">
+    <span>Jackie Zhan</span>
+    <span>2026-08-15</span>
+  </div>
+</div>
+
+<!-- ==================== TOC ==================== -->
+<div class="toc">
+  <div class="toc-title">目录</div>
+  <a href="#s1">一、DeepSeek：来自中国的 AI 力量</a>
+  <a href="#s2">二、DeepSeek Harness 是什么</a>
+  <a href="#s3">三、Harness 的核心架构设计</a>
+  <a href="#s4">四、与其他 Agent 框架的对比</a>
+  <a href="#s5">五、典型使用场景与案例</a>
+  <a href="#s6">六、如何快速上手</a>
+</div>
+
+<!-- ==================== PROSE ==================== -->
+<div class="prose">
+
+<!-- ==================== 引言 ==================== -->
+<p>2024 年底，当你还在讨论 Prompt Engineering 能不能"拯救"LLM 输出的随机性时，一种新的范式已经悄然崛起——<strong>Agent（智能体）</strong>。如果说大模型是"大脑"，那 Agent 就是给这个大脑装上了"手"和"脚"，让它能够自主规划、调用工具、完成任务。</p>
+
+<p>而在这个赛道上，一个来自中国的名字正在引起越来越多开发者的关注——<strong>DeepSeek</strong>。他们不仅开源了性能对标 GPT-4 的大模型，最近更是推出了 <strong>DeepSeek Harness</strong>，一个专为构建 Agent 应用而生的框架。</p>
+
+<p>我要告诉你的是：这可能不是你常见的那种"又一个 LangChain 替代品"。DeepSeek Harness 在设计上有很多独特的思考，尤其是在多模态交互和工具链编排方面，有不少值得深入探讨的设计决策。</p>
+
+<hr>
+
+<!-- ==================== SECTION 1 ==================== -->
+<h2 id="s1">一、DeepSeek：来自中国的 AI 力量</h2>
+
+<p>在说 Harness 之前，我觉得有必要先聊聊 DeepSeek 本身。因为理解一家公司的技术理念，是理解其产品的前提。</p>
+
+<p><strong>DeepSeek（深度求索）</strong> 是一家专注于通用人工智能的中国科技公司，由著名量化投资机构幻方量化于 2023 年创立。听起来有点跨界对吧？但实际上，幻方量化在 AI 领域已经深耕多年，拥有充沛的 GPU 算力资源，这在后来成为 DeepSeek 快速迭代模型的重要基础。</p>
+
+<p>DeepSeek 的模型路线有几个鲜明特点：</p>
+
+<ul>
+  <li><strong>开源优先</strong>：他们开源了 DeepSeek V2、V2.5、V3 等多个版本，代码和权重全部公开，这在闭源大行其道的今天显得尤为珍贵</li>
+  <li><strong>MoE 架构</strong>：采用 Mixture of Experts（混合专家）架构，在保持推理效率的同时大幅提升模型能力</li>
+  <li><strong>极致性价比</strong>：DeepSeek V2 的 API 价格只有同性能模型的十分之一，被业界称为"价格屠夫"</li>
+</ul>
+
+<div class="callout callout-info">
+  <div class="callout-title">数据说话</div>
+  DeepSeek V3 在多项基准测试中达到了与 GPT-4o 相近的水平，而 API 价格仅为后者的约 3%。这种性价比优势直接改变了企业在 AI 选型时的决策逻辑。
+</div>
+
+<p>但 DeepSeek 并不满足于只做模型。他们很清楚，再强的模型如果只能"对话"，价值始终有限。<strong>真正的爆发点在于 Agent</strong>——让模型能够自主行动、调用工具、完成复杂任务。这就是 DeepSeek Harness 诞生的背景。</p>
+
+<!-- ==================== SECTION 2 ==================== -->
+<h2 id="s2">二、DeepSeek Harness 是什么</h2>
+
+<p>你可能会问：市面上已经有 LangChain、AutoGen、LlamaIndex、CrewAI 这么多 Agent 框架了，DeepSeek Harness 有什么特别的？</p>
+
+<p>要回答这个问题，我们先弄清楚 Harness 这个词的本意——<strong>" Harness" 在工程语境中是"控制、驾驭"的意思</strong>。DeepSeek 给自己的框架起这个名字，意图很明确：<strong>帮助开发者更好地驾驭大模型，让 AI 从"能说会道"变成"能说会做"</strong>。</p>
+
+<p>从功能定位上看，DeepSeek Harness 是一个<strong>端到端的 Agent 应用开发框架</strong>，它提供：</p>
+
+<ul>
+  <li><strong>Agent 抽象层</strong>：定义 Agent 的思考-行动循环</li>
+  <li><strong>工具编排系统</strong>：支持多工具的动态组合和调用</li>
+  <li><strong>记忆管理</strong>：短期记忆（上下文）+ 长期记忆（向量存储）</li>
+  <li><strong>多模态交互</strong>：支持文本、图像、语音等多种输入输出形式</li>
+  <li><strong>部署与监控</strong>：从开发到生产的完整链路支持</li>
+</ul>
+
+<p>但如果你只是记住这些功能列表，那你对 Harness 的理解可能还停留在表面。它真正特别的地方，在于<strong>设计哲学层面的几个关键决策</strong>。</p>
+
+<div class="callout callout-tip">
+  <div class="callout-title">一句话理解</div>
+  DeepSeek Harness 不是简单地把 LangChain 重新造一遍，而是在"如何让模型更好地自主行动"这个核心问题上，提供了 DeepSeek 自己的答案——尤其是他们在模型与框架协同优化方面的独特思路。
+</div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<h2 id="s3">三、Harness 的核心架构设计</h2>
+
+<p>让我拆解一下 DeepSeek Harness 的架构。你可以把它想象成一个<strong>乐高积木系统</strong>——每个模块都可以独立使用，也可以组合成复杂的 Agent 应用。</p>
+
+<div class="diagram">
+  <svg viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
+    <!-- 外框 -->
+    <rect class="group-box" x="10" y="10" width="680" height="380"/>
+    <text class="group-label" x="20" y="30">DeepSeek Harness 架构</text>
+    
+    <!-- 用户交互层 -->
+    <rect class="node-rect-blue" x="30" y="50" width="140" height="50"/>
+    <text class="node-label" x="100" y="75">用户交互层</text>
+    <text class="node-sublabel" x="100" y="90">API / SDK / UI</text>
+    
+    <!-- Agent 核心层 -->
+    <rect class="node-rect-purple" x="30" y="150" width="140" height="120"/>
+    <text class="node-label" x="100" y="175">Agent 核心</text>
+    <text class="node-sublabel" x="100" y="195">Planner · Executor</text>
+    <text class="node-sublabel" x="100" y="215">Memory · Router</text>
+    <text class="node-sublabel" x="100" y="235">Tools Registry</text>
+    
+    <!-- 模型层 -->
+    <rect class="node-rect-green" x="280" y="150" width="140" height="120"/>
+    <text class="node-label" x="350" y="175">模型层</text>
+    <text class="node-sublabel" x="350" y="195">DeepSeek V3</text>
+    <text class="node-sublabel" x="350" y="215">多模态模型</text>
+    <text class="node-sublabel" x="350" y="235">Function Calling</text>
+    
+    <!-- 工具层 -->
+    <rect class="node-rect-amber" x="530" y="150" width="140" height="120"/>
+    <text class="node-label" x="600" y="175">工具生态</text>
+    <text class="node-sublabel" x="600" y="195">Web Search</text>
+    <text class="node-sublabel" x="600" y="215">Code Interpreter</text>
+    <text class="node-sublabel" x="600" y="235">Custom Tools</text>
+    
+    <!-- 记忆层 -->
+    <rect class="node-rect-gray" x="280" y="320" width="140" height="50"/>
+    <text class="node-label" x="350" y="345">记忆系统</text>
+    
+    <!-- 部署层 -->
+    <rect class="node-rect-red" x="530" y="320" width="140" height="50"/>
+    <text class="node-label" x="600" y="345">部署与监控</text>
+    
+    <!-- 箭头 -->
+    <line class="arrow-line" x1="170" y1="75" x2="270" y2="75"/>
+    <line class="arrow-line" x1="350" y1="150" x2="350" y2="120"/>
+    <line class="arrow-line" x1="420" y1="180" x2="520" y2="180"/>
+    <line class="arrow-line" x1="350" y1="270" x2="350" y2="310"/>
+    <line class="arrow-line" x1="490" y1="270" x2="550" y2="310"/>
+  </svg>
+  <div class="diagram-caption">图 1：DeepSeek Harness 分层架构</div>
+</div>
+
+<h3>3.1 Agent 核心：思考与行动的双循环</h3>
+
+<p>Harness 的 Agent 核心采用了<strong>双循环架构</strong>——Planner（规划器）负责"想"，Executor（执行器）负责"做"。</p>
+
+<p>这个设计解决了一个关键问题：<strong>在复杂任务中，"想"和"做"需要不同的认知模式</strong>。Planner 需要 deep thinking（慢思考），可能需要多轮推理才能找到解决方案；Executor 则需要快速响应和高效执行。</p>
+
+<p>具体工作流程是：</p>
+
+<ol>
+  <li><strong>任务分解</strong>：Planner 接收用户请求，拆解为可执行的子任务</li>
+  <li><strong>路由决策</strong>：根据子任务类型，选择调用模型推理、工具执行或外部 API</li>
+  <li><strong>执行反馈</strong>：Executor 执行动作，收集结果，返回给 Planner</li>
+  <li><strong>迭代优化</strong>：Planner 根据执行结果调整计划，直到任务完成</li>
+</ol>
+
+<div class="callout callout-info">
+  <div class="callout-title">实战案例</div>
+  假设用户说"帮我分析这家公司股票的潜在风险，并生成一份报告"，Agent 可能会这样工作：第一步让 Planner 拆解为"获取股票数据 → 调用风险分析模型 → 生成报告"三个子任务；第二步 Executor 依次执行每个子任务；第三步 Planner 根据每步结果决定是否需要补充信息。
+</div>
+
+<h3>3.2 工具系统：动态编排与安全边界</h3>
+
+<p>工具系统是 Agent 的"四肢"。Harness 在这方面有几个值得注意的设计：</p>
+
+<ul>
+  <li><strong>动态工具选择</strong>：不是预设固定工具链，而是让 Agent 根据任务需求动态选择和组合工具</li>
+  <li><strong>工具描述自动生成</strong>：Agent 可以根据上下文自动生成对自定义工具的描述，降低工具接入成本</li>
+  <li><strong>安全沙箱</strong>：每个工具都在隔离环境中执行，特别是代码执行器，防止恶意代码危害系统</li>
+</ul>
+
+<h3>3.3 记忆系统：分层存储，按需检索</h3>
+
+<p>Harness 的记忆系统采用了<strong>分层设计</strong>：</p>
+
+<ul>
+  <li><strong>工作记忆</strong>：当前对话的上下文窗口，存放最近几轮的交互内容</li>
+  <li><strong>情景记忆</strong>：提取并存储对话中的关键信息，如用户偏好、任务进度等</li>
+  <li><strong>长期记忆</strong>：向量数据库存储的历史知识，支持语义检索</li>
+</ul>
+
+<p>这种设计的妙处在于：<strong>不是把所有东西都塞进上下文窗口（太贵），也不是完全依赖向量检索（可能丢失关键细节），而是用分层策略平衡成本与效果</strong>。</p>
+
+<!-- ==================== SECTION 4 ==================== -->
+<h2 id="s4">四、与其他 Agent 框架的对比</h2>
+
+<p>光说不练假把式。我们来看看 DeepSeek Harness 与市面上主流 Agent 框架的对比。</p>
+
+<table>
+<thead>
+<tr><th>特性</th><th>DeepSeek Harness</th><th>LangChain</th><th>AutoGen</th><th>CrewAI</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>模型支持</strong></td>
+  <td>DeepSeek 系列优先 + 多模型</td>
+  <td>所有主流模型</td>
+  <td>所有主流模型</td>
+  <td>所有主流模型</td>
+</tr>
+<tr>
+  <td><strong>架构风格</strong></td>
+  <td>双循环（Planner+Executor）</td>
+  <td>LCEL 链式组合</td>
+  <td>多代理协商</td>
+  <td>层级化 Agent 团队</td>
+</tr>
+<tr>
+  <td><strong>工具生态</strong></td>
+  <td>原生工具注册 + 动态选择</td>
+  <td>LangChain Tools</td>
+  <td>自定义工具</td>
+  <td>预定义工具集</td>
+</tr>
+<tr>
+  <td><strong>记忆机制</strong></td>
+  <td>三层记忆（工作+情景+长期）</td>
+  <td>基础 memory 接口</td>
+  <td>有限记忆支持</td>
+  <td>上下文记忆</td>
+</tr>
+<tr>
+  <td><strong>部署支持</strong></td>
+  <td>端到端（开发→生产）</td>
+  <td>需自行集成</td>
+  <td>实验性</td>
+  <td>基础部署</td>
+</tr>
+<tr>
+  <td><strong>开源协议</strong></td>
+  <td>MIT</td>
+  <td>MIT</td>
+  <td>MIT</td>
+  <td>MIT</td>
+</tr>
+</tbody>
+</table>
+
+<div class="callout callout-warn">
+  <div class="callout-title">关键区别</div>
+  DeepSeek Harness 最大的差异化在于<strong>模型与框架的协同优化</strong>——因为 DeepSeek 既做模型又做框架，他们可以针对自己的模型特性（如更强的 Function Calling 能力）进行深度优化，这是"模型中立"框架做不到的。
+</div>
+
+<p>但这并不意味着 Harness 是"完美的选择"。它的局限性也很明显：</p>
+
+<ul>
+  <li><strong>生态年轻</strong>：相比 LangChain 拥有数千个第三方集成，CrewAI 拥有丰富的预定义 Agent 模式，Harness 的生态还在早期</li>
+  <li><strong>DeepSeek 锁定</strong>：虽然支持多模型，但深度优化是针对 DeepSeek 系列的，如果想用 Claude 或 Gemini，性能可能不如原生方案</li>
+  <li><strong>文档尚待完善</strong>：作为相对新的框架，社区文档和最佳实践还在建设中</li>
+</ul>
+
+<p>我的判断是：<strong>如果你已经在使用 DeepSeek 模型，Harness 是自然的选择；如果你用的是其他模型，可以观望一下，等生态更成熟再做决定</strong>。</p>
+
+<!-- ==================== SECTION 5 ==================== -->
+<h2 id="s5">五、典型使用场景与案例</h2>
+
+<p>说了这么多理论，你可能想问：这东西到底能干什么？让我给你列举几个典型场景：</p>
+
+<h3>5.1 智能客服与对话系统</h3>
+
+<p>这是最直接的应用。 Harness 的多轮对话能力和记忆系统，可以让客服机器人不仅"记住"用户的上下文，还能根据历史交互提供个性化服务。</p>
+
+<p>比如，用户说"帮我查一下上次那个订单的状态"，Agent 可以从长期记忆中提取之前的订单信息，而不需要用户重复描述。</p>
+
+<h3>5.2 自动化研究助手</h3>
+
+<p>想象一下，你让它"帮我整理一下过去一周 AI 领域的重要论文"。Agent 会自动：</p>
+
+<ol>
+  <li>调用搜索工具获取最新论文</li>
+  <li>调用摘要模型提取核心观点</li>
+  <li>按主题分类整理</li>
+  <li>生成结构化报告</li>
+</ol>
+
+<div class="callout callout-tip">
+  <div class="callout-title">实战案例</div>
+  有开发者用 Harness 搭建了一个"论文阅读助手"，输入论文链接后，Agent 会自动抓取 PDF、提取内容、生成摘要、回答用户关于论文的问题。整套流程完全自动化。
+</div>
+
+<h3>5.3 代码辅助与调试</h3>
+
+<p>结合代码解释器工具，Harness 可以成为一个<strong>智能开发伴侣</strong>——不仅能帮你写代码，还能帮你调试、分析性能问题、甚至重构。</p>
+
+<p>它的优势在于：可以执行代码、观察结果、然后根据输出调整策略，形成真正的"思考-执行-反馈"闭环。</p>
+
+<h3>5.4 多代理协作系统</h3>
+
+<p>虽然 Harness 是单 Agent 框架，但通过多实例部署，它可以构建复杂的<strong>多代理协作系统</strong>。比如一个"虚拟公司"：</p>
+
+<ul>
+  <li>CEO Agent 负责理解用户需求，分配任务</li>
+  <li>Researcher Agent 负责信息搜集</li>
+  <li>Writer Agent 负责内容生成</li>
+  <li>Reviewer Agent 负责质量把控</li>
+</ul>
+
+<p>这种设计在 CrewAI 中被称为"Agent 团队"，在 Harness 中可以通过组合多个 Agent 实例来实现。</p>
+
+<!-- ==================== SECTION 6 ==================== -->
+<h2 id="s6">六、如何快速上手</h2>
+
+<p>说了这么多，是时候动动手了。下面是快速上手 Harness 的步骤：</p>
+
+<h3>6.1 环境准备</h3>
+
+<pre><code class="language-bash"># 安装 Harness
+pip install deepseek-harness
+
+# 或者从源码安装
+git clone https://github.com/deepseek-ai/deepseek-agent.git
+cd deepseek-agent
+pip install -e .</code></pre>
+
+<h3>6.2 第一个 Agent</h3>
+
+<pre><code class="language-python">from deepseek_harness import Agent
+from deepseek_harness.tools import SearchTool, CalculatorTool
+
+# 创建 Agent 实例
+agent = Agent(
+    model="deepseek-chat",
+    tools=[SearchTool(), CalculatorTool()],
+    memory=True
+)
+
+# 启动对话
+response = agent.run("计算 1234 * 5678 等于多少，然后搜索这个结果的相关信息")
+print(response)</code></pre>
+
+<p>这段代码做了两件事：创建一个能搜索和计算的工具，让 Agent 完成一个需要"先思考、再行动"的任务。</p>
+
+<h3>6.3 自定义工具</h3>
+
+<p>除了内置工具，你也可以轻松定义自己的工具：</p>
+
+<pre><code class="language-python">from deepseek_harness import tool
+
+@tool
+def get_weather(location: str) -> str:
+    """获取指定位置的天气信息"""
+    # 这里调用真实的天气 API
+    return f"{location} 天气晴朗，25°C"
+
+# 使用自定义工具
+agent = Agent(
+    model="deepseek-chat",
+    tools=[get_weather]
+)
+
+agent.run("北京今天天气怎么样？")</code></pre>
+
+<h3>6.4 配置记忆系统</h3>
+
+<pre><code class="language-python">from deepseek_harness import Agent
+from deepseek_harness.memory import VectorMemory
+
+# 配置长期记忆（需要向量数据库）
+agent = Agent(
+    model="deepseek-chat",
+    memory=VectorMemory(
+        provider="qdrant",  # 支持 qdrant, milvus, weaviate
+        collection="my_notes"
+    )
+)</code></pre>
+
+<div class="callout callout-info">
+  <div class="callout-title">下一步建议</div>
+  1. 先跑通官方示例，理解 Agent 的基本工作流程<br>
+  2. 尝试接入一个真实的外部 API（如天气、股票），体验工具调用<br>
+  3. 部署到生产环境前，务必配置监控和日志
+</div>
+
+<!-- ==================== 总结 ==================== -->
+<h2 id="s7">总结</h2>
+
+<p>DeepSeek Harness 并不是要"取代" LangChain 或其他框架。它更像是一个<strong>补充选项</strong>——如果你用的是 DeepSeek 模型，想要一个端到端、从开发到部署都考虑到的解决方案，Harness 值得一试。</p>
+
+<p>我认为，2025 年会是 Agent 框架真正"落地"的一年。之前大家都在讨论"Agent 能不能工作"，接下来要看"Agent 能不能大规模工作"。在这个背景下，<strong>模型与框架的协同优化</strong>会成为核心竞争力——这也是 DeepSeek Harness 最大的差异化所在。</p>
+
+<p>至于它能不能成为"下一代 Agent 框架的标杆"，时间会给出答案。但至少现在，它值得你花半小时了解一下。</p>
+
+<p><strong>文章标题：</strong>DeepSeek Harness 深度解析：下一代 Agent 框架的崛起</p>
+<p><strong>链接：</strong>https://yuanchu.ai/tech/deepseek-harness-analysis.html</p>
+
+</div><!-- /prose -->
+
+<footer>
+  <p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p>
+</footer>
+</div>
+</body>
+</html>
