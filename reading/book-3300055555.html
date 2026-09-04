@@ -86,12 +86,83 @@
             <div>
                 <h1 style="font-size:30px;letter-spacing:2px;font-weight:400;margin:0;">深度学习推荐系统</h1>
                 <div class="book-author">王喆</div>
-                <div class="book-meta2"><span>划线 1</span><span>想法 0</span></div>
+                <div class="book-meta2"><span>划线 5</span><span>想法 9</span></div>
                 <a class="book-link" href="weread://reading?bId=3300055555">在微信读书中打开 →</a>
             </div>
         </div>
         
-        <div class="tabs"><button class="tab active" data-tab="panel-0">划线<span class="cnt">1</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=9&rangeStart=624&rangeEnd=666&userVid=250023191"><div class="note-text">推荐系统要解决的“用户痛点”是用户如何在“信息过载”的情况下高效地获得感兴趣的信息。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
+        <div class="tabs"><button class="tab active" data-tab="panel-0">我的想法<span class="cnt">9</span></button><button class="tab" data-tab="panel-1">划线<span class="cnt">5</span></button></div><div class="panel active" id="panel-0"><div class="notes"><a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=67&rangeStart=1450&rangeEnd=1451&userVid=250023191"><div class="note-text">MARK</div><div class="ref">[插图]</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=66&rangeStart=5914&rangeEnd=5957&userVid=250023191"><div class="note-text">总结的精准</div><div class="ref">Interleaving 方法的实验逻辑和业务逻辑纠缠在一起，因此业务逻辑可能会被干扰</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=63&rangeStart=1531&rangeEnd=1586&userVid=250023191"><div class="note-text">这里有一个疑问如果库里有10个正样本，但我的场景只返回5个，那召回的天花板就是50%</div><div class="ref">只用一个点的精确率和召回率是不能全面衡量模型性能的，只有通过P-R曲线的整体表现，才能对模型进行更全面的评估。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=63&rangeStart=1179&rangeEnd=1182&userVid=250023191"><div class="note-text">在排序模型的上下文中，“某一阈值”指的是​​用于将模型输出的预测概率或得分划分为正样本和负样本的临界值​​。</div><div class="ref">某一阈</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=62&rangeStart=5651&rangeEnd=5698&userVid=250023191"><div class="note-text">RMSE（均方根误差）和MAPE（平均绝对百分比误差）都是衡量回归预测精度的常用指标，但它们在计算时对“误差”概念的定义不同，因此对离群点（outliers）的敏感程度也不同。
+
+​​1. RMSE的局限​​
+• RMSE先对每个样本的预测误差 ​​(y−ŷ)​​ 求平方，再开根号取均值。它保留了误差的绝对大小，因此当某个样本的误差特别大时，平方项会把它放大，拉高整体RMSE值——离群点对RMSE的影响呈“线性放大”。
+• 公式：RMSE=√(1/n Σ(y−ŷ)²)。
+
+​​2. MAPE的归一化思路​​
+• MAPE把每个样本的误差除以真实值 ​​y​​，只保留绝对值并取平均，再乘以100得到百分比。由于除以 ​​y​​，误差被“按比例”压缩，量纲消失，所以离群点即使绝对误差很大，只要它在整体样本中占比不大，对MAPE的拉升就有限。
+• 公式：MAPE=1/n Σ| (y−ŷ)/y | ×100。
+
+​​3. 为什么MAPE对离群点更鲁棒​​
+• 在RMSE中，离群点的误差贡献与其它点线性叠加；而在MAPE中，离群点的误差贡献被真实值 ​​y​​ 归一化，相当于“把误差变成相对比例”。当 ​​y​​ 很小时，分母小，分子即使接近 ​​y​​ 也会让MAPE接近100%；但若 ​​y​​ 很大，同样的绝对误差对MAPE的贡献就被稀释。
+• 因此，MAPE更关注“预测值与真实值之间的相对偏差”，在存在少量极端值时，整体MAPE往往比RMSE更稳定，离群点难以“撑大”它。
+
+​​4. 适用场景​​
+• 当误差的量纲重要、需要直观比较绝对差距时，用RMSE更合适。
+• 当想消除量纲、比较不同量级数据集或模型的相对误差时，用MAPE更合适；尤其在预测值可能跨越多个数量级、或存在少量极小真实值时，MAPE能提供更可靠的横向比较。
+
+​​总结​​：MAPE通过“误差/真实值”的归一化操作，使每个数据点的误差贡献受其自身量级约束，从而显著降低了离群点对整体评估结果的影响，这一点在深度学习推荐系统等资料中被用来说明其鲁棒性</div><div class="ref">相比RMSE，MAPE相当于把每个点的误差进行了归一化，降低了个别离群点带来的绝对误差的影响。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=62&rangeStart=4917&rangeEnd=5223&userVid=250023191"><div class="note-text">在均方根误差（RMSE）公式中，​​先对误差平方再开根号​​的核心作用是：
+
+​​放大异常值的影响（惩罚大误差）​​
+平方操作会显著增大预测误差较大的样本的权重（例如，误差为2的样本贡献4，误差为10的样本贡献100）。这使得RMSE对离群点更敏感，能更明显地反映模型在极端情况下的表现。
+
+​​消除正负误差抵消问题​​
+误差可能正负交替（预测值高于/低于真实值），直接求平均可能掩盖真实偏差。平方操作统一将误差转为正数，避免正负误差相互抵消。
+
+​​恢复误差单位（开根号的作用）​​
+平方后的误差单位变为原单位的平方（如真实值单位为“元”，平方后单位为“元²”）。开根号后，RMSE的单位恢复为原单位（如“元”），使结果更直观可解释（例如，RMSE=5元表示平均预测误差约5元）。
+
+​​总结​​：平方操作强化了大误差的权重，使RMSE对模型的极端预测错误更敏感；开根号则确保最终指标与原始数据单位一致，便于实际业务理解。</div><div class="ref">yi是第i个样本点的真实值，[插图]是第i个样本点的预测值，n是样本点的个数。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=62&rangeStart=1702&rangeEnd=1713&userVid=250023191"><div class="note-text">测试集？不是训练集？</div><div class="ref">其余所有样本作为测试集</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=15&rangeStart=5309&rangeEnd=5327&userVid=250023191"><div class="note-text">梯度下降法是一种通过不断调整参数来最小化目标函数的优化算法。在矩阵分解中，它的核心作用是通过迭代更新用户和物品的隐向量，使预测评分尽可能接近真实评分。以下是通俗理解：
+1. ​​目标：让预测更准​​
+• 矩阵分解的目标是将用户-物品评分矩阵分解为两个低维矩阵（用户隐向量和物品隐向量），使得用户向量与物品向量的内积能准确预测评分。
+• ​​问题​​：初始的隐向量是随机的，预测结果可能偏差很大。
+2. ​​梯度下降的“找路”逻辑​​
+• ​​类比​​：想象你在山顶，想下到山谷最低点（目标函数最小值）。但雾很大，只能通过脚下坡度（梯度）判断方向。
+• ​​数学过程​​：
+• ​​计算误差​​：用当前隐向量预测评分，与真实评分比较，得到误差。
+• ​​找“下坡路”​​：通过求导（梯度），确定如何调整隐向量能让误差减小。梯度方向是误差增加最快的方向，因此反方向（负梯度）是下降最快的方向。
+• ​​调整参数​​：按步长（学习率）更新隐向量：新向量 = 旧向量 - 学习率 × 梯度。
+• ​​重复迭代​​：不断重复计算误差→找方向→调整参数的过程，直到误差足够小或达到最大迭代次数。
+3. ​​为什么适合矩阵分解？​​
+• ​​处理稀疏数据​​：传统方法（如奇异值分解）要求矩阵稠密，而梯度下降直接优化目标函数，能忽略缺失值，适合互联网场景的稀疏评分矩阵。
+• ​​高效性​​：随机梯度下降（SGD）每次仅用一个样本更新参数，计算量小，适合大规模数据。
+• ​​灵活性​​：可加入正则化项防止过拟合（如用户/物品向量的L2正则化），提升泛化能力。
+4. ​​通俗总结​​
+梯度下降就像一个“智能纠错器”：
+1. ​​试错​​：用当前隐向量做预测，发现误差。
+2. ​​反馈​​：通过梯度告诉隐向量“怎么改能减少误差”。
+3. ​​进化​​：不断调整隐向量，直到预测足够准。
+最终，用户和物品的隐向量被优化到能最好地捕捉用户偏好和物品特征，从而解决协同过滤的稀疏性问题。</div><div class="ref">梯度下降法成了进行矩阵分解的主要方法</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note thought" href="weread://bestbookmark?bookId=3300055555&chapterUid=15&rangeStart=9278&rangeEnd=9305&userVid=250023191"><div class="note-text">在典型实现里，用户和物品的隐向量并不是孤立更新的，而是通过​​增量学习或联邦学习​​的方式在整个模型中同步更新，因此不需要为每一次用户/物品变化都重新训练一次完整模型。
+1. ​​在线/增量更新​​
+• 系统可以收集最近的行为数据，对用户画像或物品嵌入做增量训练，而不必从头开始。这样既能保持模型最新，又避免了全量重训练的开销。
+2. ​​模型与深度学习框架结合​​
+• 矩阵分解得到的用户、物品隐向量可以像普通 Embedding 一样直接拼接到深度网络中，后续只需对这部分参数继续训练即可，无需整体重跑。
+3. ​​联邦与分层更新​​
+• 在联邦矩阵分解中，用户隐向量由服务器维护，物品隐向量留在本地客户端。客户端用本地数据更新物品向量后，只把梯度发回服务器，服务器聚合后再下发新的用户向量，整个过程不涉及重新训练对方的参数。
+4. ​​实际工程做法​​
+• 常见模式是：①周期性迭代（如每天一次）对用户和物品向量做全量更新；②线上推理时使用最新版本的向量进行打分；③新样本先写入日志，下次迭代时一起训练。这样既保证效果，又避免实时重新训练带来的延迟。
+​​结论​​
+只需在模型层面对用户、物品向量做增量或联邦更新即可，不需要为每一次用户、物品变化都重新训练整套模型。只有当模型结构本身发生较大变化（如调整隐向量维度、更换目标函数）时，才需要从头开始训练。</div><div class="ref">在完成矩阵分解过程后，即可得到所有用户和物品的隐向量。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div><div class="panel" id="panel-1"><div class="notes"><a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=45&rangeStart=565&rangeEnd=587&userVid=250023191"><div class="note-text">机器学习模型的能力边界在于对数据的拟合和泛化</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=65&rangeStart=1841&rangeEnd=2020&userVid=250023191"><div class="note-text">谷歌关于其实验平台的论文Overlapping Experiment Infrastructure：More，Better，Faster Experimentation详细地介绍了实验流量分层和分流的机制，它保证了宝贵的线上测试流量的高可用性</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=15&rangeStart=9462&rangeEnd=9545&userVid=250023191"><div class="note-text">由于隐向量的存在，使任意的用户和物品之间都可以得到预测分值。而隐向量的生成过程其实是对共现矩阵进行全局拟合的过程，因此隐向量其实是利用全局信息生成的，有更强的泛化能力</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=15&rangeStart=6243&rangeEnd=6316&userVid=250023191"><div class="note-text">正则化对应的英文是Regularization，直译过来是“规则化”，即希望让训练出的模型更“规则”、更稳定，避免预测出一些不稳定的“离奇”结果。</div><span class="jump">在微信读书中查看 ↗</span></a>
+<a class="note mark" href="weread://bestbookmark?bookId=3300055555&chapterUid=9&rangeStart=624&rangeEnd=666&userVid=250023191"><div class="note-text">推荐系统要解决的“用户痛点”是用户如何在“信息过载”的情况下高效地获得感兴趣的信息。</div><span class="jump">在微信读书中查看 ↗</span></a></div></div>
         <footer><p>&copy; 2026 元初AI &middot; ORIGIN OF INTELLIGENCE</p></footer>
     </div>
     <script>
