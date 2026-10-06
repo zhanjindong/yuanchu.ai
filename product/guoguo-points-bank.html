@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>🐶 果果的积分银行 · Guoguo's Points Bank</title>
+<style>
+:root {
+  --green: #58CC02;
+  --green-dark: #46A302;
+  --green-light: #D7FFB8;
+  --red: #FF4B4B;
+  --red-dark: #D63838;
+  --red-light: #FFD3D3;
+  --pink: #FF4B82;
+  --pink-light: #FFD8E5;
+  --orange: #FF9600;
+  --orange-dark: #D67D00;
+  --orange-light: #FFE7BD;
+  --blue: #1CB0F6;
+  --blue-dark: #0E8FCB;
+  --blue-light: #CDEEFD;
+  --yellow: #FFC800;
+  --yellow-dark: #D6A800;
+  --yellow-light: #FFF3BF;
+  --purple: #CE82FF;
+  --purple-light: #EDD9FF;
+  --bg: #F7F7F7;
+  --card: #FFFFFF;
+  --text: #3C3C3C;
+  --text-light: #777777;
+  --text-faint: #AFAFAF;
+  --border: #E5E5E5;
+  --shadow-sm: 0 2px 0 var(--border);
+  --shadow: 0 2px 0 var(--border), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 0 rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-green: 0 4px 0 var(--green-dark), 0 6px 16px rgba(88,204,2,0.18);
+  --shadow-red: 0 4px 0 var(--red-dark), 0 6px 16px rgba(255,75,75,0.18);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-lg: 24px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+  min-height: 100vh;
+  padding: 20px 16px;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============= HEADER（小狗 + 积分）============= */
+.hero {
+  background: linear-gradient(135deg, var(--green) 0%, #6FD906 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-green);
+  margin-bottom: 24px;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -30px;
+  width: 140px; height: 140px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50%;
+}
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+.hero-greet {
+  font-size: 14px;
+  opacity: 0.9;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.hero-title {
+  font-size: 22px;
+  letter-spacing: 1px;
+  font-weight: 800;
+}
+.level-pill {
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+.hero-points-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 28px;
+  position: relative;
+  z-index: 1;
+}
+.points-block { line-height: 1; }
+.points-label {
+  font-size: 13px;
+  opacity: 0.85;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.points-value {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.points-value .coin {
+  width: 36px;
+  height: 36px;
+  margin-left: 8px;
+  display: inline-block;
+  animation: coinWiggle 3s ease-in-out infinite;
+  transform-origin: center;
+}
+.points-value .coin svg { width: 100%; height: 100%; }
+@keyframes coinWiggle {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+}
+/* 小狗 SVG 容器 */
+.mascot {
+  width: 110px; height: 110px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+}
+.mascot svg { width: 100%; height: 100%; }
+.mascot.bounce { animation: bounce 0.6s ease; }
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-18px) scale(1.05); }
+  60% { transform: translateY(-6px); }
+}
+.mascot.shake { animation: shake 0.5s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-6px) rotate(-5deg); }
+  40% { transform: translateX(6px) rotate(5deg); }
+  60% { transform: translateX(-4px) rotate(-3deg); }
+  80% { transform: translateX(4px) rotate(3deg); }
+}
+
+/* 飘字反馈 */
+.float-text {
+  position: fixed;
+  pointer-events: none;
+  font-size: 32px;
+  font-weight: 900;
+  z-index: 9999;
+  animation: floatUp 1.2s ease-out forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.float-text.plus { color: var(--green-dark); }
+.float-text.minus { color: var(--red); }
+@keyframes floatUp {
+  0% { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+  20% { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -100px) scale(1); opacity: 0; }
+}
+
+/* ============= 目标横滚 ============= */
+.goals-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px 12px;
+  margin: 0 -4px 20px;
+  scrollbar-width: none;
+}
+.goals-strip::-webkit-scrollbar { display: none; }
+.goal-chip {
+  flex: 0 0 200px;
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid transparent;
+}
+.goal-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.goal-chip.done {
+  background: linear-gradient(135deg, var(--yellow-light), var(--green-light));
+  border-color: var(--green);
+}
+.goal-chip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.goal-chip-emoji { font-size: 22px; }
+.goal-chip-pct {
+  font-size: 12px;
+  color: var(--green-dark);
+  background: var(--green-light);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+.goal-chip.done .goal-chip-pct {
+  background: var(--green);
+  color: white;
+}
+.goal-chip-name {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.goal-progress {
+  height: 8px;
+  background: #F0F0F0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.goal-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #6FD906);
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.goal-chip.done .goal-progress-bar { background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+.goal-chip-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+/* ============= Tab 导航 ============= */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 12px;
+  z-index: 50;
+}
+.tab {
+  flex: 1;
+  padding: 10px 6px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tab.active {
+  background: var(--green);
+  color: white;
+  box-shadow: 0 2px 0 var(--green-dark);
+}
+.tab .tab-emoji { display: block; font-size: 18px; margin-bottom: 2px; }
+
+/* ============= 通用卡片 ============= */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .st-emoji {
+  font-size: 24px;
+}
+
+/* ============= 赚积分 / 扣积分 卡片 ============= */
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.action-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 18px 14px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  text-align: center;
+  border: 2px solid transparent;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+.action-card.earn { box-shadow: 0 2px 0 var(--green), 0 4px 12px rgba(88,204,2,0.1); }
+.action-card.deduct { box-shadow: 0 2px 0 var(--red), 0 4px 12px rgba(255,75,75,0.1); }
+.action-card:active { transform: translateY(2px); box-shadow: var(--shadow-sm); }
+.action-card.earn:active { box-shadow: 0 1px 0 var(--green); }
+.action-card.deduct:active { box-shadow: 0 1px 0 var(--red); }
+.action-card-emoji {
+  font-size: 36px;
+  margin-bottom: 8px;
+  display: block;
+}
+.action-card-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.action-card-points {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 900;
+}
+.action-card.earn .action-card-points {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+.action-card.deduct .action-card-points {
+  background: var(--red-light);
+  color: var(--red-dark);
+}
+.action-card.zero .action-card-points {
+  background: var(--yellow-light);
+  color: var(--yellow-dark);
+}
+.action-card-desc {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 6px;
+  line-height: 1.3;
+}
+
+/* ============= 目标 Tab ============= */
+.goal-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+  transition: all 0.3s;
+}
+.goal-card.done {
+  background: linear-gradient(135deg, var(--yellow-light) 0%, #FFF8E0 100%);
+  border: 2px solid var(--yellow);
+}
+.goal-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.goal-emoji {
+  font-size: 48px;
+  flex-shrink: 0;
+  width: 64px; height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--yellow-light), var(--orange-light));
+  border-radius: 50%;
+}
+.goal-card.done .goal-emoji {
+  background: linear-gradient(135deg, var(--green), #6FD906);
+}
+.goal-info { flex: 1; min-width: 0; }
+.goal-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.goal-target {
+  font-size: 13px;
+  color: var(--text-light);
+}
+.goal-progress-large {
+  margin-bottom: 14px;
+}
+.goal-progress-large .goal-progress {
+  height: 14px;
+  background: #F0F0F0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.goal-progress-large .goal-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #6FD906);
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.goal-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.goal-stats-left { color: var(--text-light); }
+.goal-stats-right { color: var(--green-dark); font-weight: 800; }
+.goal-card.done .goal-stats-right { color: var(--yellow-dark); }
+.goal-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-redeem {
+  flex: 1;
+  padding: 12px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--green-dark);
+  transition: all 0.1s;
+  font-family: inherit;
+}
+.btn-redeem:active { transform: translateY(3px); box-shadow: 0 0 0 var(--green-dark); }
+.btn-redeem:disabled {
+  background: #E5E5E5;
+  color: #999;
+  box-shadow: 0 1px 0 #CCC;
+  cursor: not-allowed;
+}
+.btn-delete {
+  padding: 12px 16px;
+  background: white;
+  color: var(--red);
+  border: 2px solid var(--red-light);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-delete:hover { background: var(--red-light); }
+
+/* ============= 历史 Tab ============= */
+.history-day {
+  margin-bottom: 18px;
+}
+.history-day-title {
+  font-size: 13px;
+  color: var(--text-light);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+  font-weight: 800;
+}
+.history-item {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.history-emoji { font-size: 24px; flex-shrink: 0; }
+.history-body { flex: 1; min-width: 0; }
+.history-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+.history-time {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+.history-points {
+  font-size: 18px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.history-points.plus { color: var(--green-dark); }
+.history-points.minus { color: var(--red); }
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+  font-size: 14px;
+}
+
+/* ============= 设置 Tab ============= */
+.rule-group {
+  margin-bottom: 24px;
+}
+.rule-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.rule-group-title {
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rule-item {
+  background: white;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.rule-item-body { flex: 1; min-width: 0; }
+.rule-item-name {
+  font-size: 14px;
+  font-weight: 800;
+}
+.rule-item-desc {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.rule-item-pts {
+  font-size: 16px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.rule-item.earn .rule-item-pts { background: var(--green-light); color: var(--green-dark); }
+.rule-item.deduct .rule-item-pts { background: var(--red-light); color: var(--red-dark); }
+.rule-del-btn {
+  width: 32px; height: 32px;
+  background: var(--red-light);
+  color: var(--red);
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.rule-del-btn:hover { background: var(--red); color: white; }
+
+/* ============= 添加按钮 ============= */
+.add-btn {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 2px dashed var(--green);
+  color: var(--green-dark);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.add-btn:hover {
+  background: var(--green-light);
+  border-style: solid;
+}
+
+/* ============= 弹窗 ============= */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-mask.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  transform: scale(0.9);
+  transition: transform 0.2s;
+}
+.modal-mask.show .modal { transform: scale(1); }
+.modal-title {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-field { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  background: white;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus {
+  border-color: var(--green);
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.emoji-picker {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  background: #F7F7F7;
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.emoji-pick {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  border: 2px solid transparent;
+}
+.emoji-pick:hover { background: var(--yellow-light); }
+.emoji-pick.active { border-color: var(--green); background: var(--green-light); }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.btn-primary {
+  flex: 1;
+  padding: 14px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--green-dark);
+  font-family: inherit;
+  transition: all 0.1s;
+}
+.btn-primary:active { transform: translateY(4px); box-shadow: 0 0 0 var(--green-dark); }
+.btn-secondary {
+  flex: 1;
+  padding: 14px;
+  background: white;
+  color: var(--text-light);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-secondary:hover { background: var(--bg); }
+
+/* 危险按钮(扣分确认) */
+.btn-danger {
+  flex: 1;
+  padding: 14px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--red-dark);
+  font-family: inherit;
+  transition: all 0.1s;
+}
+.btn-danger:active { transform: translateY(4px); box-shadow: 0 0 0 var(--red-dark); }
+.btn-danger:disabled { background: #ccc; box-shadow: 0 2px 0 #999; cursor: not-allowed; }
+
+/* 扣分确认弹窗 */
+.confirm-modal { text-align: center; }
+.confirm-emoji {
+  font-size: 64px;
+  margin-bottom: 8px;
+  display: inline-block;
+  animation: emojiWobble 0.5s ease;
+}
+@keyframes emojiWobble {
+  0%, 100% { transform: rotate(0) scale(1); }
+  30% { transform: rotate(-10deg) scale(1.1); }
+  60% { transform: rotate(8deg) scale(0.95); }
+}
+.confirm-title {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.confirm-sub {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.confirm-diff {
+  background: var(--red-light);
+  color: var(--red-dark);
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.confirm-diff-arrow {
+  font-size: 20px;
+  opacity: 0.7;
+}
+.confirm-diff-from { opacity: 0.6; text-decoration: line-through; }
+.confirm-diff-to { font-size: 22px; }
+.confirm-diff.zero {
+  background: linear-gradient(135deg, var(--yellow-light), var(--orange-light));
+  color: var(--orange-dark);
+}
+
+/* 登录模态 */
+.login-modal { text-align: center; }
+.login-emoji {
+  font-size: 56px;
+  margin-bottom: 8px;
+  animation: emojiWobble 1s ease infinite;
+}
+.login-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.login-sub {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+.login-error {
+  background: var(--red-light);
+  color: var(--red-dark);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  display: none;
+}
+.login-error.show { display: block; }
+.login-error.success {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
+
+/* 手动调整积分卡 */
+.adjust-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.adjust-current {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--yellow-light);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.adjust-current-label { font-size: 12px; color: var(--text-light); font-weight: 800; }
+.adjust-current-value { font-size: 32px; font-weight: 900; color: var(--orange-dark); }
+.adjust-current-coin { font-size: 18px; }
+.adjust-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.adjust-input {
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  width: 90px;
+  flex-shrink: 0;
+}
+.adjust-points-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.adjust-points-row .adjust-quick {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+.adjust-type {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 4px;
+}
+.adjust-type button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-light);
+  transition: all 0.15s;
+}
+.adjust-type button.active.plus {
+  background: var(--green);
+  color: white;
+  box-shadow: 0 2px 0 var(--green-dark);
+}
+.adjust-type button.active.minus {
+  background: var(--red);
+  color: white;
+  box-shadow: 0 2px 0 var(--red-dark);
+}
+.adjust-quick {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.adjust-quick button {
+  padding: 6px 12px;
+  background: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-light);
+  cursor: pointer;
+  font-family: inherit;
+}
+.adjust-quick button:hover { background: var(--yellow-light); }
+
+/* 账号区 */
+.account-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.account-card.logged-in {
+  background: linear-gradient(135deg, var(--green-light), #F0FFE0);
+}
+.account-avatar-big {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+.account-name {
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.account-meta {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+.account-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.btn-logout {
+  padding: 8px 16px;
+  background: white;
+  color: var(--red);
+  border: 2px solid var(--red-light);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-logout:hover { background: var(--red-light); }
+.btn-extend {
+  padding: 8px 16px;
+  background: white;
+  color: var(--green-dark);
+  border: 2px solid var(--green-light);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-extend:hover { background: var(--green-light); }
+
+/* 锁定提示横条（全局） */
+.lock-hint {
+  display: none;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  align-items: center;
+  gap: 3px;
+}
+.unlock-hint {
+  display: inline;
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-left: 4px;
+}
+
+/* ============= 庆祝 ============= */
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+.confetti span {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: -20px;
+  animation: fall 2.5s linear forwards;
+}
+@keyframes fall {
+  to { top: 110vh; transform: rotate(720deg); opacity: 0; }
+}
+
+/* ============= Toast ============= */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 800;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 200;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============= Footer ============= */
+.footer {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+/* ============= 响应式 ============= */
+/* 防止 iOS 在点击 input 时自动放大（关键：input 字号 ≥ 16px） */
+.form-input, .form-select {
+  font-size: 16px;
+}
+
+/* 平板/中等屏 */
+@media (max-width: 600px) {
+  body { padding: 16px 14px; }
+  .container { max-width: 100%; }
+  .sound-pill { width: 40px; height: 40px; font-size: 18px; top: 12px; right: 12px; }
+  .hero { padding: 24px 20px 28px; border-radius: 20px; }
+  .hero-title { font-size: 20px; }
+  .points-value { font-size: 50px; }
+  .points-value .coin { width: 32px; height: 32px; }
+  .mascot { width: 96px; height: 96px; }
+  .tab { font-size: 12px; padding: 9px 4px; }
+  .tab .tab-emoji { font-size: 16px; }
+  .modal { padding: 20px; }
+  .confirm-emoji { font-size: 56px; }
+  .confirm-title { font-size: 18px; }
+}
+
+/* 手机 */
+@media (max-width: 480px) {
+  body { padding: 14px 12px; }
+  .admin-pill { bottom: 70px; right: 12px; height: 44px; padding: 0 14px 0 10px; font-size: 12px; }
+  .sound-pill { width: 40px; height: 40px; font-size: 18px; top: 12px; right: 12px; }
+  .hero { padding: 22px 18px 26px; }
+  .hero-title { font-size: 19px; }
+  .points-value { font-size: 46px; }
+  .points-value .coin { width: 30px; height: 30px; margin-left: 6px; }
+  .mascot { width: 90px; height: 90px; }
+  .goal-chip { flex: 0 0 170px; padding: 12px; }
+  .goal-chip-name { font-size: 13px; }
+  .goal-emoji { font-size: 38px; width: 52px; height: 52px; }
+  .goal-card-head { gap: 10px; }
+  .tab { font-size: 11px; padding: 8px 4px; }
+  .action-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .action-card { padding: 14px 10px; }
+  .action-card-emoji { font-size: 30px; }
+  .action-card-name { font-size: 13px; }
+  .emoji-picker { grid-template-columns: repeat(6, 1fr); }
+  .form-row { grid-template-columns: 1fr; }
+  .confirm-emoji { font-size: 48px; }
+  .confirm-diff { font-size: 14px; padding: 12px 14px; }
+  .confirm-diff-to { font-size: 20px; }
+  .modal-actions { gap: 8px; }
+  .btn-primary, .btn-secondary, .btn-danger { padding: 12px; font-size: 14px; }
+}
+
+/* 超小屏（iPhone SE 等） */
+@media (max-width: 375px) {
+  body { padding: 12px 10px; }
+  .hero { padding: 20px 14px; border-radius: 18px; }
+  .hero-title { font-size: 17px; }
+  .hero-greet { font-size: 12px; }
+  .points-value { font-size: 40px; }
+  .points-value .coin { width: 26px; height: 26px; }
+  .mascot { width: 80px; height: 80px; }
+  .goal-chip { flex: 0 0 155px; padding: 10px; }
+  .tab { font-size: 10px; }
+  .action-card { padding: 12px 8px; }
+  .action-card-name { font-size: 12px; line-height: 1.2; }
+  .action-card-points { font-size: 13px; padding: 3px 10px; }
+  .emoji-picker { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* 横屏适配：手机/小平板横放时 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .hero { padding: 18px 22px; margin-bottom: 16px; }
+  .hero-points-row { margin-top: 16px; }
+  .mascot { width: 70px; height: 70px; }
+  .points-value { font-size: 36px; }
+  .tabs { position: static; margin-bottom: 12px; }
+  .confirm-emoji { font-size: 40px; margin-bottom: 4px; }
+  .modal { max-width: 480px; }
+}
+
+/* 高 DPI 屏幕：锐化文本 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body { -webkit-font-smoothing: antialiased; }
+}
+
+/* 用户偏好减少动画：尊重设置 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ============ HEADER ============ -->
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-greet" id="greeting">早上好，果果 🌞</div>
+        <div class="hero-title" id="heroTitle">今天也要加油哦！</div>
+      </div>
+      <div class="level-pill" id="levelPill">🌱 新芽</div>
+    </div>
+    <div class="hero-points-row">
+      <div class="points-block">
+        <div class="points-label">当前积分</div>
+        <div class="points-value">
+          <span id="pointsDisplay">0</span><span class="coin">
+            <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+              <defs>
+                <linearGradient id="coinG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FFE066"/>
+                  <stop offset="1" stop-color="#FFA500"/>
+                </linearGradient>
+              </defs>
+              <circle cx="20" cy="20" r="17" fill="url(#coinG)" stroke="#D68900" stroke-width="2"/>
+              <circle cx="20" cy="20" r="13" fill="none" stroke="#D68900" stroke-width="1.5" opacity="0.5"/>
+              <text x="20" y="26" font-family="Arial Black, sans-serif" font-size="16" font-weight="900" text-anchor="middle" fill="#B87600">P</text>
+            </svg>
+          </span>
+        </div>
+      </div>
+      <div class="mascot" id="mascot">
+        <!-- 初始 idle 小狗 -->
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FFD480"/>
+              <stop offset="1" stop-color="#E8A845"/>
+            </linearGradient>
+          </defs>
+          <!-- 影子 -->
+          <ellipse cx="60" cy="112" rx="32" ry="4" fill="rgba(0,0,0,0.15)"/>
+          <!-- 身体 -->
+          <ellipse cx="60" cy="85" rx="36" ry="22" fill="url(#bodyGrad)"/>
+          <!-- 左耳 -->
+          <ellipse cx="35" cy="40" rx="10" ry="18" fill="#C68A2E" transform="rotate(-25 35 40)"/>
+          <ellipse cx="38" cy="44" rx="5" ry="12" fill="#FFB98A" transform="rotate(-25 38 44)"/>
+          <!-- 右耳 -->
+          <ellipse cx="85" cy="40" rx="10" ry="18" fill="#C68A2E" transform="rotate(25 85 40)"/>
+          <ellipse cx="82" cy="44" rx="5" ry="12" fill="#FFB98A" transform="rotate(25 82 44)"/>
+          <!-- 头 -->
+          <circle cx="60" cy="55" r="32" fill="url(#bodyGrad)"/>
+          <!-- 腮红 -->
+          <circle cx="40" cy="62" r="6" fill="#FF8B8B" opacity="0.5"/>
+          <circle cx="80" cy="62" r="6" fill="#FF8B8B" opacity="0.5"/>
+          <!-- 眼睛 -->
+          <g id="eyes">
+            <circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/>
+            <circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/>
+            <circle cx="49" cy="51" r="1.5" fill="white"/>
+            <circle cx="73" cy="51" r="1.5" fill="white"/>
+          </g>
+          <!-- 鼻子 -->
+          <ellipse cx="60" cy="62" rx="3.5" ry="2.5" fill="#3C3C3C"/>
+          <!-- 嘴巴 -->
+          <path d="M 60 66 Q 55 72 50 70" stroke="#3C3C3C" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M 60 66 Q 65 72 70 70" stroke="#3C3C3C" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- 舌头 -->
+          <ellipse cx="60" cy="72" rx="3" ry="2" fill="#FF7F8C"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 目标横滚 ============ -->
+  <div class="goals-strip" id="goalsStrip"></div>
+
+  <!-- ============ Tab 导航 ============ -->
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="earn"><span class="tab-emoji">➕</span>赚分</div>
+    <div class="tab" data-tab="goals"><span class="tab-emoji">🎯</span>目标</div>
+    <div class="tab" data-tab="history"><span class="tab-emoji">📋</span>历史</div>
+    <div class="tab" data-tab="settings"><span class="tab-emoji">⚙️</span>设置</div>
+  </div>
+
+  <!-- ============ Tab 内容：赚分/扣分 ============ -->
+  <div class="tab-pane" data-pane="earn">
+    <div class="section-title"><span class="st-emoji">💰</span>怎么赚积分？</div>
+    <div class="action-grid" id="earnGrid"></div>
+
+    <div class="section-title" style="margin-top: 24px;"><span class="st-emoji">⚠️</span>什么会扣积分？</div>
+    <div class="action-grid" id="deductGrid"></div>
+  </div>
+
+  <!-- ============ Tab 内容：目标 ============ -->
+  <div class="tab-pane" data-pane="goals" hidden>
+    <div class="section-title"><span class="st-emoji">🎯</span>我的愿望清单</div>
+    <div id="goalsList"></div>
+    <button class="add-btn" id="addGoalBtn">+ 添加新目标</button>
+  </div>
+
+  <!-- ============ Tab 内容：历史 ============ -->
+  <div class="tab-pane" data-pane="history" hidden>
+    <div class="section-title"><span class="st-emoji">📋</span>积分变化记录</div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- ============ Tab 内容：设置 ============ -->
+  <div class="tab-pane" data-pane="settings" hidden>
+    <!-- 手动调整积分（仅登录可见） -->
+    <div class="adjust-card" id="adjustCard" style="display:none;">
+      <div class="section-title"><span class="st-emoji">🎚️</span>手动调整积分</div>
+      <div class="adjust-current">
+        <span class="adjust-current-label">当前</span>
+        <span class="adjust-current-value" id="adjustCurrentValue">0</span>
+        <span class="adjust-current-coin">🪙</span>
+      </div>
+      <div class="form-field">
+        <label class="form-label">调整类型</label>
+        <div class="adjust-type" id="adjustType">
+          <button data-type="plus" class="active plus">➕ 增加</button>
+          <button data-type="minus" class="minus">➖ 扣减</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">积分数量</label>
+        <div class="adjust-points-row">
+          <input class="form-input adjust-input" id="adjustPointsInput" type="number" placeholder="自定义" min="1" max="9999">
+          <div class="adjust-quick" id="adjustQuick">
+            <button data-v="5">5</button>
+            <button data-v="10">10</button>
+            <button data-v="20">20</button>
+            <button data-v="50">50</button>
+            <button data-v="100">100</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">备注（可选，会记入历史）</label>
+        <input class="form-input" id="adjustNoteInput" type="text" placeholder="例如：补登上周吉他练习" maxlength="40">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="adjustSaveBtn">确认调整</button>
+      </div>
+    </div>
+
+    <div class="rule-group">
+      <div class="rule-group-head">
+        <div class="rule-group-title">💰 加分规则</div>
+        <button class="add-btn" id="addEarnBtn" style="width: auto; padding: 8px 14px; font-size: 12px;">+ 添加</button>
+      </div>
+      <div id="earnRulesList"></div>
+    </div>
+    <div class="rule-group">
+      <div class="rule-group-head">
+        <div class="rule-group-title">⚠️ 扣分规则</div>
+        <button class="add-btn" id="addDeductBtn" style="width: auto; padding: 8px 14px; font-size: 12px; border-color: var(--red); color: var(--red-dark);">+ 添加</button>
+      </div>
+      <div id="deductRulesList"></div>
+    </div>
+
+    <div class="card" style="margin-top: 24px; text-align: center;">
+      <div style="color: var(--text-light); font-size: 13px; margin-bottom: 12px;">危险操作</div>
+      <button class="btn-secondary" id="resetBtn" style="color: var(--red); border-color: var(--red-light);">清空所有数据</button>
+    </div>
+
+    <!-- 管理员账号：设置页底部 -->
+    <div class="account-card" id="accountCard">
+      <div class="account-avatar-big" id="accountAvatar">🔒</div>
+      <div class="account-name" id="accountName">未登录</div>
+      <div class="account-meta" id="accountMeta">登录后可加减积分、调整规则</div>
+      <div class="account-actions">
+        <button class="btn-logout" id="accountActionBtn" onclick="handleAccountAction()">管理员登录</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">Made with ❤️ for 果果</div>
+</div>
+
+<!-- ============ 弹窗：添加/编辑规则 ============ -->
+<div class="modal-mask" id="ruleModal">
+  <div class="modal">
+    <div class="modal-title"><span id="ruleModalEmoji">📝</span><span id="ruleModalTitle">添加加分项</span></div>
+    <div class="form-field">
+      <label class="form-label">表情图标</label>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">名称</label>
+      <input class="form-input" id="ruleNameInput" type="text" placeholder="例如：考试 100 分" maxlength="20">
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">类型</label>
+        <select class="form-select" id="ruleKindInput">
+          <option value="earn">加分</option>
+          <option value="deduct">扣分</option>
+          <option value="zero">清零</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label" id="rulePointsLabel">积分数</label>
+        <input class="form-input" id="rulePointsInput" type="number" placeholder="20" min="0" max="9999">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">说明（可选）</label>
+      <input class="form-input" id="ruleDescInput" type="text" placeholder="例如：单元测试满分" maxlength="30">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="ruleCancel">取消</button>
+      <button class="btn-primary" id="ruleSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 弹窗：添加目标 ============ -->
+<div class="modal-mask" id="goalModal">
+  <div class="modal">
+    <div class="modal-title"><span>🎯</span>添加新目标</div>
+    <div class="form-field">
+      <label class="form-label">表情图标</label>
+      <div class="emoji-picker" id="goalEmojiPicker"></div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">目标名称</label>
+      <input class="form-input" id="goalNameInput" type="text" placeholder="例如：Switch 游戏" maxlength="20">
+    </div>
+    <div class="form-field">
+      <label class="form-label">需要的积分</label>
+      <input class="form-input" id="goalPointsInput" type="number" placeholder="300" min="1" max="99999">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="goalCancel">取消</button>
+      <button class="btn-primary" id="goalSave">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ 弹窗：管理员登录 ============ -->
+<div class="modal-mask" id="loginModal">
+  <div class="modal login-modal">
+    <div class="login-emoji">🔐</div>
+    <div class="login-title" id="loginTitle">管理员登录</div>
+    <div class="login-sub">解锁后才能加减积分、调整规则</div>
+    <div class="login-error" id="loginError"></div>
+    <div class="form-field">
+      <label class="form-label" style="text-align:left;">用户名</label>
+      <input class="form-input" id="loginUsername" type="text" placeholder="admin" autocomplete="username" maxlength="20">
+    </div>
+    <div class="form-field">
+      <label class="form-label" style="text-align:left;">密码</label>
+      <input class="form-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" maxlength="40">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="loginCancel" style="display:none;">关闭</button>
+      <button class="btn-primary" id="loginSubmit">登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 弹窗：扣分确认 ============ -->
+<div class="modal-mask" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div class="confirm-emoji" id="confirmEmoji">📉</div>
+    <div class="confirm-title" id="confirmTitle">确认扣分？</div>
+    <div class="confirm-sub" id="confirmSub">扣分操作不可撤销，请慎重考虑</div>
+    <div class="confirm-diff" id="confirmDiff">
+      <span class="confirm-diff-from" id="confirmFrom">100</span>
+      <span class="confirm-diff-arrow">→</span>
+      <span class="confirm-diff-to" id="confirmTo">90</span>
+      <span style="font-size: 13px; opacity: 0.7;">积分</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="confirmCancel">再想想</button>
+      <button class="btn-danger" id="confirmOk">确认扣分</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =========================================================
+ * 数据层（localStorage + api.yuanchu.ai 双向同步）
+ *  读：本地立即渲染 + 后台异步从 API 拉取覆盖
+ *  写：本地立即持久化 + 后台异步 PUT 到 API（需 Bearer Token）
+ * ========================================================= */
+const STORAGE_KEY = 'guoguo_points_bank_v1';
+// 本地调试时（vercel dev 监听 :3000，前端在 :4000）自动指向 localhost
+// 部署后保持 https://api.yuanchu.ai
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : 'https://api.yuanchu.ai';
+const API_POINTS = API_BASE + '/api/points';
+
+const DEFAULT_STATE = {
+  points: 0,
+  rules: {
+    earn: [
+      { id: 'r1', emoji: '💯', name: '考试 100 分', points: 20, desc: '完美表现', kind: 'earn' },
+      { id: 'r2', emoji: '🌟', name: '考试 95-99 分', points: 10, desc: '优秀表现', kind: 'earn' },
+      { id: 'r3', emoji: '🎸', name: '吉他练习 ≥30 分钟', points: 5, desc: '坚持练习', kind: 'earn' },
+      { id: 'r4', emoji: '🎸', name: '吉他练习 ≥60 分钟', points: 10, desc: '专注练习', kind: 'earn' },
+    ],
+    deduct: [
+      { id: 'r5', emoji: '📉', name: '考试 <70 分', points: 0, desc: '直接清零积分', kind: 'zero' },
+      { id: 'r6', emoji: '📉', name: '考试 70-79 分', points: -10, desc: '需要加油', kind: 'deduct' },
+      { id: 'r7', emoji: '📉', name: '考试 80-89 分', points: -5, desc: '差一点点', kind: 'deduct' },
+      { id: 'r8', emoji: '🎮', name: '偷偷玩游戏', points: -10, desc: '要诚实哦', kind: 'deduct' },
+    ],
+  },
+  goals: [
+    { id: 'g1', emoji: '🎮', name: 'Switch 游戏', points: 300 },
+    { id: 'g2', emoji: '⌚', name: '小天才儿童手表 Z9A', points: 1500 },
+  ],
+  history: [],
+};
+
+let state = loadState();
+
+// 同步从 localStorage 读取 — 用于启动时立即渲染（避免首屏空白）
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+    return { ...structuredClone(DEFAULT_STATE), ...parsed };
+  } catch (e) {
+    return structuredClone(DEFAULT_STATE);
+  }
+}
+
+// 同步写 localStorage + 异步推到后端
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.error('saveState', e); }
+  apiPushState().catch(err => console.warn('[points] api push failed', err));
+}
+
+// 从 session 读取写权限 token（同步）
+function getWriteToken() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (Date.now() > s.expiresAt) return null;
+    return s.token || null;
+  } catch (e) { return null; }
+}
+
+// 后台从 API 拉取最新 state,合并覆盖本地 + 重渲染
+async function apiLoadState() {
+  try {
+    const r = await fetch(API_POINTS, { method: 'GET', headers: { Accept: 'application/json' } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (data && data.state && typeof data.state === 'object') {
+      // 只在结构合法时合并（避免后端返回空/null 把本地抹掉）
+      Object.assign(state, data.state);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      if (typeof render === 'function') render();
+      console.log('[points] 已从 API 同步最新数据');
+    }
+  } catch (e) {
+    console.warn('[points] api load failed, using local', e);
+  }
+}
+
+// 后台把本地 state 整体覆盖到后端(需 token)
+async function apiPushState() {
+  const token = getWriteToken();
+  if (!token) return; // 未登录就不推
+  const r = await fetch(API_POINTS, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+    },
+    body: JSON.stringify({ state }),
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+/* =========================================================
+ * 管理员认证（localStorage session，7 天有效）
+ * 默认账号 admin / 19890915 —— 同步作为写权限 token（Bearer）
+ * token 与后端 POINTS_WRITE_TOKEN 一致时允许写操作
+ * ========================================================= */
+const ADMIN_ACCOUNT = { username: 'admin', password: '19890915' };
+const SESSION_KEY = 'guoguo_admin_session_v1';
+const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 天
+
+let isLoggedIn = false;
+let currentAdmin = null;
+let sessionExpiresAt = 0;
+let writeToken = null;
+
+function checkSession() {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (Date.now() > s.expiresAt) {
+      localStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+    isLoggedIn = true;
+    currentAdmin = s.username;
+    sessionExpiresAt = s.expiresAt;
+    writeToken = s.token || null;
+    return true;
+  } catch (e) { return false; }
+}
+
+function tryLogin(username, password) {
+  if (username === ADMIN_ACCOUNT.username && password === ADMIN_ACCOUNT.password) {
+    const session = {
+      username,
+      token: password, // 用密码当写权限 token,与后端 POINTS_WRITE_TOKEN 一致
+      loginTime: Date.now(),
+      expiresAt: Date.now() + SESSION_DURATION_MS,
+    };
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) {}
+    isLoggedIn = true;
+    currentAdmin = username;
+    sessionExpiresAt = session.expiresAt;
+    writeToken = password;
+    return true;
+  }
+  return false;
+}
+
+function extendSession() {
+  if (!isLoggedIn) return;
+  sessionExpiresAt = Date.now() + SESSION_DURATION_MS;
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      username: currentAdmin,
+      token: writeToken,
+      loginTime: Date.now(),
+      expiresAt: sessionExpiresAt,
+    }));
+  } catch (e) {}
+  showToast('登录已延长 7 天', 'success');
+}
+
+function logout() {
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  isLoggedIn = false;
+  currentAdmin = null;
+  sessionExpiresAt = 0;
+  writeToken = null;
+}
+
+function requireLogin() {
+  if (isLoggedIn) return true;
+  showToast('🔒 这个操作需要管理员登录', 'warn');
+  // 跳到设置 Tab,定位到管理员登录入口
+  switchTab('settings');
+  setTimeout(() => {
+    const card = document.getElementById('accountCard');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 50);
+  setTimeout(() => openLoginModal(), 350);
+  return false;
+}
+
+function formatRemain() {
+  if (!sessionExpiresAt) return '';
+  const left = sessionExpiresAt - Date.now();
+  if (left <= 0) return '已过期';
+  const d = Math.floor(left / 86400000);
+  const h = Math.floor((left % 86400000) / 3600000);
+  if (d > 0) return `${d} 天 ${h} 小时`;
+  return `${h} 小时`;
+}
+
+/* =========================================================
+ * 业务逻辑
+ * ========================================================= */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function changePoints(rule) {
+  const pointsBefore = state.points;
+  let delta = 0;
+  let effect = '';
+  if (rule.kind === 'zero') {
+    delta = -pointsBefore;
+    effect = '清零';
+  } else {
+    delta = rule.points;
+  }
+  state.points = Math.max(0, state.points + delta);
+  const actualDelta = state.points - pointsBefore;
+  state.history.unshift({
+    id: uid(),
+    ruleId: rule.id,
+    ruleName: rule.name,
+    emoji: rule.emoji,
+    delta: actualDelta,
+    effect,
+    time: Date.now(),
+  });
+  // 限制历史长度
+  if (state.history.length > 500) state.history.length = 500;
+  saveState();
+  return { delta: actualDelta, newPoints: state.points };
+}
+
+function redeemGoal(goalId) {
+  const goal = state.goals.find(g => g.id === goalId);
+  if (!goal || state.points < goal.points) return false;
+  state.points -= goal.points;
+  state.history.unshift({
+    id: uid(),
+    ruleId: 'redeem',
+    ruleName: '兑换「' + goal.name + '」🎉',
+    emoji: goal.emoji,
+    delta: -goal.points,
+    effect: '兑换',
+    time: Date.now(),
+  });
+  saveState();
+  return true;
+}
+
+/* =========================================================
+ * 反馈：音效（Web Audio API 合成，无需外部资源）
+ * ========================================================= */
+const AudioFX = (function () {
+  let ctx = null;
+  let muted = false;
+  try {
+    muted = localStorage.getItem('guoguo_sound_muted') === '1';
+  } catch (e) {}
+  function ensure() {
+    if (muted) return null;
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      ctx = new AC();
+    }
+    // iOS 上必须由用户手势 resume
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    return ctx;
+  }
+  function tone(freq, dur, type, vol, delay) {
+    const c = ensure(); if (!c) return;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    const t0 = c.currentTime + (delay || 0);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(vol || 0.15, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain).connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.05);
+  }
+  return {
+    isMuted() { return muted; },
+    toggleMute() {
+      muted = !muted;
+      try { localStorage.setItem('guoguo_sound_muted', muted ? '1' : '0'); } catch (e) {}
+      // 即使 muted 后再开启，也要在下次用户手势时才会真正发声
+      if (!muted && ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return muted;
+    },
+    // 加分：亮上行的三和弦琶音（C-E-G）
+    earn() {
+      tone(523.25, 0.10, 'sine', 0.18, 0);    // C5
+      tone(659.25, 0.10, 'sine', 0.16, 0.06); // E5
+      tone(783.99, 0.18, 'sine', 0.16, 0.12); // G5
+    },
+    // 扣分：温和下行（不要刺耳，柔和但能感知）
+    deduct() {
+      tone(392.00, 0.18, 'triangle', 0.14, 0);    // G4
+      tone(329.63, 0.22, 'triangle', 0.14, 0.10); // E4
+    },
+    // 清零：稍重的三音下行（让人感觉到"重置"）
+    zero() {
+      tone(523.25, 0.12, 'triangle', 0.18, 0);
+      tone(392.00, 0.12, 'triangle', 0.16, 0.10);
+      tone(261.63, 0.30, 'triangle', 0.20, 0.20);
+    },
+    // 达成目标：欢快的 C-E-G-C 八度爬升
+    celebrate() {
+      tone(523.25, 0.14, 'triangle', 0.18, 0);
+      tone(659.25, 0.14, 'triangle', 0.18, 0.08);
+      tone(783.99, 0.14, 'triangle', 0.18, 0.16);
+      tone(1046.50, 0.30, 'triangle', 0.22, 0.24);
+    },
+    // 兑换：清脆的两声
+    redeem() {
+      tone(880, 0.10, 'sine', 0.20, 0);
+      tone(1318.5, 0.18, 'sine', 0.20, 0.08);
+    },
+    // 轻 tap：白噪声短脉冲
+    tap() {
+      const c = ensure(); if (!c) return;
+      const buf = c.createBuffer(1, Math.floor(c.sampleRate * 0.04), c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 4);
+      }
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      const gain = c.createGain();
+      gain.gain.value = 0.08;
+      src.connect(gain).connect(c.destination);
+      src.start();
+    },
+    // 错误音（操作不合法）
+    deny() {
+      tone(220, 0.08, 'square', 0.08, 0);
+      tone(180, 0.10, 'square', 0.08, 0.06);
+    },
+  };
+})();
+
+/* =========================================================
+ * 反馈：飘字 / 小狗表情 / 庆祝
+ * ========================================================= */
+function showFloatText(text, kind, x, y) {
+  const el = document.createElement('div');
+  el.className = 'float-text ' + (kind === 'plus' ? 'plus' : 'minus');
+  el.textContent = text;
+  el.style.left = (x || window.innerWidth / 2) + 'px';
+  el.style.top = (y || 200) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function mascotReact(kind) {
+  const m = document.getElementById('mascot');
+  m.classList.remove('bounce', 'shake');
+  void m.offsetWidth;
+  if (kind === 'happy') m.classList.add('bounce');
+  else if (kind === 'sad') m.classList.add('shake');
+  // 切换眼睛 / 嘴巴表情
+  const eyesEl = document.getElementById('eyes');
+  if (!eyesEl) return;
+  if (kind === 'happy') {
+    eyesEl.innerHTML = '<path d="M 44 52 Q 48 48 52 52" stroke="#3C3C3C" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M 68 52 Q 72 48 76 52" stroke="#3C3C3C" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 1200);
+  } else if (kind === 'sad') {
+    eyesEl.innerHTML = '<circle cx="48" cy="54" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="54" r="4.5" fill="#3C3C3C"/>';
+    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 1200);
+  } else if (kind === 'celebrate') {
+    eyesEl.innerHTML = '<path d="M 42 50 L 54 50 M 48 44 L 48 56" stroke="#3C3C3C" stroke-width="3" stroke-linecap="round"/><path d="M 66 50 L 78 50 M 72 44 L 72 56" stroke="#3C3C3C" stroke-width="3" stroke-linecap="round"/>';
+    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 2000);
+  }
+}
+
+function celebrate() {
+  const c = document.createElement('div');
+  c.className = 'confetti';
+  const colors = ['#58CC02', '#FF4B82', '#FFC800', '#1CB0F6', '#CE82FF', '#FF9600'];
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('span');
+    s.style.left = Math.random() * 100 + '%';
+    s.style.background = colors[Math.floor(Math.random() * colors.length)];
+    s.style.animationDelay = Math.random() * 1.5 + 's';
+    s.style.animationDuration = (1.8 + Math.random() * 1.5) + 's';
+    if (Math.random() > 0.5) s.style.borderRadius = '50%';
+    c.appendChild(s);
+  }
+  document.body.appendChild(c);
+  setTimeout(() => c.remove(), 4500);
+}
+
+function showToast(msg, kind) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = kind === 'success' ? 'var(--green-dark)' : (kind === 'warn' ? 'var(--orange-dark)' : 'var(--text)');
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* =========================================================
+ * 渲染层
+ * ========================================================= */
+function render() {
+  // 积分
+  document.getElementById('pointsDisplay').textContent = state.points;
+  // 同步手动调整卡里的当前积分
+  const adjCV = document.getElementById('adjustCurrentValue');
+  if (adjCV) adjCV.textContent = state.points;
+  // 等级
+  const lvl = getLevel(state.points);
+  document.getElementById('levelPill').textContent = lvl.emoji + ' ' + lvl.name;
+  // 问候语
+  updateGreeting();
+
+  renderGoalsStrip();
+  renderEarnGrid();
+  renderDeductGrid();
+  renderGoalsList();
+  renderHistory();
+  renderRulesList();
+}
+
+function getLevel(p) {
+  if (p >= 5000) return { name: '宇宙英雄', emoji: '🌌' };
+  if (p >= 2000) return { name: '超级英雄', emoji: '🦸' };
+  if (p >= 1000) return { name: '探险达人', emoji: '🗺️' };
+  if (p >= 500) return { name: '积分高手', emoji: '🏆' };
+  if (p >= 200) return { name: '积分能手', emoji: '⭐' };
+  if (p >= 50) return { name: '努力中', emoji: '🌿' };
+  return { name: '新芽', emoji: '🌱' };
+}
+
+function updateGreeting() {
+  const h = new Date().getHours();
+  const greet = h < 6 ? '夜深了 ' : h < 11 ? '早上好，果果 ' : h < 14 ? '中午好，果果 ' : h < 18 ? '下午好，果果 ' : '晚上好，果果 ';
+  const emoji = h < 6 ? '🌙' : h < 11 ? '🌞' : h < 14 ? '☀️' : h < 18 ? '🌤️' : '🌙';
+  document.getElementById('greeting').textContent = greet + emoji;
+  const titles = ['今天也要加油哦！', '相信自己一次就够厉害！', '每一次努力都算数 💪', '继续加油，果果！', '好习惯成就好未来！'];
+  const seed = new Date().getDate();
+  document.getElementById('heroTitle').textContent = titles[seed % titles.length];
+}
+
+function renderGoalsStrip() {
+  const el = document.getElementById('goalsStrip');
+  if (!state.goals.length) { el.innerHTML = ''; return; }
+  const sorted = [...state.goals].sort((a, b) => {
+    const ap = state.points / a.points, bp = state.points / b.points;
+    return bp - ap;
+  });
+  el.innerHTML = sorted.slice(0, 5).map(g => {
+    const pct = Math.min(100, Math.round(state.points / g.points * 100));
+    const done = state.points >= g.points;
+    return `
+      <div class="goal-chip ${done ? 'done' : ''}" data-goal-id="${g.id}">
+        <div class="goal-chip-head">
+          <div class="goal-chip-emoji">${done ? '🏆' : g.emoji}</div>
+          <div class="goal-chip-pct">${done ? '达成!' : pct + '%'}</div>
+        </div>
+        <div class="goal-chip-name">${esc(g.name)}</div>
+        <div class="goal-progress"><div class="goal-progress-bar" style="width:${pct}%"></div></div>
+        <div class="goal-chip-meta">
+          <span>${state.points} / ${g.points}</span>
+          <span>${done ? '可以兑换' : '还差 ' + Math.max(0, g.points - state.points)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  el.querySelectorAll('.goal-chip').forEach(c => {
+    c.addEventListener('click', () => switchTab('goals'));
+  });
+}
+
+function renderEarnGrid() {
+  const el = document.getElementById('earnGrid');
+  el.innerHTML = state.rules.earn.map(r => `
+    <div class="action-card earn" data-rule-id="${r.id}">
+      <span class="action-card-emoji">${r.emoji}</span>
+      <div class="action-card-name">${esc(r.name)}</div>
+      <div class="action-card-points">+${r.points}</div>
+      ${r.desc ? `<div class="action-card-desc">${esc(r.desc)}</div>` : ''}
+    </div>
+  `).join('');
+  el.querySelectorAll('.action-card').forEach(c => {
+    c.addEventListener('click', () => onActionClick(c.dataset.ruleId));
+  });
+}
+
+function renderDeductGrid() {
+  const el = document.getElementById('deductGrid');
+  el.innerHTML = state.rules.deduct.map(r => `
+    <div class="action-card deduct ${r.kind === 'zero' ? 'zero' : ''}" data-rule-id="${r.id}">
+      <span class="action-card-emoji">${r.emoji}</span>
+      <div class="action-card-name">${esc(r.name)}</div>
+      <div class="action-card-points">${r.kind === 'zero' ? '清零' : (r.points < 0 ? r.points : '-' + r.points)}</div>
+      ${r.desc ? `<div class="action-card-desc">${esc(r.desc)}</div>` : ''}
+    </div>
+  `).join('');
+  el.querySelectorAll('.action-card').forEach(c => {
+    c.addEventListener('click', () => onActionClick(c.dataset.ruleId));
+  });
+}
+
+function renderGoalsList() {
+  const el = document.getElementById('goalsList');
+  if (!state.goals.length) {
+    el.innerHTML = '<div class="empty">还没有目标，去添加一个吧！</div>';
+    return;
+  }
+  el.innerHTML = state.goals.map(g => {
+    const pct = Math.min(100, Math.round(state.points / g.points * 100));
+    const done = state.points >= g.points;
+    const left = Math.max(0, g.points - state.points);
+    return `
+      <div class="goal-card ${done ? 'done' : ''}" data-goal-id="${g.id}">
+        <div class="goal-card-head">
+          <div class="goal-emoji">${done ? '🏆' : g.emoji}</div>
+          <div class="goal-info">
+            <div class="goal-name">${esc(g.name)}</div>
+            <div class="goal-target">需要 ${g.points} 积分 · ${done ? '🎉 已达成' : '还差 ' + left + ' 积分'}</div>
+          </div>
+        </div>
+        <div class="goal-progress-large">
+          <div class="goal-progress"><div class="goal-progress-bar" style="width:${pct}%"></div></div>
+          <div class="goal-stats">
+            <div class="goal-stats-left">${state.points} / ${g.points} 积分</div>
+            <div class="goal-stats-right">${pct}%</div>
+          </div>
+        </div>
+        <div class="goal-actions">
+          <button class="btn-redeem" data-redeem="${g.id}" ${done ? '' : 'disabled'}>${done ? '🎁 兑换' : '未达成'}</button>
+          <button class="btn-delete" data-del-goal="${g.id}">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  el.querySelectorAll('[data-redeem]').forEach(b => {
+    b.addEventListener('click', e => {
+      if (!requireLogin()) return;
+      const goalId = e.currentTarget.dataset.redeem;
+      const goal = state.goals.find(g => g.id === goalId);
+      if (!goal) return;
+      if (!confirm(`确认兑换「${goal.name}」吗？将扣除 ${goal.points} 积分。`)) return;
+      if (redeemGoal(goalId)) {
+        showToast(`🎉 兑换成功！${goal.name}`, 'success');
+        celebrate();
+        mascotReact('celebrate');
+        AudioFX.celebrate();
+        AudioFX.redeem();
+        render();
+      } else {
+        showToast('积分不足', 'warn');
+      }
+    });
+  });
+  el.querySelectorAll('[data-del-goal]').forEach(b => {
+    b.addEventListener('click', e => {
+      if (!requireLogin()) return;
+      const goalId = e.currentTarget.dataset.delGoal;
+      const goal = state.goals.find(g => g.id === goalId);
+      if (!goal) return;
+      if (!confirm(`删除目标「${goal.name}」？`)) return;
+      state.goals = state.goals.filter(g => g.id !== goalId);
+      saveState();
+      render();
+      showToast('目标已删除');
+    });
+  });
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!state.history.length) {
+    el.innerHTML = '<div class="empty">还没有任何记录，快去赚分吧！</div>';
+    return;
+  }
+  // 按天分组
+  const groups = {};
+  state.history.forEach(h => {
+    const d = new Date(h.time);
+    const key = d.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' });
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(h);
+  });
+  el.innerHTML = Object.entries(groups).map(([day, items]) => `
+    <div class="history-day">
+      <div class="history-day-title">${day}</div>
+      ${items.map(h => `
+        <div class="history-item">
+          <div class="history-emoji">${h.emoji}</div>
+          <div class="history-body">
+            <div class="history-name">${esc(h.ruleName)}</div>
+            <div class="history-time">${formatTime(h.time)}${h.effect ? ' · ' + h.effect : ''}</div>
+          </div>
+          <div class="history-points ${h.delta > 0 ? 'plus' : 'minus'}">${h.delta > 0 ? '+' : ''}${h.delta}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function renderRulesList() {
+  const renderOne = (r, isEarn) => `
+    <div class="rule-item ${isEarn ? 'earn' : 'deduct'}" data-rule-id="${r.id}">
+      <div style="font-size:24px;">${r.emoji}</div>
+      <div class="rule-item-body">
+        <div class="rule-item-name">${esc(r.name)}</div>
+        <div class="rule-item-desc">${esc(r.desc || '')}</div>
+      </div>
+      <div class="rule-item-pts">${r.kind === 'zero' ? '清零' : (isEarn ? '+' + r.points : r.points)}</div>
+      <button class="rule-del-btn" data-del-rule="${r.id}">×</button>
+    </div>
+  `;
+  document.getElementById('earnRulesList').innerHTML =
+    state.rules.earn.map(r => renderOne(r, true)).join('');
+  document.getElementById('deductRulesList').innerHTML =
+    state.rules.deduct.map(r => renderOne(r, false)).join('');
+  document.querySelectorAll('[data-del-rule]').forEach(b => {
+    b.addEventListener('click', e => {
+      if (!requireLogin()) return;
+      const id = e.currentTarget.dataset.delRule;
+      if (!confirm('确定要删除这个规则吗？')) return;
+      state.rules.earn = state.rules.earn.filter(r => r.id !== id);
+      state.rules.deduct = state.rules.deduct.filter(r => r.id !== id);
+      saveState();
+      render();
+    });
+  });
+}
+
+/* =========================================================
+ * 交互：点击规则、Tab 切换、弹窗
+ * ========================================================= */
+// 扣分/清零前需要二次确认；加分直接生效
+function onActionClick(ruleId) {
+  if (!requireLogin()) return;
+  const rule = [...state.rules.earn, ...state.rules.deduct].find(r => r.id === ruleId);
+  if (!rule) return;
+  AudioFX.tap(); // 任何按钮点击的轻反馈
+  if (rule.kind === 'deduct' || rule.kind === 'zero') {
+    openConfirmDeduct(rule);
+  } else {
+    doChangePoints(rule);
+  }
+}
+
+// 实际执行积分变更(被 onActionClick 和 confirmModal 共用)
+function doChangePoints(rule) {
+  const card = document.querySelector(`[data-rule-id="${rule.id}"]`);
+  const rect = card ? card.getBoundingClientRect() : null;
+  const pointsBefore = state.points;
+  const result = changePoints(rule);
+
+  // 飘字
+  const text = result.delta === 0 ? '清零' : (result.delta > 0 ? '+' + result.delta : '' + result.delta);
+  const kind = result.delta >= 0 ? 'plus' : 'minus';
+  if (rect) {
+    showFloatText(text, kind, rect.left + rect.width / 2, rect.top);
+  } else {
+    showFloatText(text, kind);
+  }
+  // 小狗反应
+  mascotReact(result.delta >= 0 ? 'happy' : 'sad');
+  // 音效
+  if (result.delta === 0) AudioFX.zero();
+  else if (result.delta > 0) AudioFX.earn();
+  else AudioFX.deduct();
+  // 跨过目标线庆祝:加分前 < target ≤ 加分后
+  const crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
+  if (crossedGoal) {
+    setTimeout(() => {
+      celebrate();
+      mascotReact('celebrate');
+      AudioFX.celebrate();
+      showToast(`🎉 达成「${crossedGoal.name}」！可以去兑换啦！`, 'success');
+    }, 400);
+  }
+  render();
+}
+
+// 扣分确认弹窗
+let pendingDeductRule = null;
+function openConfirmDeduct(rule) {
+  pendingDeductRule = rule;
+  const pointsBefore = state.points;
+  const delta = rule.kind === 'zero' ? -pointsBefore : rule.points;
+  const newPoints = Math.max(0, pointsBefore + delta);
+  document.getElementById('confirmEmoji').textContent = rule.emoji || '📉';
+  if (rule.kind === 'zero') {
+    document.getElementById('confirmTitle').textContent = '确定要清零积分吗？';
+    document.getElementById('confirmSub').textContent = '这次操作将把现有积分全部归零，请跟果子确认一下。';
+    document.getElementById('confirmOk').textContent = '确认清零';
+    const diff = document.getElementById('confirmDiff');
+    diff.classList.add('zero');
+    diff.innerHTML = `<span class="confirm-diff-from">${pointsBefore}</span><span class="confirm-diff-arrow">→</span><span class="confirm-diff-to">0</span><span style="font-size:13px;opacity:0.7;">积分</span>`;
+  } else {
+    document.getElementById('confirmTitle').textContent = '确定要扣分吗？';
+    document.getElementById('confirmSub').textContent = rule.desc ? ('原因：' + rule.desc) : '扣分操作不可撤销，请跟果子确认一下。';
+    document.getElementById('confirmOk').textContent = '确认扣分';
+    const diff = document.getElementById('confirmDiff');
+    diff.classList.remove('zero');
+    diff.innerHTML = `<span class="confirm-diff-from">${pointsBefore}</span><span class="confirm-diff-arrow">→</span><span class="confirm-diff-to">${newPoints}</span><span style="font-size:13px;opacity:0.7;">积分（-${Math.abs(delta)}）</span>`;
+  }
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+document.getElementById('confirmCancel').addEventListener('click', () => {
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingDeductRule = null;
+  AudioFX.tap();
+});
+document.getElementById('confirmOk').addEventListener('click', () => {
+  document.getElementById('confirmModal').classList.remove('show');
+  if (pendingDeductRule) {
+    doChangePoints(pendingDeductRule);
+    pendingDeductRule = null;
+  }
+});
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target.id === 'confirmModal') {
+    document.getElementById('confirmModal').classList.remove('show');
+    pendingDeductRule = null;
+  }
+});
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-pane').forEach(p => p.hidden = p.dataset.pane !== tab);
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (t) {
+    AudioFX.tap();
+    switchTab(t.dataset.tab);
+  }
+});
+
+/* =========================================================
+ * 管理员登录 / 登出 / 手动调整积分
+ * ========================================================= */
+function openLoginModal() {
+  const modal = document.getElementById('loginModal');
+  const cancelBtn = document.getElementById('loginCancel');
+  const title = document.getElementById('loginTitle');
+  const errorEl = document.getElementById('loginError');
+  // 已登录状态下打开 = 想登出 / 延长 / 改密码（这里只做前两项）
+  if (isLoggedIn) {
+    title.textContent = '已登录 · ' + currentAdmin;
+    document.getElementById('loginUsername').value = currentAdmin;
+    document.getElementById('loginPassword').value = '';
+    cancelBtn.textContent = '关闭';
+    cancelBtn.style.display = '';
+    document.getElementById('loginSubmit').textContent = '重新登录';
+    errorEl.classList.remove('show', 'success');
+  } else {
+    title.textContent = '管理员登录';
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    cancelBtn.textContent = '稍后再说';
+    cancelBtn.style.display = '';
+    document.getElementById('loginSubmit').textContent = '登录';
+    errorEl.classList.remove('show', 'success');
+  }
+  modal.classList.add('show');
+  setTimeout(() => document.getElementById(isLoggedIn ? 'loginPassword' : 'loginUsername').focus(), 100);
+}
+
+function closeLoginModal() {
+  document.getElementById('loginModal').classList.remove('show');
+}
+
+document.getElementById('loginCancel').addEventListener('click', closeLoginModal);
+document.getElementById('loginModal').addEventListener('click', e => {
+  if (e.target.id === 'loginModal') closeLoginModal();
+});
+
+document.getElementById('loginSubmit').addEventListener('click', handleLoginSubmit);
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLoginSubmit();
+});
+document.getElementById('loginUsername').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+});
+
+function handleLoginSubmit() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+  if (!u || !p) {
+    errorEl.textContent = '请输入用户名和密码';
+    errorEl.classList.add('show');
+    errorEl.classList.remove('success');
+    return;
+  }
+  if (tryLogin(u, p)) {
+    errorEl.textContent = '✅ 登录成功';
+    errorEl.classList.add('show', 'success');
+    AudioFX.celebrate();
+    setTimeout(() => {
+      closeLoginModal();
+      applyAuthUI();
+      render();
+      showToast(`🔓 欢迎回来，${u}`, 'success');
+    }, 600);
+  } else {
+    errorEl.textContent = '❌ 用户名或密码错误';
+    errorEl.classList.add('show');
+    errorEl.classList.remove('success');
+    AudioFX.deny();
+    // 清空密码框方便重输
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+
+function handleAccountAction() {
+  // 设置页里账号卡上的按钮:未登录=登录,已登录=登出
+  if (isLoggedIn) {
+    if (confirm('确定要登出吗？登出后将无法操作积分。')) {
+      AudioFX.tap();
+      logout();
+      applyAuthUI();
+      render();
+      showToast('已登出', 'success');
+    }
+  } else {
+    openLoginModal();
+  }
+}
+
+function applyAuthUI() {
+  // 设置页 - 账户卡（底部）
+  const accCard = document.getElementById('accountCard');
+  const accAvatar = document.getElementById('accountAvatar');
+  const accName = document.getElementById('accountName');
+  const accMeta = document.getElementById('accountMeta');
+  const accBtn = document.getElementById('accountActionBtn');
+  if (isLoggedIn) {
+    accCard.classList.add('logged-in');
+    accAvatar.textContent = '🔓';
+    accName.textContent = '已登录 · ' + currentAdmin;
+    accMeta.textContent = '登录剩余有效期 ' + formatRemain();
+    accBtn.textContent = '登出';
+  } else {
+    accCard.classList.remove('logged-in');
+    accAvatar.textContent = '🔒';
+    accName.textContent = '游客模式';
+    accMeta.textContent = '登录后可加减积分、调整规则';
+    accBtn.textContent = '管理员登录';
+  }
+  // 手动调整卡(仅登录可见)
+  document.getElementById('adjustCard').style.display = isLoggedIn ? '' : 'none';
+  // 重新渲染视图
+  render();
+}
+
+/* =========================================================
+ * 手动调整积分（仅登录）
+ * ========================================================= */
+let adjustKind = 'plus';
+const adjustTypeEl = document.getElementById('adjustType');
+adjustTypeEl.addEventListener('click', e => {
+  const b = e.target.closest('button[data-type]');
+  if (!b) return;
+  adjustKind = b.dataset.type;
+  adjustTypeEl.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+});
+document.getElementById('adjustQuick').addEventListener('click', e => {
+  const b = e.target.closest('button[data-v]');
+  if (!b) return;
+  document.getElementById('adjustPointsInput').value = b.dataset.v;
+});
+document.getElementById('adjustSaveBtn').addEventListener('click', () => {
+  if (!requireLogin()) return;
+  const pts = parseInt(document.getElementById('adjustPointsInput').value);
+  const note = document.getElementById('adjustNoteInput').value.trim();
+  if (!pts || pts <= 0) {
+    showToast('请输入大于 0 的积分', 'warn');
+    return;
+  }
+  if (pts > 9999) {
+    showToast('单次最多 9999 积分', 'warn');
+    return;
+  }
+  const delta = adjustKind === 'plus' ? pts : -pts;
+  const before = state.points;
+  const newPoints = Math.max(0, before + delta);
+  state.points = newPoints;
+  state.history.unshift({
+    id: uid(),
+    ruleId: 'manual',
+    ruleName: note ? ('手动调整：' + note) : '手动调整',
+    emoji: adjustKind === 'plus' ? '🎁' : '✂️',
+    delta: newPoints - before,
+    effect: '手动',
+    time: Date.now(),
+  });
+  if (state.history.length > 500) state.history.length = 500;
+  saveState();
+  // 反馈
+  AudioFX.tap();
+  if (delta > 0) AudioFX.earn(); else AudioFX.deduct();
+  const crossedGoal = state.goals.find(g => before < g.points && state.points >= g.points);
+  if (crossedGoal) {
+    setTimeout(() => { celebrate(); mascotReact('celebrate'); AudioFX.celebrate(); showToast(`🎉 达成「${crossedGoal.name}」！`, 'success'); }, 400);
+  } else {
+    showToast(delta > 0 ? `+${delta} 积分已加上` : `${delta} 积分已扣减`, 'success');
+  }
+  // 重置表单
+  document.getElementById('adjustPointsInput').value = '';
+  document.getElementById('adjustNoteInput').value = '';
+  render();
+});
+
+/* =========================================================
+ * 弹窗：添加规则
+ * ========================================================= */
+const EMOJIS = ['📝','💯','⭐','🌟','✨','🎸','🎵','🎨','🎮','🏆','📚','✏️','🧮','🔬','🏃','⚽','🏀','🎯','💪','🧹','🛏️','🍎','🥗','💧','🦷','🛁','🎁','❤️','👍','🔥','💎','🌈','🚀','🌱','🌳','🎂','🎉','🎊','⏰','📖'];
+
+let editingRuleKind = 'earn'; // earn / deduct
+let pickedEmoji = '📝';
+const ruleModal = document.getElementById('ruleModal');
+
+function buildEmojiPicker(target) {
+  const el = document.getElementById(target);
+  el.innerHTML = EMOJIS.map(e => `<div class="emoji-pick ${e === pickedEmoji ? 'active' : ''}" data-emoji="${e}">${e}</div>`).join('');
+  el.querySelectorAll('.emoji-pick').forEach(p => {
+    p.addEventListener('click', () => {
+      pickedEmoji = p.dataset.emoji;
+      el.querySelectorAll('.emoji-pick').forEach(x => x.classList.toggle('active', x.dataset.emoji === pickedEmoji));
+    });
+  });
+}
+
+function openRuleModal(kind) {
+  editingRuleKind = kind;
+  pickedEmoji = kind === 'earn' ? '⭐' : '⚠️';
+  const isEarn = kind === 'earn';
+  document.getElementById('ruleModalTitle').textContent = isEarn ? '添加加分项' : '添加扣分项';
+  document.getElementById('ruleModalEmoji').textContent = isEarn ? '➕' : '➖';
+  document.getElementById('ruleKindInput').value = isEarn ? 'earn' : 'deduct';
+  document.getElementById('ruleNameInput').value = '';
+  document.getElementById('rulePointsInput').value = '';
+  document.getElementById('ruleDescInput').value = '';
+  buildEmojiPicker('emojiPicker');
+  ruleModal.classList.add('show');
+}
+
+document.getElementById('ruleKindInput').addEventListener('change', e => {
+  // 切换类型时调整点数标签
+  const isZero = e.target.value === 'zero';
+  document.getElementById('rulePointsLabel').textContent = isZero ? '（清零无需填写）' : '积分数';
+  document.getElementById('rulePointsInput').disabled = isZero;
+});
+
+document.getElementById('addEarnBtn').addEventListener('click', () => { if (requireLogin()) openRuleModal('earn'); });
+document.getElementById('addDeductBtn').addEventListener('click', () => { if (requireLogin()) openRuleModal('deduct'); });
+document.getElementById('ruleCancel').addEventListener('click', () => ruleModal.classList.remove('show'));
+ruleModal.addEventListener('click', e => { if (e.target === ruleModal) ruleModal.classList.remove('show'); });
+
+document.getElementById('ruleSave').addEventListener('click', () => {
+  const name = document.getElementById('ruleNameInput').value.trim();
+  const kind = document.getElementById('ruleKindInput').value;
+  const pts = parseInt(document.getElementById('rulePointsInput').value) || 0;
+  const desc = document.getElementById('ruleDescInput').value.trim();
+  if (!name) { showToast('请输入名称', 'warn'); return; }
+  if (kind !== 'zero' && pts === 0) { showToast('请输入积分数', 'warn'); return; }
+
+  const rule = {
+    id: uid(),
+    emoji: pickedEmoji,
+    name,
+    points: Math.abs(pts),
+    desc,
+    kind,
+  };
+  if (kind === 'earn') state.rules.earn.push(rule);
+  else state.rules.deduct.push(rule);
+  saveState();
+  ruleModal.classList.remove('show');
+  render();
+  showToast('✅ 规则已添加', 'success');
+});
+
+/* =========================================================
+ * 弹窗：添加目标
+ * ========================================================= */
+const goalModal = document.getElementById('goalModal');
+let pickedGoalEmoji = '🎁';
+
+function buildGoalEmojiPicker() {
+  const el = document.getElementById('goalEmojiPicker');
+  el.innerHTML = ['🎮','🎁','🎨','🎸','⚽','🏀','📚','🚲','🎲','🧸','🎪','🎢','🎯','⌚','📱','🎧','🍦','🎂','🏆','💎'].map(e => `<div class="emoji-pick ${e === pickedGoalEmoji ? 'active' : ''}" data-emoji="${e}">${e}</div>`).join('');
+  el.querySelectorAll('.emoji-pick').forEach(p => {
+    p.addEventListener('click', () => {
+      pickedGoalEmoji = p.dataset.emoji;
+      el.querySelectorAll('.emoji-pick').forEach(x => x.classList.toggle('active', x.dataset.emoji === pickedGoalEmoji));
+    });
+  });
+}
+
+document.getElementById('addGoalBtn').addEventListener('click', () => {
+  if (!requireLogin()) return;
+  pickedGoalEmoji = '🎁';
+  document.getElementById('goalNameInput').value = '';
+  document.getElementById('goalPointsInput').value = '';
+  buildGoalEmojiPicker();
+  goalModal.classList.add('show');
+});
+document.getElementById('goalCancel').addEventListener('click', () => goalModal.classList.remove('show'));
+goalModal.addEventListener('click', e => { if (e.target === goalModal) goalModal.classList.remove('show'); });
+
+document.getElementById('goalSave').addEventListener('click', () => {
+  const name = document.getElementById('goalNameInput').value.trim();
+  const pts = parseInt(document.getElementById('goalPointsInput').value) || 0;
+  if (!name) { showToast('请输入目标名称', 'warn'); return; }
+  if (pts <= 0) { showToast('请输入积分', 'warn'); return; }
+  state.goals.push({ id: uid(), emoji: pickedGoalEmoji, name, points: pts });
+  saveState();
+  goalModal.classList.remove('show');
+  render();
+  showToast('🎯 目标已添加，加油攒分！', 'success');
+});
+
+/* =========================================================
+ * 危险按钮
+ * ========================================================= */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!requireLogin()) return;
+  if (!confirm('真的要清空所有数据吗？\n这会清除所有积分、目标和规则！')) return;
+  if (!confirm('确定要清空吗？此操作不可恢复！')) return;
+  state = structuredClone(DEFAULT_STATE);
+  saveState();
+  render();
+  showToast('已恢复初始状态', 'success');
+});
+
+/* =========================================================
+ * 工具
+ * ========================================================= */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function formatTime(t) {
+  const d = new Date(t);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+  return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+}
+
+/* =========================================================
+ * 启动
+ * ========================================================= */
+// 1) 先恢复登录状态(决定全局锁定样式)
+checkSession();
+// 2) 首次渲染
+render();
+// 3) 根据登录态切换 UI(锁定 / pill / banner / 调整卡)
+applyAuthUI();
+// 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
+apiLoadState();
+
+// 每 30s 检查一次 session 是否过期,过期则自动登出 + 重新加锁
+setInterval(() => {
+  if (isLoggedIn && Date.now() > sessionExpiresAt) {
+    logout();
+    applyAuthUI();
+    showToast('🔒 登录已过期,已自动登出', 'warn');
+  }
+  // 同步剩余有效期显示(仅在设置 Tab 可见时更新)
+  if (isLoggedIn) {
+    const meta = document.getElementById('accountMeta');
+    const settingsPane = document.querySelector('.tab-pane[data-pane="settings"]');
+    if (meta && settingsPane && !settingsPane.hidden) {
+      meta.textContent = '登录剩余有效期 ' + formatRemain();
+    }
+  }
+}, 30000);
+
+// 注册 Service Worker 准备（占位，留待后续离线版）
+if ('serviceWorker' in navigator) {
+  // 暂不启用
+}
+
+console.log('[guoguo-points-bank] 数据存储在 localStorage:', STORAGE_KEY);
+console.log('[guoguo-points-bank] 后续替换 api.yuanchu.ai 时,只需替换 loadState / saveState / onChange 三个入口');
+</script>
+</body>
+</html>
