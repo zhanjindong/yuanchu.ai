@@ -94,7 +94,70 @@ body {
   align-items: flex-start;
   position: relative;
   z-index: 1;
+  gap: 8px;
 }
+/* 同步状态徽章(hero 右上角,在 level-pill 旁边) */
+.sync-badge {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.sync-badge:hover { background: rgba(255,255,255,0.4); }
+.sync-badge:active { transform: scale(0.92); }
+.sync-badge[data-status="ok"] { color: #fff; }
+.sync-badge[data-status="syncing"] {
+  color: #fff;
+  animation: sync-spin 1s linear infinite;
+}
+.sync-badge[data-status="fail"] {
+  background: #FFB3B3;
+  color: #C0392B;
+  animation: sync-shake 0.4s ease;
+}
+@keyframes sync-spin { to { transform: rotate(360deg); } }
+@keyframes sync-shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-3px); }
+  40%,80% { transform: translateX(3px); }
+}
+/* 顶部同步警告条(读失败时显示) */
+.sync-banner {
+  background: #FFE5E5;
+  border: 1px solid #FFB3B3;
+  color: #C0392B;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.sync-banner-text { flex: 1; }
+.sync-banner-btn {
+  background: #C0392B;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sync-banner-btn:hover { background: #A93226; }
+.sync-banner-btn:active { transform: scale(0.96); }
 .hero-greet {
   font-size: 14px;
   opacity: 0.9;
@@ -1143,6 +1206,12 @@ body {
 <div class="container">
 
   <!-- ============ HEADER ============ -->
+  <!-- 顶部同步警告条(api load 失败时显示) -->
+  <div id="syncBanner" class="sync-banner" hidden>
+    <span class="sync-banner-text"></span>
+    <button id="syncBannerRetry" class="sync-banner-btn">重试</button>
+  </div>
+
   <div class="hero">
     <div class="hero-top">
       <div>
@@ -1150,6 +1219,7 @@ body {
         <div class="hero-title" id="heroTitle">今天也要加油哦！</div>
       </div>
       <div class="level-pill" id="levelPill">🌱 新芽</div>
+      <div class="sync-badge" id="syncBadge" data-status="ok" title="已同步到云端">✓</div>
     </div>
     <div class="hero-points-row">
       <div class="points-block">
@@ -1475,10 +1545,58 @@ function loadState() {
   }
 }
 
-// 同步写 localStorage + 异步推到后端
+// 同步写 localStorage + 异步推到后端(悲观更新,失败回滚)
+//
+// 行为契约:
+//   1) 立即写本地(localStorage,作为离线备份)
+//   2) 同步中:同步徽章显示 ⟳
+//   3) PUT 成功 → 同步徽章 ✓
+//   4) PUT 失败 → state 回滚到进入前的 snapshot,同步徽章 ⚠️,调用方 catch 后 toast 报错
+//
+// 调用方应 await commitState() 并 try/catch。失败时 state 已被还原,
+// 直接 render() 即可显示还原后的 UI。
+async function commitState() {
+  // 进入前快照(失败时回滚到这份)
+  const snapshot = structuredClone(state);
+  // 先写本地(立即持久化,网络挂了下次还有)
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  setSyncStatus('syncing');
+  try {
+    await apiPushState();
+    setSyncStatus('ok');
+    return { ok: true };
+  } catch (e) {
+    // 回滚 state(本地 + 内存)
+    state = snapshot;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e2) {}
+    setSyncStatus('fail');
+    throw e;
+  }
+}
+
+// 保留旧名 saveState 为同步别名(只写本地,不推 API) —— 仅用于
+// 加载时初始化等不需要走 API 的场合。业务写操作一律用 commitState。
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.error('saveState', e); }
-  apiPushState().catch(err => console.warn('[points] api push failed', err));
+}
+
+// 写操作统一入口:先 mutator() 改 state,然后 await commitState() 推服务端。
+//   - 成功:render + 可选 success toast
+//   - 失败:commitState 内部已回滚 state,render 回到原状 + error toast
+//   - mutator 抛错会被 catch,等同于未提交
+async function withCommit(mutator, opts) {
+  try {
+    mutator();
+    await commitState();
+    render();
+    if (opts && opts.success) showToast(opts.success, 'success');
+    return true;
+  } catch (e) {
+    console.warn('[points] commit failed', e);
+    render(); // commitState 内部已回滚 state
+    showToast((opts && opts.fail) || '保存失败,数据已回滚,请检查网络后重试', 'error');
+    return false;
+  }
 }
 
 // 从 session 读取写权限 token（同步）
@@ -1494,19 +1612,73 @@ function getWriteToken() {
 
 // 后台从 API 拉取最新 state,合并覆盖本地 + 重渲染
 async function apiLoadState() {
+  setSyncStatus('syncing');
   try {
     const r = await fetch(API_POINTS, { method: 'GET', headers: { Accept: 'application/json' } });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const data = await r.json();
     if (data && data.state && typeof data.state === 'object') {
-      // 只在结构合法时合并（避免后端返回空/null 把本地抹掉）
       Object.assign(state, data.state);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
       if (typeof render === 'function') render();
+      setSyncStatus('ok');
+      hideSyncBanner();
       console.log('[points] 已从 API 同步最新数据');
+    } else {
+      // 线上是空的(首次部署),但 GET 成功 → 同步 OK
+      setSyncStatus('ok');
+      hideSyncBanner();
+      console.log('[points] 云端暂无数据,使用本地');
     }
   } catch (e) {
-    console.warn('[points] api load failed, using local', e);
+    console.warn('[points] api load failed', e);
+    setSyncStatus('fail');
+    showSyncBanner('无法连接到云端,显示的可能不是最新数据');
+  }
+}
+
+// 同步状态:'ok' | 'syncing' | 'fail'
+// 更新 hero 区域右上角小徽章
+function setSyncStatus(status) {
+  const el = document.getElementById('syncBadge');
+  if (!el) return;
+  el.dataset.status = status;
+  if (status === 'ok') {
+    el.textContent = '✓';
+    el.title = '已同步到云端';
+  } else if (status === 'syncing') {
+    el.textContent = '⟳';
+    el.title = '同步中…';
+  } else {
+    el.textContent = '⚠️';
+    el.title = '同步失败,点击重试';
+  }
+}
+
+// 顶部红色警告条(读失败时显示)
+function showSyncBanner(msg) {
+  const el = document.getElementById('syncBanner');
+  if (!el) return;
+  el.querySelector('.sync-banner-text').textContent = '⚠️ ' + msg;
+  el.hidden = false;
+}
+function hideSyncBanner() {
+  const el = document.getElementById('syncBanner');
+  if (el) el.hidden = true;
+}
+
+// 重试读 API(给 banner 上的按钮调用)
+function retryApiLoad() {
+  apiLoadState();
+}
+// 重试 PUT(给 syncBadge 点击调用)
+async function retryCommit() {
+  try {
+    await commitState();
+    if (typeof render === 'function') render();
+    showToast('已重新同步', 'success');
+  } catch (e) {
+    showToast('同步仍然失败,请检查网络', 'error');
   }
 }
 
@@ -1627,6 +1799,7 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// 修改 state(不提交,提交由调用方用 withCommit 包)
 function changePoints(rule) {
   const pointsBefore = state.points;
   let delta = 0;
@@ -1648,15 +1821,15 @@ function changePoints(rule) {
     effect,
     time: Date.now(),
   });
-  // 限制历史长度
   if (state.history.length > 500) state.history.length = 500;
-  saveState();
   return { delta: actualDelta, newPoints: state.points };
 }
 
+// 修改 state(不提交),返回 { ok, reason }
 function redeemGoal(goalId) {
   const goal = state.goals.find(g => g.id === goalId);
-  if (!goal || state.points < goal.points) return false;
+  if (!goal) return { ok: false, reason: 'not_found' };
+  if (state.points < goal.points) return { ok: false, reason: 'insufficient' };
   state.points -= goal.points;
   state.history.unshift({
     id: uid(),
@@ -1667,8 +1840,8 @@ function redeemGoal(goalId) {
     effect: '兑换',
     time: Date.now(),
   });
-  saveState();
-  return true;
+  if (state.history.length > 500) state.history.length = 500;
+  return { ok: true };
 }
 
 /* =========================================================
@@ -1969,29 +2142,31 @@ function renderGoalsList() {
       const goal = state.goals.find(g => g.id === goalId);
       if (!goal) return;
       if (!confirm(`确认兑换「${goal.name}」吗？将扣除 ${goal.points} 积分。`)) return;
-      if (redeemGoal(goalId)) {
-        showToast(`🎉 兑换成功！${goal.name}`, 'success');
-        celebrate();
-        mascotReact('celebrate');
-        AudioFX.celebrate();
-        AudioFX.redeem();
-        render();
-      } else {
-        showToast('积分不足', 'warn');
-      }
-    });
+      const ok = await withCommit(
+        () => {
+          const r = redeemGoal(goalId);
+          if (!r.ok) throw new Error(r.reason);
+        },
+        { success: `🎉 兑换成功！${goal.name}`, fail: '兑换失败,数据已回滚' }
+      );
+      if (!ok) return;
+      // 庆祝反馈
+      celebrate();
+      mascotReact('celebrate');
+      AudioFX.celebrate();
+      AudioFX.redeem();
   });
   el.querySelectorAll('[data-del-goal]').forEach(b => {
-    b.addEventListener('click', e => {
+    b.addEventListener('click', async e => {
       if (!requireLogin()) return;
       const goalId = e.currentTarget.dataset.delGoal;
       const goal = state.goals.find(g => g.id === goalId);
       if (!goal) return;
       if (!confirm(`删除目标「${goal.name}」？`)) return;
-      state.goals = state.goals.filter(g => g.id !== goalId);
-      saveState();
-      render();
-      showToast('目标已删除');
+      await withCommit(
+        () => { state.goals = state.goals.filter(g => g.id !== goalId); },
+        { success: '目标已删除', fail: '删除失败,数据已回滚' }
+      );
     });
   });
 }
@@ -2044,14 +2219,17 @@ function renderRulesList() {
   document.getElementById('deductRulesList').innerHTML =
     state.rules.deduct.map(r => renderOne(r, false)).join('');
   document.querySelectorAll('[data-del-rule]').forEach(b => {
-    b.addEventListener('click', e => {
+    b.addEventListener('click', async e => {
       if (!requireLogin()) return;
       const id = e.currentTarget.dataset.delRule;
       if (!confirm('确定要删除这个规则吗？')) return;
-      state.rules.earn = state.rules.earn.filter(r => r.id !== id);
-      state.rules.deduct = state.rules.deduct.filter(r => r.id !== id);
-      saveState();
-      render();
+      await withCommit(
+        () => {
+          state.rules.earn = state.rules.earn.filter(r => r.id !== id);
+          state.rules.deduct = state.rules.deduct.filter(r => r.id !== id);
+        },
+        { success: '规则已删除', fail: '删除失败,数据已回滚' }
+      );
     });
   });
 }
@@ -2068,16 +2246,19 @@ function onActionClick(ruleId) {
   if (rule.kind === 'deduct' || rule.kind === 'zero') {
     openConfirmDeduct(rule);
   } else {
-    doChangePoints(rule);
+    doChangePoints(rule); // async,内部已 try/catch
   }
 }
 
 // 实际执行积分变更(被 onActionClick 和 confirmModal 共用)
-function doChangePoints(rule) {
+// 先改 state(本地立即生效 → render → 飘字/音效/celebrate),
+// 然后 await commit 推到服务端。失败时 state 已被 commitState 回滚,
+// render 恢复 + error toast。
+async function doChangePoints(rule) {
   const card = document.querySelector(`[data-rule-id="${rule.id}"]`);
   const rect = card ? card.getBoundingClientRect() : null;
   const pointsBefore = state.points;
-  const result = changePoints(rule);
+  const result = changePoints(rule); // 改 state
 
   // 飘字
   const text = result.delta === 0 ? '清零' : (result.delta > 0 ? '+' + result.delta : '' + result.delta);
@@ -2093,17 +2274,26 @@ function doChangePoints(rule) {
   if (result.delta === 0) AudioFX.zero();
   else if (result.delta > 0) AudioFX.earn();
   else AudioFX.deduct();
-  // 跨过目标线庆祝:加分前 < target ≤ 加分后
+  // 跨过目标线庆祝(先把标记准备好,等 commit 成功后再触发)
   const crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
-  if (crossedGoal) {
-    setTimeout(() => {
-      celebrate();
-      mascotReact('celebrate');
-      AudioFX.celebrate();
-      showToast(`🎉 达成「${crossedGoal.name}」！可以去兑换啦！`, 'success');
-    }, 400);
-  }
+  // 先 render 让用户看到立即效果,然后 await commit
   render();
+  try {
+    await commitState();
+    setSyncStatus('ok');
+    if (crossedGoal) {
+      setTimeout(() => {
+        celebrate();
+        mascotReact('celebrate');
+        AudioFX.celebrate();
+        showToast(`🎉 达成「${crossedGoal.name}」！可以去兑换啦！`, 'success');
+      }, 400);
+    }
+  } catch (e) {
+    // 失败:state 已被回滚,render 恢复原状 + error toast
+    render();
+    showToast('保存失败,数据已回滚', 'error');
+  }
 }
 
 // 扣分确认弹窗
@@ -2299,7 +2489,7 @@ document.getElementById('adjustQuick').addEventListener('click', e => {
   if (!b) return;
   document.getElementById('adjustPointsInput').value = b.dataset.v;
 });
-document.getElementById('adjustSaveBtn').addEventListener('click', () => {
+document.getElementById('adjustSaveBtn').addEventListener('click', async () => {
   if (!requireLogin()) return;
   const pts = parseInt(document.getElementById('adjustPointsInput').value);
   const note = document.getElementById('adjustNoteInput').value.trim();
@@ -2313,32 +2503,36 @@ document.getElementById('adjustSaveBtn').addEventListener('click', () => {
   }
   const delta = adjustKind === 'plus' ? pts : -pts;
   const before = state.points;
-  const newPoints = Math.max(0, before + delta);
-  state.points = newPoints;
-  state.history.unshift({
-    id: uid(),
-    ruleId: 'manual',
-    ruleName: note ? ('手动调整：' + note) : '手动调整',
-    emoji: adjustKind === 'plus' ? '🎁' : '✂️',
-    delta: newPoints - before,
-    effect: '手动',
-    time: Date.now(),
-  });
-  if (state.history.length > 500) state.history.length = 500;
-  saveState();
+  let newPoints = 0;
+  let crossedGoal = null;
+  const ok = await withCommit(
+    () => {
+      newPoints = Math.max(0, before + delta);
+      state.points = newPoints;
+      state.history.unshift({
+        id: uid(),
+        ruleId: 'manual',
+        ruleName: note ? ('手动调整:' + note) : '手动调整',
+        emoji: adjustKind === 'plus' ? '🎁' : '✂️',
+        delta: newPoints - before,
+        effect: '手动',
+        time: Date.now(),
+      });
+      if (state.history.length > 500) state.history.length = 500;
+      crossedGoal = state.goals.find(g => before < g.points && state.points >= g.points);
+    },
+    { success: delta > 0 ? `+${delta} 积分已加上` : `${delta} 积分已扣减`, fail: '保存失败,数据已回滚' }
+  );
+  if (!ok) return;
   // 反馈
   AudioFX.tap();
   if (delta > 0) AudioFX.earn(); else AudioFX.deduct();
-  const crossedGoal = state.goals.find(g => before < g.points && state.points >= g.points);
   if (crossedGoal) {
     setTimeout(() => { celebrate(); mascotReact('celebrate'); AudioFX.celebrate(); showToast(`🎉 达成「${crossedGoal.name}」！`, 'success'); }, 400);
-  } else {
-    showToast(delta > 0 ? `+${delta} 积分已加上` : `${delta} 积分已扣减`, 'success');
   }
   // 重置表单
   document.getElementById('adjustPointsInput').value = '';
   document.getElementById('adjustNoteInput').value = '';
-  render();
 });
 
 /* =========================================================
@@ -2387,7 +2581,7 @@ document.getElementById('addDeductBtn').addEventListener('click', () => { if (re
 document.getElementById('ruleCancel').addEventListener('click', () => ruleModal.classList.remove('show'));
 ruleModal.addEventListener('click', e => { if (e.target === ruleModal) ruleModal.classList.remove('show'); });
 
-document.getElementById('ruleSave').addEventListener('click', () => {
+document.getElementById('ruleSave').addEventListener('click', async () => {
   const name = document.getElementById('ruleNameInput').value.trim();
   const kind = document.getElementById('ruleKindInput').value;
   const pts = parseInt(document.getElementById('rulePointsInput').value) || 0;
@@ -2403,12 +2597,15 @@ document.getElementById('ruleSave').addEventListener('click', () => {
     desc,
     kind,
   };
-  if (kind === 'earn') state.rules.earn.push(rule);
-  else state.rules.deduct.push(rule);
-  saveState();
+  const ok = await withCommit(
+    () => {
+      if (kind === 'earn') state.rules.earn.push(rule);
+      else state.rules.deduct.push(rule);
+    },
+    { success: '✅ 规则已添加', fail: '添加失败,数据已回滚' }
+  );
+  if (!ok) return;
   ruleModal.classList.remove('show');
-  render();
-  showToast('✅ 规则已添加', 'success');
 });
 
 /* =========================================================
@@ -2439,29 +2636,30 @@ document.getElementById('addGoalBtn').addEventListener('click', () => {
 document.getElementById('goalCancel').addEventListener('click', () => goalModal.classList.remove('show'));
 goalModal.addEventListener('click', e => { if (e.target === goalModal) goalModal.classList.remove('show'); });
 
-document.getElementById('goalSave').addEventListener('click', () => {
+document.getElementById('goalSave').addEventListener('click', async () => {
   const name = document.getElementById('goalNameInput').value.trim();
   const pts = parseInt(document.getElementById('goalPointsInput').value) || 0;
   if (!name) { showToast('请输入目标名称', 'warn'); return; }
   if (pts <= 0) { showToast('请输入积分', 'warn'); return; }
-  state.goals.push({ id: uid(), emoji: pickedGoalEmoji, name, points: pts });
-  saveState();
+  const ok = await withCommit(
+    () => { state.goals.push({ id: uid(), emoji: pickedGoalEmoji, name, points: pts }); },
+    { success: '🎯 目标已添加,加油攒分！', fail: '添加失败,数据已回滚' }
+  );
+  if (!ok) return;
   goalModal.classList.remove('show');
-  render();
-  showToast('🎯 目标已添加，加油攒分！', 'success');
 });
 
 /* =========================================================
  * 危险按钮
  * ========================================================= */
-document.getElementById('resetBtn').addEventListener('click', () => {
+document.getElementById('resetBtn').addEventListener('click', async () => {
   if (!requireLogin()) return;
   if (!confirm('真的要清空所有数据吗？\n这会清除所有积分、目标和规则！')) return;
   if (!confirm('确定要清空吗？此操作不可恢复！')) return;
-  state = structuredClone(DEFAULT_STATE);
-  saveState();
-  render();
-  showToast('已恢复初始状态', 'success');
+  await withCommit(
+    () => { state = structuredClone(DEFAULT_STATE); },
+    { success: '已恢复初始状态', fail: '清空失败,数据已回滚' }
+  );
 });
 
 /* =========================================================
@@ -2489,6 +2687,16 @@ checkSession();
 render();
 // 3) 根据登录态切换 UI(锁定 / pill / banner / 调整卡)
 applyAuthUI();
+// 3.5) 同步徽章初始状态(默认 ok,等 apiLoadState 改)
+setSyncStatus('ok');
+// 3.6) 同步徽章点击重试 + 警告条重试按钮
+document.getElementById('syncBadge').addEventListener('click', () => {
+  const el = document.getElementById('syncBadge');
+  if (el.dataset.status === 'fail') {
+    retryCommit();
+  }
+});
+document.getElementById('syncBannerRetry').addEventListener('click', retryApiLoad);
 // 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
 apiLoadState();
 
