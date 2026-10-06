@@ -861,6 +861,10 @@ body {
   background: linear-gradient(135deg, var(--yellow-light), var(--orange-light));
   color: var(--orange-dark);
 }
+.confirm-diff.earn {
+  background: var(--green-light);
+  color: var(--green-dark);
+}
 
 /* 登录模态 */
 .login-modal { text-align: center; }
@@ -2239,18 +2243,15 @@ function renderRulesList() {
 
 /* =========================================================
  * 交互：点击规则、Tab 切换、弹窗
- * ========================================================= */
-// 扣分/清零前需要二次确认；加分直接生效
+ * =========================================================
+// 所有规则(加分 / 扣分 / 清零)都需要二次确认,弹同一个 confirmModal,
+// 文案 / 颜色按 kind 区分
 function onActionClick(ruleId) {
   if (!requireLogin()) return;
   const rule = [...state.rules.earn, ...state.rules.deduct].find(r => r.id === ruleId);
   if (!rule) return;
   AudioFX.tap(); // 任何按钮点击的轻反馈
-  if (rule.kind === 'deduct' || rule.kind === 'zero') {
-    openConfirmDeduct(rule);
-  } else {
-    doChangePoints(rule); // async,内部已 try/catch
-  }
+  openConfirm(rule); // 所有 kind 都走二次确认
 }
 
 // 实际执行积分变更(被 onActionClick 和 confirmModal 共用)
@@ -2299,48 +2300,81 @@ async function doChangePoints(rule) {
   }
 }
 
-// 扣分确认弹窗
-let pendingDeductRule = null;
-function openConfirmDeduct(rule) {
-  pendingDeductRule = rule;
+// 二次确认弹窗(加分 / 扣分 / 清零 都走这个)
+let pendingRule = null;
+function openConfirm(rule) {
+  pendingRule = rule;
   const pointsBefore = state.points;
-  const delta = rule.kind === 'zero' ? -pointsBefore : rule.points;
+  const isEarn = rule.kind === 'earn';
+  const isZero = rule.kind === 'zero';
+  const delta = isZero ? -pointsBefore : rule.points;
   const newPoints = Math.max(0, pointsBefore + delta);
-  document.getElementById('confirmEmoji').textContent = rule.emoji || '📉';
-  if (rule.kind === 'zero') {
-    document.getElementById('confirmTitle').textContent = '确定要清零积分吗？';
-    document.getElementById('confirmSub').textContent = '这次操作将把现有积分全部归零，请跟果子确认一下。';
-    document.getElementById('confirmOk').textContent = '确认清零';
-    const diff = document.getElementById('confirmDiff');
-    diff.classList.add('zero');
-    diff.innerHTML = `<span class="confirm-diff-from">${pointsBefore}</span><span class="confirm-diff-arrow">→</span><span class="confirm-diff-to">0</span><span style="font-size:13px;opacity:0.7;">积分</span>`;
+
+  document.getElementById('confirmEmoji').textContent =
+    rule.emoji || (isEarn ? '⭐' : '📉');
+
+  const titleEl = document.getElementById('confirmTitle');
+  const subEl = document.getElementById('confirmSub');
+  const okBtn = document.getElementById('confirmOk');
+  const diffEl = document.getElementById('confirmDiff');
+
+  if (isEarn) {
+    // 加分:绿色主题
+    titleEl.textContent = `获得 +${rule.points} 分`;
+    subEl.textContent = rule.desc || '做得不错,继续加油!';
+    okBtn.textContent = `获得 +${rule.points}`;
+    okBtn.className = 'btn-primary';
+    diffEl.className = 'confirm-diff earn';
+    diffEl.innerHTML =
+      `<span class="confirm-diff-from">${pointsBefore}</span>` +
+      `<span class="confirm-diff-arrow">→</span>` +
+      `<span class="confirm-diff-to">${newPoints}</span>` +
+      `<span style="font-size:13px;opacity:0.7;">积分(+${rule.points})</span>`;
+  } else if (isZero) {
+    // 清零:黄色主题(原 .zero 样式保留)
+    titleEl.textContent = '确定要清零积分吗?';
+    subEl.textContent = '这次操作将把现有积分全部归零,请跟果子确认一下。';
+    okBtn.textContent = '确认清零';
+    okBtn.className = 'btn-danger';
+    diffEl.className = 'confirm-diff zero';
+    diffEl.innerHTML =
+      `<span class="confirm-diff-from">${pointsBefore}</span>` +
+      `<span class="confirm-diff-arrow">→</span>` +
+      `<span class="confirm-diff-to">0</span>` +
+      `<span style="font-size:13px;opacity:0.7;">积分</span>`;
   } else {
-    document.getElementById('confirmTitle').textContent = '确定要扣分吗？';
-    document.getElementById('confirmSub').textContent = rule.desc ? ('原因：' + rule.desc) : '扣分操作不可撤销，请跟果子确认一下。';
-    document.getElementById('confirmOk').textContent = '确认扣分';
-    const diff = document.getElementById('confirmDiff');
-    diff.classList.remove('zero');
-    diff.innerHTML = `<span class="confirm-diff-from">${pointsBefore}</span><span class="confirm-diff-arrow">→</span><span class="confirm-diff-to">${newPoints}</span><span style="font-size:13px;opacity:0.7;">积分（-${Math.abs(delta)}）</span>`;
+    // 扣分:红色主题
+    titleEl.textContent = '确定要扣分吗?';
+    subEl.textContent = rule.desc ? ('原因:' + rule.desc) : '扣分操作不可撤销,请跟果子确认一下。';
+    okBtn.textContent = '确认扣分';
+    okBtn.className = 'btn-danger';
+    diffEl.className = 'confirm-diff';
+    diffEl.innerHTML =
+      `<span class="confirm-diff-from">${pointsBefore}</span>` +
+      `<span class="confirm-diff-arrow">→</span>` +
+      `<span class="confirm-diff-to">${newPoints}</span>` +
+      `<span style="font-size:13px;opacity:0.7;">积分(-${Math.abs(delta)})</span>`;
   }
+
   document.getElementById('confirmModal').classList.add('show');
 }
 
 document.getElementById('confirmCancel').addEventListener('click', () => {
   document.getElementById('confirmModal').classList.remove('show');
-  pendingDeductRule = null;
+  pendingRule = null;
   AudioFX.tap();
 });
 document.getElementById('confirmOk').addEventListener('click', () => {
   document.getElementById('confirmModal').classList.remove('show');
-  if (pendingDeductRule) {
-    doChangePoints(pendingDeductRule);
-    pendingDeductRule = null;
+  if (pendingRule) {
+    doChangePoints(pendingRule); // async,内部已 try/catch
+    pendingRule = null;
   }
 });
 document.getElementById('confirmModal').addEventListener('click', e => {
   if (e.target.id === 'confirmModal') {
     document.getElementById('confirmModal').classList.remove('show');
-    pendingDeductRule = null;
+    pendingRule = null;
   }
 });
 
