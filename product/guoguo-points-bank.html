@@ -145,6 +145,8 @@ body {
   font-size: 13px;
   font-weight: 600;
 }
+/* [hidden] 时强制 none,盖住上面的 display:flex */
+.sync-banner[hidden] { display: none !important; }
 .sync-banner-text { flex: 1; }
 .sync-banner-btn {
   background: #C0392B;
