@@ -2136,7 +2136,7 @@ function renderGoalsList() {
     `;
   }).join('');
   el.querySelectorAll('[data-redeem]').forEach(b => {
-    b.addEventListener('click', e => {
+    b.addEventListener('click', async e => {
       if (!requireLogin()) return;
       const goalId = e.currentTarget.dataset.redeem;
       const goal = state.goals.find(g => g.id === goalId);
