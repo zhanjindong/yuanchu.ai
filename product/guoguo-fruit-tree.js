@@ -32,11 +32,11 @@
           <div class="gt-growth-total"><span>果树成长值</span><strong id="gt-growth">750</strong><p id="gt-growth-source">累计奖励 750 ＋ 照料助长 0</p></div>
           <div class="gt-progress-label"><span id="gt-next">再赚 20 分，下一颗果实成熟</span></div>
           <div class="gt-track"><div id="gt-fill"></div></div>
-          <p class="gt-keep">兑换和扣分，都不会带走已经长大的部分</p>
+          <p class="gt-keep" id="gt-growth-note">兑换和扣分，都不会带走已经长大的部分</p>
         </div>
         <div data-panel-content="harvest" hidden>
           <div class="gt-basket"><span class="gt-basket-icon gt-dock-icon gt-basket-color" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 10 4-6m10 6-4-6M3 10h18l-2 10H5L3 10Zm6 4v3m6-3v3"/></svg></span><div><span class="gt-muted">累计收成</span><strong><span id="gt-picked">28</span> 颗果实</strong></div><div class="gt-best"><span class="gt-muted">最佳收成</span><strong id="gt-best">6 星彩虹果</strong></div></div>
-          <p class="gt-keep">成熟的果实会一直等你，慢慢采也没关系。</p>
+          <p class="gt-keep">未采摘的果实会留在对应树冠，向下回看也能采摘。</p>
           <button type="button" class="gt-panel-action cursor-interaction" id="gt-harvest-panel">一键采摘 · 3 颗</button>
         </div>
         <div data-panel-content="shop" hidden>
@@ -60,7 +60,7 @@
           </section>
           <section><h4>每天一点小照料</h4><p>从种子开始，所有阶段都能照料。浇水花 <strong>1</strong> 积分、成长 +1；阳光花 <strong>2</strong> 积分、成长 +2；肥料花 <strong>3</strong> 积分、成长 +3。</p><p>每种每天限 1 次，最多 3 次、合计 6 积分。照料总加成不超过实际累计奖励积分的 <strong>10%</strong>，自己的努力最重要。</p></section>
           <section><h4>小虫来了，也别担心</h4><p>从种子开始，每次扣分都会来 <strong>1 条</strong>小虫，多次扣分会累积。成长和收成都不会减少。</p><p>有小虫时，先除虫才能浇水、晒太阳和施肥。每条小虫最多守住一颗果实，其余成熟果实照常采摘；还没结果时，小虫就在土边或树上等着。</p><p>每花 <strong>2</strong> 积分使用一次喷雾，或再获得一次奖励积分，都能请走 <strong>1 条</strong>小虫。喷雾可重复使用，不占每天的 3 次照料。</p></section>
-          <section><h4>把收获装进篮子</h4><p>点击成熟果实可以逐颗采摘，也能用“一键采摘”。成熟果实不会过期，累计收成会一直保留。</p><p class="gt-rules-note">家长可以在首页设置中调整成长值。调低后仍保留成熟果实和收成，再达到原来的分数不会重复结果。</p></section>
+          <section><h4>把收获装进篮子</h4><p>未采摘的果实会留在对应树冠，向下回看就能找到。点击果实可以逐颗采摘，也能用“一键采摘”收下所有未被小虫守住的果实。成熟果实不会过期，累计收成会一直保留。</p><p class="gt-rules-note">家长可以在首页的果树设置中调整成长值和累计收成。单独调低成长值会保留果实和收成，再长回原进度不重复结果；调整累计收成不会增减树上果实。</p></section>
         </div>
       </section>
     </div>
@@ -77,7 +77,8 @@
     const supplies={water:{name:'浇水',value:1},sun:{name:'阳光',value:2},food:{name:'肥料',value:3}};
     let snapshot=null,options={loading:false,offline:false,readOnly:false,canInitialize:false,busy:false,retry:false,retrying:false,error:''};
     let growth=0,earned=0,boost=0,adjustment=0,nextFruitGrowth=null,wallet=0,picked=0,best=0,ready=0,pestCount=0,lockedFruitCount=0,bug=false,used=[],remainingBoost=0;
-    let visibleFruits=[],fruitSlots=[],note='',openPanel=null,panelTrigger=null;
+    let fruitLayout=null,fallbackFruits=[],visibleFruits=[],note='',openPanel=null,panelTrigger=null;
+    const layerSlots=new Map();
     let localBusy=false,destroyed=false,pageOffset=0,messageTimer,drawFrame=0,initialInputTouched=false;
     const MAX_CROWNS=60;
     function level(){return growth<firstFruitGrowth?0:Math.floor((growth-firstFruitGrowth)/crownStep)+1;}
@@ -86,6 +87,54 @@
     function number(value,fallback=0){const n=Number(value);return Number.isFinite(n)?Math.max(0,n):fallback;}
     function writesBlocked(){return options.loading||options.offline||options.readOnly||options.busy||localBusy||!snapshot?.initialized;}
     function mapHeight(lv){const count=Math.min(MAX_CROWNS,Math.max(0,lv-pageOffset));return 160+Math.max(0,count-1)*255+410;}
+    function crownGeometry(lv,layer){
+      const index=lv-pageOffset-layer,current=layer===lv;
+      return {index,current,x:current?202:layer%2?174:226,y:160+index*255,size:current?1:.84+(layer%3)*.025};
+    }
+    function layoutFruit(range,id){
+      const index=range.startSlot+id-range.startId;
+      return {id,level:range.startLevel+Math.floor(index/5),slot:index%5,locked:fruitLayout.lockedRanges.some(([start,end])=>id>=start&&id<=end)};
+    }
+    function findFruit(id){
+      if(!fruitLayout)return fallbackFruits.find(item=>String(item.id)===String(id));
+      const value=Number(id),range=fruitLayout.ranges.find(range=>value>=range.startId&&value<=range.endId);
+      return range?layoutFruit(range,value):null;
+    }
+    function fruitsOnLayer(layer){
+      const candidates=[];
+      if(fruitLayout){
+        // Intersect compressed ranges with this crown before expanding: at most
+        // five fruit per range, even when the tree holds millions of fruit.
+        for(const range of fruitLayout.ranges){
+          const first=range.startId+(layer-range.startLevel)*5-range.startSlot;
+          for(let id=Math.max(range.startId,first),end=Math.min(range.endId,first+4);id<=end;id++)candidates.push(layoutFruit(range,id));
+        }
+      }else candidates.push(...fallbackFruits.filter(item=>item.level===layer));
+      const previous=layerSlots.get(layer)||[],slots=new Array(5);
+      for(const item of candidates){const slot=previous.findIndex(old=>old&&String(old.id)===String(item.id));if(slot>=0)slots[slot]=item;}
+      // Old-rule migration can preserve more than five fruit on one crown.
+      // Keep the existing five in place and reveal its next fruit after picking.
+      for(const item of candidates){
+        if(slots.some(old=>old&&String(old.id)===String(item.id)))continue;
+        const preferred=Number.isInteger(item.slot)?item.slot:(Number(item.id)-1)%5;
+        const slot=preferred>=0&&preferred<5&&!slots[preferred]?preferred:slots.findIndex(old=>!old);
+        if(slot>=0)slots[slot]=item;
+      }
+      layerSlots.set(layer,slots);
+      return slots.flatMap((item,slot)=>item?[{...item,slot}]:[]);
+    }
+    function collectVisibleFruits(lv,viewTop,viewBottom){
+      const count=Math.min(MAX_CROWNS,lv-pageOffset),first=Math.max(0,Math.floor((viewTop-310)/255)),last=Math.min(count-1,Math.ceil((viewBottom+120)/255));
+      for(const layer of layerSlots.keys())if(layer>lv-pageOffset||layer<=lv-pageOffset-count)layerSlots.delete(layer);
+      visibleFruits=[];
+      for(let i=first;i<=last;i++){
+        const layer=lv-pageOffset-i,crown=crownGeometry(lv,layer);
+        for(const item of fruitsOnLayer(layer)){
+          const [x,y]=fruitPositions[item.slot];
+          visibleFruits.push({...item,x:crown.x+x*crown.size,y:crown.y+y*crown.size,size:crown.size});
+        }
+      }
+    }
   function circle(x,y,r,c){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();}
   function ellipse(x,y,rx,ry,c){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();}
   function stroke(points,color,width){ctx.beginPath();ctx.moveTo(points[0],points[1]);ctx.bezierCurveTo(...points.slice(2));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.stroke();}
@@ -164,7 +213,7 @@
       ellipse(13,3,19,4,'#79532b20');caterpillar(0,0);ctx.restore();
     }
   }
-  function drawCrown(x,y,current,lv,bloom=true,anchor=[x,y+105]){
+  function drawCrown(x,y,current,lv,bloom=true,anchor=[x,y+105],fruits=[]){
     ctx.save();ctx.translate(x,y);const size=current?1:.84+(lv%3)*.025;ctx.scale(size,size);
     const spread=settings.crown==='airy'?1.1:1,ax=(anchor[0]-x)/size,ay=(anchor[1]-y)/size;
     foliage(-15,8,1.51,.96,-.05,'back');
@@ -183,11 +232,8 @@
         blossomCluster(49,30,.83,.44,1);
       }else{flower(-107,-18,.88);flower(48,-69,.78);flower(-25,57,.7);}
     }
-    if(current&&lv>0){
-      for(const slot of fruitSlots){const item=visibleFruits[slot];fruit(...fruitPositions[slot],item.level,item.locked);}
-      const onFruit=fruitSlots.filter(slot=>visibleFruits[slot].locked).length;
-      drawLoosePests([[-117,-40,.75,-.15],[96,-43,.75,.12],[-15,78,.78,.06]],Math.max(0,pestCount-onFruit));
-    }
+    for(const item of fruits)fruit(...fruitPositions[item.slot],item.level,item.locked);
+    if(current&&lv>0)drawLoosePests([[-117,-40,.75,-.15],[96,-43,.75,.12],[-15,78,.78,.06]],Math.max(0,pestCount-lockedFruitCount));
     ctx.restore();
   }
   function face(x,y,s=1){
@@ -257,9 +303,9 @@
       ctx.lineTo(trunkX(trunkTop)+halfWidth(trunkTop),trunkTop);ctx.closePath();ctx.fillStyle=gradient(175,0,238,0,[[0,'#94764e'],[.37,'#c4a171'],[.62,'#bb9664'],[1,'#8f704b']]);ctx.fill();
       ctx.beginPath();ctx.moveTo(trunkX(trunkTop)-halfWidth(trunkTop)*.37,trunkTop);for(let y=trunkTop+7;y<trunkBottom-5;y+=7)ctx.lineTo(trunkX(y)-halfWidth(y)*.37,y);ctx.strokeStyle='#e4c79965';ctx.lineWidth=3.8;ctx.lineCap='round';ctx.stroke();
       for(let i=first;i<=last;i++){
-        const layer=lv-pageOffset-i,y=160+i*255,current=pageOffset+i===0,x=current?202:layer%2?174:226;
+        const layer=lv-pageOffset-i,{x,y,current}=crownGeometry(lv,layer);
         leaf(trunkX(y+144)-6,y+144,17,-2.75,'#7ac953');leaf(trunkX(y+120)+8,y+120,14,-.58,'#50ae40');
-        drawCrown(x,y,current,layer,true,[trunkX(y+105),y+105]);
+        drawCrown(x,y,current,layer,true,[trunkX(y+105),y+105],visibleFruits.filter(item=>item.level===layer));
         if(i>0&&y-122>viewTop-60&&y-122<viewBottom)addLabel(y-122,'第 '+layer+' 层枝冠',(firstFruitGrowth+(layer-1)*crownStep)+' 成长 · 成长足迹','history');
       }
       if(!pageOffset&&viewTop<300)face(trunkX(273),273,.78);
@@ -271,13 +317,14 @@
       }
     }
     function syncFruitTargets(){
-      const targetLayer=el('fruit-targets'),scale=viewport.clientWidth/460,items=pageOffset===0&&level()>0?fruitSlots:[],focused=document.activeElement,hadFruitFocus=targetLayer.contains(focused);
-      for(const button of targetLayer.querySelectorAll('button'))if(!items.some(slot=>String(visibleFruits[slot].id)===button.dataset.fruitId))button.remove();
-      for(const slot of items){const item=visibleFruits[slot],key=String(item.id);
+      const targetLayer=el('fruit-targets'),scale=viewport.clientWidth/460,items=visibleFruits,focused=document.activeElement,hadFruitFocus=targetLayer.contains(focused);
+      for(const button of targetLayer.querySelectorAll('button'))if(!items.some(item=>String(item.id)===button.dataset.fruitId))button.remove();
+      for(const item of items){const key=String(item.id);
         let button=[...targetLayer.children].find(node=>node.dataset.fruitId===key);
-        if(!button){button=document.createElement('button');button.type='button';button.className='gt-fruit-target';button.dataset.fruitId=key;button.addEventListener('click',()=>{const current=visibleFruits.find(f=>f&&String(f.id)===key);if(!current)return;if(current.locked)setPanel('shop',button);else runAction({action:'harvest',fruitId:current.id});});targetLayer.append(button);}
-        const [x,y]=fruitPositions[slot],size=Math.max(44,61*scale),label=item.name||fruitName(item.level).replace(/★/g,'').trim();
-        button.style.left=(202+x)*scale+'px';button.style.top=(160+y)*scale+'px';button.style.width=size+'px';button.style.height=size+'px';
+        if(!button){button=document.createElement('button');button.type='button';button.className='gt-fruit-target';button.dataset.fruitId=key;button.addEventListener('click',()=>{const current=findFruit(key);if(!current)return;if(current.locked)setPanel('shop',button);else runAction({action:'harvest',fruitId:current.id});});targetLayer.append(button);}
+        const size=Math.max(44,61*scale*item.size),label=item.name||fruitName(item.level).replace(/★/g,'').trim();
+        button.dataset.fruitLevel=String(item.level);button.dataset.fruitSlot=String(item.slot);
+        button.style.left=item.x*scale+'px';button.style.top=item.y*scale+'px';button.style.width=size+'px';button.style.height=size+'px';
         button.disabled=!item.locked&&writesBlocked();button.setAttribute('aria-label',(item.locked?'照料':'采摘')+label+(item.locked?'，果实上有小虫':''));
       }
       if(hadFruitFocus&&!focused.isConnected){const next=targetLayer.querySelector('button:not(:disabled)')||root.querySelector('[data-open-panel="harvest"]');next.focus({preventScroll:true});}
@@ -294,7 +341,7 @@
       const bitmapWidth=Math.round(width*dpr),pixelHeight=Math.round(bitmapHeight*dpr);
       if(canvas.width!==bitmapWidth)canvas.width=bitmapWidth;if(canvas.height!==pixelHeight)canvas.height=pixelHeight;
       ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,bitmapHeight);ctx.translate(0,-offset);ctx.scale(scale,scale);
-      el('layer-labels').replaceChildren();syncFruitTargets();
+      el('layer-labels').replaceChildren();collectVisibleFruits(lv,offset/scale,(offset+bitmapHeight)/scale);syncFruitTargets();
       canvas.setAttribute('aria-label',(lv?'一棵果树的枝冠，沿同一条树干向下延伸，可以回看成长足迹':'果树目前处于'+names[s]+'阶段')+(bug?'，还有 '+pestCount+' 条小虫':''));
       el('return').hidden=!lv||(!pageOffset&&viewport.scrollTop<35);
       el('newer').hidden=!pageOffset;el('older').hidden=!lv||pageOffset+MAX_CROWNS>=lv;
@@ -315,15 +362,22 @@
       const careNote='每种每天 1 次，合计最多 6 积分。照料总加成不超过累计奖励的 10%。';
       el('shop-note').textContent=(bug?'先消灭所有小虫，才能浇水、晒太阳和施肥。':'')+careNote;
       root.querySelectorAll('[data-supply]').forEach(button=>{const kind=button.dataset.supply,item=supplies[kind];const reason=bug?'先除小虫':used.includes(kind)?'今日已用':remainingBoost<item.value?'额度不足':wallet<item.value?'积分不足':'';button.disabled=blocked||!!reason;button.querySelector('b').textContent=reason||item.value+' 积分';});
-      const fruitRemaining=nextFruitGrowth===null?fruitStep-(growth-firstFruitGrowth)%fruitStep:Math.max(0,nextFruitGrowth-growth);
-      const remaining=s===6?fruitRemaining:milestones[s+1]-growth;
-      const nextStep=s===6?'下一颗果实成熟':s===0?'长出新芽':s===4?'果树就开花':s===5?(nextFruitGrowth>firstFruitGrowth?'进入结果期':'结出第一颗果实'):'成长为'+names[s+1];
+      const normalNextFruitGrowth=s===6?firstFruitGrowth+(Math.floor((growth-firstFruitGrowth)/fruitStep)+1)*fruitStep:firstFruitGrowth;
+      // The server keeps issued-fruit history to prevent duplicates after a
+      // manual rollback. Show the current growth goal while retracing that history.
+      const recovering=nextFruitGrowth!==null&&nextFruitGrowth>normalNextFruitGrowth;
+      const fruitRemaining=normalNextFruitGrowth-growth;
+      const crownRemaining=firstFruitGrowth+level()*crownStep-growth;
+      const remaining=s===6?(recovering?crownRemaining:fruitRemaining):milestones[s+1]-growth;
+      const nextStep=s===6?(recovering?'长出新一层树冠':'下一颗果实成熟'):s===0?'长出新芽':s===4?'果树就开花':s===5?(recovering?'进入结果期':'结出第一颗果实'):'成长为'+names[s+1];
       const progressText='再赚 '+remaining+' 分，'+nextStep;
-      el('next').textContent=progressText;el('fill').style.width=(s===6?Math.max(0,Math.min(100,(fruitStep-fruitRemaining)/fruitStep*100)):((growth-milestones[s])/(milestones[s+1]-milestones[s])*100))+'%';
+      const progressRange=s===6?(recovering?crownStep:fruitStep):milestones[s+1]-milestones[s];
+      el('next').textContent=progressText;el('fill').style.width=Math.max(0,Math.min(100,(progressRange-remaining)/progressRange*100))+'%';
+      el('growth-note').textContent=recovering?'已经成熟过的果实会保留，长回原进度不会重复结果。':'兑换和扣分，都不会带走已经长大的部分';
       el('picked').textContent=picked;el('best').textContent=fruitName(best);el('care').hidden=!bug;
-      const harvestText=available?'一键采摘 · '+available+' 颗':lockedFruitCount?'先除小虫，再来采摘':nextFruitGrowth>firstFruitGrowth?'下一颗果实，在 '+nextFruitGrowth+' 分等你':s===6?'收好啦，期待下一颗！':'第一颗果实，在 '+firstFruitGrowth+' 分等你';
+      const harvestText=available?'一键采摘 · '+available+' 颗':lockedFruitCount?'先除小虫，再来采摘':recovering?progressText:nextFruitGrowth>firstFruitGrowth?'下一颗果实，在 '+normalNextFruitGrowth+' 分等你':s===6?'收好啦，期待下一颗！':'第一颗果实，在 '+firstFruitGrowth+' 分等你';
       // Previously ripened fruit remains harvestable after the growth thresholds change.
-      const showHarvest=s===6||available>0||lockedFruitCount>0;
+      const showHarvest=(s===6&&!recovering)||available>0||lockedFruitCount>0;
       el('harvest-label').textContent=localBusy?'正在照顾果树…':showHarvest?harvestText:progressText;el('harvest-progress').textContent=progressText;el('harvest-progress').hidden=!showHarvest;
       el('harvest').disabled=blocked||!available;el('harvest-panel').textContent=localBusy?'正在收进篮子…':harvestText;el('harvest-panel').disabled=blocked||!available;
       el('message').textContent=note||(bug?'有 '+pestCount+' 条小虫，先除虫再照料。长大的努力还在。':'');el('message').hidden=!note&&!bug;
@@ -347,13 +401,11 @@
       const previousLevel=level();
       options={...options,...patch};
       if(next){snapshot=next;growth=number(next.growth);earned=number(next.earned);boost=number(next.boost);adjustment=Number.isFinite(Number(next.adjustment))?Number(next.adjustment):0;nextFruitGrowth=next.nextFruitGrowth!=null&&Number.isFinite(Number(next.nextFruitGrowth))?number(next.nextFruitGrowth):null;wallet=number(next.balance);picked=number(next.harvestedCount);best=number(next.bestHarvestLevel);used=Array.isArray(next.care?.usedKinds)?next.care.usedKinds:[];remainingBoost=number(next.care?.remainingBoost);
-        const old=visibleFruits,updated=new Array(fruitPositions.length),items=Array.isArray(next.fruits)?next.fruits.slice(0,fruitPositions.length):[];
+        fruitLayout=Array.isArray(next.fruitLayout?.ranges)&&Array.isArray(next.fruitLayout?.lockedRanges)?next.fruitLayout:null;
+        const items=Array.isArray(next.fruits)?next.fruits:[];
         const pestIds=new Set((Array.isArray(next.pest?.fruitIds)?next.pest.fruitIds:next.pest?.fruitId!=null?[next.pest.fruitId]:[]).map(String));
         const normalized=items.map(item=>({...item,level:Math.max(1,number(item.level,1)),locked:!!item.locked||pestIds.has(String(item.id))}));
-        // Keep remaining fruits on the same branches when the server fills an empty slot.
-        for(const item of normalized){const retained=old.findIndex(f=>f&&String(f.id)===String(item.id));if(retained>=0)updated[retained]=item;}
-        for(const item of normalized)if(!updated.some(f=>f&&String(f.id)===String(item.id)))updated[updated.findIndex(f=>!f)]=item;
-        visibleFruits=updated;fruitSlots=updated.map((f,i)=>f?i:null).filter(i=>i!==null);
+        fallbackFruits=normalized;
         const visibleLocked=normalized.filter(f=>f.locked).length;
         pestCount=number(next.pest?.count,Math.max(pestIds.size,visibleLocked));bug=pestCount>0;
         lockedFruitCount=number(next.lockedFruitCount,visibleLocked);ready=number(next.readyCount,normalized.filter(f=>!f.locked).length);
@@ -361,8 +413,8 @@
       }
       render();
     }
-    function showPickEffect(slot){
-      if(root.hidden||pageOffset)return;const [x,y]=fruitPositions[slot],scale=viewport.clientWidth/460,pop=document.createElement('span');pop.className='gt-picked-pop';pop.textContent='+1';pop.style.left=(202+x)*scale+'px';pop.style.top=(160+y)*scale+'px';el('pick-effects').append(pop);global.setTimeout(()=>pop.remove(),720);
+    function showPickEffect(item){
+      if(root.hidden)return;const scale=viewport.clientWidth/460,pop=document.createElement('span');pop.className='gt-picked-pop';pop.textContent='+1';pop.style.left=item.x*scale+'px';pop.style.top=item.y*scale+'px';el('pick-effects').append(pop);global.setTimeout(()=>pop.remove(),720);
     }
     function feedback(kind){
       global.clearTimeout(messageTimer);const message=note;
@@ -380,7 +432,7 @@
         if(destroyed)return;
         if(result?.snapshot)update(result.snapshot);else if(result&&typeof result.initialized==='boolean')update(result);
         // Feedback is based on the returned authoritative state, never optimistic wallet or fruit changes.
-        if(payload.action==='harvest'&&picked>beforePicked){note=result?.message||'收获 '+(picked-beforePicked)+' 颗果实，都收进篮子啦！';if(openPanel)setPanel(null);before.forEach((item,slot)=>{if(item&&!visibleFruits.some(f=>f&&String(f.id)===String(item.id)))showPickEffect(slot);});feedback('harvest');}
+        if(payload.action==='harvest'&&picked>beforePicked){note=result?.message||'收获 '+(picked-beforePicked)+' 颗果实，都收进篮子啦！';if(openPanel)setPanel(null);before.forEach(item=>{if(!findFruit(item.id))showPickEffect(item);});feedback('harvest');}
         else if(payload.action==='care'&&growth>previousGrowth){note=result?.message||supplies[payload.kind].name+'完成，果树长大了 '+(growth-previousGrowth)+' 点！';setPanel(null);feedback('care');}
         else if(payload.action==='spray'&&pestCount<previousPests){note=result?.message||(bug?'请走 1 条小虫，还剩 '+pestCount+' 条。':'小虫都离开啦，果树又自在了！');if(!bug)setPanel(null);feedback('care');}
         else if(initializing&&snapshot?.initialized){note='果树种好啦，每一次努力都会留下来。';el('home').focus({preventScroll:true});feedback('care');}

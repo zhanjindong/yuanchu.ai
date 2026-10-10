@@ -1023,6 +1023,46 @@ test('tree snapshots retain five visible fruits and full pest and harvest totals
   }
 });
 
+test('full crown fruit ranges and pest locks survive cloud refresh, picking, and local cache reload', async () => {
+  const fruitLayout = {
+    ranges: [
+      { startId: 2, endId: 5, startLevel: 1, startSlot: 1 },
+      { startId: 6, endId: 49_999_986, startLevel: 2, startSlot: 0 },
+    ],
+    lockedRanges: [[3, 4], [8, 8]],
+  };
+  const serverState = { points: 100, history: [], goals: [], fruitTree: {
+    status: 'ready', growth: 1_000_000_000, earned: 1_000_000_000, boost: 0,
+    harvested: 1, available: 49_999_985, readyCount: 49_999_982, pestCount: 3,
+    fruits: [{ id: 2, level: 1 }, { id: 3, level: 1, locked: true }],
+    bugFruitIds: [3, 4], fruitLayout,
+  } };
+  const app = await loadTreePage(100, { loggedIn: false, preserveState: true, serverState });
+  let snapshot = app.tree.updates.at(-1)[0];
+  assert.deepEqual(JSON.parse(JSON.stringify(snapshot.fruitLayout)), fruitLayout,
+    'the page adapter must preserve compact ranges without reducing them to five visible fruit');
+  assert.deepEqual(JSON.parse(JSON.stringify(app.storedState().fruitTree.fruitLayout)), fruitLayout);
+  const afterHarvest = structuredClone(serverState);
+  afterHarvest.fruitTree.harvested = 2;
+  afterHarvest.fruitTree.available--;
+  afterHarvest.fruitTree.readyCount--;
+  afterHarvest.fruitTree.fruitLayout.ranges[0] = { startId: 3, endId: 5, startLevel: 1, startSlot: 2 };
+  app.respondToTree(body => {
+    assert.equal(body.action, 'harvest');
+    assert.equal(body.fruitId, 2);
+    return { ok: true, state: afterHarvest, revision: 2 };
+  });
+  await app.tree.options.onAction({ action: 'harvest', fruitId: 2 });
+  snapshot = app.tree.updates.at(-1)[0];
+  assert.deepEqual(JSON.parse(JSON.stringify(snapshot.fruitLayout)), afterHarvest.fruitTree.fruitLayout);
+  const reloaded = await loadTreePage(100, {
+    loggedIn: false, preserveState: true, serverState: afterHarvest, initialStorage: app.exportStorage(),
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(reloaded.tree.updates.at(-1)[0].fruitLayout)), afterHarvest.fruitTree.fruitLayout);
+  assert.equal(reloaded.requests.filter(request => request.method !== 'GET').length, 0,
+    'reloading history never replays a completed pick');
+});
+
 test('legacy single-pest snapshots remain compatible and are safe when growth is reset below fruiting', async () => {
   for (const available of [0, 5]) {
     const app = await loadTreePage(0, {
@@ -1145,7 +1185,10 @@ test('a guest reload or return home confirms pending care without requiring a pa
 });
 
 test('guests cannot initialize historical rewards or send other privileged tree actions', async () => {
-  for (const payload of [{ action: 'initialize', earned: 500 }, { action: 'set-growth', growth: 1000 }]) {
+  for (const payload of [
+    { action: 'initialize', earned: 500 }, { action: 'set-growth', growth: 1000 },
+    { action: 'set-tree-settings', growth: 300, harvested: 50 },
+  ]) {
     const app = await loadTreePage(100, { loggedIn: false });
     const before = JSON.stringify(app.bank.state);
     await assert.rejects(app.tree.options.onAction(payload), /登录/);
@@ -1176,7 +1219,7 @@ test('historical initialization retains parent credentials and its explicit earn
 });
 
 test('guest tree visits cannot retry protected pending operations or treat point writes as public care', async () => {
-  for (const kind of ['set-growth', 'initialize', 'points']) {
+  for (const kind of ['set-growth', 'set-tree-settings', 'initialize', 'points']) {
     const original = await loadGrowthSettings();
     if (kind === 'points') {
       original.failWrites();
@@ -1187,6 +1230,7 @@ test('guest tree visits cannot retry protected pending operations or treat point
       await original.click('treeGrowthSaveBtn');
     }
     const pending = original.storedPending();
+    if (kind === 'set-growth') pending.body.action = 'set-growth';
     if (kind === 'initialize') {
       pending.body = { action: 'initialize', earned: 500, revision: 0, operationId: pending.body.operationId };
     } else if (kind === 'points') {
@@ -1265,7 +1309,7 @@ test('the parent growth setting adopts the server tree and cache without changin
   const before = structuredClone(app.bank.state);
   const updated = adjustedGrowthState(app, 300);
   app.respondToTree(body => {
-    assert.equal(body.action, 'set-growth');
+    assert.equal(body.action, 'set-tree-settings');
     assert.equal(body.growth, 300);
     assert.equal(body.revision, 0);
     assert.equal(typeof body.operationId, 'string');
@@ -1418,7 +1462,7 @@ test('an uncertain growth save keeps the old state and retries the same operatio
   assert.equal(JSON.stringify(app.bank.state), before);
   assert.equal(JSON.stringify(app.storedState()), before);
   assert.equal(app.storedPending().endpoint, 'tree');
-  assert.equal(app.storedPending().body.action, 'set-growth');
+  assert.equal(app.storedPending().body.action, 'set-tree-settings');
   app.element('treeGrowthInput').value = '400';
   await app.click('treeGrowthSaveBtn');
   assert.equal(treePosts(app).length, 1, 'a new growth value must wait for the uncertain action');
@@ -1495,7 +1539,7 @@ test('setting growth on an uninitialized tree creates its shared state once befo
     },
   });
   app.respondToTree(body => {
-    assert.equal(body.action, 'set-growth');
+    assert.equal(body.action, 'set-tree-settings');
     assert.equal(body.growth, 300);
     assert.equal(body.revision, 1);
     return { ok: true, revision: 2, state: {
@@ -1546,7 +1590,7 @@ test('a cached tree does not bypass creating an empty cloud state before setting
   assert.equal(app.writes.length, 0, 'simply reading the bank must not initialize the cloud');
   app.respondToTree(body => {
     assert.equal(app.writes.length, 1, 'a cached tree is not evidence of server persistence');
-    assert.equal(body.action, 'set-growth');
+    assert.equal(body.action, 'set-tree-settings');
     assert.equal(body.growth, 300);
     assert.equal(body.revision, 1, 'the adjustment must use the newly created cloud revision');
     return { ok: true, state: adjustedGrowthState(app, body.growth), revision: 2 };
@@ -1574,10 +1618,281 @@ test('a legacy tree awaiting parent confirmation can be initialized by setting i
   app.respondToTree(() => ({ ok: true, state: updated, revision: 1 }));
   app.element('treeGrowthInput').value = '300';
   await app.click('treeGrowthSaveBtn');
-  assert.equal(app.writes.length, 0, 'set-growth itself resolves the confirmation state');
+  assert.equal(app.writes.length, 0, 'combined settings itself resolves the confirmation state');
   assert.equal(treePosts(app).length, 1);
   assert.equal(treePosts(app)[0].body.growth, 300);
   assert.equal(app.bank.state.fruitTree.status, 'ready');
   assert.equal(app.bank.state.fruitTree.growth, 300);
   assert.equal(app.bank.state.points, 80);
+});
+
+function adjustedHarvestState(app, harvested, growth) {
+  const updated = growth == null ? structuredClone(app.bank.state) : adjustedGrowthState(app, growth);
+  updated.fruitTree.lastHarvestAdjustment = {
+    from: app.bank.state.fruitTree.harvested, to: harvested, time: '2026-10-10T04:00:00.000Z',
+  };
+  updated.fruitTree.harvested = harvested;
+  return updated;
+}
+
+test('a parent can set only cumulative harvests without changing growth or unpicked fruit', async () => {
+  const app = await loadGrowthSettings();
+  const before = structuredClone(app.bank.state);
+  const updated = adjustedHarvestState(app, 42);
+  assert.match(String(app.element('treeHarvestCurrentValue').textContent), /10/);
+  app.respondToTree(body => {
+    assert.equal(body.action, 'set-tree-settings');
+    assert.equal(body.harvested, 42);
+    assert.equal(body.revision, 0);
+    assert.deepEqual(Object.keys(body).sort(), ['action', 'harvested', 'operationId', 'revision']);
+    return { ok: true, state: updated, revision: 1 };
+  });
+  app.element('treeGrowthInput').value = ' ';
+  app.element('treeHarvestInput').value = '42';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(treePosts(app)[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(app.writes.length, 0);
+  assert.equal(app.bank.state.fruitTree.harvested, 42);
+  assert.equal(app.storedState().fruitTree.harvested, 42);
+  assert.equal(app.bank.state.points, before.points);
+  for (const field of ['growth', 'earned', 'boost', 'adjustment', 'available', 'nextFruitGrowth', 'bestLevel']) {
+    assert.equal(app.bank.state.fruitTree[field], before.fruitTree[field], `${field} must remain unchanged`);
+  }
+  assert.equal(JSON.stringify(app.bank.state.fruitTree.fruits), JSON.stringify(before.fruitTree.fruits));
+  assert.equal(JSON.stringify(app.bank.state.history), JSON.stringify(before.history));
+  assert.match(String(app.element('treeHarvestCurrentValue').textContent), /42/);
+  assert.equal(app.element('treeHarvestLastAdjustment').hidden, false);
+  assert.match(String(app.element('treeHarvestLastAdjustment').textContent), /10.*42/);
+  assert.equal(app.element('treeHarvestInput').value, '');
+  assert.equal(app.storedPending(), null);
+});
+
+test('growth and cumulative harvests save together in one authenticated operation and survive a tree visit', async () => {
+  const app = await loadGrowthSettings();
+  const before = structuredClone(app.bank.state);
+  const updated = adjustedHarvestState(app, 25, 300);
+  updated.fruitTree.lastAdjustment = { from: 526, to: 300, time: '2026-10-10T04:00:00.000Z' };
+  app.respondToTree(body => {
+    assert.equal(body.action, 'set-tree-settings');
+    assert.equal(body.growth, 300);
+    assert.equal(body.harvested, 25);
+    assert.deepEqual(Object.keys(body).sort(), ['action', 'growth', 'harvested', 'operationId', 'revision']);
+    return { ok: true, state: updated, revision: 1 };
+  });
+  app.element('treeGrowthInput').value = '300';
+  app.element('treeHarvestInput').value = '25';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(app.writes.length, 0);
+  assert.equal(app.bank.state.fruitTree.growth, 300);
+  assert.equal(app.bank.state.fruitTree.harvested, 25);
+  assert.equal(JSON.stringify(app.bank.state.fruitTree.fruits), JSON.stringify(before.fruitTree.fruits));
+  assert.match(String(app.element('treeGrowthLastAdjustment').textContent), /526.*300/);
+  assert.match(String(app.element('treeHarvestLastAdjustment').textContent), /10.*25/);
+  assert.equal(app.element('treeGrowthInput').value, '');
+  assert.equal(app.element('treeHarvestInput').value, '');
+  const tree = await loadTreePage(0, {
+    preserveState: true, loggedIn: false, serverState: updated,
+    initialStorage: app.exportStorage().filter(([key]) => key !== 'guoguo_admin_session_v1'),
+  });
+  const snapshot = tree.tree.updates.at(-1)[0];
+  assert.equal(snapshot.growth, 300);
+  assert.equal(snapshot.harvestedCount, 25);
+  assert.equal(snapshot.availableCount, 2);
+  assert.equal(snapshot.nextFruitGrowth, 540);
+  assert.equal(tree.storedState().fruitTree.harvested, 25);
+  assert.equal(tree.requests.filter(request => request.method !== 'GET').length, 0);
+});
+
+test('harvest settings accept zero and the maximum count while an empty growth field remains unchanged', async () => {
+  for (const harvested of [0, 1_000_000_000]) {
+    const app = await loadGrowthSettings();
+    app.respondToTree(() => ({ ok: true, state: adjustedHarvestState(app, harvested), revision: 1 }));
+    app.element('treeHarvestInput').value = String(harvested);
+    await app.click('treeGrowthSaveBtn');
+    assert.equal(treePosts(app)[0].body.harvested, harvested);
+    assert.equal(Object.hasOwn(treePosts(app)[0].body, 'growth'), false);
+    assert.equal(app.bank.state.fruitTree.harvested, harvested);
+    assert.equal(app.bank.state.fruitTree.growth, 526);
+    assert.equal(app.bank.state.fruitTree.available, 2);
+  }
+});
+
+test('invalid harvest or growth values prevent the whole settings submission', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  for (const [growth, harvested] of [
+    ['', ''], [' ', ' '], ['300', '-1'], ['300', '1.5'], ['300', '1000000001'],
+    ['300', 'Infinity'], ['300', 'invalid'], ['-1', '30'], ['1.5', '30'], ['invalid', '30'],
+  ]) {
+    app.element('treeGrowthInput').value = growth;
+    app.element('treeHarvestInput').value = harvested;
+    await app.click('treeGrowthSaveBtn');
+    assert.equal(treePosts(app).length, 0, `invalid pair ${growth}/${harvested} must not partially save`);
+    assert.equal(app.writes.length, 0);
+    assert.equal(JSON.stringify(app.bank.state), before);
+  }
+});
+
+test('an unfinished numeric input cannot be treated as blank while saving the other setting', async () => {
+  for (const invalidField of ['treeGrowthInput', 'treeHarvestInput']) {
+    const app = await loadGrowthSettings();
+    const before = JSON.stringify(app.bank.state);
+    app.element('treeGrowthInput').value = '300';
+    app.element('treeHarvestInput').value = '25';
+    // Browsers expose an unfinished number such as "3e" as empty with badInput.
+    app.element(invalidField).value = '';
+    app.element(invalidField).validity = { badInput: true };
+    await app.click('treeGrowthSaveBtn');
+    assert.equal(treePosts(app).length, 0);
+    assert.equal(app.writes.length, 0);
+    assert.equal(JSON.stringify(app.bank.state), before);
+  }
+});
+
+test('guests and expired parent sessions cannot change cumulative harvests', async () => {
+  for (const loggedIn of [false, true]) {
+    const app = await loadGrowthSettings({ loggedIn });
+    if (loggedIn) await app.advance(60_001);
+    const before = JSON.stringify(app.bank.state);
+    app.element('treeHarvestInput').value = '50';
+    await app.click('treeGrowthSaveBtn');
+    await app.advance(350);
+    assert.equal(app.element('loginModal').classList.contains('show'), true);
+    assert.equal(treePosts(app).length, 0);
+    assert.equal(app.writes.length, 0);
+    assert.equal(JSON.stringify(app.bank.state), before);
+  }
+});
+
+test('a combined settings save is not optimistic and holds both values until the server responds', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  const updated = adjustedHarvestState(app, 25, 300);
+  const release = app.deferTree();
+  app.element('treeGrowthInput').value = '300';
+  app.element('treeHarvestInput').value = '25';
+  const saving = app.click('treeGrowthSaveBtn');
+  await new Promise(setImmediate);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(JSON.stringify(app.storedState()), before);
+  assert.equal(app.element('treeGrowthSaveBtn').disabled, true);
+  assert.equal(app.element('treeGrowthInput').disabled, true);
+  assert.equal(app.element('treeHarvestInput').disabled, true);
+  await app.click('treeGrowthSaveBtn');
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(app.writes.length, 0);
+  release(updated);
+  await saving;
+  assert.equal(app.bank.state.fruitTree.growth, 300);
+  assert.equal(app.bank.state.fruitTree.harvested, 25);
+  assert.equal(app.element('treeGrowthSaveBtn').disabled, false);
+  assert.equal(app.element('treeGrowthInput').disabled, false);
+  assert.equal(app.element('treeHarvestInput').disabled, false);
+});
+
+test('an uncertain combined save retries its original pair and operation despite changed form values', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  const updated = adjustedHarvestState(app, 25, 300);
+  const accepted = new Map();
+  let applications = 0;
+  app.respondToTree(body => {
+    if (!accepted.has(body.operationId)) {
+      applications++;
+      accepted.set(body.operationId, { ok: true, state: updated, revision: 1 });
+      throw new Error('combined settings were saved but the response was lost');
+    }
+    return accepted.get(body.operationId);
+  });
+  app.element('treeGrowthInput').value = '300';
+  app.element('treeHarvestInput').value = '25';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(app.storedPending().body.harvested, 25);
+  assert.equal(app.storedPending().body.action, 'set-tree-settings');
+  app.element('treeGrowthInput').value = '700';
+  app.element('treeHarvestInput').value = '99';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  await app.click('syncBannerRetry');
+  assert.equal(treePosts(app).length, 2);
+  assert.deepEqual(treePosts(app)[1].body, treePosts(app)[0].body);
+  assert.equal(applications, 1);
+  assert.equal(app.bank.state.fruitTree.growth, 300);
+  assert.equal(app.bank.state.fruitTree.harvested, 25);
+  assert.equal(app.storedState().fruitTree.harvested, 25);
+  assert.equal(app.storedPending(), null);
+});
+
+test('tree navigation can confirm a pending parent settings save without turning it into a public action', async () => {
+  const original = await loadGrowthSettings();
+  const updated = adjustedHarvestState(original, 25, 300);
+  original.respondToTree(() => { throw new Error('saved settings response lost'); });
+  original.element('treeGrowthInput').value = '300';
+  original.element('treeHarvestInput').value = '25';
+  await original.click('treeGrowthSaveBtn');
+  const pending = original.storedPending();
+  const tree = await loadTreePage(0, {
+    preserveState: true, serverState: updated, initialStorage: original.exportStorage(),
+    treeHandler(body) {
+      assert.deepEqual(body, pending.body);
+      return { ok: true, state: updated, revision: 1 };
+    },
+  });
+  assert.equal(treePosts(tree).length, 1);
+  assert.equal(treePosts(tree)[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(tree.storedPending(), null);
+  assert.equal(tree.tree.updates.at(-1)[0].growth, 300);
+  assert.equal(tree.tree.updates.at(-1)[0].harvestedCount, 25);
+});
+
+test('a settings conflict adopts the latest harvest count and revision before another parent save', async () => {
+  const app = await loadGrowthSettings();
+  const cloud = adjustedHarvestState(app, 11);
+  cloud.fruitTree.available = 1;
+  app.rejectTree({ ok: false, state: cloud, revision: 7, error: 'revision_conflict' });
+  app.element('treeHarvestInput').value = '25';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(app.bank.state.fruitTree.harvested, 11);
+  assert.equal(app.bank.state.fruitTree.growth, 526);
+  assert.equal(app.storedState().fruitTree.harvested, 11);
+  assert.match(String(app.element('treeHarvestCurrentValue').textContent), /11/);
+  assert.equal(app.storedPending(), null);
+  app.respondToTree(body => {
+    assert.equal(body.revision, 7);
+    assert.equal(body.harvested, 25);
+    assert.notEqual(body.operationId, treePosts(app)[0].body.operationId);
+    return { ok: true, state: adjustedHarvestState(app, 25), revision: 8 };
+  });
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(app.bank.state.fruitTree.harvested, 25);
+  assert.equal(app.bank.state.fruitTree.available, 1);
+  assert.equal(treePosts(app).length, 2);
+});
+
+test('old pending set-growth requests retain their action and operation when retried after the UI upgrade', async () => {
+  const original = await loadGrowthSettings();
+  const updated = adjustedGrowthState(original, 300);
+  original.respondToTree(() => { throw new Error('growth save response lost'); });
+  original.element('treeGrowthInput').value = '300';
+  await original.click('treeGrowthSaveBtn');
+  const legacy = original.storedPending();
+  legacy.body.action = 'set-growth';
+  const storage = original.exportStorage().filter(([key]) => key !== 'guoguo_points_bank_v1_pending');
+  storage.push(['guoguo_points_bank_v1_pending', JSON.stringify(legacy)]);
+  const reloaded = await loadGrowthSettings({
+    initialStorage: storage,
+    treeHandler(body) {
+      assert.deepEqual(body, legacy.body);
+      return { ok: true, state: updated, revision: 1 };
+    },
+  });
+  assert.equal(treePosts(reloaded).length, 1);
+  assert.equal(treePosts(reloaded)[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(reloaded.bank.state.fruitTree.growth, 300);
+  assert.equal(reloaded.bank.state.fruitTree.harvested, 10);
+  assert.equal(reloaded.storedPending(), null);
 });

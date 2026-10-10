@@ -28,6 +28,7 @@ function getFruitTreeSnapshot() {
     care: { usedKinds: tree?.care?.used || [], remainingBoost: tree?.care?.remainingBonus || 0 },
     pest: { count: pestCount, fruitIds, fruitId: tree?.bugFruitId ?? fruitIds[0] ?? null },
     fruits: tree?.fruits || [],
+    fruitLayout: tree?.fruitLayout,
     readyCount,
     lockedFruitCount: available - readyCount,
     availableCount: available,

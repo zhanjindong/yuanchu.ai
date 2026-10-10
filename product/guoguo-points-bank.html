@@ -1045,6 +1045,9 @@ body {
 .adjust-current-coin { font-size: 18px; }
 .tree-growth-card .adjust-current { background: var(--green-light); flex-wrap: wrap; }
 .tree-growth-card .adjust-current-value { color: var(--green-dark); overflow-wrap: anywhere; }
+.tree-growth-card .tree-harvest-current { background: var(--yellow-light); }
+.tree-growth-card .tree-harvest-current .adjust-current-value { color: var(--orange-dark); }
+.tree-settings-help { color: var(--text-light); font-size: 11px; line-height: 1.6; margin: 8px 0 0; }
 .tree-growth-stage { margin-left: auto; color: var(--green-dark); font-size: 13px; }
 .tree-growth-note { color: var(--text-light); font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
 .tree-growth-last { color: var(--text-light); font-size: 11px; line-height: 1.6; margin-top: 12px; }
@@ -1554,21 +1557,33 @@ body {
     </div>
 
     <div class="adjust-card tree-growth-card" id="treeGrowthCard" style="display:none;">
-      <div class="section-title"><span class="st-emoji">🌳</span>果树成长值</div>
+      <div class="section-title"><span class="st-emoji">🌳</span>果树设置</div>
       <div class="adjust-current">
         <span class="adjust-current-label">当前成长值</span>
         <span class="adjust-current-value" id="treeGrowthCurrentValue">0</span>
         <span class="tree-growth-stage" id="treeGrowthStage">种子</span>
       </div>
-      <p class="tree-growth-note" id="treeGrowthNote">用于初始化或特殊调整，不改变积分余额和照料额度。调高会补充尚未成熟过的果实；调低保留已有果实和收成，再长回原进度不会重复结果。</p>
+      <div class="adjust-current tree-harvest-current">
+        <span class="adjust-current-label">累计收成</span>
+        <span class="adjust-current-value" id="treeHarvestCurrentValue">0</span>
+        <span class="adjust-current-label">颗</span>
+      </div>
+      <p class="tree-growth-note" id="treeGrowthNote">用于初始化或特殊调整。可单独调整一项，也可一起保存；留空表示不修改。积分余额和照料额度不会改变。</p>
       <div class="form-field">
         <label class="form-label" for="treeGrowthInput">将成长值设为</label>
-        <input class="form-input" id="treeGrowthInput" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="输入目标成长值，例如 300" aria-describedby="treeGrowthNote">
+        <input class="form-input" id="treeGrowthInput" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="例如 300，留空保持不变" aria-describedby="treeGrowthNote treeGrowthHelp">
+        <p class="tree-settings-help" id="treeGrowthHelp">调高会成熟新果实；单独调低成长值会保留已有果实和收成，再长回原进度不重复结果。</p>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="treeHarvestInput">将累计收成设为（颗）</label>
+        <input class="form-input" id="treeHarvestInput" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="例如 20，留空保持不变" aria-describedby="treeGrowthNote treeHarvestHelp">
+        <p class="tree-settings-help" id="treeHarvestHelp">累计收成是已采摘的果实总数。调整后，树上待采摘的果实和历史最佳收成保持不变。</p>
       </div>
       <div class="modal-actions">
-        <button type="button" class="btn-primary" id="treeGrowthSaveBtn">保存成长值</button>
+        <button type="button" class="btn-primary" id="treeGrowthSaveBtn">保存果树设置</button>
       </div>
       <p class="tree-growth-last" id="treeGrowthLastAdjustment" hidden></p>
+      <p class="tree-growth-last" id="treeHarvestLastAdjustment" hidden></p>
     </div>
 
     <div class="rule-group">
@@ -2659,30 +2674,51 @@ function applyAuthUI() {
 }
 
 /* =========================================================
- * 家长设置果树成长值：独立于积分余额，服务端确认后更新
+ * 家长设置果树成长值和累计收成：独立于积分余额，服务端原子保存后更新
  * ========================================================= */
 let treeGrowthSaving = false;
 function renderTreeGrowthSettings() {
   const tree = state.fruitTree;
   const growth = tree?.growth || 0;
   document.getElementById('treeGrowthCurrentValue').textContent = growth;
+  document.getElementById('treeHarvestCurrentValue').textContent = tree?.harvested || 0;
   document.getElementById('treeGrowthStage').textContent = tree?.status === 'needs-confirmation' ? '待初始化' : getLevel(growth).name;
   const button = document.getElementById('treeGrowthSaveBtn');
   button.disabled = treeGrowthSaving || mutationBusy || !!pendingMutation || cloudLoading || !cloudLoaded || !getWriteToken();
-  button.textContent = treeGrowthSaving ? '正在保存…' : pendingMutation ? '请先确认上次保存结果' : '保存成长值';
+  button.textContent = treeGrowthSaving ? '正在保存…' : pendingMutation ? '请先确认上次保存结果' : '保存果树设置';
   document.getElementById('treeGrowthInput').disabled = treeGrowthSaving;
+  document.getElementById('treeHarvestInput').disabled = treeGrowthSaving;
   const last = tree?.lastAdjustment;
   const lastElement = document.getElementById('treeGrowthLastAdjustment');
   lastElement.hidden = !last;
-  if (last) lastElement.textContent = '上次调整：' + last.from + ' → ' + last.to + ' · ' + new Date(last.time).toLocaleString('zh-CN', { hour12: false });
+  if (last) lastElement.textContent = '上次成长调整：' + last.from + ' → ' + last.to + ' · ' + new Date(last.time).toLocaleString('zh-CN', { hour12: false });
+  const harvestLast = tree?.lastHarvestAdjustment;
+  const harvestLastElement = document.getElementById('treeHarvestLastAdjustment');
+  harvestLastElement.hidden = !harvestLast;
+  if (harvestLast) harvestLastElement.textContent = '上次收成调整：' + harvestLast.from + ' → ' + harvestLast.to + ' 颗 · ' + new Date(harvestLast.time).toLocaleString('zh-CN', { hour12: false });
 }
 function onSyncChange() { renderTreeGrowthSettings(); }
 document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () => {
   if (!requireLogin() || treeGrowthSaving) return;
   const input = document.getElementById('treeGrowthInput');
-  const raw = input.value.trim(), growth = Number(raw);
-  if (!raw || !Number.isSafeInteger(growth) || growth < 0 || growth > 1000000000) {
-    showToast('请输入 0 到 10 亿之间的整数成长值', 'warn');
+  const harvestInput = document.getElementById('treeHarvestInput');
+  const updates = {};
+  for (const [key, field, label] of [['growth', input, '成长值'], ['harvested', harvestInput, '累计收成']]) {
+    if (field.validity?.badInput) {
+      showToast(label + '请输入 0 到 10 亿之间的整数', 'warn');
+      return;
+    }
+    const raw = field.value.trim();
+    if (!raw) continue;
+    const value = Number(raw);
+    if (!Number.isSafeInteger(value) || value < 0 || value > 1000000000) {
+      showToast(label + '请输入 0 到 10 亿之间的整数', 'warn');
+      return;
+    }
+    updates[key] = value;
+  }
+  if (!Object.keys(updates).length) {
+    showToast('请至少填写成长值或累计收成', 'warn');
     return;
   }
   try { assertCanMutate(); } catch (error) { showToast(error.message, 'warn'); return; }
@@ -2694,11 +2730,12 @@ document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () 
     assertCanMutate();
     const before = structuredClone(state);
     mutationBusy = true;
-    rememberPending({ endpoint: 'tree', before, body: { action: 'set-growth', growth, revision: serverRevision, operationId: uid() } });
+    rememberPending({ endpoint: 'tree', before, body: { action: 'set-tree-settings', ...updates, revision: serverRevision, operationId: uid() } });
     render();
     await sendPendingMutation();
     input.value = '';
-    showToast('果树成长值已设为 ' + state.fruitTree.growth, 'success');
+    harvestInput.value = '';
+    showToast('果树设置已保存', 'success');
   } catch (error) {
     showToast(pendingMutation ? '保存结果待确认，请点击同步重试' : error.message, 'error');
   } finally {
