@@ -68,7 +68,8 @@ body {
   padding: 28px 24px 32px;
   color: white;
   position: relative;
-  overflow: hidden;
+  /* 保留圆角裁切，避免聚焦宠物按钮时卡片内部自动滚动。 */
+  overflow: clip;
   box-shadow: var(--shadow-green);
   margin-bottom: 24px;
 }
@@ -216,26 +217,170 @@ body {
   0%, 100% { transform: rotate(-8deg); }
   50% { transform: rotate(8deg); }
 }
-/* 小狗 SVG 容器 */
-.mascot {
-  width: 110px; height: 110px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+/* ============= 果果的小伙伴：原生 SVG 互动小狗 ============= */
+.pet-companion {
+  --pet-size: 110px;
+  width: var(--pet-size);
+  height: var(--pet-size);
+  flex: 0 0 var(--pet-size);
+  position: relative;
+  text-align: center;
+  align-self: flex-end;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.mascot svg { width: 100%; height: 100%; }
-.mascot.bounce { animation: bounce 0.6s ease; }
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-18px) scale(1.05); }
-  60% { transform: translateY(-6px); }
+.pet-companion .mascot {
+  display: block;
+  width: var(--pet-size);
+  height: var(--pet-size);
+  padding: 0;
+  border: 0;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border-radius: 42%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  filter: drop-shadow(0 5px 4px rgba(69, 96, 23, .12));
 }
-.mascot.shake { animation: shake 0.5s ease; }
-@keyframes shake {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  20% { transform: translateX(-6px) rotate(-5deg); }
-  40% { transform: translateX(6px) rotate(5deg); }
-  60% { transform: translateX(-4px) rotate(-3deg); }
-  80% { transform: translateX(4px) rotate(3deg); }
+.pet-companion .mascot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.pet-companion .mascot:focus-visible { outline: 3px solid #fff2b8; outline-offset: 3px; }
+.pet-companion .mascot:active { filter: drop-shadow(0 2px 3px rgba(69, 96, 23, .18)); }
+.pet-hint {
+  /* 放进原卡片底部留白，提示不再增加积分区域的高度。 */
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 20px;
+  color: rgba(255,255,255,.95);
+  background: rgba(41, 105, 23, .12);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.pet-bubble {
+  position: absolute;
+  z-index: 3;
+  bottom: calc(100% - 6px);
+  right: 0;
+  width: max-content;
+  max-width: 164px;
+  padding: 8px 12px;
+  border-radius: 14px 14px 4px 14px;
+  background: #fffaeb;
+  color: #7a5835;
+  box-shadow: 0 3px 10px rgba(55,96,17,.12);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px) scale(.94);
+  transform-origin: 80% 100%;
+  transition: opacity .16s ease, transform .2s ease;
+}
+.pet-bubble::after {
+  content: '';
+  position: absolute;
+  right: 22px;
+  bottom: -5px;
+  width: 10px;
+  height: 10px;
+  background: #fffaeb;
+  transform: rotate(45deg);
+  border-radius: 0 0 2px 0;
+}
+.pet-companion[data-speaking="true"] .pet-bubble { opacity: 1; transform: translateY(0) scale(1); }
+.pet-body-motion { transform-origin: 88px 157px; animation: pet-breathe 3.6s ease-in-out infinite; }
+.pet-head { transform-origin: 87px 107px; }
+.pet-tail { transform-origin: 120px 124px; animation: pet-idle-tail 6s ease-in-out infinite; }
+.pet-ear-left { transform-origin: 51px 40px; }
+.pet-ear-right { transform-origin: 122px 40px; }
+.pet-paw-left { transform-origin: 65px 137px; }
+.pet-paw-right { transform-origin: 110px 137px; }
+.pet-shadow { transform-origin: 89px 165px; }
+.pet-eyes-closed, .pet-eyes-blink, .pet-pads, .pet-love, .pet-sparkles { opacity: 0; }
+.pet-eyes-open, .pet-eyes-closed, .pet-eyes-blink, .pet-blush { transition: opacity .1s ease; }
+.pet-love, .pet-sparkles { transform-origin: 88px 82px; pointer-events: none; }
+.pet-companion[data-mood="blink"] .pet-eyes-open { opacity: 0; }
+.pet-companion[data-mood="blink"] .pet-eyes-blink { opacity: 1; }
+.pet-companion:is([data-mood="curious"], [data-mood="tilt"]) .pet-head { animation: pet-curious 1.5s ease-in-out both; }
+.pet-companion:is([data-mood="curious"], [data-mood="tilt"]) .pet-ear-left { animation: pet-listen-ear 1.5s ease-in-out both; }
+.pet-companion[data-mood="pet"] .pet-head { animation: pet-nuzzle 1.4s ease-in-out both; }
+.pet-companion:is([data-mood="pet"], [data-mood="earn"], [data-mood="celebrate"], [data-mood="redeem"]) .pet-eyes-open { opacity: 0; }
+.pet-companion:is([data-mood="pet"], [data-mood="earn"], [data-mood="celebrate"], [data-mood="redeem"]) .pet-eyes-closed { opacity: 1; }
+.pet-companion[data-mood="pet"] .pet-blush { opacity: .9; }
+.pet-companion[data-mood="pet"] .pet-love { animation: pet-love-float 1.4s ease-out both; }
+.pet-companion:is([data-mood="pet"], [data-mood="wave"], [data-mood="earn"], [data-mood="encourage"], [data-mood="celebrate"], [data-mood="redeem"], [data-mood="reset"]) .pet-tail { animation: pet-wag .22s ease-in-out infinite alternate; }
+.pet-companion:is([data-mood="wave"], [data-mood="reset"]) .pet-paw-left { animation: pet-wave 1.6s ease-in-out both; }
+.pet-companion[data-mood="wave"] .pet-paw-left { animation-duration: 1.4s; }
+.pet-companion:is([data-mood="wave"], [data-mood="reset"], [data-mood="encourage"]) .pet-paw-left .pet-pads,
+.pet-companion:is([data-mood="celebrate"], [data-mood="redeem"]) .pet-pads { opacity: 1; }
+.pet-companion:is([data-mood="wave"], [data-mood="reset"], [data-mood="encourage"]) .pet-paw-left .pet-toes,
+.pet-companion:is([data-mood="celebrate"], [data-mood="redeem"]) .pet-toes { opacity: 0; }
+.pet-companion[data-mood="earn"] .pet-body-motion { animation: pet-hop .85s ease-in-out both; }
+.pet-companion[data-mood="earn"] .pet-ear-left { animation: pet-ear-flop-left .85s ease-in-out both; }
+.pet-companion[data-mood="earn"] .pet-ear-right { animation: pet-ear-flop-right .85s ease-in-out both; }
+.pet-companion[data-mood="earn"] .pet-shadow { animation: pet-hop-shadow .85s ease-in-out both; }
+.pet-companion[data-mood="encourage"] .pet-head { animation: pet-nod 1.5s ease-in-out both; }
+.pet-companion[data-mood="encourage"] .pet-paw-left { animation: pet-encourage 1.5s ease-in-out both; }
+.pet-companion[data-mood="encourage"] .pet-mouth-open,
+.pet-companion[data-mood="encourage"] .pet-tongue { opacity: 0; }
+.pet-companion[data-mood="celebrate"] .pet-body-motion { animation: pet-celebrate 1.6s ease-in-out both; }
+.pet-companion[data-mood="celebrate"] .pet-paw-left { animation: pet-cheer-left 1.6s ease-in-out both; }
+.pet-companion[data-mood="celebrate"] .pet-paw-right { animation: pet-cheer-right 1.6s ease-in-out both; }
+.pet-companion[data-mood="celebrate"] .pet-ear-left { animation: pet-ear-flop-left .8s ease-in-out 2; }
+.pet-companion[data-mood="celebrate"] .pet-ear-right { animation: pet-ear-flop-right .8s ease-in-out 2; }
+.pet-companion[data-mood="celebrate"] .pet-sparkles { animation: pet-sparkle 1.6s ease-in-out both; }
+.pet-companion[data-mood="redeem"] .pet-paw-left { animation: pet-clap-left .36s ease-in-out 4; }
+.pet-companion[data-mood="redeem"] .pet-paw-right { animation: pet-clap-right .36s ease-in-out 4; }
+.pet-companion[data-mood="redeem"] .pet-head { animation: pet-nuzzle 1.5s ease-in-out both; }
+.pet-companion[data-mood="redeem"] .pet-sparkles { animation: pet-sparkle 1.5s ease-in-out both; }
+.pet-companion[data-paused="true"] *, .pet-companion[data-paused="true"] *::after { animation-play-state: paused !important; }
+@keyframes pet-breathe { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-1.5px) scale(1.012,1.018); } }
+@keyframes pet-idle-tail { 0%,72%,100% { transform: rotate(0); } 78%,90% { transform: rotate(8deg); } 84%,96% { transform: rotate(-7deg); } }
+@keyframes pet-wag { from { transform: rotate(-12deg); } to { transform: rotate(16deg); } }
+@keyframes pet-curious { 0%,100% { transform: rotate(0); } 25%,75% { transform: rotate(9deg) translateY(-1px); } }
+@keyframes pet-listen-ear { 0%,100% { transform: rotate(0); } 30%,70% { transform: rotate(9deg); } }
+@keyframes pet-nuzzle { 0%,100% { transform: rotate(0); } 25% { transform: translateY(-2px) rotate(-7deg); } 65% { transform: translateY(-1px) rotate(6deg); } }
+@keyframes pet-love-float { 0% { opacity: 0; transform: translateY(10px) scale(.75); } 20%,65% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px) scale(1.06); } }
+@keyframes pet-wave { 0%,100% { transform: translate(0,0) rotate(0); } 18%,52%,82% { transform: translate(-6px,-23px) rotate(-25deg); } 35%,68% { transform: translate(-6px,-23px) rotate(8deg); } }
+@keyframes pet-hop { 0%,100% { transform: translateY(0) scale(1); } 18% { transform: translateY(2px) scale(1.04,.96); } 45% { transform: translateY(-13px) scale(.98,1.03); } 75% { transform: translateY(1px) scale(1.03,.97); } }
+@keyframes pet-hop-shadow { 0%,100% { transform: scaleX(1); opacity: .2; } 45% { transform: scaleX(.77); opacity: .12; } }
+@keyframes pet-ear-flop-left { 0%,100% { transform: rotate(0); } 45% { transform: rotate(14deg); } 72% { transform: rotate(-7deg); } }
+@keyframes pet-ear-flop-right { 0%,100% { transform: rotate(0); } 45% { transform: rotate(-14deg); } 72% { transform: rotate(7deg); } }
+@keyframes pet-nod { 0%,100% { transform: translateY(0); } 23%,65% { transform: translateY(3px) rotate(-2deg); } 43%,83% { transform: translateY(-1px); } }
+@keyframes pet-encourage { 0%,35%,100% { transform: translate(0,0); } 55%,80% { transform: translate(-4px,-17px) rotate(-16deg); } }
+@keyframes pet-celebrate { 0%,100% { transform: translateY(0); } 20%,60% { transform: translateY(-11px); } 40%,80% { transform: translateY(1px) scale(1.025,.98); } }
+@keyframes pet-cheer-left { 0%,100% { transform: translate(0,0); } 15%,80% { transform: translate(-8px,-27px) rotate(-27deg); } }
+@keyframes pet-cheer-right { 0%,100% { transform: translate(0,0); } 15%,80% { transform: translate(8px,-27px) rotate(27deg); } }
+@keyframes pet-sparkle { 0%,100% { opacity: 0; transform: scale(.7) rotate(-4deg); } 25%,75% { opacity: 1; transform: scale(1) rotate(3deg); } 50% { opacity: .6; transform: scale(.9) rotate(-3deg); } }
+@keyframes pet-clap-left { 0%,100% { transform: translate(0,-15px) rotate(-10deg); } 50% { transform: translate(13px,-17px) rotate(14deg); } }
+@keyframes pet-clap-right { 0%,100% { transform: translate(0,-15px) rotate(10deg); } 50% { transform: translate(-13px,-17px) rotate(-14deg); } }
+@media (max-width: 600px) { .pet-companion { --pet-size: 96px; } }
+@media (max-width: 480px) { .pet-companion { --pet-size: 90px; } .pet-bubble { font-size: 11px; padding: 7px 10px; max-width: 144px; } }
+@media (max-width: 375px) { .pet-companion { --pet-size: 80px; } }
+@media (orientation: landscape) and (max-height: 500px) { .pet-companion { --pet-size: 70px; } }
+@media (prefers-reduced-motion: reduce) {
+  .pet-companion *, .pet-companion *::after { animation: none !important; transition: none !important; }
+  .pet-companion[data-mood="pet"] .pet-love,
+  .pet-companion:is([data-mood="celebrate"], [data-mood="redeem"]) .pet-sparkles { opacity: 1; }
+  .pet-companion:is([data-mood="curious"], [data-mood="tilt"]) .pet-head { transform: rotate(6deg); }
+  .pet-companion:is([data-mood="wave"], [data-mood="reset"], [data-mood="encourage"]) .pet-paw-left { transform: translate(-4px,-18px) rotate(-18deg); }
+  .pet-companion[data-mood="celebrate"] .pet-paw-left { transform: translate(-6px,-22px) rotate(-20deg); }
+  .pet-companion[data-mood="celebrate"] .pet-paw-right { transform: translate(6px,-22px) rotate(20deg); }
+  .pet-companion[data-mood="redeem"] .pet-paw-left { transform: translate(10px,-15px); }
+  .pet-companion[data-mood="redeem"] .pet-paw-right { transform: translate(-10px,-15px); }
 }
 
 /* 飘字反馈 */
@@ -1129,7 +1274,6 @@ body {
   .hero-title { font-size: 20px; }
   .points-value { font-size: 50px; }
   .points-value .coin { width: 32px; height: 32px; }
-  .mascot { width: 96px; height: 96px; }
   .tab { font-size: 12px; padding: 9px 4px; }
   .tab .tab-emoji { font-size: 16px; }
   .modal { padding: 20px; }
@@ -1146,7 +1290,6 @@ body {
   .hero-title { font-size: 19px; }
   .points-value { font-size: 46px; }
   .points-value .coin { width: 30px; height: 30px; margin-left: 6px; }
-  .mascot { width: 90px; height: 90px; }
   .goal-chip { flex: 0 0 170px; padding: 12px; }
   .goal-chip-name { font-size: 13px; }
   .goal-emoji { font-size: 38px; width: 52px; height: 52px; }
@@ -1173,7 +1316,6 @@ body {
   .hero-greet { font-size: 12px; }
   .points-value { font-size: 40px; }
   .points-value .coin { width: 26px; height: 26px; }
-  .mascot { width: 80px; height: 80px; }
   .goal-chip { flex: 0 0 155px; padding: 10px; }
   .tab { font-size: 10px; }
   .action-card { padding: 12px 8px; }
@@ -1186,7 +1328,6 @@ body {
 @media (orientation: landscape) and (max-height: 500px) {
   .hero { padding: 18px 22px; margin-bottom: 16px; }
   .hero-points-row { margin-top: 16px; }
-  .mascot { width: 70px; height: 70px; }
   .points-value { font-size: 36px; }
   .tabs { position: static; margin-bottom: 12px; }
   .confirm-emoji { font-size: 40px; margin-bottom: 4px; }
@@ -1246,45 +1387,111 @@ body {
           </span>
         </div>
       </div>
-      <div class="mascot" id="mascot">
-        <!-- 初始 idle 小狗 -->
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#FFD480"/>
-              <stop offset="1" stop-color="#E8A845"/>
-            </linearGradient>
-          </defs>
-          <!-- 影子 -->
-          <ellipse cx="60" cy="112" rx="32" ry="4" fill="rgba(0,0,0,0.15)"/>
-          <!-- 身体 -->
-          <ellipse cx="60" cy="85" rx="36" ry="22" fill="url(#bodyGrad)"/>
-          <!-- 左耳 -->
-          <ellipse cx="35" cy="40" rx="10" ry="18" fill="#C68A2E" transform="rotate(-25 35 40)"/>
-          <ellipse cx="38" cy="44" rx="5" ry="12" fill="#FFB98A" transform="rotate(-25 38 44)"/>
-          <!-- 右耳 -->
-          <ellipse cx="85" cy="40" rx="10" ry="18" fill="#C68A2E" transform="rotate(25 85 40)"/>
-          <ellipse cx="82" cy="44" rx="5" ry="12" fill="#FFB98A" transform="rotate(25 82 44)"/>
-          <!-- 头 -->
-          <circle cx="60" cy="55" r="32" fill="url(#bodyGrad)"/>
-          <!-- 腮红 -->
-          <circle cx="40" cy="62" r="6" fill="#FF8B8B" opacity="0.5"/>
-          <circle cx="80" cy="62" r="6" fill="#FF8B8B" opacity="0.5"/>
-          <!-- 眼睛 -->
-          <g id="eyes">
-            <circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/>
-            <circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/>
-            <circle cx="49" cy="51" r="1.5" fill="white"/>
-            <circle cx="73" cy="51" r="1.5" fill="white"/>
-          </g>
-          <!-- 鼻子 -->
-          <ellipse cx="60" cy="62" rx="3.5" ry="2.5" fill="#3C3C3C"/>
-          <!-- 嘴巴 -->
-          <path d="M 60 66 Q 55 72 50 70" stroke="#3C3C3C" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <path d="M 60 66 Q 65 72 70 70" stroke="#3C3C3C" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <!-- 舌头 -->
-          <ellipse cx="60" cy="72" rx="3" ry="2" fill="#FF7F8C"/>
-        </svg>
+      <div class="pet-companion" id="petCompanion" data-mood="idle" data-paused="false">
+        <span class="pet-bubble" id="petBubble" role="status" aria-live="polite" aria-atomic="true"></span>
+        <button class="mascot" id="mascot" type="button" aria-label="摸摸小狗" aria-describedby="petHint">
+          <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <defs>
+              <linearGradient id="petFur" x1="0.25" y1="0" x2="0.75" y2="1">
+                <stop stop-color="#FFE6AA"/><stop offset=".5" stop-color="#F9CC79"/><stop offset="1" stop-color="#EEAE51"/>
+              </linearGradient>
+              <linearGradient id="petEar" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#E8AD58"/><stop offset="1" stop-color="#CB8842"/>
+              </linearGradient>
+              <linearGradient id="petCream" x1="0" y1="0" x2="0" y2="1">
+                <stop stop-color="#FFFAE9"/><stop offset="1" stop-color="#FFE9BF"/>
+              </linearGradient>
+              <linearGradient id="petEye" x1="0" y1="0" x2="0" y2="1">
+                <stop stop-color="#382A27"/><stop offset="1" stop-color="#795033"/>
+              </linearGradient>
+              <linearGradient id="petTag" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#FFF09B"/><stop offset="1" stop-color="#F5B94E"/>
+              </linearGradient>
+            </defs>
+            <ellipse class="pet-shadow" cx="89" cy="165" rx="46" ry="6" fill="#367D20" opacity=".2"/>
+            <g class="pet-body-motion">
+              <!-- A curled, cream-tipped tail keeps the puppy silhouette readable. -->
+              <g class="pet-tail">
+                <path d="M119 129C139 135 156 121 151 103C149 94 137 96 138 106C140 116 131 117 120 113Z" fill="url(#petFur)" stroke="#D99B48" stroke-width="1.5"/>
+                <path d="M145 98C151 97 154 105 151 112C147 111 142 109 138 107C137 100 140 98 145 98Z" fill="url(#petCream)"/>
+              </g>
+              <path d="M64 100C52 106 47 125 50 142C51 155 66 160 88 158C111 161 125 153 125 141C126 122 116 103 105 99Z" fill="url(#petFur)" stroke="#DCA24F" stroke-width="1.5"/>
+              <path d="M77 109C64 119 63 141 74 150C82 157 99 157 106 147C114 135 105 119 99 111Z" fill="url(#petCream)"/>
+              <ellipse cx="57" cy="151" rx="16" ry="10" fill="#F0B665"/>
+              <ellipse cx="119" cy="151" rx="16" ry="10" fill="#F0B665"/>
+              <path d="M61 106Q87 120 113 105L113 114Q88 128 63 115Z" fill="#279B83"/>
+              <path d="M65 108Q87 119 110 108" fill="none" stroke="#74CFAC" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="88" cy="122" r="9" fill="url(#petTag)" stroke="#DD9B36" stroke-width="1.5"/>
+              <path d="M84 122Q84 119 87 120Q88 116 90 120Q93 120 92 123L90 125L86 125Z" fill="#C88B38"/>
+              <circle cx="83.5" cy="117.5" r="1.5" fill="#FFF7C8"/>
+              <g class="pet-head">
+                <g class="pet-ear pet-ear-left">
+                  <path d="M52 37C35 30 24 43 22 65C19 88 26 108 39 108C53 108 59 83 61 61Z" fill="url(#petEar)" stroke="#BE803C" stroke-width="1.5"/>
+                  <path d="M43 48C34 46 29 59 29 76C29 87 32 97 38 96C45 94 49 79 51 62Z" fill="#E9AB78" opacity=".65"/>
+                  <path d="M31 48Q27 56 27 67" fill="none" stroke="#F3CB86" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+                </g>
+                <g class="pet-ear pet-ear-right">
+                  <path d="M120 37C137 31 150 44 153 65C157 88 151 107 138 108C122 109 116 83 114 61Z" fill="url(#petEar)" stroke="#BE803C" stroke-width="1.5"/>
+                  <path d="M132 48C141 47 146 59 147 75C148 87 145 97 139 96C131 94 127 79 125 62Z" fill="#E9AB78" opacity=".65"/>
+                </g>
+                <path d="M41 65C41 40 60 25 86 25C113 24 134 42 135 67C140 80 140 94 130 103C119 114 105 118 87 117C68 119 49 112 40 101C31 90 35 75 41 65Z" fill="url(#petFur)" stroke="#DDA14F" stroke-width="1.5"/>
+                <!-- A soft forehead tuft, no pointed cat-like ears. -->
+                <path d="M66 31Q67 22 79 22Q74 25 76 30Q82 19 95 23Q87 24 87 30Q97 24 106 30" fill="#FFE8AD"/>
+                <path d="M53 48Q57 40 65 37" fill="none" stroke="#FFF0C8" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+                <path d="M61 56Q67 52 73 55M101 55Q107 52 113 56" fill="none" stroke="#D49547" stroke-width="2.5" stroke-linecap="round"/>
+                <ellipse class="pet-blush" cx="50" cy="86" rx="11" ry="6.5" fill="#F59987" opacity=".63"/>
+                <ellipse class="pet-blush" cx="124" cy="86" rx="11" ry="6.5" fill="#F59987" opacity=".63"/>
+                <g class="pet-eyes-open">
+                  <ellipse cx="66" cy="70" rx="9" ry="11" fill="url(#petEye)"/>
+                  <ellipse cx="108" cy="70" rx="9" ry="11" fill="url(#petEye)"/>
+                  <ellipse cx="67.5" cy="74" rx="5.3" ry="5" fill="#A7703D" opacity=".4"/>
+                  <ellipse cx="109.5" cy="74" rx="5.3" ry="5" fill="#A7703D" opacity=".4"/>
+                  <circle cx="63.5" cy="66.3" r="3.3" fill="#fff"/>
+                  <circle cx="105.5" cy="66.3" r="3.3" fill="#fff"/>
+                  <circle cx="69.5" cy="74.4" r="1.6" fill="#FFF1C9"/>
+                  <circle cx="111.5" cy="74.4" r="1.6" fill="#FFF1C9"/>
+                </g>
+                <g class="pet-eyes-closed" fill="none" stroke="#68472F" stroke-width="3.5" stroke-linecap="round">
+                  <path d="M58 72Q66 63 74 72M100 72Q108 63 116 72"/>
+                </g>
+                <g class="pet-eyes-blink" fill="none" stroke="#68472F" stroke-width="3" stroke-linecap="round">
+                  <path d="M58 71Q66 74 74 71M100 71Q108 74 116 71"/>
+                </g>
+                <path d="M87 83C77 72 60 79 60 91C60 105 78 111 87 106C98 112 115 104 115 91C115 78 98 73 87 83Z" fill="url(#petCream)"/>
+                <path class="pet-mouth-open" d="M76 94Q87 100 98 94Q99 109 87 110Q76 109 76 94Z" fill="#704634"/>
+                <path class="pet-tongue" d="M81 103Q87 99 93 103L93 107Q93 114 87 114Q81 114 81 107Z" fill="#F49099"/>
+                <path class="pet-tongue" d="M87 104V109" stroke="#DF7680" stroke-width="1" stroke-linecap="round"/>
+                <path d="M79 82Q87 78 95 82Q98 85 91 90Q87 94 83 90Q76 86 79 82Z" fill="#66432F"/>
+                <ellipse cx="84" cy="83" rx="3.1" ry="1.4" fill="#B28A62"/>
+                <path d="M87 91V95M87 95Q80 101 75 96M87 95Q94 101 99 96" fill="none" stroke="#704634" stroke-width="2" stroke-linecap="round"/>
+              </g>
+              <g class="pet-paw pet-paw-left">
+                <path d="M59 131C49 130 47 138 48 148C49 158 58 162 67 159C74 157 76 150 74 142C72 135 67 132 59 131Z" fill="url(#petCream)" stroke="#E1AE69" stroke-width="1.3"/>
+                <path class="pet-toes" d="M54 152V155M61 153V157M68 151V154" stroke="#D9AF77" stroke-width="1.4" stroke-linecap="round"/>
+                <g class="pet-pads" fill="#EAA394">
+                  <ellipse cx="61" cy="149" rx="6" ry="5"/><circle cx="53.5" cy="141" r="2.5"/><circle cx="60.5" cy="138.5" r="2.5"/><circle cx="68" cy="141" r="2.5"/>
+                </g>
+              </g>
+              <g class="pet-paw pet-paw-right">
+                <path d="M114 131C124 130 128 138 126 148C125 158 116 162 107 159C100 157 98 150 100 142C102 135 107 132 114 131Z" fill="url(#petCream)" stroke="#E1AE69" stroke-width="1.3"/>
+                <path class="pet-toes" d="M106 151V154M113 153V157M120 152V155" stroke="#D9AF77" stroke-width="1.4" stroke-linecap="round"/>
+                <g class="pet-pads" fill="#EAA394">
+                  <ellipse cx="113" cy="149" rx="6" ry="5"/><circle cx="105.5" cy="141" r="2.5"/><circle cx="112.5" cy="138.5" r="2.5"/><circle cx="120" cy="141" r="2.5"/>
+                </g>
+              </g>
+            </g>
+            <g class="pet-love" fill="#FFE5DB">
+              <path d="M24 29C14 21 13 14 19 13C23 12 25 15 26 18C30 11 39 15 36 21C34 26 28 29 24 32Z"/>
+              <path d="M145 26C139 20 140 15 144 15C147 15 149 18 149 20C153 15 158 18 157 22C155 26 151 28 148 30Z"/>
+            </g>
+            <g class="pet-sparkles" fill="#FFF3A3">
+              <path d="M23 59L26 68L35 71L26 74L23 83L20 74L11 71L20 68Z"/>
+              <path d="M152 36L155 44L163 47L155 50L152 58L149 50L141 47L149 44Z"/>
+              <path d="M133 16L135 22L141 24L135 26L133 32L131 26L125 24L131 22Z"/>
+            </g>
+          </svg>
+        </button>
+        <span class="pet-hint" id="petHint">点我，摸摸头</span>
       </div>
     </div>
   </div>
@@ -1959,32 +2166,171 @@ function showFloatText(text, kind, x, y) {
   setTimeout(() => el.remove(), 1300);
 }
 
-function mascotReact(kind) {
-  const m = document.getElementById('mascot');
-  m.classList.remove('bounce', 'shake');
-  void m.offsetWidth;
-  if (kind === 'happy') m.classList.add('bounce');
-  else if (kind === 'sad') m.classList.add('shake');
-  // 切换眼睛 / 嘴巴表情
-  const eyesEl = document.getElementById('eyes');
-  if (!eyesEl) return;
-  if (kind === 'happy') {
-    eyesEl.innerHTML = '<path d="M 44 52 Q 48 48 52 52" stroke="#3C3C3C" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M 68 52 Q 72 48 76 52" stroke="#3C3C3C" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
-    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 1200);
-  } else if (kind === 'sad') {
-    eyesEl.innerHTML = '<circle cx="48" cy="54" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="54" r="4.5" fill="#3C3C3C"/>';
-    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 1200);
-  } else if (kind === 'celebrate') {
-    eyesEl.innerHTML = '<path d="M 42 50 L 54 50 M 48 44 L 48 56" stroke="#3C3C3C" stroke-width="3" stroke-linecap="round"/><path d="M 66 50 L 78 50 M 72 44 L 72 56" stroke="#3C3C3C" stroke-width="3" stroke-linecap="round"/>';
-    setTimeout(() => eyesEl.innerHTML = '<circle cx="48" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="72" cy="52" r="4.5" fill="#3C3C3C"/><circle cx="49" cy="51" r="1.5" fill="white"/><circle cx="73" cy="51" r="1.5" fill="white"/>', 2000);
+// 宠物只管理短暂的表情与动作，不读取或修改积分、登录和云端数据。
+const PetCompanion = (() => {
+  const root = document.getElementById('petCompanion');
+  const button = document.getElementById('mascot');
+  const bubble = document.getElementById('petBubble');
+  const motion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const actions = {
+    blink: { duration: 180, priority: 0, text: '' },
+    curious: { duration: 1500, priority: 0, text: '' },
+    pet: { duration: 1400, priority: 1, text: '好舒服呀～' },
+    wave: { duration: 1400, priority: 1, text: '嗨，果果！' },
+    tilt: { duration: 1500, priority: 1, text: '我在听呢' },
+    earn: { duration: 1500, priority: 2, text: '又进步啦！' },
+    encourage: { duration: 1700, priority: 2, text: '下次一起加油' },
+    reset: { duration: 1600, priority: 2, text: '重新出发' },
+    celebrate: { duration: 2100, priority: 3, text: '做到啦！' },
+    redeem: { duration: 1800, priority: 3, text: '奖励到手啦！' },
+  };
+  let active = null;
+  let actionTimer = null;
+  let idleTimer = null;
+  let paused = null;
+  let offscreen = false;
+  let pageAway = false;
+  let initialized = false;
+  let nextPetAt = 0;
+  let nextCuriousAt = Date.now() + 18000 + Math.random() * 12000;
+  let lastPet = '';
+  let sequence = 0;
+
+  function reset() {
+    clearTimeout(actionTimer);
+    clearTimeout(idleTimer);
+    sequence++;
+    active = null;
+    root.dataset.mood = 'idle';
+    root.dataset.speaking = 'false';
+    bubble.textContent = '';
+  }
+
+  function scheduleIdle() {
+    clearTimeout(idleTimer);
+    if (paused || active || (motion && motion.matches)) return;
+    idleTimer = setTimeout(() => {
+      refreshAvailability();
+      if (paused || active) return;
+      const curious = Date.now() >= nextCuriousAt;
+      if (curious) nextCuriousAt = Date.now() + 18000 + Math.random() * 12000;
+      play(curious ? 'curious' : 'blink');
+    }, 5000 + Math.random() * 4000);
+  }
+
+  function refreshAvailability() {
+    const next = Boolean(document.hidden || pageAway || offscreen || document.querySelector('.modal-mask.show'));
+    if (next === paused) return;
+    paused = next;
+    root.dataset.paused = String(paused);
+    reset();
+    if (!paused) scheduleIdle();
+  }
+
+  function play(kind) {
+    const action = actions[kind];
+    if (!root || !action) return false;
+    refreshAvailability();
+    if (paused || (active && active.priority > action.priority)) return false;
+    reset();
+    // 连续发生相同业务事件时，也从第一帧重新播放。
+    void button.offsetWidth;
+    active = action;
+    root.dataset.mood = kind;
+    root.dataset.speaking = String(Boolean(action.text));
+    bubble.textContent = action.text;
+    const current = sequence;
+    actionTimer = setTimeout(() => {
+      if (current !== sequence) return;
+      nextPetAt = Date.now() + 400;
+      reset();
+      scheduleIdle();
+    }, action.duration);
+    return true;
+  }
+
+  function pet() {
+    if (!root) return false;
+    refreshAvailability();
+    if (paused || (active && active.priority >= 1) || Date.now() < nextPetAt) return false;
+    const choices = ['pet', 'wave', 'tilt'].filter(kind => kind !== lastPet);
+    const kind = choices[Math.floor(Math.random() * choices.length)];
+    const started = play(kind);
+    if (started) lastPet = kind;
+    return started;
+  }
+
+  function init() {
+    if (initialized || !root || !button || !bubble) return;
+    initialized = true;
+    let pointerStart = null;
+    let dragged = false;
+    button.addEventListener('pointerdown', event => {
+      pointerStart = { x: event.clientX, y: event.clientY };
+      dragged = false;
+    });
+    button.addEventListener('pointermove', event => {
+      if (pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 10) dragged = true;
+    });
+    button.addEventListener('pointerup', () => { pointerStart = null; });
+    button.addEventListener('pointercancel', () => { dragged = true; pointerStart = null; });
+    button.addEventListener('click', event => {
+      if (dragged && event.detail !== 0) { dragged = false; return; }
+      pet();
+    });
+    document.addEventListener('visibilitychange', refreshAvailability);
+    window.addEventListener('pagehide', () => { pageAway = true; refreshAvailability(); });
+    window.addEventListener('pageshow', () => { pageAway = false; refreshAvailability(); });
+    const onMotionChange = () => { reset(); scheduleIdle(); };
+    if (motion && motion.addEventListener) motion.addEventListener('change', onMotionChange);
+    else if (motion && motion.addListener) motion.addListener(onMotionChange);
+    if (typeof MutationObserver !== 'undefined') {
+      const observer = new MutationObserver(refreshAvailability);
+      document.querySelectorAll('.modal-mask').forEach(modal => observer.observe(modal, { attributes: true, attributeFilter: ['class'] }));
+    }
+    if (typeof IntersectionObserver !== 'undefined') {
+      const observer = new IntersectionObserver(entries => {
+        offscreen = !entries[0].isIntersecting;
+        refreshAvailability();
+      });
+      observer.observe(root);
+    }
+    refreshAvailability();
+  }
+
+  return { init, pet, react: play };
+})();
+
+// 积分反馈只在保存成功后触发，达标动画优先于普通加分。
+function showPointsFeedback({ delta, kind, crossedGoal, rect }) {
+  if (document.hidden) return;
+  if (delta !== 0 || kind === 'zero') {
+    const text = kind === 'zero' ? '清零' : (delta > 0 ? '+' + delta : String(delta));
+    showFloatText(text, delta > 0 ? 'plus' : 'minus', rect ? rect.left + rect.width / 2 : undefined, rect ? rect.top : undefined);
+  }
+  if (crossedGoal) {
+    PetCompanion.react('celebrate');
+    celebrate();
+    AudioFX.celebrate();
+    showToast(`🎉 达成「${crossedGoal.name}」！可以去兑换啦！`, 'success');
+  } else if (kind === 'zero') {
+    PetCompanion.react('reset');
+    AudioFX.zero();
+  } else if (kind === 'deduct' || delta < 0) {
+    PetCompanion.react('encourage');
+    if (delta !== 0) AudioFX.deduct();
+  } else if (delta > 0) {
+    PetCompanion.react('earn');
+    AudioFX.earn();
   }
 }
 
 function celebrate() {
+  if (document.hidden || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
   const c = document.createElement('div');
   c.className = 'confetti';
   const colors = ['#58CC02', '#FF4B82', '#FFC800', '#1CB0F6', '#CE82FF', '#FF9600'];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 24; i++) {
     const s = document.createElement('span');
     s.style.left = Math.random() * 100 + '%';
     s.style.background = colors[Math.floor(Math.random() * colors.length)];
@@ -2159,8 +2505,7 @@ function renderGoalsList() {
       if (!ok) return;
       // 庆祝反馈
       celebrate();
-      mascotReact('celebrate');
-      AudioFX.celebrate();
+      PetCompanion.react('redeem');
       AudioFX.redeem();
     });
   });
@@ -2255,47 +2600,18 @@ function onActionClick(ruleId) {
   openConfirm(rule); // 所有 kind 都走二次确认
 }
 
-// 实际执行积分变更(被 onActionClick 和 confirmModal 共用)
-// 先改 state(本地立即生效 → render → 飘字/音效/celebrate),
-// 然后 await commit 推到服务端。失败时 state 已被 commitState 回滚,
-// render 恢复 + error toast。
+// 余额先刷新；宠物、音效和庆祝等反馈等待云端保存成功。
 async function doChangePoints(rule) {
   const card = document.querySelector(`[data-rule-id="${rule.id}"]`);
   const rect = card ? card.getBoundingClientRect() : null;
   const pointsBefore = state.points;
-  const result = changePoints(rule); // 改 state
-
-  // 飘字
-  const text = result.delta === 0 ? '清零' : (result.delta > 0 ? '+' + result.delta : '' + result.delta);
-  const kind = result.delta >= 0 ? 'plus' : 'minus';
-  if (rect) {
-    showFloatText(text, kind, rect.left + rect.width / 2, rect.top);
-  } else {
-    showFloatText(text, kind);
-  }
-  // 小狗反应
-  mascotReact(result.delta >= 0 ? 'happy' : 'sad');
-  // 音效
-  if (result.delta === 0) AudioFX.zero();
-  else if (result.delta > 0) AudioFX.earn();
-  else AudioFX.deduct();
-  // 跨过目标线庆祝(先把标记准备好,等 commit 成功后再触发)
+  const result = changePoints(rule);
   const crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
-  // 先 render 让用户看到立即效果,然后 await commit
   render();
   try {
     await commitState();
-    setSyncStatus('ok');
-    if (crossedGoal) {
-      setTimeout(() => {
-        celebrate();
-        mascotReact('celebrate');
-        AudioFX.celebrate();
-        showToast(`🎉 达成「${crossedGoal.name}」！可以去兑换啦！`, 'success');
-      }, 400);
-    }
+    showPointsFeedback({ delta: result.delta, kind: rule.kind, crossedGoal, rect });
   } catch (e) {
-    // 失败:state 已被回滚,render 恢复原状 + error toast
     render();
     showToast('保存失败,数据已回滚', 'error');
   }
@@ -2562,12 +2878,7 @@ document.getElementById('adjustSaveBtn').addEventListener('click', async () => {
     { success: delta > 0 ? `+${delta} 积分已加上` : `${delta} 积分已扣减`, fail: '保存失败,数据已回滚' }
   );
   if (!ok) return;
-  // 反馈
-  AudioFX.tap();
-  if (delta > 0) AudioFX.earn(); else AudioFX.deduct();
-  if (crossedGoal) {
-    setTimeout(() => { celebrate(); mascotReact('celebrate'); AudioFX.celebrate(); showToast(`🎉 达成「${crossedGoal.name}」！`, 'success'); }, 400);
-  }
+  showPointsFeedback({ delta: newPoints - before, kind: delta > 0 ? 'earn' : 'deduct', crossedGoal });
   // 重置表单
   document.getElementById('adjustPointsInput').value = '';
   document.getElementById('adjustNoteInput').value = '';
@@ -2719,6 +3030,7 @@ function formatTime(t) {
 /* =========================================================
  * 启动
  * ========================================================= */
+PetCompanion.init();
 // 1) 先恢复登录状态(决定全局锁定样式)
 checkSession();
 // 2) 首次渲染
