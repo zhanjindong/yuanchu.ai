@@ -1,0 +1,30 @@
+/* 顶部同步警告条(读失败时显示) */
+.sync-banner {
+  background: #FFE5E5;
+  border: 1px solid #FFB3B3;
+  color: #C0392B;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+/* [hidden] 时强制 none,盖住上面的 display:flex */
+.sync-banner[hidden] { display: none !important; }
+.sync-banner-text { flex: 1; }
+.sync-banner-btn {
+  background: #C0392B;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sync-banner-btn:hover { background: #A93226; }
+.sync-banner-btn:active { transform: scale(0.96); }

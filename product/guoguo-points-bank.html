@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>🐶 果果的积分银行 · Guoguo's Points Bank</title>
+  <link rel="stylesheet" href="guoguo-sync-banner.css">
 <style>
 :root {
   --green: #58CC02;
@@ -131,36 +132,6 @@ body {
   20%,60% { transform: translateX(-3px); }
   40%,80% { transform: translateX(3px); }
 }
-/* 顶部同步警告条(读失败时显示) */
-.sync-banner {
-  background: #FFE5E5;
-  border: 1px solid #FFB3B3;
-  color: #C0392B;
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin: 0 16px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-  font-weight: 600;
-}
-/* [hidden] 时强制 none,盖住上面的 display:flex */
-.sync-banner[hidden] { display: none !important; }
-.sync-banner-text { flex: 1; }
-.sync-banner-btn {
-  background: #C0392B;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 5px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.sync-banner-btn:hover { background: #A93226; }
-.sync-banner-btn:active { transform: scale(0.96); }
 .hero-greet {
   font-size: 14px;
   opacity: 0.9;
@@ -1072,6 +1043,12 @@ body {
 .adjust-current-label { font-size: 12px; color: var(--text-light); font-weight: 800; }
 .adjust-current-value { font-size: 32px; font-weight: 900; color: var(--orange-dark); }
 .adjust-current-coin { font-size: 18px; }
+.tree-growth-card .adjust-current { background: var(--green-light); flex-wrap: wrap; }
+.tree-growth-card .adjust-current-value { color: var(--green-dark); overflow-wrap: anywhere; }
+.tree-growth-stage { margin-left: auto; color: var(--green-dark); font-size: 13px; }
+.tree-growth-note { color: var(--text-light); font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
+.tree-growth-last { color: var(--text-light); font-size: 11px; line-height: 1.6; margin-top: 12px; }
+.tree-growth-card .btn-primary:disabled { background: var(--border); color: var(--text-light); box-shadow: 0 4px 0 #ccc; cursor: default; }
 .adjust-row {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1362,7 +1339,7 @@ body {
 
   <!-- ============ HEADER ============ -->
   <!-- 顶部同步警告条(api load 失败时显示) -->
-  <div id="syncBanner" class="sync-banner" hidden>
+  <div id="syncBanner" class="sync-banner" role="alert" hidden>
     <span class="sync-banner-text"></span>
     <button id="syncBannerRetry" class="sync-banner-btn">重试</button>
   </div>
@@ -1574,6 +1551,24 @@ body {
       <div class="modal-actions">
         <button class="btn-primary" id="adjustSaveBtn">确认调整</button>
       </div>
+    </div>
+
+    <div class="adjust-card tree-growth-card" id="treeGrowthCard" style="display:none;">
+      <div class="section-title"><span class="st-emoji">🌳</span>果树成长值</div>
+      <div class="adjust-current">
+        <span class="adjust-current-label">当前成长值</span>
+        <span class="adjust-current-value" id="treeGrowthCurrentValue">0</span>
+        <span class="tree-growth-stage" id="treeGrowthStage">种子</span>
+      </div>
+      <p class="tree-growth-note" id="treeGrowthNote">用于初始化或特殊调整，不改变积分余额和照料额度。调高会补充尚未成熟过的果实；调低保留已有果实和收成，再长回原进度不会重复结果。</p>
+      <div class="form-field">
+        <label class="form-label" for="treeGrowthInput">将成长值设为</label>
+        <input class="form-input" id="treeGrowthInput" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="输入目标成长值，例如 300" aria-describedby="treeGrowthNote">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="treeGrowthSaveBtn">保存成长值</button>
+      </div>
+      <p class="tree-growth-last" id="treeGrowthLastAdjustment" hidden></p>
     </div>
 
     <div class="rule-group">
@@ -2194,6 +2189,7 @@ function render() {
   // 同步手动调整卡里的当前积分
   const adjCV = document.getElementById('adjustCurrentValue');
   if (adjCV) adjCV.textContent = state.points;
+  renderTreeGrowthSettings();
   // 等级
   const lvl = state.fruitTree ? getLevel(state.fruitTree.growth) : { name: '果树', emoji: '🌱' };
   document.getElementById('levelPill').textContent = lvl.emoji + ' ' + lvl.name;
@@ -2209,15 +2205,15 @@ function render() {
 }
 
 function getLevel(p) {
-  if (p >= 450) return { name: '彩虹果', emoji: '🌈' };
-  if (p >= 350) return { name: '金苹果', emoji: '🍏' };
-  if (p >= 250) return { name: '蜜桃果', emoji: '🍑' };
-  if (p >= 150) return { name: '红苹果', emoji: '🍎' };
-  if (p >= 100) return { name: '开花', emoji: '🌸' };
-  if (p >= 60) return { name: '大树', emoji: '🌳' };
-  if (p >= 30) return { name: '小树', emoji: '🌿' };
-  if (p >= 15) return { name: '小苗', emoji: '🌱' };
-  if (p >= 5) return { name: '新芽', emoji: '🌱' };
+  if (p >= 600) return { name: '彩虹果', emoji: '🌈' };
+  if (p >= 500) return { name: '金苹果', emoji: '🍏' };
+  if (p >= 400) return { name: '蜜桃果', emoji: '🍑' };
+  if (p >= 300) return { name: '红苹果', emoji: '🍎' };
+  if (p >= 250) return { name: '开花', emoji: '🌸' };
+  if (p >= 200) return { name: '大树', emoji: '🌳' };
+  if (p >= 150) return { name: '小树', emoji: '🌿' };
+  if (p >= 100) return { name: '小苗', emoji: '🌱' };
+  if (p >= 50) return { name: '新芽', emoji: '🌱' };
   return { name: '种子', emoji: '🌰' };
 }
 
@@ -2657,9 +2653,60 @@ function applyAuthUI() {
   }
   // 手动调整卡(仅登录可见)
   document.getElementById('adjustCard').style.display = isLoggedIn ? '' : 'none';
+  document.getElementById('treeGrowthCard').style.display = isLoggedIn ? '' : 'none';
   // 重新渲染视图
   render();
 }
+
+/* =========================================================
+ * 家长设置果树成长值：独立于积分余额，服务端确认后更新
+ * ========================================================= */
+let treeGrowthSaving = false;
+function renderTreeGrowthSettings() {
+  const tree = state.fruitTree;
+  const growth = tree?.growth || 0;
+  document.getElementById('treeGrowthCurrentValue').textContent = growth;
+  document.getElementById('treeGrowthStage').textContent = tree?.status === 'needs-confirmation' ? '待初始化' : getLevel(growth).name;
+  const button = document.getElementById('treeGrowthSaveBtn');
+  button.disabled = treeGrowthSaving || mutationBusy || !!pendingMutation || cloudLoading || !cloudLoaded || !getWriteToken();
+  button.textContent = treeGrowthSaving ? '正在保存…' : pendingMutation ? '请先确认上次保存结果' : '保存成长值';
+  document.getElementById('treeGrowthInput').disabled = treeGrowthSaving;
+  const last = tree?.lastAdjustment;
+  const lastElement = document.getElementById('treeGrowthLastAdjustment');
+  lastElement.hidden = !last;
+  if (last) lastElement.textContent = '上次调整：' + last.from + ' → ' + last.to + ' · ' + new Date(last.time).toLocaleString('zh-CN', { hour12: false });
+}
+function onSyncChange() { renderTreeGrowthSettings(); }
+document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () => {
+  if (!requireLogin() || treeGrowthSaving) return;
+  const input = document.getElementById('treeGrowthInput');
+  const raw = input.value.trim(), growth = Number(raw);
+  if (!raw || !Number.isSafeInteger(growth) || growth < 0 || growth > 1000000000) {
+    showToast('请输入 0 到 10 亿之间的整数成长值', 'warn');
+    return;
+  }
+  try { assertCanMutate(); } catch (error) { showToast(error.message, 'warn'); return; }
+  treeGrowthSaving = true;
+  renderTreeGrowthSettings();
+  try {
+    // An empty household needs a saved bank state before its first tree action.
+    if ((!cloudStateExists || !state.fruitTree) && !await withCommit(() => {})) return;
+    assertCanMutate();
+    const before = structuredClone(state);
+    mutationBusy = true;
+    rememberPending({ endpoint: 'tree', before, body: { action: 'set-growth', growth, revision: serverRevision, operationId: uid() } });
+    render();
+    await sendPendingMutation();
+    input.value = '';
+    showToast('果树成长值已设为 ' + state.fruitTree.growth, 'success');
+  } catch (error) {
+    showToast(pendingMutation ? '保存结果待确认，请点击同步重试' : error.message, 'error');
+  } finally {
+    mutationBusy = false;
+    treeGrowthSaving = false;
+    render();
+  }
+});
 
 /* =========================================================
  * 手动调整积分（仅登录）

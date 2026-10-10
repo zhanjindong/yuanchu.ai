@@ -43,6 +43,7 @@ const DEFAULT_STATE = {
 
 let state = loadState();
 let serverRevision = null;
+let cloudStateExists = false;
 let cloudLoaded = false;
 let cloudLoading = false;
 let mutationBusy = false;
@@ -90,14 +91,24 @@ function acceptServerSnapshot(data) {
   if (data.state && typeof data.state === 'object') {
     state = { ...structuredClone(DEFAULT_STATE), ...data.state };
   }
+  cloudStateExists = !!data.state && typeof data.state === 'object';
   serverRevision = data.revision;
   cloudLoaded = !pendingMutation;
   saveState();
   if (typeof onServerSnapshotAccepted === 'function') onServerSnapshotAccepted();
 }
 
-function assertCanMutate() {
-  if (!getWriteToken()) throw new Error('请家长登录后再操作');
+function isPublicTreeAction(action) {
+  return ['care', 'spray', 'harvest'].includes(action);
+}
+
+function isPublicTreeMutation(pending) {
+  return pending?.endpoint === 'tree' && isPublicTreeAction(pending.body?.action);
+}
+
+// Only the three game actions are public; bank and administrative writes still require a session.
+function assertCanMutate({ action } = {}) {
+  if (!isPublicTreeAction(action) && !getWriteToken()) throw new Error('请家长登录后再操作');
   if (mutationBusy) throw new Error('正在保存，请稍等一下');
   if (pendingMutation) throw new Error('上次保存结果待确认，请先点击同步重试');
   if (!cloudLoaded || cloudLoading || serverRevision === null) throw new Error('请先连接云端，确认最新数据');
@@ -106,7 +117,9 @@ function assertCanMutate() {
 async function sendPendingMutation() {
   const pending = pendingMutation;
   const token = getWriteToken();
-  if (!pending || !token) throw new Error('请家长登录后再同步');
+  if (!pending) throw new Error('没有待确认的保存结果');
+  const publicAction = isPublicTreeMutation(pending);
+  if (!publicAction && !token) throw new Error('请家长登录后再同步');
   setSyncStatus('syncing');
   let response;
   let timer;
@@ -115,7 +128,7 @@ async function sendPendingMutation() {
     if (controller) timer = setTimeout(() => controller.abort(), 15000);
     response = await fetch(pending.endpoint === 'tree' ? API_FRUIT_TREE : API_POINTS, {
       method: pending.endpoint === 'tree' ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      headers: { 'Content-Type': 'application/json', ...(!publicAction ? { Authorization: 'Bearer ' + token } : {}) },
       body: JSON.stringify(pending.body),
       ...(controller ? { signal: controller.signal } : {}),
     });
@@ -199,7 +212,7 @@ function getWriteToken() {
 // 后台从 API 拉取最新 state,合并覆盖本地 + 重渲染
 async function apiLoadState() {
   if (mutationBusy || cloudLoading) return;
-  if (pendingMutation && getWriteToken()) return retryCommit();
+  if (pendingMutation && (isPublicTreeMutation(pendingMutation) || getWriteToken())) return retryCommit();
   cloudLoading = true;
   setSyncStatus('syncing');
   if (typeof onSyncChange === 'function') onSyncChange();
@@ -232,7 +245,7 @@ function retryApiLoad() {
 async function retryCommit() {
   if (mutationBusy || cloudLoading) return;
   if (!pendingMutation) return apiLoadState();
-  if (!requireLogin()) return;
+  if (!isPublicTreeMutation(pendingMutation) && !requireLogin()) return;
   mutationBusy = true;
   if (typeof onSyncChange === 'function') onSyncChange();
   try {
