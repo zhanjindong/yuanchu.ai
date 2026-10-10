@@ -1805,17 +1805,18 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
+// 按规则类型确定方向，兼容旧数据中以正数保存的扣分规则。
+function getRuleDelta(rule, pointsBefore) {
+  if (rule.kind === 'zero') return -pointsBefore;
+  const points = Math.abs(rule.points);
+  return rule.kind === 'deduct' ? -points : points;
+}
+
 // 修改 state(不提交,提交由调用方用 withCommit 包)
 function changePoints(rule) {
   const pointsBefore = state.points;
-  let delta = 0;
-  let effect = '';
-  if (rule.kind === 'zero') {
-    delta = -pointsBefore;
-    effect = '清零';
-  } else {
-    delta = rule.points;
-  }
+  const delta = getRuleDelta(rule, pointsBefore);
+  const effect = rule.kind === 'zero' ? '清零' : '';
   state.points = Math.max(0, state.points + delta);
   const actualDelta = state.points - pointsBefore;
   state.history.unshift({
@@ -2099,7 +2100,7 @@ function renderDeductGrid() {
     <div class="action-card deduct ${r.kind === 'zero' ? 'zero' : ''}" data-rule-id="${r.id}">
       <span class="action-card-emoji">${r.emoji}</span>
       <div class="action-card-name">${esc(r.name)}</div>
-      <div class="action-card-points">${r.kind === 'zero' ? '清零' : (r.points < 0 ? r.points : '-' + r.points)}</div>
+      <div class="action-card-points">${r.kind === 'zero' ? '清零' : -Math.abs(r.points)}</div>
       ${r.desc ? `<div class="action-card-desc">${esc(r.desc)}</div>` : ''}
     </div>
   `).join('');
@@ -2217,7 +2218,7 @@ function renderRulesList() {
         <div class="rule-item-name">${esc(r.name)}</div>
         <div class="rule-item-desc">${esc(r.desc || '')}</div>
       </div>
-      <div class="rule-item-pts">${r.kind === 'zero' ? '清零' : (isEarn ? '+' + r.points : r.points)}</div>
+      <div class="rule-item-pts">${r.kind === 'zero' ? '清零' : (isEarn ? '+' + r.points : -Math.abs(r.points))}</div>
       <button class="rule-del-btn" data-del-rule="${r.id}">×</button>
     </div>
   `;
@@ -2307,7 +2308,7 @@ function openConfirm(rule) {
   const pointsBefore = state.points;
   const isEarn = rule.kind === 'earn';
   const isZero = rule.kind === 'zero';
-  const delta = isZero ? -pointsBefore : rule.points;
+  const delta = getRuleDelta(rule, pointsBefore);
   const newPoints = Math.max(0, pointsBefore + delta);
 
   document.getElementById('confirmEmoji').textContent =
@@ -2630,7 +2631,7 @@ document.getElementById('ruleSave').addEventListener('click', async () => {
     id: uid(),
     emoji: pickedEmoji,
     name,
-    points: Math.abs(pts),
+    points: kind === 'zero' ? 0 : (kind === 'deduct' ? -Math.abs(pts) : Math.abs(pts)),
     desc,
     kind,
   };
