@@ -148,6 +148,7 @@ async function sendPendingMutation() {
     if (!data.state || !Number.isInteger(data.revision)) throw new Error('云端返回不完整，请重试确认保存结果');
     rememberPending(null);
     acceptServerSnapshot(data);
+    if (typeof onMutationConfirmed === 'function') onMutationConfirmed(pending, data);
     setSyncStatus('ok');
     hideSyncBanner();
     return data;

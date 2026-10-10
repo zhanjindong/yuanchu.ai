@@ -1048,6 +1048,11 @@ body {
 .tree-growth-card .tree-harvest-current { background: var(--yellow-light); }
 .tree-growth-card .tree-harvest-current .adjust-current-value { color: var(--orange-dark); }
 .tree-settings-help { color: var(--text-light); font-size: 11px; line-height: 1.6; margin: 8px 0 0; }
+.tree-restart-option { background: var(--green-light); border-radius: var(--radius-sm); padding: 14px; margin: 16px 0; }
+.tree-restart-label { display: flex; align-items: center; gap: 10px; color: var(--green-dark); font-size: 14px; font-weight: 800; cursor: pointer; }
+.tree-restart-label input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--green-dark); }
+.tree-restart-label input:focus-visible { outline: 2px solid var(--green-dark); outline-offset: 3px; }
+.tree-fruiting-status { margin-top: 10px; color: var(--green-dark); font-size: 12px; line-height: 1.6; }
 .tree-growth-stage { margin-left: auto; color: var(--green-dark); font-size: 13px; }
 .tree-growth-note { color: var(--text-light); font-size: 12px; line-height: 1.7; margin: 0 0 16px; }
 .tree-growth-last { color: var(--text-light); font-size: 11px; line-height: 1.6; margin-top: 12px; }
@@ -1579,11 +1584,17 @@ body {
         <input class="form-input" id="treeHarvestInput" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="例如 20，留空保持不变" aria-describedby="treeGrowthNote treeHarvestHelp">
         <p class="tree-settings-help" id="treeHarvestHelp">累计收成是已采摘的果实总数。调整后，树上待采摘的果实和历史最佳收成保持不变。</p>
       </div>
+      <div class="tree-restart-option">
+        <label class="tree-restart-label" for="treeRestartFruitingInput"><input id="treeRestartFruitingInput" type="checkbox" aria-describedby="treeRestartFruitingHelp treeFruitingStatus">重新开始结果</label>
+        <p class="tree-settings-help" id="treeRestartFruitingHelp">清零后想重新种树时勾选。按本次保存后的成长值开启新一轮结果，300 分结第一颗；若已达到 300 分，会立即结出本轮对应的果实。已有果实、积分和收成都保留。</p>
+        <p class="tree-fruiting-status" id="treeFruitingStatus"></p>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn-primary" id="treeGrowthSaveBtn">保存果树设置</button>
       </div>
       <p class="tree-growth-last" id="treeGrowthLastAdjustment" hidden></p>
       <p class="tree-growth-last" id="treeHarvestLastAdjustment" hidden></p>
+      <p class="tree-growth-last" id="treeFruitingLastRestart" hidden></p>
     </div>
 
     <div class="rule-group">
@@ -2688,6 +2699,12 @@ function renderTreeGrowthSettings() {
   button.textContent = treeGrowthSaving ? '正在保存…' : pendingMutation ? '请先确认上次保存结果' : '保存果树设置';
   document.getElementById('treeGrowthInput').disabled = treeGrowthSaving;
   document.getElementById('treeHarvestInput').disabled = treeGrowthSaving;
+  document.getElementById('treeRestartFruitingInput').disabled = treeGrowthSaving;
+  const nextFruit = tree?.nextFruitGrowth || 300;
+  const naturalNextFruit = growth < 300 ? 300 : 300 + (Math.floor((growth - 300) / 20) + 1) * 20;
+  document.getElementById('treeFruitingStatus').textContent = nextFruit > naturalNextFruit
+    ? '以前的结果记录仍保留，下一颗新果实需要 ' + nextFruit + ' 成长值。想重新结果，请勾选此项。'
+    : '当前下一颗果实：' + nextFruit + ' 成长值。';
   const last = tree?.lastAdjustment;
   const lastElement = document.getElementById('treeGrowthLastAdjustment');
   lastElement.hidden = !last;
@@ -2696,12 +2713,24 @@ function renderTreeGrowthSettings() {
   const harvestLastElement = document.getElementById('treeHarvestLastAdjustment');
   harvestLastElement.hidden = !harvestLast;
   if (harvestLast) harvestLastElement.textContent = '上次收成调整：' + harvestLast.from + ' → ' + harvestLast.to + ' 颗 · ' + new Date(harvestLast.time).toLocaleString('zh-CN', { hour12: false });
+  const restart = tree?.lastFruitingRestart;
+  const restartElement = document.getElementById('treeFruitingLastRestart');
+  restartElement.hidden = !restart;
+  if (restart) restartElement.textContent = '上次重新开始结果：成长值 ' + restart.growth + ' · ' + new Date(restart.time).toLocaleString('zh-CN', { hour12: false });
 }
 function onSyncChange() { renderTreeGrowthSettings(); }
+function onMutationConfirmed(pending) {
+  // A confirmed retry has also consumed this one-off choice. Keeping it checked
+  // could accidentally start another round during the parent's next adjustment.
+  if (pending.endpoint === 'tree' && pending.body.action === 'set-tree-settings' && pending.body.restartFruiting === true) {
+    document.getElementById('treeRestartFruitingInput').checked = false;
+  }
+}
 document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () => {
   if (!requireLogin() || treeGrowthSaving) return;
   const input = document.getElementById('treeGrowthInput');
   const harvestInput = document.getElementById('treeHarvestInput');
+  const restartInput = document.getElementById('treeRestartFruitingInput');
   const updates = {};
   for (const [key, field, label] of [['growth', input, '成长值'], ['harvested', harvestInput, '累计收成']]) {
     if (field.validity?.badInput) {
@@ -2717,8 +2746,9 @@ document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () 
     }
     updates[key] = value;
   }
+  if (restartInput.checked) updates.restartFruiting = true;
   if (!Object.keys(updates).length) {
-    showToast('请至少填写成长值或累计收成', 'warn');
+    showToast('请填写成长值、累计收成，或选择重新开始结果', 'warn');
     return;
   }
   try { assertCanMutate(); } catch (error) { showToast(error.message, 'warn'); return; }
@@ -2735,7 +2765,8 @@ document.getElementById('treeGrowthSaveBtn').addEventListener('click', async () 
     await sendPendingMutation();
     input.value = '';
     harvestInput.value = '';
-    showToast('果树设置已保存', 'success');
+    restartInput.checked = false;
+    showToast(updates.restartFruiting ? '已开启新一轮结果，原有果实和收成已保留' : '果树设置已保存', 'success');
   } catch (error) {
     showToast(pendingMutation ? '保存结果待确认，请点击同步重试' : error.message, 'error');
   } finally {

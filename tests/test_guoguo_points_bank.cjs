@@ -30,7 +30,7 @@ function makeElement(id = '', notifyMutation = () => {}) {
   const children = new Map();
   let markup = '';
   const element = {
-    id, value: '', textContent: '', dataset: {}, style: {}, hidden: false,
+    id, value: '', checked: false, textContent: '', dataset: {}, style: {}, hidden: false,
     get innerHTML() { return markup; },
     set innerHTML(value) { markup = value; children.clear(); },
     classList: {
@@ -1188,6 +1188,7 @@ test('guests cannot initialize historical rewards or send other privileged tree 
   for (const payload of [
     { action: 'initialize', earned: 500 }, { action: 'set-growth', growth: 1000 },
     { action: 'set-tree-settings', growth: 300, harvested: 50 },
+    { action: 'set-tree-settings', restartFruiting: true },
   ]) {
     const app = await loadTreePage(100, { loggedIn: false });
     const before = JSON.stringify(app.bank.state);
@@ -1219,7 +1220,7 @@ test('historical initialization retains parent credentials and its explicit earn
 });
 
 test('guest tree visits cannot retry protected pending operations or treat point writes as public care', async () => {
-  for (const kind of ['set-growth', 'set-tree-settings', 'initialize', 'points']) {
+  for (const kind of ['set-growth', 'set-tree-settings', 'restart-fruiting', 'initialize', 'points']) {
     const original = await loadGrowthSettings();
     if (kind === 'points') {
       original.failWrites();
@@ -1231,6 +1232,9 @@ test('guest tree visits cannot retry protected pending operations or treat point
     }
     const pending = original.storedPending();
     if (kind === 'set-growth') pending.body.action = 'set-growth';
+    if (kind === 'restart-fruiting') {
+      pending.body = { action: 'set-tree-settings', restartFruiting: true, revision: 0, operationId: pending.body.operationId };
+    }
     if (kind === 'initialize') {
       pending.body = { action: 'initialize', earned: 500, revision: 0, operationId: pending.body.operationId };
     } else if (kind === 'points') {
@@ -1895,4 +1899,291 @@ test('old pending set-growth requests retain their action and operation when ret
   assert.equal(reloaded.bank.state.fruitTree.growth, 300);
   assert.equal(reloaded.bank.state.fruitTree.harvested, 10);
   assert.equal(reloaded.storedPending(), null);
+});
+
+function restartedFruitingState(app, settings = {}) {
+  const updated = settings.growth == null
+    ? structuredClone(app.bank.state) : adjustedGrowthState(app, settings.growth);
+  if (settings.harvested != null) updated.fruitTree.harvested = settings.harvested;
+  updated.fruitTree.nextFruitGrowth = updated.fruitTree.growth < 300
+    ? 300 : 300 + (Math.floor((updated.fruitTree.growth - 300) / 20) + 1) * 20;
+  updated.fruitTree.lastFruitingRestart = {
+    growth: updated.fruitTree.growth,
+    previousNextFruitGrowth: app.bank.state.fruitTree.nextFruitGrowth,
+    time: '2026-10-10T04:00:00.000Z',
+  };
+  return updated;
+}
+
+test('a parent can restart fruiting with blank number fields and the server record survives a reload', async () => {
+  const fixture = await loadGrowthSettings();
+  const app = await loadGrowthSettings({ serverState: adjustedGrowthState(fixture, 0) });
+  const before = structuredClone(app.bank.state);
+  const updated = restartedFruitingState(app);
+  assert.equal(app.element('treeRestartFruitingInput').checked, false);
+  assert.equal(app.element('treeFruitingLastRestart').hidden, true);
+  assert.match(String(app.element('treeFruitingStatus').textContent), /以前的结果记录仍保留.*540.*重新结果/);
+  app.respondToTree(body => {
+    assert.deepEqual(Object.keys(body).sort(), ['action', 'operationId', 'restartFruiting', 'revision']);
+    assert.equal(body.action, 'set-tree-settings');
+    assert.equal(body.restartFruiting, true);
+    assert.equal(body.revision, 0);
+    return { ok: true, state: updated, revision: 1 };
+  });
+  app.element('treeRestartFruitingInput').checked = true;
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(treePosts(app)[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(app.writes.length, 0);
+  assert.equal(app.bank.state.fruitTree.growth, 0);
+  assert.equal(app.bank.state.fruitTree.nextFruitGrowth, 300);
+  assert.equal(app.bank.state.fruitTree.harvested, before.fruitTree.harvested);
+  assert.equal(JSON.stringify(app.bank.state.fruitTree.fruits), JSON.stringify(before.fruitTree.fruits));
+  assert.equal(app.bank.state.points, before.points);
+  assert.equal(JSON.stringify(app.bank.state.history), JSON.stringify(before.history));
+  assert.equal(app.element('treeRestartFruitingInput').checked, false);
+  assert.match(String(app.element('treeFruitingStatus').textContent), /当前下一颗果实：300 成长值/);
+  assert.match(String(app.element('toast').textContent), /已开启新一轮结果，原有果实和收成已保留/);
+  assert.equal(app.element('treeFruitingLastRestart').hidden, false);
+  assert.match(String(app.element('treeFruitingLastRestart').textContent), /0/);
+  assert.match(String(app.element('treeFruitingLastRestart').textContent), /2026/);
+  assert.deepEqual(app.storedState().fruitTree.lastFruitingRestart, updated.fruitTree.lastFruitingRestart);
+  assert.equal(app.storedPending(), null);
+  const reloaded = await loadGrowthSettings({ serverState: updated, initialStorage: app.exportStorage() });
+  assert.equal(reloaded.element('treeFruitingLastRestart').hidden, false);
+  assert.equal(reloaded.element('treeFruitingLastRestart').textContent, app.element('treeFruitingLastRestart').textContent);
+  assert.equal(reloaded.element('treeRestartFruitingInput').checked, false);
+  assert.equal(treePosts(reloaded).length, 0, 'showing the last restart must not automatically request another round');
+});
+
+test('restarting fruiting can save alongside growth and harvests in one operation', async () => {
+  for (const settings of [{ growth: 0 }, { harvested: 0 }, { growth: 300, harvested: 25 }]) {
+    const app = await loadGrowthSettings();
+    const updated = restartedFruitingState(app, settings);
+    app.respondToTree(body => {
+      assert.deepEqual(body, {
+        action: 'set-tree-settings', ...settings, restartFruiting: true,
+        revision: 0, operationId: body.operationId,
+      });
+      return { ok: true, state: updated, revision: 1 };
+    });
+    if (settings.growth != null) app.element('treeGrowthInput').value = String(settings.growth);
+    if (settings.harvested != null) app.element('treeHarvestInput').value = String(settings.harvested);
+    app.element('treeRestartFruitingInput').checked = true;
+    await app.click('treeGrowthSaveBtn');
+    assert.equal(treePosts(app).length, 1);
+    assert.equal(app.writes.length, 0);
+    assert.equal(app.bank.state.fruitTree.growth, settings.growth ?? 526);
+    assert.equal(app.bank.state.fruitTree.harvested, settings.harvested ?? 10);
+    assert.equal(app.bank.state.points, 80);
+    assert.equal(app.element('treeGrowthInput').value, '');
+    assert.equal(app.element('treeHarvestInput').value, '');
+    assert.equal(app.element('treeRestartFruitingInput').checked, false);
+    assert.match(String(app.element('treeFruitingLastRestart').textContent), new RegExp(String(updated.fruitTree.growth)));
+  }
+});
+
+test('checking restart cannot bypass invalid numbers or an unfinished numeric field', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  app.element('treeRestartFruitingInput').checked = true;
+  for (const field of ['treeGrowthInput', 'treeHarvestInput']) {
+    for (const value of ['-1', '1.5', '1000000001', 'Infinity', 'invalid', '']) {
+      app.element(field).value = value;
+      app.element(field).validity = { badInput: value === '' };
+      await app.click('treeGrowthSaveBtn');
+      assert.equal(treePosts(app).length, 0, `${field}/${value} must prevent a partial restart`);
+      assert.equal(app.writes.length, 0);
+      assert.equal(JSON.stringify(app.bank.state), before);
+      assert.equal(app.element('treeRestartFruitingInput').checked, true);
+    }
+    app.element(field).value = '';
+    app.element(field).validity = { badInput: false };
+  }
+});
+
+test('an empty settings form explains that restarting fruiting is another available choice', async () => {
+  const app = await loadGrowthSettings();
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 0);
+  assert.match(String(app.element('toast').textContent), /请填写成长值、累计收成，或选择重新开始结果/);
+});
+
+test('guests and expired parent sessions cannot restart fruiting', async () => {
+  for (const loggedIn of [false, true]) {
+    const app = await loadGrowthSettings({ loggedIn });
+    if (loggedIn) await app.advance(60_001);
+    const before = JSON.stringify(app.bank.state);
+    app.element('treeRestartFruitingInput').checked = true;
+    await app.click('treeGrowthSaveBtn');
+    await app.advance(350);
+    assert.equal(app.element('loginModal').classList.contains('show'), true);
+    assert.equal(treePosts(app).length, 0);
+    assert.equal(app.writes.length, 0);
+    assert.equal(JSON.stringify(app.bank.state), before);
+  }
+});
+
+test('a restart waits for the cloud response, prevents repeated submissions, and clears only on success', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  const updated = restartedFruitingState(app, { growth: 0, harvested: 0 });
+  const release = app.deferTree();
+  app.element('treeGrowthInput').value = '0';
+  app.element('treeHarvestInput').value = '0';
+  app.element('treeRestartFruitingInput').checked = true;
+  const saving = app.click('treeGrowthSaveBtn');
+  await new Promise(setImmediate);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(JSON.stringify(app.storedState()), before);
+  assert.equal(app.element('treeGrowthSaveBtn').disabled, true);
+  assert.equal(app.element('treeRestartFruitingInput').disabled, true);
+  assert.equal(app.element('treeRestartFruitingInput').checked, true);
+  assert.equal(app.element('treeFruitingLastRestart').hidden, true);
+  await app.click('treeGrowthSaveBtn');
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(app.writes.length, 0);
+  release(updated);
+  await saving;
+  assert.equal(app.bank.state.fruitTree.nextFruitGrowth, 300);
+  assert.equal(app.element('treeGrowthInput').value, '');
+  assert.equal(app.element('treeHarvestInput').value, '');
+  assert.equal(app.element('treeRestartFruitingInput').checked, false);
+  assert.equal(app.element('treeRestartFruitingInput').disabled, false);
+});
+
+test('an uncertain restart retries the original operation instead of starting another fruiting round', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  const updated = restartedFruitingState(app, { growth: 0 });
+  const accepted = new Map();
+  let applications = 0;
+  app.respondToTree(body => {
+    if (!accepted.has(body.operationId)) {
+      applications++;
+      accepted.set(body.operationId, { ok: true, state: updated, revision: 1 });
+      throw new Error('restart saved but response was lost');
+    }
+    return accepted.get(body.operationId);
+  });
+  app.element('treeGrowthInput').value = '0';
+  app.element('treeRestartFruitingInput').checked = true;
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(app.element('treeGrowthInput').value, '0');
+  assert.equal(app.element('treeRestartFruitingInput').checked, true);
+  assert.equal(app.storedPending().body.restartFruiting, true);
+  app.element('treeGrowthInput').value = '300';
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  await app.click('syncBannerRetry');
+  assert.deepEqual(treePosts(app)[1].body, treePosts(app)[0].body);
+  assert.equal(applications, 1);
+  assert.equal(app.bank.state.fruitTree.growth, 0);
+  assert.equal(app.bank.state.fruitTree.nextFruitGrowth, 300);
+  assert.deepEqual(app.storedState().fruitTree.lastFruitingRestart, updated.fruitTree.lastFruitingRestart);
+  assert.equal(app.storedPending(), null);
+  assert.equal(app.element('treeRestartFruitingInput').checked, false, 'confirmation through retry must consume the one-time restart choice');
+  app.respondToTree(body => {
+    assert.equal(body.action, 'set-tree-settings');
+    assert.equal(body.growth, 300);
+    assert.equal(body.revision, 1);
+    assert.equal(Object.hasOwn(body, 'restartFruiting'), false, 'the next ordinary growth save must not start another round');
+    return { ok: true, state: adjustedGrowthState(app, 300), revision: 2 };
+  });
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 3);
+  assert.equal(app.bank.state.fruitTree.growth, 300);
+  assert.deepEqual(app.storedState().fruitTree.lastFruitingRestart, updated.fruitTree.lastFruitingRestart);
+});
+
+test('confirming ordinary settings or refreshing cloud state does not consume an unsubmitted restart choice', async () => {
+  const app = await loadGrowthSettings();
+  const updated = adjustedGrowthState(app, 300);
+  app.respondToTree(() => { throw new Error('ordinary growth save response lost'); });
+  app.element('treeGrowthInput').value = '300';
+  await app.click('treeGrowthSaveBtn');
+  const pending = app.storedPending();
+  assert.equal(Object.hasOwn(pending.body, 'restartFruiting'), false);
+  app.element('treeRestartFruitingInput').checked = true;
+  app.respondToTree(body => {
+    assert.deepEqual(body, pending.body);
+    return { ok: true, state: updated, revision: 1 };
+  });
+  await app.click('syncBannerRetry');
+  assert.equal(app.storedPending(), null);
+  assert.equal(app.element('treeRestartFruitingInput').checked, true, 'confirming an ordinary settings action must not reset an unsent restart choice');
+  app.respondToReads({ ok: true, state: updated, revision: 1 });
+  await app.bank.retry();
+  assert.equal(app.element('treeRestartFruitingInput').checked, true, 'a read is not confirmation of a restart');
+  assert.equal(treePosts(app).length, 2);
+});
+
+test('an authenticated tree visit confirms a pending restart and renders its new growth progress', async () => {
+  const original = await loadGrowthSettings();
+  const updated = restartedFruitingState(original, { growth: 0 });
+  original.respondToTree(() => { throw new Error('restart response lost'); });
+  original.element('treeGrowthInput').value = '0';
+  original.element('treeRestartFruitingInput').checked = true;
+  await original.click('treeGrowthSaveBtn');
+  const pending = original.storedPending();
+  const tree = await loadTreePage(0, {
+    preserveState: true, serverState: updated, initialStorage: original.exportStorage(),
+    treeHandler(body) {
+      assert.deepEqual(body, pending.body);
+      return { ok: true, state: updated, revision: 1 };
+    },
+  });
+  assert.equal(treePosts(tree).length, 1);
+  assert.equal(treePosts(tree)[0].headers.Authorization, 'Bearer test-token');
+  assert.equal(tree.storedPending(), null);
+  assert.equal(tree.tree.updates.at(-1)[0].growth, 0);
+  assert.equal(tree.tree.updates.at(-1)[0].nextFruitGrowth, 300);
+  assert.equal(tree.tree.updates.at(-1)[0].harvestedCount, 10);
+  assert.deepEqual(tree.storedState().fruitTree.lastFruitingRestart, updated.fruitTree.lastFruitingRestart);
+});
+
+test('a restart conflict adopts cloud state and preserves the form for an explicit new attempt', async () => {
+  const app = await loadGrowthSettings();
+  const cloud = adjustedGrowthState(app, 540);
+  cloud.fruitTree.nextFruitGrowth = 560;
+  app.rejectTree({ ok: false, state: cloud, revision: 7, error: 'revision_conflict' });
+  app.element('treeGrowthInput').value = '0';
+  app.element('treeRestartFruitingInput').checked = true;
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(app.bank.state.fruitTree.growth, 540);
+  assert.equal(app.storedState().fruitTree.nextFruitGrowth, 560);
+  assert.equal(app.storedPending(), null);
+  assert.equal(app.element('treeGrowthInput').value, '0');
+  assert.equal(app.element('treeRestartFruitingInput').checked, true);
+  assert.equal(app.element('treeFruitingLastRestart').hidden, true);
+  app.respondToTree(body => {
+    assert.equal(body.revision, 7);
+    assert.equal(body.restartFruiting, true);
+    assert.notEqual(body.operationId, treePosts(app)[0].body.operationId);
+    return { ok: true, state: restartedFruitingState(app, { growth: 0 }), revision: 8 };
+  });
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 2);
+  assert.equal(app.bank.state.fruitTree.growth, 0);
+  assert.equal(app.bank.state.fruitTree.lastFruitingRestart.previousNextFruitGrowth, 560);
+  assert.equal(app.element('treeRestartFruitingInput').checked, false);
+});
+
+test('a rejected restart keeps all entered settings without changing the tree or its last restart record', async () => {
+  const app = await loadGrowthSettings();
+  const before = JSON.stringify(app.bank.state);
+  app.rejectTree({ ok: false, error: 'invalid_restart', message: '请检查果树设置' }, 400);
+  app.element('treeGrowthInput').value = '0';
+  app.element('treeHarvestInput').value = '0';
+  app.element('treeRestartFruitingInput').checked = true;
+  await app.click('treeGrowthSaveBtn');
+  assert.equal(treePosts(app).length, 1);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(app.storedPending(), null);
+  assert.equal(app.element('treeGrowthInput').value, '0');
+  assert.equal(app.element('treeHarvestInput').value, '0');
+  assert.equal(app.element('treeRestartFruitingInput').checked, true);
+  assert.equal(app.element('treeFruitingLastRestart').hidden, true);
 });

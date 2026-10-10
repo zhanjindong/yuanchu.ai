@@ -427,6 +427,94 @@ test('empty compressed layout hides compatibility fruit and split ranges retain 
   assert.ok(parseFloat(targets.find(button => button.dataset.fruitId === '40').style.top) < parseFloat(fourth.style.top), 'legacy IDs use the server-provided crown');
 });
 
+test('old and restarted fruiting rounds share five stable crown positions and refill until all fruit is picked', async () => {
+  const app = loadTree({ draw: true });
+  let remaining = [1, 2, 3, 4, 5, 21, 22, 23, 24, 25];
+  const snapshot = () => ({
+    initialized: true, growth: 480, earned: 1000, adjustment: -520, balance: 100,
+    availableCount: remaining.length, readyCount: remaining.length, harvestedCount: 10 - remaining.length,
+    fruits: remaining.slice(0, 5).map(id => ({ id, level: 1 })),
+    fruitLayout: {
+      ranges: remaining.map(id => ({ startId: id, endId: id, startLevel: 1, startSlot: (id - 1) % 5 })),
+      lockedRanges: [],
+    },
+    care: { usedKinds: [], remainingBoost: 10 },
+  });
+  app.show(480, snapshot());
+  app.draw();
+  const targets = () => app.element('fruit-targets').querySelectorAll('button');
+  const position = button => [button.style.left, button.style.top];
+  assert.deepEqual(targets().map(button => Number(button.dataset.fruitId)), [1, 2, 3, 4, 5]);
+  app.respondToAction(payload => {
+    assert.equal(payload.action, 'harvest');
+    assert.ok(remaining.includes(payload.fruitId));
+    remaining = remaining.filter(id => id !== payload.fruitId);
+    return { snapshot: snapshot() };
+  });
+  for (const id of [3, 5, 1, 4, 2, 21, 22, 23, 24, 25]) {
+    const before = new Map(targets().map(button => [Number(button.dataset.fruitId), position(button)]));
+    const target = targets().find(button => Number(button.dataset.fruitId) === id);
+    assert.ok(target, `fruit ${id} must be shown before it can be harvested`);
+    await target.click();
+    app.draw();
+    assert.equal(targets().length, Math.min(5, remaining.length));
+    assert.equal(new Set(targets().map(button => position(button).join(','))).size, targets().length, 'refills must never overlap');
+    for (const button of targets()) {
+      const fruitId = Number(button.dataset.fruitId);
+      assert.equal(button.dataset.fruitLevel, '1', 'a new round does not move old fruit to another crown');
+      assert.equal(button.getAttribute('aria-label'), '采摘红苹果');
+      if (before.has(fruitId)) assert.deepEqual(position(button), before.get(fruitId), 'unpicked fruit stays in place while another round refills');
+      else assert.deepEqual(position(button), before.get(id), 'only the newly vacant branch receives a hidden fruit');
+    }
+    assert.equal(app.element('picked').textContent, 10 - remaining.length);
+  }
+  assert.equal(app.actions.length, 10);
+  assert.equal(app.element('harvest').disabled, true);
+  assert.equal(app.element('harvest-panel').disabled, true);
+});
+
+test('pest locks follow their fruit when a new fruiting round fills a vacated branch', async () => {
+  const app = loadTree({ draw: true });
+  let remaining = [1, 2, 3, 4, 5, 21, 22, 23, 24, 25];
+  const snapshot = () => ({
+    initialized: true, growth: 380, earned: 800, adjustment: -420, balance: 100,
+    availableCount: remaining.length, readyCount: remaining.length - 2, harvestedCount: 10 - remaining.length,
+    lockedFruitCount: 2, pest: { count: 2, fruitIds: [3, 23] },
+    fruitLayout: {
+      ranges: remaining.map(id => ({ startId: id, endId: id, startLevel: 1, startSlot: (id - 1) % 5 })),
+      lockedRanges: [[3, 3], [23, 23]],
+    },
+    care: { usedKinds: [], remainingBoost: 10 },
+  });
+  app.show(380, snapshot());
+  app.draw();
+  const targets = () => app.element('fruit-targets').querySelectorAll('button');
+  const target = id => targets().find(button => Number(button.dataset.fruitId) === id);
+  const lockedPosition = [target(3).style.left, target(3).style.top];
+  app.respondToAction(payload => {
+    assert.equal(payload.action, 'harvest');
+    assert.ok(![3, 23].includes(payload.fruitId));
+    remaining = remaining.filter(id => id !== payload.fruitId);
+    return { snapshot: snapshot() };
+  });
+  for (const id of [1, 2, 4, 5, 21, 22, 24, 25]) {
+    await target(id).click();
+    app.draw();
+    assert.deepEqual([target(3).style.left, target(3).style.top], lockedPosition);
+    assert.match(target(3).getAttribute('aria-label'), /果实上有小虫/);
+    if (target(23)) assert.match(target(23).getAttribute('aria-label'), /果实上有小虫/);
+  }
+  assert.equal(targets().length, 2);
+  for (const id of [3, 23]) {
+    await target(id).click();
+    assert.equal(app.element('panel-title').textContent, '照料果树');
+    await app.element('close-panel').click();
+  }
+  assert.equal(app.actions.length, 8, 'neither an old nor a newly revealed locked fruit can be harvested');
+  assert.equal(app.element('harvest').disabled, true);
+  assert.equal(app.element('spray').disabled, false);
+});
+
 test('scrolling and history pages expose and harvest old crowns without materializing millions of fruit', async () => {
   const app = loadTree({ draw: true });
   const snapshot = {
