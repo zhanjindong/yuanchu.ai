@@ -173,6 +173,12 @@ body {
   font-weight: 800;
 }
 .level-pill {
+  text-decoration: none;
+  border: 0;
+  color: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  cursor: pointer;
   background: rgba(255,255,255,0.25);
   border-radius: 20px;
   padding: 6px 14px;
@@ -181,6 +187,8 @@ body {
   backdrop-filter: blur(4px);
   white-space: nowrap;
 }
+.level-pill:hover { background: rgba(255,255,255,.36); }
+.level-pill:focus-visible { outline: 3px solid #fff2b8; outline-offset: 3px; }
 .hero-points-row {
   display: flex;
   align-items: flex-end;
@@ -1365,7 +1373,7 @@ body {
         <div class="hero-greet" id="greeting">早上好，果果 🌞</div>
         <div class="hero-title" id="heroTitle">今天也要加油哦！</div>
       </div>
-      <div class="level-pill" id="levelPill">🌱 新芽</div>
+      <a class="level-pill" id="levelPill" href="guoguo-fruit-tree.html" aria-label="打开我的果树">🌱 果树</a>
       <div class="sync-badge" id="syncBadge" data-status="ok" title="已同步到云端">✓</div>
     </div>
     <div class="hero-points-row">
@@ -1705,150 +1713,9 @@ body {
   </div>
 </div>
 
+<script src="guoguo-points-data.js"></script>
 <script>
 'use strict';
-
-/* =========================================================
- * 数据层（localStorage + api.yuanchu.ai 双向同步）
- *  读：本地立即渲染 + 后台异步从 API 拉取覆盖
- *  写：本地立即持久化 + 后台异步 PUT 到 API（需 Bearer Token）
- * ========================================================= */
-const STORAGE_KEY = 'guoguo_points_bank_v1';
-// 本地调试时（vercel dev 监听 :3000，前端在 :4000）自动指向 localhost
-// 部署后保持 https://api.yuanchu.ai
-const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000'
-  : 'https://api.yuanchu.ai';
-const API_POINTS = API_BASE + '/api/points';
-
-const DEFAULT_STATE = {
-  points: 0,
-  rules: {
-    earn: [
-      { id: 'r1', emoji: '💯', name: '考试 100 分', points: 20, desc: '完美表现', kind: 'earn' },
-      { id: 'r2', emoji: '🌟', name: '考试 95-99 分', points: 10, desc: '优秀表现', kind: 'earn' },
-      { id: 'r3', emoji: '🎸', name: '吉他练习 ≥30 分钟', points: 5, desc: '坚持练习', kind: 'earn' },
-      { id: 'r4', emoji: '🎸', name: '吉他练习 ≥60 分钟', points: 10, desc: '专注练习', kind: 'earn' },
-    ],
-    deduct: [
-      { id: 'r5', emoji: '📉', name: '考试 <70 分', points: 0, desc: '直接清零积分', kind: 'zero' },
-      { id: 'r6', emoji: '📉', name: '考试 70-79 分', points: -10, desc: '需要加油', kind: 'deduct' },
-      { id: 'r7', emoji: '📉', name: '考试 80-89 分', points: -5, desc: '差一点点', kind: 'deduct' },
-      { id: 'r8', emoji: '🎮', name: '偷偷玩游戏', points: -10, desc: '要诚实哦', kind: 'deduct' },
-    ],
-  },
-  goals: [
-    { id: 'g1', emoji: '🎮', name: 'Switch 游戏', points: 300 },
-    { id: 'g2', emoji: '⌚', name: '小天才儿童手表 Z9A', points: 1500 },
-  ],
-  history: [],
-};
-
-let state = loadState();
-
-// 同步从 localStorage 读取 — 用于启动时立即渲染（避免首屏空白）
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return structuredClone(DEFAULT_STATE);
-    const parsed = JSON.parse(raw);
-    return { ...structuredClone(DEFAULT_STATE), ...parsed };
-  } catch (e) {
-    return structuredClone(DEFAULT_STATE);
-  }
-}
-
-// 同步写 localStorage + 异步推到后端(悲观更新,失败回滚)
-//
-// 行为契约:
-//   1) 立即写本地(localStorage,作为离线备份)
-//   2) 同步中:同步徽章显示 ⟳
-//   3) PUT 成功 → 同步徽章 ✓
-//   4) PUT 失败 → state 回滚到进入前的 snapshot,同步徽章 ⚠️,调用方 catch 后 toast 报错
-//
-// 调用方应 await commitState() 并 try/catch。失败时 state 已被还原,
-// 直接 render() 即可显示还原后的 UI。
-async function commitState() {
-  // 进入前快照(失败时回滚到这份)
-  const snapshot = structuredClone(state);
-  // 先写本地(立即持久化,网络挂了下次还有)
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-  setSyncStatus('syncing');
-  try {
-    await apiPushState();
-    setSyncStatus('ok');
-    return { ok: true };
-  } catch (e) {
-    // 回滚 state(本地 + 内存)
-    state = snapshot;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e2) {}
-    setSyncStatus('fail');
-    throw e;
-  }
-}
-
-// 保留旧名 saveState 为同步别名(只写本地,不推 API) —— 仅用于
-// 加载时初始化等不需要走 API 的场合。业务写操作一律用 commitState。
-function saveState() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { console.error('saveState', e); }
-}
-
-// 写操作统一入口:先 mutator() 改 state,然后 await commitState() 推服务端。
-//   - 成功:render + 可选 success toast
-//   - 失败:commitState 内部已回滚 state,render 回到原状 + error toast
-//   - mutator 抛错会被 catch,等同于未提交
-async function withCommit(mutator, opts) {
-  try {
-    mutator();
-    await commitState();
-    render();
-    if (opts && opts.success) showToast(opts.success, 'success');
-    return true;
-  } catch (e) {
-    console.warn('[points] commit failed', e);
-    render(); // commitState 内部已回滚 state
-    showToast((opts && opts.fail) || '保存失败,数据已回滚,请检查网络后重试', 'error');
-    return false;
-  }
-}
-
-// 从 session 读取写权限 token（同步）
-function getWriteToken() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-    if (Date.now() > s.expiresAt) return null;
-    return s.token || null;
-  } catch (e) { return null; }
-}
-
-// 后台从 API 拉取最新 state,合并覆盖本地 + 重渲染
-async function apiLoadState() {
-  setSyncStatus('syncing');
-  try {
-    const r = await fetch(API_POINTS, { method: 'GET', headers: { Accept: 'application/json' } });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    if (data && data.state && typeof data.state === 'object') {
-      Object.assign(state, data.state);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-      if (typeof render === 'function') render();
-      setSyncStatus('ok');
-      hideSyncBanner();
-      console.log('[points] 已从 API 同步最新数据');
-    } else {
-      // 线上是空的(首次部署),但 GET 成功 → 同步 OK
-      setSyncStatus('ok');
-      hideSyncBanner();
-      console.log('[points] 云端暂无数据,使用本地');
-    }
-  } catch (e) {
-    console.warn('[points] api load failed', e);
-    setSyncStatus('fail');
-    showSyncBanner('无法连接到云端,显示的可能不是最新数据');
-  }
-}
 
 // 同步状态:'ok' | 'syncing' | 'fail'
 // 更新 hero 区域右上角小徽章
@@ -1880,44 +1747,12 @@ function hideSyncBanner() {
   if (el) el.hidden = true;
 }
 
-// 重试读 API(给 banner 上的按钮调用)
-function retryApiLoad() {
-  apiLoadState();
-}
-// 重试 PUT(给 syncBadge 点击调用)
-async function retryCommit() {
-  try {
-    await commitState();
-    if (typeof render === 'function') render();
-    showToast('已重新同步', 'success');
-  } catch (e) {
-    showToast('同步仍然失败,请检查网络', 'error');
-  }
-}
-
-// 后台把本地 state 整体覆盖到后端(需 token)
-async function apiPushState() {
-  const token = getWriteToken();
-  if (!token) return; // 未登录就不推
-  const r = await fetch(API_POINTS, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-    },
-    body: JSON.stringify({ state }),
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
-
 /* =========================================================
  * 管理员认证（localStorage session，7 天有效）
  * 默认账号 admin / 19890915 —— 同步作为写权限 token（Bearer）
  * token 与后端 POINTS_WRITE_TOKEN 一致时允许写操作
  * ========================================================= */
 const ADMIN_ACCOUNT = { username: 'admin', password: '19890915' };
-const SESSION_KEY = 'guoguo_admin_session_v1';
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 天
 
 let isLoggedIn = false;
@@ -1983,7 +1818,8 @@ function logout() {
 }
 
 function requireLogin() {
-  if (isLoggedIn) return true;
+  if (isLoggedIn && getWriteToken()) return true;
+  if (isLoggedIn) { logout(); applyAuthUI(); }
   showToast('🔒 这个操作需要管理员登录', 'warn');
   // 跳到设置 Tab,定位到管理员登录入口
   switchTab('settings');
@@ -2008,9 +1844,6 @@ function formatRemain() {
 /* =========================================================
  * 业务逻辑
  * ========================================================= */
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
 
 // 按规则类型确定方向，兼容旧数据中以正数保存的扣分规则。
 function getRuleDelta(rule, pointsBefore) {
@@ -2362,7 +2195,7 @@ function render() {
   const adjCV = document.getElementById('adjustCurrentValue');
   if (adjCV) adjCV.textContent = state.points;
   // 等级
-  const lvl = getLevel(state.points);
+  const lvl = state.fruitTree ? getLevel(state.fruitTree.growth) : { name: '果树', emoji: '🌱' };
   document.getElementById('levelPill').textContent = lvl.emoji + ' ' + lvl.name;
   // 问候语
   updateGreeting();
@@ -2376,13 +2209,16 @@ function render() {
 }
 
 function getLevel(p) {
-  if (p >= 5000) return { name: '宇宙英雄', emoji: '🌌' };
-  if (p >= 2000) return { name: '超级英雄', emoji: '🦸' };
-  if (p >= 1000) return { name: '探险达人', emoji: '🗺️' };
-  if (p >= 500) return { name: '积分高手', emoji: '🏆' };
-  if (p >= 200) return { name: '积分能手', emoji: '⭐' };
-  if (p >= 50) return { name: '努力中', emoji: '🌿' };
-  return { name: '新芽', emoji: '🌱' };
+  if (p >= 450) return { name: '彩虹果', emoji: '🌈' };
+  if (p >= 350) return { name: '金苹果', emoji: '🍏' };
+  if (p >= 250) return { name: '蜜桃果', emoji: '🍑' };
+  if (p >= 150) return { name: '红苹果', emoji: '🍎' };
+  if (p >= 100) return { name: '开花', emoji: '🌸' };
+  if (p >= 60) return { name: '大树', emoji: '🌳' };
+  if (p >= 30) return { name: '小树', emoji: '🌿' };
+  if (p >= 15) return { name: '小苗', emoji: '🌱' };
+  if (p >= 5) return { name: '新芽', emoji: '🌱' };
+  return { name: '种子', emoji: '🌰' };
 }
 
 function updateGreeting() {
@@ -2604,17 +2440,13 @@ function onActionClick(ruleId) {
 async function doChangePoints(rule) {
   const card = document.querySelector(`[data-rule-id="${rule.id}"]`);
   const rect = card ? card.getBoundingClientRect() : null;
-  const pointsBefore = state.points;
-  const result = changePoints(rule);
-  const crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
-  render();
-  try {
-    await commitState();
-    showPointsFeedback({ delta: result.delta, kind: rule.kind, crossedGoal, rect });
-  } catch (e) {
-    render();
-    showToast('保存失败,数据已回滚', 'error');
-  }
+  let result, crossedGoal;
+  const ok = await withCommit(() => {
+    const pointsBefore = state.points;
+    result = changePoints(rule);
+    crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
+  });
+  if (ok) showPointsFeedback({ delta: result.delta, kind: rule.kind, crossedGoal, rect });
 }
 
 // 二次确认弹窗(加分 / 扣分 / 清零 都走这个)
@@ -2773,7 +2605,9 @@ function handleLoginSubmit() {
       closeLoginModal();
       applyAuthUI();
       render();
+      if (returnToFruitTreeAfterLogin) { location.replace('guoguo-fruit-tree.html'); return; }
       showToast(`🔓 欢迎回来，${u}`, 'success');
+      if (pendingMutation || !cloudLoaded) apiLoadState();
     }, 600);
   } else {
     errorEl.textContent = '❌ 用户名或密码错误';
@@ -3003,11 +2837,11 @@ document.getElementById('goalSave').addEventListener('click', async () => {
  * ========================================================= */
 document.getElementById('resetBtn').addEventListener('click', async () => {
   if (!requireLogin()) return;
-  if (!confirm('真的要清空所有数据吗？\n这会清除所有积分、目标和规则！')) return;
+  if (!confirm('真的要清空所有数据吗？\n这会清除所有积分、目标、规则、果树成长和收成！')) return;
   if (!confirm('确定要清空吗？此操作不可恢复！')) return;
   await withCommit(
     () => { state = structuredClone(DEFAULT_STATE); },
-    { success: '已恢复初始状态', fail: '清空失败,数据已回滚' }
+    { success: '已恢复初始状态', fail: '清空失败,数据已回滚', intent: 'reset' }
   );
 });
 
@@ -3030,9 +2864,10 @@ function formatTime(t) {
 /* =========================================================
  * 启动
  * ========================================================= */
-PetCompanion.init();
+const returnToFruitTreeAfterLogin = new URLSearchParams(location.search).get('from') === 'fruit-tree' && new URLSearchParams(location.search).get('login') === '1';
 // 1) 先恢复登录状态(决定全局锁定样式)
 checkSession();
+PetCompanion.init();
 // 2) 首次渲染
 render();
 // 3) 根据登录态切换 UI(锁定 / pill / banner / 调整卡)
@@ -3049,6 +2884,12 @@ document.getElementById('syncBadge').addEventListener('click', () => {
 document.getElementById('syncBannerRetry').addEventListener('click', retryApiLoad);
 // 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
 apiLoadState();
+// 浏览器后退可能复用旧页面；重新取得在果树页消费后的余额与收成。
+window.addEventListener('pageshow', event => { if (event.persisted) apiLoadState(); });
+if (returnToFruitTreeAfterLogin) {
+  if (getWriteToken()) location.replace('guoguo-fruit-tree.html');
+  else openLoginModal();
+}
 
 // 每 30s 检查一次 session 是否过期,过期则自动登出 + 重新加锁
 setInterval(() => {
@@ -3065,6 +2906,9 @@ setInterval(() => {
       meta.textContent = '登录剩余有效期 ' + formatRemain();
     }
   }
+  // 长时间停留在页面时，按北京时间的新一天恢复照料额度。
+  const careDay = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+  if (cloudLoaded && !document.hidden && state.fruitTree?.care?.date && state.fruitTree.care.date !== careDay) apiLoadState();
 }, 30000);
 
 // 注册 Service Worker 准备（占位，留待后续离线版）
@@ -3073,7 +2917,6 @@ if ('serviceWorker' in navigator) {
 }
 
 console.log('[guoguo-points-bank] 数据存储在 localStorage:', STORAGE_KEY);
-console.log('[guoguo-points-bank] 后续替换 api.yuanchu.ai 时,只需替换 loadState / saveState / onChange 三个入口');
 </script>
 </body>
 </html>

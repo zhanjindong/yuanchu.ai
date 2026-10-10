@@ -6,8 +6,20 @@ const { join } = require('node:path');
 const { test } = require('node:test');
 const vm = require('node:vm');
 
-const html = readFileSync(join(__dirname, '../product/guoguo-points-bank.html'), 'utf8');
-const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+const productPath = join(__dirname, '../product');
+
+function pageScripts(pageHtml) {
+  return [...pageHtml.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+    .map(([, attributes, inline]) => {
+      const source = attributes.match(/\bsrc="([^"]+)"/);
+      // The UI component is exercised separately; this suite focuses on the
+      // actual page controller and shared persistence/navigation behavior.
+      if (source?.[1] === 'guoguo-fruit-tree.js') return '';
+      return source ? readFileSync(join(productPath, source[1]), 'utf8')
+        : inline.replace(/const ADMIN_ACCOUNT = \{[^}]+\};/,
+          "const ADMIN_ACCOUNT = { username: 'preview-admin', password: 'local-preview' };");
+    });
+}
 
 // Execute the real page script with local DOM/API/storage mocks. Controllable
 // timers make interaction cancellation testable without waiting on wall time.
@@ -48,6 +60,10 @@ function makeElement(id = '', notifyMutation = () => {}) {
     setAttribute(name, value) { attributes.set(name, String(value)); },
     getAttribute: name => attributes.get(name) ?? null,
     querySelectorAll(selector) {
+      if (selector === '.sync-banner-text') {
+        if (!children.has(selector)) children.set(selector, [makeElement()]);
+        return children.get(selector);
+      }
       // Only dynamic goal buttons are needed by these tests. Reuse the same
       // nodes so rendering's event handlers also run when the test clicks one.
       const match = selector.match(/^\[data-(redeem|del-goal)\]$/);
@@ -65,35 +81,64 @@ function makeElement(id = '', notifyMutation = () => {}) {
       return children.get(selector);
     },
     querySelector(selector) { return this.querySelectorAll(selector)[0] || null; },
-    appendChild() {}, remove() {}, focus() {},
+    appendChild() {}, remove() {}, focus() {}, scrollIntoView() {},
   };
   return element;
 }
 
-async function loadBank(points = 100, { loggedIn = true, reducedMotion = false } = {}) {
+async function loadBank(points = 100, {
+  loggedIn = true, reducedMotion = false, serverState = null, deferInitialRead = false,
+  initialStorage = [], preserveState = false, putHandler = null, initialTime = Date.now(),
+  page = 'bank', search = '', treeHandler = null,
+} = {}) {
+  const pageName = page === 'tree' ? 'guoguo-fruit-tree.html' : 'guoguo-points-bank.html';
+  const pageHtml = readFileSync(join(productPath, pageName), 'utf8');
   const observers = new Map();
   const notifyMutation = element => {
     for (const [callback, targets] of observers) {
       if (targets.some(target => target.element === element || target.options.subtree)) queueMicrotask(callback);
     }
   };
-  const elements = new Map([...html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)]
+  const elements = new Map([...pageHtml.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)]
     .map(([tag, id]) => {
       const element = makeElement(id, notifyMutation);
       const classes = tag.match(/\bclass="([^"]+)"/);
       if (classes) element.classList.add(...classes[1].split(/\s+/));
+      for (const [, name, value] of tag.matchAll(/\b(href|aria-label|type)="([^"]*)"/g)) element.setAttribute(name, value);
       return [id, element];
     }));
-  const storage = new Map(loggedIn ? [
+  const storage = new Map([...(loggedIn ? [
     ['guoguo_admin_session_v1', JSON.stringify({
-      username: 'test-admin', token: 'test-token', expiresAt: Date.now() + 60_000,
+      username: 'test-admin', token: 'test-token', expiresAt: initialTime + 60_000,
     })],
-  ] : []);
+  ] : []), ...initialStorage]);
   const writes = [];
+  const requests = [];
+  const tree = { options: null, viewOptions: {}, updates: [], opens: 0, closes: 0 };
   const timers = new Map();
-  let now = Date.now();
+  let now = initialTime;
   let nextTimer = 0;
-  let putResponse = async () => ({ ok: true, json: async () => ({}) });
+  let revision = 0;
+  let releaseInitialRead;
+  const initialReadReady = deferInitialRead ? new Promise(resolve => { releaseInitialRead = resolve; }) : Promise.resolve();
+  const response = (body, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => structuredClone(body) });
+  let getResponse = async () => {
+    await initialReadReady;
+    return response({ ok: true, state: serverState, revision });
+  };
+  let putResponse = async body => response(putHandler
+    ? await putHandler(body)
+    : { ok: true, state: body.state, revision: ++revision });
+  let treeResponse = async body => treeHandler
+    ? response(await treeHandler(body))
+    : response({ error: 'Unexpected tree action in test' }, 400);
+  const navigations = [];
+  const location = {
+    hostname: 'localhost', search, pathname: '/product/' + pageName,
+    href: 'http://localhost/product/' + pageName + search,
+    assign(url) { navigations.push({ method: 'assign', url }); },
+    replace(url) { navigations.push({ method: 'replace', url }); },
+  };
   const document = Object.assign(makeElement(), {
     hidden: false,
     getElementById: id => elements.get(id),
@@ -114,17 +159,41 @@ async function loadBank(points = 100, { loggedIn = true, reducedMotion = false }
       setItem: (key, value) => storage.set(key, value),
       removeItem: key => storage.delete(key),
     },
-    fetch: async (_url, options) => {
+    fetch: async (url, options = {}) => {
+      const body = options.body ? JSON.parse(options.body) : null;
+      requests.push({ url, method: options.method || 'GET', body });
+      let pending;
       if (options.method === 'PUT') {
-        writes.push(JSON.parse(options.body).state);
-        return putResponse();
-      }
-      return { ok: true, json: async () => ({}) };
+        writes.push(body.state);
+        pending = putResponse(body);
+      } else if (options.method === 'POST' && url.endsWith('/api/fruit-tree')) pending = treeResponse(body);
+      else pending = getResponse();
+      if (!options.signal) return pending;
+      return new Promise((resolve, reject) => {
+        const abort = () => reject(new Error('mock request aborted'));
+        options.signal.addEventListener('abort', abort, { once: true });
+        Promise.resolve(pending).then(resolve, reject)
+          .finally(() => options.signal.removeEventListener('abort', abort));
+      });
     },
-    location: { hostname: 'localhost' },
+    location,
+    URLSearchParams,
     window: Object.assign(makeElement(), {
-      innerWidth: 400,
+      innerWidth: 400, location,
       matchMedia: () => mediaQuery,
+      GuoguoFruitTree: {
+        create(options) {
+          tree.options = options;
+          return {
+            update(snapshot, patch = {}) {
+              tree.updates.push([snapshot, patch]);
+              Object.assign(tree.viewOptions, patch);
+            },
+            open() { tree.opens++; },
+            close() { tree.closes++; },
+          };
+        },
+      },
     }),
     MutationObserver: class {
       constructor(callback) { this.callback = callback; }
@@ -143,34 +212,65 @@ async function loadBank(points = 100, { loggedIn = true, reducedMotion = false }
     console: { log() {}, warn() {}, error() {} },
     confirm: () => true,
     structuredClone,
+    AbortController,
     setTimeout(callback, delay = 0) {
       const id = ++nextTimer;
       timers.set(id, { at: now + delay, callback });
       return id;
     },
     clearTimeout: id => timers.delete(id),
-    setInterval: () => 0,
+    setInterval(callback, delay) {
+      const id = ++nextTimer;
+      timers.set(id, { at: now + delay, callback, repeat: delay });
+      return id;
+    },
+    clearInterval: id => timers.delete(id),
   });
-  vm.runInContext(script + `\n;globalThis.bank = {
-    get state() { return state; }, onActionClick, render, doChangePoints,
+  for (const source of pageScripts(pageHtml)) vm.runInContext(source, context, { filename: pageName });
+  vm.runInContext(`globalThis.bank = {
+    get state() { return state; }, render,
+    onActionClick: typeof onActionClick === 'undefined' ? null : onActionClick,
+    doChangePoints: typeof doChangePoints === 'undefined' ? null : doChangePoints,
+    retry: retryApiLoad, commit: withCommit,
     get pet() { return typeof PetCompanion === 'undefined' ? null : PetCompanion; }
-  };`, context, { filename: 'guoguo-points-bank.html' });
+  };`, context);
   await new Promise(setImmediate);
   const bank = context.bank;
-  bank.state.points = points;
-  bank.state.goals = [];
-  bank.state.history = [];
+  if (!preserveState) {
+    bank.state.points = points;
+    bank.state.goals = [];
+    bank.state.history = [];
+  }
   return {
-    bank, writes,
+    bank, writes, requests, tree, navigations, location,
+    pageHtml,
+    dispatchWindow: (type, event) => context.window.dispatch(type, event),
     element: id => elements.get(id),
     click: id => elements.get(id).dispatch('click'),
     storedState: () => JSON.parse(storage.get('guoguo_points_bank_v1')),
+    storedPending: () => JSON.parse(storage.get('guoguo_points_bank_v1_pending') || 'null'),
+    exportStorage: () => [...storage],
     failWrites() { putResponse = async () => { throw new Error('mock network failure'); }; },
+    respondToWrites(handler) { putResponse = async body => response(await handler(body)); },
+    respondToTree(handler) { treeResponse = async body => response(await handler(body)); },
+    respondToReads(body) { getResponse = async () => response(body); },
+    rejectWrites(body, status = 409) { putResponse = async () => response(body, status); },
+    async finishInitialRead() {
+      releaseInitialRead?.();
+      await new Promise(setImmediate);
+    },
     deferWrites() {
       let resolve;
-      const response = new Promise(done => { resolve = done; });
-      putResponse = () => response;
-      return () => resolve({ ok: true, json: async () => ({}) });
+      let submitted;
+      const pending = new Promise(done => { resolve = done; });
+      putResponse = body => { submitted = body; return pending; };
+      return () => resolve(response({ ok: true, state: submitted.state, revision: ++revision }));
+    },
+    deferTree() {
+      let resolve;
+      const pending = new Promise(done => { resolve = done; });
+      treeResponse = () => pending;
+      return state => resolve(response({ ok: true, state, revision: ++revision }));
     },
     async setHidden(hidden) {
       document.hidden = hidden;
@@ -191,12 +291,18 @@ async function loadBank(points = 100, { loggedIn = true, reducedMotion = false }
         const [id, timer] = next;
         timers.delete(id);
         now = timer.at;
+        if (timer.repeat) timers.set(id, { ...timer, at: now + timer.repeat });
         await timer.callback();
         await new Promise(setImmediate);
       }
       now = end;
     },
   };
+}
+
+async function loadTreePage(points = 100, options = {}) {
+  const serverState = { points, history: [], goals: [], fruitTree: { status: 'ready', earned: points, boost: 0, growth: points } };
+  return loadBank(points, { serverState, ...options, page: 'tree' });
 }
 
 async function addRule(app, kind, points) {
@@ -414,4 +520,452 @@ test('scrolling across the pet does not pet it, while a keyboard click still wor
   await button.dispatch('click', { detail: 0 });
   assert.ok(['pet', 'wave', 'tilt'].includes(app.element('petCompanion').dataset.mood));
   assert.equal(app.writes.length, 0);
+});
+
+test('a failed reward restores the original balance, history, and accumulated growth', async () => {
+  const app = await loadBank();
+  app.bank.state.fruitTree = { earned: 100, boost: 0, growth: 100 };
+  const before = JSON.stringify(app.bank.state);
+  app.failWrites();
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(JSON.stringify(app.storedState()), before, 'the local backup must also roll back');
+  assert.equal(app.element('pointsDisplay').textContent, 100);
+  assert.equal(app.element('petCompanion').dataset.mood, 'idle');
+});
+
+test('a pending reward blocks a repeated action until its cloud save finishes', async () => {
+  const app = await loadBank();
+  const release = app.deferWrites();
+  const first = app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  const repeated = app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.writes.length, 1, 'a rapid repeat must not submit a second mutation');
+  release();
+  await Promise.all([first, repeated]);
+  assert.equal(app.bank.state.points, 120);
+  assert.equal(app.bank.state.history.length, 1);
+});
+
+test('point changes wait until the initial cloud revision is available', async () => {
+  const app = await loadBank(100, { deferInitialRead: true });
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.writes.length, 0);
+  assert.equal(app.requests.filter(request => request.method === 'POST').length, 0);
+  assert.equal(app.bank.state.points, 100);
+  await app.finishInitialRead();
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.writes.length, 1);
+  assert.equal(app.bank.state.points, 120);
+});
+
+test('successful mutations adopt the complete server state, including fruit-tree growth', async () => {
+  const app = await loadBank();
+  app.respondToWrites(body => ({
+    ok: true, revision: 4,
+    state: { ...body.state, points: 112, fruitTree: { earned: 130, boost: 0, growth: 130 } },
+  }));
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.bank.state.points, 112);
+  assert.equal(app.bank.state.fruitTree.growth, 130);
+  assert.equal(app.storedState().fruitTree.earned, 130);
+  assert.equal(app.element('pointsDisplay').textContent, 112);
+  assert.equal(app.requests.find(request => request.method === 'PUT').body.revision, 0);
+});
+
+test('a revision conflict adopts current cloud data and uses its revision for the next mutation', async () => {
+  const app = await loadBank();
+  const cloud = structuredClone(app.bank.state);
+  cloud.points = 40;
+  cloud.fruitTree = { earned: 170, boost: 0, growth: 170 };
+  app.rejectWrites({ ok: false, state: cloud, revision: 7, error: 'revision_conflict' });
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.bank.state.points, 40);
+  assert.equal(app.bank.state.fruitTree.growth, 170);
+  assert.equal(app.bank.state.history.length, 0, 'the rejected local reward must not persist');
+  assert.equal(app.element('petCompanion').dataset.mood, 'idle');
+  app.respondToWrites(body => ({ ok: true, state: body.state, revision: 8 }));
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.bank.state.points, 60);
+  assert.equal(app.requests.filter(request => request.method === 'PUT').at(-1).body.revision, 7);
+});
+
+test('an uncertain save retries the same operation and cannot award points twice', async () => {
+  const app = await loadBank();
+  app.bank.state.fruitTree = { earned: 100, boost: 0, growth: 100 };
+  const accepted = new Map();
+  let applied = 0;
+  let disconnect = true;
+  app.respondToWrites(body => {
+    if (!accepted.has(body.operationId)) {
+      applied++;
+      accepted.set(body.operationId, {
+        ok: true, revision: 1,
+        state: { ...body.state, fruitTree: { earned: 120, boost: 0, growth: 120 } },
+      });
+    }
+    if (disconnect) {
+      disconnect = false;
+      throw new Error('response lost after server committed');
+    }
+    return accepted.get(body.operationId);
+  });
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.bank.state.points, 100, 'an uncertain result restores the displayed snapshot');
+  assert.equal(app.bank.state.fruitTree.growth, 100);
+  await app.bank.doChangePoints(app.bank.state.rules.earn[0]);
+  assert.equal(app.writes.length, 1, 'new mutations must wait for the uncertain one to resolve');
+  await app.click('syncBadge');
+  const puts = app.requests.filter(request => request.method === 'PUT');
+  assert.equal(puts.length, 2);
+  assert.ok(puts[0].body.operationId);
+  assert.deepEqual(puts[1].body, puts[0].body, 'the retry reuses the exact original operation');
+  assert.equal(applied, 1);
+  assert.equal(app.bank.state.points, 120);
+  assert.equal(app.bank.state.fruitTree.growth, 120);
+  assert.equal(app.bank.state.history.length, 1);
+  assert.equal(app.storedState().points, 120);
+});
+
+test('reloading after an uncertain save restores and resolves the original pending operation', async () => {
+  const original = await loadBank();
+  let committed;
+  original.respondToWrites(body => {
+    committed = { ok: true, revision: 1, state: structuredClone(body.state) };
+    throw new Error('response lost after server committed');
+  });
+  await original.bank.doChangePoints(original.bank.state.rules.earn[0]);
+  assert.equal(original.bank.state.points, 100);
+  const pending = original.storedPending();
+  assert.equal(pending.endpoint, 'points');
+  assert.equal(pending.body.state.points, 120);
+
+  const reloaded = await loadBank(0, {
+    initialStorage: original.exportStorage(), preserveState: true,
+    putHandler(body) {
+      assert.deepEqual(body, pending.body, 'reload must not invent another operation identifier');
+      return committed;
+    },
+  });
+  assert.equal(reloaded.writes.length, 1);
+  assert.equal(reloaded.bank.state.points, 120);
+  assert.equal(reloaded.bank.state.history.length, 1);
+  assert.equal(reloaded.storedPending(), null);
+  assert.equal(reloaded.storedState().points, 120);
+});
+
+test('deductions and redemption keep the badge based on accumulated tree growth', async () => {
+  const app = await loadBank(160);
+  app.bank.state.fruitTree = { earned: 170, boost: 0, growth: 170 };
+  app.bank.render();
+  const badge = app.element('levelPill').textContent;
+  assert.match(badge, /红苹果/);
+  await app.bank.doChangePoints(app.bank.state.rules.deduct.find(rule => rule.points === -10));
+  assert.equal(app.bank.state.points, 150);
+  assert.equal(app.element('levelPill').textContent, badge);
+  app.bank.state.goals = [{ id: 'tree-preserving-reward', name: '小奖励', emoji: '📚', points: 150 }];
+  app.bank.render();
+  await app.element('goalsList').querySelectorAll('[data-redeem]')[0].dispatch('click');
+  assert.equal(app.bank.state.points, 0);
+  assert.equal(app.bank.state.fruitTree.growth, 170);
+  assert.equal(app.element('levelPill').textContent, badge);
+});
+
+test('guests may read the tree subpage and care sends them to the bank login without writing data', async () => {
+  const app = await loadTreePage(100, { loggedIn: false });
+  const before = JSON.stringify(app.bank.state);
+  assert.equal(app.tree.opens, 1);
+  assert.equal(app.tree.viewOptions.readOnly, true);
+  assert.equal(typeof app.tree.options?.onAction, 'function');
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }), /登录/);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(app.requests.filter(request => request.method !== 'GET').length, 0);
+  assert.deepEqual(app.navigations, [{ method: 'assign', url: 'guoguo-points-bank.html?from=fruit-tree&login=1' }]);
+});
+
+test('tree care uses the revisioned API and refreshes both the balance and tree snapshot', async () => {
+  const app = await loadTreePage();
+  app.bank.state.fruitTree = { earned: 100, boost: 0, growth: 100 };
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.points = 99;
+  refreshed.fruitTree = { earned: 100, boost: 1, growth: 101 };
+  app.respondToTree(body => {
+    assert.equal(body.action, 'care');
+    assert.equal(body.item, 'water');
+    assert.equal(body.revision, 0);
+    assert.ok(body.operationId);
+    return { ok: true, revision: 1, state: refreshed };
+  });
+  await app.tree.options.onAction({ action: 'care', kind: 'water' });
+  assert.equal(app.bank.state.points, 99);
+  assert.equal(app.bank.state.fruitTree.earned, 100, 'spending on care is not newly earned points');
+  assert.equal(app.bank.state.fruitTree.growth, 101);
+  assert.equal(app.tree.updates.at(-1)[0].balance, 99);
+  assert.equal(app.storedState().fruitTree.boost, 1);
+  assert.equal(app.writes.length, 0, 'care must not bypass the dedicated server action via a state PUT');
+});
+
+test('an uncertain care action restores the snapshot and retries without spending twice', async () => {
+  const app = await loadTreePage();
+  app.bank.state.fruitTree = { earned: 100, boost: 0, growth: 100 };
+  const before = JSON.stringify(app.bank.state);
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.points = 99;
+  refreshed.fruitTree = { earned: 100, boost: 1, growth: 101 };
+  let operationId;
+  let attempts = 0;
+  app.respondToTree(body => {
+    attempts++;
+    if (attempts === 1) {
+      operationId = body.operationId;
+      throw new Error('response lost after care committed');
+    }
+    assert.equal(body.operationId, operationId);
+    return { ok: true, revision: 1, state: refreshed };
+  });
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }));
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(JSON.stringify(app.storedState()), before);
+  assert.equal(app.storedPending().endpoint, 'tree');
+  await app.bank.retry();
+  assert.equal(attempts, 2);
+  assert.equal(app.bank.state.points, 99);
+  assert.equal(app.bank.state.fruitTree.growth, 101);
+  assert.equal(app.storedPending(), null);
+  assert.equal(app.writes.length, 0);
+});
+
+test('pending tree care blocks both repeated care and point writes', async () => {
+  const app = await loadTreePage();
+  app.bank.state.fruitTree = { earned: 100, boost: 0, growth: 100 };
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.points = 99;
+  refreshed.fruitTree = { earned: 100, boost: 1, growth: 101 };
+  const release = app.deferTree();
+  const first = app.tree.options.onAction({ action: 'care', kind: 'water' });
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }), /正在保存/);
+  let ranSecondMutation = false;
+  const reward = app.bank.commit(() => { ranSecondMutation = true; });
+  assert.equal(ranSecondMutation, false, 'shared persistence must also block a point write');
+  assert.equal(app.requests.filter(request => request.method === 'POST').length, 1);
+  assert.equal(app.writes.length, 0);
+  release(refreshed);
+  await Promise.all([first, reward]);
+  assert.equal(app.bank.state.points, 99);
+  assert.equal(app.bank.state.fruitTree.growth, 101);
+  assert.equal(app.bank.state.history.length, 0);
+});
+
+test('restoring the tree subpage refreshes another device’s changes and clears a stale action error', async () => {
+  const app = await loadTreePage();
+  app.tree.viewOptions.error = '上次照料未完成';
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.points = 145;
+  refreshed.fruitTree = { status: 'ready', earned: 150, boost: 0, growth: 150 };
+  app.respondToReads({ ok: true, state: refreshed, revision: 7 });
+
+  await app.dispatchWindow('pageshow', { persisted: true });
+  assert.equal(app.tree.opens, 1);
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 2);
+  assert.equal(app.bank.state.points, 145);
+  assert.equal(app.bank.state.fruitTree.growth, 150);
+  assert.equal(app.tree.updates.at(-1)[0].growth, 150);
+  assert.equal(app.tree.updates.at(-1)[0].revision, 7);
+  assert.equal(app.tree.viewOptions.error, '');
+  assert.equal(app.tree.viewOptions.offline, false);
+  assert.equal(app.writes.length, 0, 'returning to an existing tree only reads cloud data');
+});
+
+test('care allowances refresh after Beijing midnight without resetting growth or repeatedly fetching', async () => {
+  const app = await loadTreePage(100, { initialTime: Date.parse('2026-10-10T15:59:20Z') });
+  app.bank.state.fruitTree = {
+    status: 'ready', earned: 100, boost: 6, growth: 106,
+    care: { date: '2026-10-10', used: ['water', 'sun', 'food'], remainingBonus: 4 },
+  };
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.fruitTree.care = { date: '2026-10-11', used: [], remainingBonus: 4 };
+  app.respondToReads({ ok: true, state: refreshed, revision: 1 });
+
+  await app.advance(30_000);
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 1,
+    'the UTC date has not changed, and Beijing is still before midnight');
+  await app.advance(30_000);
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 2,
+    'the next check after Beijing midnight refreshes the daily allowance');
+  assert.deepEqual([...app.bank.state.fruitTree.care.used], []);
+  assert.equal(app.bank.state.fruitTree.growth, 106);
+  assert.deepEqual([...app.tree.updates.at(-1)[0].care.usedKinds], []);
+  await app.advance(30_000);
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 2,
+    'the refreshed care date stops redundant requests');
+  assert.equal(app.writes.length, 0, 'a new day must not create a point transaction');
+});
+
+test('a stalled tree-page read times out, keeps actions disabled, and can be retried', async () => {
+  const app = await loadTreePage(100, { deferInitialRead: true });
+  assert.equal(app.tree.viewOptions.loading, true);
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }), /云端/);
+  await app.advance(15_000);
+  assert.equal(app.tree.viewOptions.loading, false);
+  assert.equal(app.tree.viewOptions.offline, true);
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }), /云端/);
+  assert.equal(app.requests.filter(request => request.method !== 'GET').length, 0);
+  await app.finishInitialRead();
+  assert.equal(app.tree.viewOptions.offline, true,
+    'a response arriving after an aborted read must not unlock writes');
+  await app.tree.options.onRetry();
+  assert.equal(app.tree.viewOptions.offline, false);
+  assert.equal(app.tree.viewOptions.error, '');
+  const refreshed = structuredClone(app.bank.state);
+  refreshed.points = 99;
+  refreshed.fruitTree.boost = 1;
+  refreshed.fruitTree.growth = 101;
+  app.respondToTree(() => ({ ok: true, state: refreshed, revision: 1 }));
+  await app.tree.options.onAction({ action: 'care', kind: 'water' });
+  assert.equal(app.bank.state.points, 99);
+});
+
+test('an expired token on the tree subpage requires login before any mutation', async () => {
+  const app = await loadTreePage();
+  await app.advance(60_001);
+  const before = JSON.stringify(app.bank.state);
+  await assert.rejects(app.tree.options.onAction({ action: 'care', kind: 'water' }), /登录/);
+  assert.equal(JSON.stringify(app.bank.state), before);
+  assert.equal(app.requests.filter(request => request.method !== 'GET').length, 0);
+  assert.deepEqual(app.navigations, [{ method: 'assign', url: 'guoguo-points-bank.html?from=fruit-tree&login=1' }]);
+});
+
+test('the bank links to a standalone fruit-tree page without creating an overlay', async () => {
+  const app = await loadBank();
+  assert.equal(app.element('levelPill').getAttribute('href'), 'guoguo-fruit-tree.html');
+  assert.match(app.pageHtml, /<a\b[^>]*id="levelPill"/);
+  assert.doesNotMatch(app.pageHtml, /src="guoguo-fruit-tree\.js"/);
+  assert.equal(app.tree.options, null, 'the bank must not mount the fruit-tree component');
+});
+
+test('returning to the bank through browser history refreshes the tree balance and harvest', async () => {
+  const app = await loadBank();
+  const updated = structuredClone(app.bank.state);
+  updated.points = 97;
+  updated.fruitTree = { status: 'ready', earned: 170, boost: 3, growth: 173, harvested: 2 };
+  app.respondToReads({ ok: true, state: updated, revision: 3 });
+  await app.dispatchWindow('pageshow', { persisted: false });
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 1);
+  await app.dispatchWindow('pageshow', { persisted: true });
+  assert.equal(app.requests.filter(request => request.method === 'GET').length, 2);
+  assert.equal(app.bank.state.points, 97);
+  assert.equal(app.element('pointsDisplay').textContent, 97);
+  assert.equal(app.bank.state.fruitTree.harvested, 2);
+  assert.match(app.element('levelPill').textContent, /红苹果/);
+  assert.equal(app.writes.length, 0, 'returning home is a read-only refresh');
+});
+
+test('a tree login request opens the bank login and returns to the tree only after successful login', async () => {
+  const app = await loadBank(100, { loggedIn: false, search: '?from=fruit-tree&login=1' });
+  assert.equal(app.element('loginModal').classList.contains('show'), true);
+  assert.equal(app.navigations.length, 0);
+  app.element('loginUsername').value = 'preview-admin';
+  app.element('loginPassword').value = 'wrong';
+  await app.click('loginSubmit');
+  await app.advance(600);
+  assert.equal(app.navigations.length, 0, 'invalid credentials must not return to the tree');
+  app.element('loginPassword').value = 'local-preview';
+  await app.click('loginSubmit');
+  await app.advance(600);
+  assert.deepEqual(app.navigations, [{ method: 'replace', url: 'guoguo-fruit-tree.html' }]);
+  assert.equal(app.writes.length, 0, 'login must not change points or tree data');
+});
+
+test('an already authenticated tree login request returns directly without another dialog', async () => {
+  const app = await loadBank(100, { search: '?from=fruit-tree&login=1' });
+  assert.deepEqual(app.navigations, [{ method: 'replace', url: 'guoguo-fruit-tree.html' }]);
+  assert.equal(app.element('loginModal').classList.contains('show'), false);
+});
+
+test('the tree has a real return-home link that also works when opened directly', async () => {
+  const app = await loadTreePage();
+  const component = readFileSync(join(productPath, 'guoguo-fruit-tree.js'), 'utf8');
+  assert.match(component, /<a\b[^>]*id="gt-home"[^>]*href="guoguo-points-bank\.html"/);
+  assert.match(app.pageHtml, /<a href="guoguo-points-bank\.html">← 返回首页<\/a>/,
+    'the loading state must also offer a working home link');
+  assert.equal(app.tree.opens, 1, 'direct loading mounts one tree page');
+  assert.equal(app.tree.options.onClose, undefined, 'the page should not navigate via an overlay close callback');
+});
+
+test('reloading the tree subpage retains completed care, harvests, and per-fruit maturity', async () => {
+  const app = await loadTreePage(300);
+  const updated = structuredClone(app.bank.state);
+  updated.points = 299;
+  updated.fruitTree = {
+    status: 'ready', earned: 300, boost: 1, growth: 301,
+    harvested: 3, bestLevel: 2, available: 2, bugFruitId: 8,
+    care: { date: '2026-10-10', used: ['water'], remainingBonus: 29 },
+    fruits: [
+      { id: 4, level: 1, name: '红苹果', locked: false },
+      { id: 8, level: 2, name: '蜜桃', locked: true },
+    ],
+  };
+  app.respondToTree(() => ({ ok: true, state: updated, revision: 4 }));
+  await app.tree.options.onAction({ action: 'care', kind: 'water' });
+
+  const reloaded = await loadTreePage(0, {
+    serverState: updated, preserveState: true, initialStorage: app.exportStorage(),
+  });
+  const snapshot = reloaded.tree.updates.at(-1)[0];
+  assert.equal(snapshot.balance, 299);
+  assert.equal(snapshot.growth, 301);
+  assert.equal(snapshot.harvestedCount, 3);
+  assert.equal(snapshot.bestHarvestLevel, 2);
+  assert.equal(snapshot.availableCount, 2);
+  assert.equal(snapshot.readyCount, 1, 'a bugged fruit remains visible but is not harvestable');
+  assert.equal(JSON.stringify(snapshot.fruits), JSON.stringify(updated.fruitTree.fruits));
+  assert.deepEqual([...snapshot.care.usedKinds], ['water']);
+  assert.equal(reloaded.requests.filter(request => request.method !== 'GET').length, 0,
+    'reloading must never repeat a successful care operation');
+});
+
+test('returning home with uncertain care resolves its original operation before new point changes', async () => {
+  const original = await loadTreePage();
+  const updated = structuredClone(original.bank.state);
+  updated.points = 99;
+  updated.fruitTree.boost = 1;
+  updated.fruitTree.growth = 101;
+  original.respondToTree(() => { throw new Error('care committed but the connection closed'); });
+  await assert.rejects(original.tree.options.onAction({ action: 'care', kind: 'water' }));
+  const pending = original.storedPending();
+  assert.equal(pending.endpoint, 'tree');
+
+  const bank = await loadBank(0, {
+    initialStorage: original.exportStorage(), preserveState: true,
+    treeHandler(body) {
+      assert.deepEqual(body, pending.body, 'navigation must reuse the original care operation ID');
+      return { ok: true, state: updated, revision: 2 };
+    },
+  });
+  assert.equal(bank.storedPending(), null);
+  assert.equal(bank.bank.state.points, 99);
+  assert.equal(bank.bank.state.fruitTree.growth, 101);
+  assert.equal(bank.element('pointsDisplay').textContent, 99);
+  assert.equal(bank.requests.filter(request => request.method === 'POST').length, 1);
+  assert.equal(bank.writes.length, 0);
+  await bank.bank.doChangePoints(bank.bank.state.rules.earn[0]);
+  assert.equal(bank.bank.state.points, 119);
+  assert.equal(bank.requests.find(request => request.method === 'PUT').body.revision, 2);
+});
+
+test('directly opening a new tree initializes the shared state exactly once', async () => {
+  const app = await loadTreePage(0, {
+    serverState: null, preserveState: true,
+    putHandler(body) {
+      return { ok: true, revision: 1, state: {
+        ...body.state, fruitTree: { status: 'ready', earned: 0, boost: 0, growth: 0 },
+      } };
+    },
+  });
+  assert.equal(app.writes.length, 1);
+  assert.equal(app.requests.find(request => request.method === 'PUT').body.revision, 0);
+  assert.equal(app.tree.updates.at(-1)[0].initialized, true);
+  assert.equal(app.tree.updates.at(-1)[0].growth, 0);
+  app.respondToReads({ ok: true, state: app.bank.state, revision: 1 });
+  await app.dispatchWindow('pageshow', { persisted: true });
+  assert.equal(app.writes.length, 1, 'revisiting an initialized tree must not initialize it again');
 });
