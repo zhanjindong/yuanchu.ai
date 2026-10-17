@@ -493,16 +493,6 @@ body {
   box-shadow: var(--shadow);
   margin-bottom: 16px;
 }
-.settings-login-hint {
-  text-align: center;
-  background: linear-gradient(135deg, #fff7e6, #fff);
-  border: 1.5px dashed #FFC53D;
-  padding: 24px 20px;
-}
-.settings-login-hint-icon { font-size: 36px; margin-bottom: 8px; }
-.settings-login-hint-title { font-size: 16px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
-.settings-login-hint-text { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px; }
-.settings-login-hint .btn-primary { padding: 10px 24px; }
 [hidden] { display: none !important; }
 .section-title {
   font-size: 18px;
@@ -1637,14 +1627,6 @@ body {
       <p class="tree-growth-last" id="treeFruitingLastRestart" hidden></p>
     </div>
 
-    <!-- 未登录提示(默认隐藏,仅游客态显示) -->
-    <div class="card settings-login-hint" id="settingsLoginHint">
-      <div class="settings-login-hint-icon">🔒</div>
-      <div class="settings-login-hint-title">登录后可管理</div>
-      <div class="settings-login-hint-text">手动调整积分、加减分规则、果树设置、添加目标等管理功能需要管理员身份。</div>
-      <button class="btn-primary" id="settingsHintLoginBtn" onclick="openLoginModal()">管理员登录</button>
-    </div>
-
     <div data-requires-login>
       <div class="rule-group">
         <div class="rule-group-head">
@@ -2741,12 +2723,9 @@ function applyAuthUI() {
     accBtn.textContent = '管理员登录';
   }
   // 设置页里"功能区"仅登录可见(账户卡始终可见,因为它是登录入口)
-  // 涉及:手动调整 / 果树设置 / 加分规则 / 扣分规则 / 添加目标 / 未登录提示
+  // 涉及:手动调整 / 果树设置 / 加分规则 / 扣分规则 / 添加目标
   const gated = document.querySelectorAll('[data-requires-login]');
   gated.forEach(el => { el.style.display = isLoggedIn ? '' : 'none'; });
-  // 未登录提示卡(只未登录时显示,引导去登录)
-  const hint = document.getElementById('settingsLoginHint');
-  if (hint) hint.style.display = isLoggedIn ? 'none' : '';
   // 重新渲染视图
   render();
 }
