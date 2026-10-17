@@ -683,46 +683,17 @@ body {
   padding-left: 4px;
   font-weight: 800;
 }
-/* 历史记录(支持左滑删除) */
-.history-row {
-  position: relative;
-  margin-bottom: 6px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  touch-action: pan-y; /* 允许浏览器处理垂直滚动,JS 处理水平 */
-}
-.history-delete-bg {
-  position: absolute;
-  inset: 0;
-  background: var(--red);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 22px;
-  gap: 6px;
-  font-weight: 800;
-  font-size: 14px;
-  cursor: pointer;
-  user-select: none;
-  z-index: 0;
-}
-.history-delete-icon { font-size: 18px; }
+/* 历史记录 */
 .history-item {
-  position: relative;
-  z-index: 1;
   background: white;
   border-radius: var(--radius-sm);
   padding: 12px 16px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: transform 0.2s ease;
-  will-change: transform;
-  cursor: grab;
+  box-shadow: var(--shadow-sm);
 }
-.history-item:active { cursor: grabbing; }
 .history-emoji { font-size: 24px; flex-shrink: 0; }
 .history-body { flex: 1; min-width: 0; }
 .history-name {
@@ -2447,7 +2418,7 @@ function renderGoalsList() {
 function renderHistory() {
   const el = document.getElementById('historyList');
   if (!state.history.length) {
-    el.innerHTML = '<div class="empty">还没有任何记录，快去赚分吧！<br><span style="font-size:11px;opacity:0.6;">左滑可删除单条记录</span></div>';
+    el.innerHTML = '<div class="empty">还没有任何记录，快去赚分吧！</div>';
     return;
   }
   // 按天分组
@@ -2462,162 +2433,18 @@ function renderHistory() {
     <div class="history-day">
       <div class="history-day-title">${day}</div>
       ${items.map(h => `
-        <div class="history-row" data-history-id="${h.id}">
-          <div class="history-delete-bg" data-del-history="${h.id}">
-            <span class="history-delete-icon">🗑</span>
-            <span class="history-delete-text">删除</span>
+        <div class="history-item">
+          <div class="history-emoji">${h.emoji}</div>
+          <div class="history-body">
+            <div class="history-name">${esc(h.ruleName)}</div>
+            <div class="history-time">${formatTime(h.time)}${h.effect ? ' · ' + h.effect : ''}</div>
+            ${h.note ? `<div class="history-note">📝 ${esc(h.note)}</div>` : ''}
           </div>
-          <div class="history-item">
-            <div class="history-emoji">${h.emoji}</div>
-            <div class="history-body">
-              <div class="history-name">${esc(h.ruleName)}</div>
-              <div class="history-time">${formatTime(h.time)}${h.effect ? ' · ' + h.effect : ''}</div>
-              ${h.note ? `<div class="history-note">📝 ${esc(h.note)}</div>` : ''}
-            </div>
-            <div class="history-points ${h.delta > 0 ? 'plus' : 'minus'}">${h.delta > 0 ? '+' : ''}${h.delta}</div>
-          </div>
+          <div class="history-points ${h.delta > 0 ? 'plus' : 'minus'}">${h.delta > 0 ? '+' : ''}${h.delta}</div>
         </div>
       `).join('')}
     </div>
   `).join('');
-  // 删除按钮(背景层点击)用事件委托,见 initHistorySwipe
-}
-
-// 一次性初始化:在 #historyList 上做事件委托,所有 row 共享一份拖拽状态
-// 避免每次 render 重复绑定导致监听器累积 / 闪烁
-function initHistorySwipe() {
-  const root = document.getElementById('historyList');
-  if (!root || root.dataset.swipeInit === '1') return;
-  root.dataset.swipeInit = '1';
-
-  let activeRow = null;     // 当前正在拖拽的 .history-row
-  let activeFg = null;      // 对应的 .history-item
-  let startX = 0;
-  let dx = 0;
-  let dragging = false;
-  let locked = false;       // 已锁定展开,允许点空白处收起
-
-  const resetAll = (exceptRow) => {
-    root.querySelectorAll('.history-row').forEach(r => {
-      if (r === exceptRow) return;
-      const f = r.querySelector('.history-item');
-      if (f && f.style.transform) {
-        f.style.transition = 'transform 0.2s ease';
-        f.style.transform = '';
-      }
-    });
-  };
-
-  const getRowFg = (target) => {
-    const row = target.closest('.history-row');
-    if (!row) return null;
-    const fg = row.querySelector('.history-item');
-    return { row, fg };
-  };
-
-  const W = (row) => row.offsetWidth || 1;
-  const THRESHOLD = (row) => W(row) * 0.3;
-  const MAX = (row) => W(row) * 0.6;
-
-  // ---- Touch ----
-  root.addEventListener('touchstart', e => {
-    const hit = getRowFg(e.target);
-    if (!hit) return;
-    resetAll(hit.row);
-    activeRow = hit.row;
-    activeFg = hit.fg;
-    startX = e.touches[0].clientX;
-    dx = 0;
-    dragging = true;
-    locked = false;
-    activeFg.style.transition = 'none';
-  }, { passive: true });
-
-  root.addEventListener('touchmove', e => {
-    if (!dragging || !activeRow) return;
-    const x = e.touches[0].clientX;
-    const raw = x - startX;
-    // 防抖:小于 4px 视为点按,不响应
-    if (!locked && Math.abs(raw) < 4) return;
-    dx = Math.min(0, raw); // 只允许左滑
-    if (Math.abs(dx) > MAX(activeRow)) dx = -MAX(activeRow);
-    activeFg.style.transform = `translateX(${dx}px)`;
-  }, { passive: true });
-
-  const endTouch = () => {
-    if (!dragging || !activeRow) return;
-    dragging = false;
-    activeFg.style.transition = 'transform 0.2s ease';
-    if (Math.abs(dx) > THRESHOLD(activeRow)) {
-      activeFg.style.transform = `translateX(-${MAX(activeRow)}px)`;
-      locked = true;
-    } else {
-      activeFg.style.transform = '';
-      locked = false;
-    }
-  };
-  root.addEventListener('touchend', endTouch);
-  root.addEventListener('touchcancel', endTouch);
-
-  // ---- Mouse(PC 调试)----
-  root.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
-    const hit = getRowFg(e.target);
-    if (!hit) return;
-    e.preventDefault();
-    resetAll(hit.row);
-    activeRow = hit.row;
-    activeFg = hit.fg;
-    startX = e.clientX;
-    dx = 0;
-    dragging = true;
-    locked = false;
-    activeFg.style.transition = 'none';
-  });
-
-  // 鼠标移动和松开绑在 window(只有一份),避免 render 累积
-  const onMouseMove = e => {
-    if (!dragging || !activeRow) return;
-    const raw = e.clientX - startX;
-    if (!locked && Math.abs(raw) < 4) return;
-    dx = Math.min(0, raw);
-    if (Math.abs(dx) > MAX(activeRow)) dx = -MAX(activeRow);
-    activeFg.style.transform = `translateX(${dx}px)`;
-  };
-  const onMouseUp = () => {
-    if (!dragging || !activeRow) return;
-    dragging = false;
-    activeFg.style.transition = 'transform 0.2s ease';
-    if (Math.abs(dx) > THRESHOLD(activeRow)) {
-      activeFg.style.transform = `translateX(-${MAX(activeRow)}px)`;
-      locked = true;
-    } else {
-      activeFg.style.transform = '';
-      locked = false;
-    }
-  };
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
-
-  // 删除按钮点击(背景层)
-  root.addEventListener('click', e => {
-    const delBtn = e.target.closest('[data-del-history]');
-    if (delBtn) {
-      e.stopPropagation();
-      const id = delBtn.dataset.delHistory;
-      deleteHistoryItem(id);
-    }
-  });
-}
-
-// 删除单条历史记录(二次确认 + 提交到 API)
-async function deleteHistoryItem(id) {
-  if (!requireLogin()) return;
-  if (!confirm('确定要删除这条记录吗？')) return;
-  await withCommit(
-    () => { state.history = state.history.filter(h => h.id !== id); },
-    { success: '已删除', fail: '删除失败,数据已回滚' }
-  );
 }
 
 function renderRulesList() {
@@ -3203,8 +3030,6 @@ const returnToFruitTreeAfterLogin = new URLSearchParams(location.search).get('fr
 // 1) 先恢复登录状态(决定全局锁定样式)
 checkSession();
 PetCompanion.init();
-// 1.5) 初始化历史记录滑动删除(只绑一次,事件委托)
-initHistorySwipe();
 // 2) 首次渲染
 render();
 // 3) 根据登录态切换 UI(锁定 / pill / banner / 调整卡)
