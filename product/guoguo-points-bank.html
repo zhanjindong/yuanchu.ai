@@ -683,16 +683,46 @@ body {
   padding-left: 4px;
   font-weight: 800;
 }
+/* 历史记录(支持左滑删除) */
+.history-row {
+  position: relative;
+  margin-bottom: 6px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  touch-action: pan-y; /* 允许浏览器处理垂直滚动,JS 处理水平 */
+}
+.history-delete-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--red);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 22px;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 0;
+}
+.history-delete-icon { font-size: 18px; }
 .history-item {
+  position: relative;
+  z-index: 1;
   background: white;
   border-radius: var(--radius-sm);
   padding: 12px 16px;
-  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+  will-change: transform;
+  cursor: grab;
 }
+.history-item:active { cursor: grabbing; }
 .history-emoji { font-size: 24px; flex-shrink: 0; }
 .history-body { flex: 1; min-width: 0; }
 .history-name {
@@ -704,6 +734,16 @@ body {
   font-size: 11px;
   color: var(--text-faint);
   margin-top: 2px;
+}
+.history-note {
+  font-size: 12px;
+  color: var(--text-light);
+  background: var(--yellow-light);
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+  display: inline-block;
+  word-break: break-all;
 }
 .history-points {
   font-size: 18px;
@@ -989,6 +1029,24 @@ body {
   background: var(--green-light);
   color: var(--green-dark);
 }
+.confirm-note-row {
+  width: 100%;
+  margin-bottom: 14px;
+  text-align: left;
+}
+.confirm-note-row[hidden] { display: none !important; }
+.confirm-note-row .form-input {
+  width: 100%;
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(0,0,0,0.1);
+  background: #FAFAFA;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.confirm-note-row .form-input:focus { border-color: var(--green); background: #fff; }
 
 /* 登录模态 */
 .login-modal { text-align: center; }
@@ -1721,6 +1779,9 @@ body {
     <div class="confirm-emoji" id="confirmEmoji">📉</div>
     <div class="confirm-title" id="confirmTitle">确认扣分？</div>
     <div class="confirm-sub" id="confirmSub">扣分操作不可撤销，请慎重考虑</div>
+    <div class="confirm-note-row" id="confirmNoteRow" hidden>
+      <input class="form-input" id="confirmNoteInput" type="text" maxlength="40" placeholder="备注（可选）如：数学考了 100 分">
+    </div>
     <div class="confirm-diff" id="confirmDiff">
       <span class="confirm-diff-from" id="confirmFrom">100</span>
       <span class="confirm-diff-arrow">→</span>
@@ -1874,7 +1935,7 @@ function getRuleDelta(rule, pointsBefore) {
 }
 
 // 修改 state(不提交,提交由调用方用 withCommit 包)
-function changePoints(rule) {
+function changePoints(rule, note) {
   const pointsBefore = state.points;
   const delta = getRuleDelta(rule, pointsBefore);
   const effect = rule.kind === 'zero' ? '清零' : '';
@@ -1887,6 +1948,7 @@ function changePoints(rule) {
     emoji: rule.emoji,
     delta: actualDelta,
     effect,
+    note: note || '', // 备注(可选,加分时填)
     time: Date.now(),
   });
   if (state.history.length > 500) state.history.length = 500;
@@ -2385,7 +2447,7 @@ function renderGoalsList() {
 function renderHistory() {
   const el = document.getElementById('historyList');
   if (!state.history.length) {
-    el.innerHTML = '<div class="empty">还没有任何记录，快去赚分吧！</div>';
+    el.innerHTML = '<div class="empty">还没有任何记录，快去赚分吧！<br><span style="font-size:11px;opacity:0.6;">左滑可删除单条记录</span></div>';
     return;
   }
   // 按天分组
@@ -2400,17 +2462,101 @@ function renderHistory() {
     <div class="history-day">
       <div class="history-day-title">${day}</div>
       ${items.map(h => `
-        <div class="history-item">
-          <div class="history-emoji">${h.emoji}</div>
-          <div class="history-body">
-            <div class="history-name">${esc(h.ruleName)}</div>
-            <div class="history-time">${formatTime(h.time)}${h.effect ? ' · ' + h.effect : ''}</div>
+        <div class="history-row" data-history-id="${h.id}">
+          <div class="history-delete-bg" data-del-history="${h.id}">
+            <span class="history-delete-icon">🗑</span>
+            <span class="history-delete-text">删除</span>
           </div>
-          <div class="history-points ${h.delta > 0 ? 'plus' : 'minus'}">${h.delta > 0 ? '+' : ''}${h.delta}</div>
+          <div class="history-item">
+            <div class="history-emoji">${h.emoji}</div>
+            <div class="history-body">
+              <div class="history-name">${esc(h.ruleName)}</div>
+              <div class="history-time">${formatTime(h.time)}${h.effect ? ' · ' + h.effect : ''}</div>
+              ${h.note ? `<div class="history-note">📝 ${esc(h.note)}</div>` : ''}
+            </div>
+            <div class="history-points ${h.delta > 0 ? 'plus' : 'minus'}">${h.delta > 0 ? '+' : ''}${h.delta}</div>
+          </div>
         </div>
       `).join('')}
     </div>
   `).join('');
+  // 绑定滑动删除
+  el.querySelectorAll('.history-row').forEach(attachSwipeDelete);
+  // 绑定删除按钮(背景层的点击)
+  el.querySelectorAll('[data-del-history]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = e.currentTarget.dataset.delHistory;
+      deleteHistoryItem(id);
+    });
+  });
+}
+
+// 删除单条历史记录(二次确认 + 提交到 API)
+async function deleteHistoryItem(id) {
+  if (!requireLogin()) return;
+  if (!confirm('确定要删除这条记录吗？')) return;
+  await withCommit(
+    () => { state.history = state.history.filter(h => h.id !== id); },
+    { success: '已删除', fail: '删除失败,数据已回滚' }
+  );
+}
+
+// 滑动删除:左滑 row 露出删除背景,点删除按钮真删
+function attachSwipeDelete(row) {
+  const fg = row.querySelector('.history-item');
+  const bg = row.querySelector('.history-delete-bg');
+  const W = () => row.offsetWidth || 1;
+  const THRESHOLD = () => W() * 0.3;  // 滑过 30% 锁定
+  const MAX = () => W() * 0.6;        // 最大滑到 60%(露出删除按钮)
+  let startX = 0, dx = 0, dragging = false;
+
+  // 滑回 0
+  const reset = () => { fg.style.transition = 'transform 0.2s ease'; fg.style.transform = ''; dx = 0; };
+
+  const onStart = (x) => {
+    if (e_targetIsInteractive(x)) return;
+    // 如果其他 row 已经展开,先收起
+    document.querySelectorAll('.history-row').forEach(r => {
+      if (r !== row) {
+        const f = r.querySelector('.history-item');
+        if (f && f.style.transform) { f.style.transition = 'transform 0.2s ease'; f.style.transform = ''; }
+      }
+    });
+    dragging = true;
+    startX = x;
+    dx = 0;
+    fg.style.transition = 'none';
+  };
+  const onMove = (x) => {
+    if (!dragging) return;
+    dx = Math.min(0, x - startX); // 只允许左滑
+    if (Math.abs(dx) > MAX()) dx = -MAX();
+    fg.style.transform = `translateX(${dx}px)`;
+  };
+  const onEnd = () => {
+    if (!dragging) return;
+    dragging = false;
+    fg.style.transition = 'transform 0.2s ease';
+    // 滑过阈值 → 锁定到 MAX,否则回弹
+    if (Math.abs(dx) > THRESHOLD()) {
+      fg.style.transform = `translateX(-${MAX()}px)`;
+    } else {
+      fg.style.transform = '';
+    }
+  };
+
+  function e_targetIsInteractive() { return false; } // 预留 hook
+
+  // Touch
+  fg.addEventListener('touchstart', e => onStart(e.touches[0].clientX), { passive: true });
+  fg.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
+  fg.addEventListener('touchend', onEnd);
+  fg.addEventListener('touchcancel', onEnd);
+  // Mouse(PC 调试)
+  fg.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
+  window.addEventListener('mousemove', e => onMove(e.clientX));
+  window.addEventListener('mouseup', onEnd);
 }
 
 function renderRulesList() {
@@ -2459,13 +2605,14 @@ function onActionClick(ruleId) {
 }
 
 // 余额先刷新；宠物、音效和庆祝等反馈等待云端保存成功。
-async function doChangePoints(rule) {
+// note: 从 confirmModal 的备注输入框读取(仅加分时使用)
+async function doChangePoints(rule, note) {
   const card = document.querySelector(`[data-rule-id="${rule.id}"]`);
   const rect = card ? card.getBoundingClientRect() : null;
   let result, crossedGoal;
   const ok = await withCommit(() => {
     const pointsBefore = state.points;
-    result = changePoints(rule);
+    result = changePoints(rule, note);
     crossedGoal = state.goals.find(g => pointsBefore < g.points && state.points >= g.points);
   });
   if (ok) showPointsFeedback({ delta: result.delta, kind: rule.kind, crossedGoal, rect });
@@ -2490,7 +2637,7 @@ function openConfirm(rule) {
   const diffEl = document.getElementById('confirmDiff');
 
   if (isEarn) {
-    // 加分:绿色主题
+    // 加分:绿色主题 + 备注输入框
     titleEl.textContent = `获得 +${rule.points} 分`;
     subEl.textContent = rule.desc || '做得不错,继续加油!';
     okBtn.textContent = `获得 +${rule.points}`;
@@ -2501,6 +2648,11 @@ function openConfirm(rule) {
       `<span class="confirm-diff-arrow">→</span>` +
       `<span class="confirm-diff-to">${newPoints}</span>` +
       `<span style="font-size:13px;opacity:0.7;">积分(+${rule.points})</span>`;
+    // 显示备注输入框 + 清空旧值
+    document.getElementById('confirmNoteRow').hidden = false;
+    document.getElementById('confirmNoteInput').value = '';
+    // 聚焦延迟到动画后
+    setTimeout(() => document.getElementById('confirmNoteInput').focus(), 200);
   } else if (isZero) {
     // 清零:黄色主题(原 .zero 样式保留)
     titleEl.textContent = '确定要清零积分吗?';
@@ -2513,6 +2665,8 @@ function openConfirm(rule) {
       `<span class="confirm-diff-arrow">→</span>` +
       `<span class="confirm-diff-to">0</span>` +
       `<span style="font-size:13px;opacity:0.7;">积分</span>`;
+    // 扣分/清零不显示备注
+    document.getElementById('confirmNoteRow').hidden = true;
   } else {
     // 扣分:红色主题
     titleEl.textContent = '确定要扣分吗?';
@@ -2525,6 +2679,8 @@ function openConfirm(rule) {
       `<span class="confirm-diff-arrow">→</span>` +
       `<span class="confirm-diff-to">${newPoints}</span>` +
       `<span style="font-size:13px;opacity:0.7;">积分(-${Math.abs(delta)})</span>`;
+    // 扣分不显示备注
+    document.getElementById('confirmNoteRow').hidden = true;
   }
 
   document.getElementById('confirmModal').classList.add('show');
@@ -2538,7 +2694,10 @@ document.getElementById('confirmCancel').addEventListener('click', () => {
 document.getElementById('confirmOk').addEventListener('click', () => {
   document.getElementById('confirmModal').classList.remove('show');
   if (pendingRule) {
-    doChangePoints(pendingRule); // async,内部已 try/catch
+    // 加分时把备注输入框的内容带过去(扣分/清零无备注)
+    const noteEl = document.getElementById('confirmNoteInput');
+    const note = pendingRule.kind === 'earn' ? (noteEl.value || '').trim() : '';
+    doChangePoints(pendingRule, note); // async,内部已 try/catch
     pendingRule = null;
   }
 });
