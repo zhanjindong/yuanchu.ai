@@ -2480,15 +2480,133 @@ function renderHistory() {
       `).join('')}
     </div>
   `).join('');
-  // 绑定滑动删除
-  el.querySelectorAll('.history-row').forEach(attachSwipeDelete);
-  // 绑定删除按钮(背景层的点击)
-  el.querySelectorAll('[data-del-history]').forEach(b => {
-    b.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = e.currentTarget.dataset.delHistory;
-      deleteHistoryItem(id);
+  // 删除按钮(背景层点击)用事件委托,见 initHistorySwipe
+}
+
+// 一次性初始化:在 #historyList 上做事件委托,所有 row 共享一份拖拽状态
+// 避免每次 render 重复绑定导致监听器累积 / 闪烁
+function initHistorySwipe() {
+  const root = document.getElementById('historyList');
+  if (!root || root.dataset.swipeInit === '1') return;
+  root.dataset.swipeInit = '1';
+
+  let activeRow = null;     // 当前正在拖拽的 .history-row
+  let activeFg = null;      // 对应的 .history-item
+  let startX = 0;
+  let dx = 0;
+  let dragging = false;
+  let locked = false;       // 已锁定展开,允许点空白处收起
+
+  const resetAll = (exceptRow) => {
+    root.querySelectorAll('.history-row').forEach(r => {
+      if (r === exceptRow) return;
+      const f = r.querySelector('.history-item');
+      if (f && f.style.transform) {
+        f.style.transition = 'transform 0.2s ease';
+        f.style.transform = '';
+      }
     });
+  };
+
+  const getRowFg = (target) => {
+    const row = target.closest('.history-row');
+    if (!row) return null;
+    const fg = row.querySelector('.history-item');
+    return { row, fg };
+  };
+
+  const W = (row) => row.offsetWidth || 1;
+  const THRESHOLD = (row) => W(row) * 0.3;
+  const MAX = (row) => W(row) * 0.6;
+
+  // ---- Touch ----
+  root.addEventListener('touchstart', e => {
+    const hit = getRowFg(e.target);
+    if (!hit) return;
+    resetAll(hit.row);
+    activeRow = hit.row;
+    activeFg = hit.fg;
+    startX = e.touches[0].clientX;
+    dx = 0;
+    dragging = true;
+    locked = false;
+    activeFg.style.transition = 'none';
+  }, { passive: true });
+
+  root.addEventListener('touchmove', e => {
+    if (!dragging || !activeRow) return;
+    const x = e.touches[0].clientX;
+    const raw = x - startX;
+    // 防抖:小于 4px 视为点按,不响应
+    if (!locked && Math.abs(raw) < 4) return;
+    dx = Math.min(0, raw); // 只允许左滑
+    if (Math.abs(dx) > MAX(activeRow)) dx = -MAX(activeRow);
+    activeFg.style.transform = `translateX(${dx}px)`;
+  }, { passive: true });
+
+  const endTouch = () => {
+    if (!dragging || !activeRow) return;
+    dragging = false;
+    activeFg.style.transition = 'transform 0.2s ease';
+    if (Math.abs(dx) > THRESHOLD(activeRow)) {
+      activeFg.style.transform = `translateX(-${MAX(activeRow)}px)`;
+      locked = true;
+    } else {
+      activeFg.style.transform = '';
+      locked = false;
+    }
+  };
+  root.addEventListener('touchend', endTouch);
+  root.addEventListener('touchcancel', endTouch);
+
+  // ---- Mouse(PC 调试)----
+  root.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    const hit = getRowFg(e.target);
+    if (!hit) return;
+    e.preventDefault();
+    resetAll(hit.row);
+    activeRow = hit.row;
+    activeFg = hit.fg;
+    startX = e.clientX;
+    dx = 0;
+    dragging = true;
+    locked = false;
+    activeFg.style.transition = 'none';
+  });
+
+  // 鼠标移动和松开绑在 window(只有一份),避免 render 累积
+  const onMouseMove = e => {
+    if (!dragging || !activeRow) return;
+    const raw = e.clientX - startX;
+    if (!locked && Math.abs(raw) < 4) return;
+    dx = Math.min(0, raw);
+    if (Math.abs(dx) > MAX(activeRow)) dx = -MAX(activeRow);
+    activeFg.style.transform = `translateX(${dx}px)`;
+  };
+  const onMouseUp = () => {
+    if (!dragging || !activeRow) return;
+    dragging = false;
+    activeFg.style.transition = 'transform 0.2s ease';
+    if (Math.abs(dx) > THRESHOLD(activeRow)) {
+      activeFg.style.transform = `translateX(-${MAX(activeRow)}px)`;
+      locked = true;
+    } else {
+      activeFg.style.transform = '';
+      locked = false;
+    }
+  };
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  // 删除按钮点击(背景层)
+  root.addEventListener('click', e => {
+    const delBtn = e.target.closest('[data-del-history]');
+    if (delBtn) {
+      e.stopPropagation();
+      const id = delBtn.dataset.delHistory;
+      deleteHistoryItem(id);
+    }
   });
 }
 
@@ -2500,63 +2618,6 @@ async function deleteHistoryItem(id) {
     () => { state.history = state.history.filter(h => h.id !== id); },
     { success: '已删除', fail: '删除失败,数据已回滚' }
   );
-}
-
-// 滑动删除:左滑 row 露出删除背景,点删除按钮真删
-function attachSwipeDelete(row) {
-  const fg = row.querySelector('.history-item');
-  const bg = row.querySelector('.history-delete-bg');
-  const W = () => row.offsetWidth || 1;
-  const THRESHOLD = () => W() * 0.3;  // 滑过 30% 锁定
-  const MAX = () => W() * 0.6;        // 最大滑到 60%(露出删除按钮)
-  let startX = 0, dx = 0, dragging = false;
-
-  // 滑回 0
-  const reset = () => { fg.style.transition = 'transform 0.2s ease'; fg.style.transform = ''; dx = 0; };
-
-  const onStart = (x) => {
-    if (e_targetIsInteractive(x)) return;
-    // 如果其他 row 已经展开,先收起
-    document.querySelectorAll('.history-row').forEach(r => {
-      if (r !== row) {
-        const f = r.querySelector('.history-item');
-        if (f && f.style.transform) { f.style.transition = 'transform 0.2s ease'; f.style.transform = ''; }
-      }
-    });
-    dragging = true;
-    startX = x;
-    dx = 0;
-    fg.style.transition = 'none';
-  };
-  const onMove = (x) => {
-    if (!dragging) return;
-    dx = Math.min(0, x - startX); // 只允许左滑
-    if (Math.abs(dx) > MAX()) dx = -MAX();
-    fg.style.transform = `translateX(${dx}px)`;
-  };
-  const onEnd = () => {
-    if (!dragging) return;
-    dragging = false;
-    fg.style.transition = 'transform 0.2s ease';
-    // 滑过阈值 → 锁定到 MAX,否则回弹
-    if (Math.abs(dx) > THRESHOLD()) {
-      fg.style.transform = `translateX(-${MAX()}px)`;
-    } else {
-      fg.style.transform = '';
-    }
-  };
-
-  function e_targetIsInteractive() { return false; } // 预留 hook
-
-  // Touch
-  fg.addEventListener('touchstart', e => onStart(e.touches[0].clientX), { passive: true });
-  fg.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
-  fg.addEventListener('touchend', onEnd);
-  fg.addEventListener('touchcancel', onEnd);
-  // Mouse(PC 调试)
-  fg.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
-  window.addEventListener('mousemove', e => onMove(e.clientX));
-  window.addEventListener('mouseup', onEnd);
 }
 
 function renderRulesList() {
@@ -3142,6 +3203,8 @@ const returnToFruitTreeAfterLogin = new URLSearchParams(location.search).get('fr
 // 1) 先恢复登录状态(决定全局锁定样式)
 checkSession();
 PetCompanion.init();
+// 1.5) 初始化历史记录滑动删除(只绑一次,事件委托)
+initHistorySwipe();
 // 2) 首次渲染
 render();
 // 3) 根据登录态切换 UI(锁定 / pill / banner / 调整卡)
