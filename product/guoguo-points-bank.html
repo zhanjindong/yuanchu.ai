@@ -160,31 +160,6 @@ body {
 }
 .level-pill:hover { background: rgba(255,255,255,.36); }
 .level-pill:focus-visible { outline: 3px solid #fff2b8; outline-offset: 3px; }
-
-/* 管理员入口(header 右上角常驻,登录前后状态不同) */
-.admin-entry {
-  background: rgba(255,255,255,0.22);
-  color: #fff;
-  border: 1.5px solid rgba(255,255,255,0.35);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 800;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  backdrop-filter: blur(4px);
-  transition: background 0.2s, transform 0.15s;
-  flex-shrink: 0;
-}
-.admin-entry:hover { background: rgba(255,255,255,0.34); }
-.admin-entry:active { transform: scale(0.94); }
-.admin-entry.logged-in {
-  background: #58CC02;
-  border-color: #58CC02;
-  color: #fff;
-}
-.admin-entry.logged-in:hover { background: #4DB002; }
 .hero-points-row {
   display: flex;
   align-items: flex-end;
@@ -518,6 +493,17 @@ body {
   box-shadow: var(--shadow);
   margin-bottom: 16px;
 }
+.settings-login-hint {
+  text-align: center;
+  background: linear-gradient(135deg, #fff7e6, #fff);
+  border: 1.5px dashed #FFC53D;
+  padding: 24px 20px;
+}
+.settings-login-hint-icon { font-size: 36px; margin-bottom: 8px; }
+.settings-login-hint-title { font-size: 16px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+.settings-login-hint-text { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px; }
+.settings-login-hint .btn-primary { padding: 10px 24px; }
+[hidden] { display: none !important; }
 .section-title {
   font-size: 18px;
   font-weight: 800;
@@ -1413,7 +1399,6 @@ body {
         <div class="hero-title" id="heroTitle">今天也要加油哦！</div>
       </div>
       <a class="level-pill" id="levelPill" href="guoguo-fruit-tree.html" aria-label="打开我的果树">🌱 果树</a>
-      <button class="admin-entry" id="adminEntry" type="button" title="管理员登录">🔒 管理员</button>
       <div class="sync-badge" id="syncBadge" data-status="ok" title="已同步到云端">✓</div>
     </div>
     <div class="hero-points-row">
@@ -1568,7 +1553,7 @@ body {
   <div class="tab-pane" data-pane="goals" hidden>
     <div class="section-title"><span class="st-emoji">🎯</span>我的愿望清单</div>
     <div id="goalsList"></div>
-    <button class="add-btn" id="addGoalBtn">+ 添加新目标</button>
+    <button class="add-btn" id="addGoalBtn" data-requires-login>+ 添加新目标</button>
   </div>
 
   <!-- ============ Tab 内容：历史 ============ -->
@@ -1580,7 +1565,7 @@ body {
   <!-- ============ Tab 内容：设置 ============ -->
   <div class="tab-pane" data-pane="settings" hidden>
     <!-- 手动调整积分（仅登录可见） -->
-    <div class="adjust-card" id="adjustCard" style="display:none;">
+    <div class="adjust-card" id="adjustCard" data-requires-login>
       <div class="section-title"><span class="st-emoji">🎚️</span>手动调整积分</div>
       <div class="adjust-current">
         <span class="adjust-current-label">当前</span>
@@ -1616,7 +1601,7 @@ body {
       </div>
     </div>
 
-    <div class="adjust-card tree-growth-card" id="treeGrowthCard" style="display:none;">
+    <div class="adjust-card tree-growth-card" id="treeGrowthCard" data-requires-login>
       <div class="section-title"><span class="st-emoji">🌳</span>果树设置</div>
       <div class="adjust-current">
         <span class="adjust-current-label">当前成长值</span>
@@ -1652,22 +1637,32 @@ body {
       <p class="tree-growth-last" id="treeFruitingLastRestart" hidden></p>
     </div>
 
-    <div class="rule-group">
-      <div class="rule-group-head">
-        <div class="rule-group-title">💰 加分规则</div>
-        <button class="add-btn" id="addEarnBtn" style="width: auto; padding: 8px 14px; font-size: 12px;">+ 添加</button>
-      </div>
-      <div id="earnRulesList"></div>
-    </div>
-    <div class="rule-group">
-      <div class="rule-group-head">
-        <div class="rule-group-title">⚠️ 扣分规则</div>
-        <button class="add-btn" id="addDeductBtn" style="width: auto; padding: 8px 14px; font-size: 12px; border-color: var(--red); color: var(--red-dark);">+ 添加</button>
-      </div>
-      <div id="deductRulesList"></div>
+    <!-- 未登录提示(默认隐藏,仅游客态显示) -->
+    <div class="card settings-login-hint" id="settingsLoginHint">
+      <div class="settings-login-hint-icon">🔒</div>
+      <div class="settings-login-hint-title">登录后可管理</div>
+      <div class="settings-login-hint-text">手动调整积分、加减分规则、果树设置、添加目标等管理功能需要管理员身份。</div>
+      <button class="btn-primary" id="settingsHintLoginBtn" onclick="openLoginModal()">管理员登录</button>
     </div>
 
-    <!-- 管理员账号：设置页底部 -->
+    <div data-requires-login>
+      <div class="rule-group">
+        <div class="rule-group-head">
+          <div class="rule-group-title">💰 加分规则</div>
+          <button class="add-btn" id="addEarnBtn" style="width: auto; padding: 8px 14px; font-size: 12px;">+ 添加</button>
+        </div>
+        <div id="earnRulesList"></div>
+      </div>
+      <div class="rule-group">
+        <div class="rule-group-head">
+          <div class="rule-group-title">⚠️ 扣分规则</div>
+          <button class="add-btn" id="addDeductBtn" style="width: auto; padding: 8px 14px; font-size: 12px; border-color: var(--red); color: var(--red-dark);">+ 添加</button>
+        </div>
+        <div id="deductRulesList"></div>
+      </div>
+    </div>
+
+    <!-- 管理员账号：设置页底部(始终可见,是登录入口) -->
     <div class="account-card" id="accountCard">
       <div class="account-avatar-big" id="accountAvatar">🔒</div>
       <div class="account-name" id="accountName">未登录</div>
@@ -1895,13 +1890,13 @@ function requireLogin() {
   if (isLoggedIn && getWriteToken()) return true;
   if (isLoggedIn) { logout(); applyAuthUI(); }
   showToast('🔒 这个操作需要管理员登录', 'warn');
-  // 不再跳到 settings Tab(settings 现在仅登录后可见);
-  // 直接弹登录窗 + 滚动到 header 管理员入口
+  // 跳到设置 Tab,定位到登录入口
+  switchTab('settings');
   setTimeout(() => {
-    const entry = document.getElementById('adminEntry');
-    if (entry) entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const card = document.getElementById('accountCard');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 50);
-  setTimeout(() => openLoginModal(), 200);
+  setTimeout(() => openLoginModal(), 350);
   return false;
 }
 
@@ -2745,30 +2740,13 @@ function applyAuthUI() {
     accMeta.textContent = '登录后可加减积分、调整规则';
     accBtn.textContent = '管理员登录';
   }
-  // 手动调整卡(仅登录可见)
-  document.getElementById('adjustCard').style.display = isLoggedIn ? '' : 'none';
-  document.getElementById('treeGrowthCard').style.display = isLoggedIn ? '' : 'none';
-  // 设置 Tab 仅登录后可见(整个 Tab 都不出现,未登录的"游客"完全看不到)
-  const settingsTab = document.querySelector('.tab[data-tab="settings"]');
-  if (settingsTab) settingsTab.style.display = isLoggedIn ? '' : 'none';
-  // 若当前在 settings 但被登出,自动跳回赚分 Tab
-  if (!isLoggedIn) {
-    const activePane = document.querySelector('.tab-pane:not([hidden])');
-    if (activePane && activePane.dataset.pane === 'settings') switchTab('earn');
-  }
-  // header 管理员入口按钮:未登录显示锁标 + 弹登录;登录后绿色 + 跳设置
-  const adminEntry = document.getElementById('adminEntry');
-  if (adminEntry) {
-    if (isLoggedIn) {
-      adminEntry.textContent = '✅ 已登录';
-      adminEntry.title = '点击进入设置';
-      adminEntry.classList.add('logged-in');
-    } else {
-      adminEntry.textContent = '🔒 管理员';
-      adminEntry.title = '点击管理员登录';
-      adminEntry.classList.remove('logged-in');
-    }
-  }
+  // 设置页里"功能区"仅登录可见(账户卡始终可见,因为它是登录入口)
+  // 涉及:手动调整 / 果树设置 / 加分规则 / 扣分规则 / 添加目标 / 未登录提示
+  const gated = document.querySelectorAll('[data-requires-login]');
+  gated.forEach(el => { el.style.display = isLoggedIn ? '' : 'none'; });
+  // 未登录提示卡(只未登录时显示,引导去登录)
+  const hint = document.getElementById('settingsLoginHint');
+  if (hint) hint.style.display = isLoggedIn ? 'none' : '';
   // 重新渲染视图
   render();
 }
@@ -3073,15 +3051,6 @@ document.getElementById('syncBadge').addEventListener('click', () => {
   }
 });
 document.getElementById('syncBannerRetry').addEventListener('click', retryApiLoad);
-// header 管理员入口:未登录 → 弹登录窗;已登录 → 跳到设置 Tab
-document.getElementById('adminEntry').addEventListener('click', () => {
-  if (isLoggedIn) {
-    switchTab('settings');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    openLoginModal();
-  }
-});
 // 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
 apiLoadState();
 // 浏览器后退可能复用旧页面；重新取得在果树页消费后的余额与收成。
