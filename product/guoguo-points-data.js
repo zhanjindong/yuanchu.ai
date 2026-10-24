@@ -263,3 +263,100 @@ async function retryCommit() {
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
+
+/* =========================================================
+ * 每日打卡（Streak）
+ *
+ * 规则：某天只要有净加分（delta > 0）就算当天打卡成功。
+ *   - 加分规则命中、手动调整「增加」都算
+ *   - 扣分 / 清零 / 兑换 / 果树照料（消耗积分）都不算
+ *
+ * 日期切分用北京时间 UTC+8，与服务端 _fruit-tree.js 的 day() 保持一致。
+ * ========================================================= */
+
+// 北京时间下的日期 key（YYYY-MM-DD）
+function streakDayKey(ts) {
+  return new Date(ts + 8 * 3600000).toISOString().slice(0, 10);
+}
+
+// key → 北京时间当天 00:00 的时间戳（用于 +1 天运算，北京时间无夏令时）
+function streakDayStart(key) {
+  return Date.parse(key + 'T00:00:00Z') - 8 * 3600000;
+}
+
+function streakNextKey(key) {
+  return streakDayKey(streakDayStart(key) + 86400000);
+}
+
+function streakPrevKey(key) {
+  return streakDayKey(streakDayStart(key) - 86400000);
+}
+
+// 本周（周一 → 周日）的 7 个日期 key
+function streakWeekKeys(now) {
+  const dow = new Date(now + 8 * 3600000).getUTCDay(); // 0=周日
+  const backToMonday = (dow + 6) % 7;
+  const monday = now - backToMonday * 86400000;
+  return Array.from({ length: 7 }, (_, i) => streakDayKey(monday + i * 86400000));
+}
+
+// computeStreak 的记忆化缓存
+let _streakCache = { sig: '', value: null };
+
+/**
+ * 从历史记录算连续打卡天数。
+ * @param {Array} history state.history
+ * @param {number} now    当前时间戳（默认 Date.now）
+ * @returns {{current:number, best:number, checkedToday:boolean,
+ *            today:string, week:Array, earnDays:Set<string>}}
+ */
+function computeStreak(history, now = Date.now()) {
+  const list = Array.isArray(history) ? history : [];
+
+  // 记忆化:历史只增不改(服务端强制),所以「长度 + 末条 id」足以判断内容是否变化;
+  // 再拼上「今天是哪天」,跨天自动失效重算。
+  const last = list.length ? list[list.length - 1] : null;
+  const sig = list.length + '|' + (last && last.id ? last.id : '') + '|' + streakDayKey(now);
+  if (_streakCache.sig === sig) return _streakCache.value;
+
+  // 每天的净加分次数
+  const earnDays = new Set();
+  for (const h of list) {
+    if (h && typeof h.delta === 'number' && h.delta > 0 && typeof h.time === 'number') {
+      earnDays.add(streakDayKey(h.time));
+    }
+  }
+
+  const today = streakDayKey(now);
+  const yesterday = streakPrevKey(today);
+
+  // 当前连续：今天打过就从今天往前数；今天没打但昨天打过，从昨天往前数（今天待打卡，不算断）
+  let current = 0;
+  let cursor = earnDays.has(today) ? today : (earnDays.has(yesterday) ? yesterday : null);
+  while (cursor && earnDays.has(cursor)) {
+    current++;
+    cursor = streakPrevKey(cursor);
+  }
+
+  // 最长纪录：遍历所有打卡日，统计最长的连续段
+  const sorted = [...earnDays].sort();
+  let best = 0;
+  let run = 0;
+  let prev = null;
+  for (const key of sorted) {
+    run = prev && streakNextKey(prev) === key ? run + 1 : 1;
+    if (run > best) best = run;
+    prev = key;
+  }
+
+  const value = {
+    current,
+    best,
+    checkedToday: earnDays.has(today),
+    today,
+    week: streakWeekKeys(now),
+    earnDays,
+  };
+  _streakCache = { sig, value };
+  return value;
+}

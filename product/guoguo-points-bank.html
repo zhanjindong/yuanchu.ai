@@ -196,6 +196,110 @@ body {
   0%, 100% { transform: rotate(-8deg); }
   50% { transform: rotate(8deg); }
 }
+
+/* ============= 每日打卡（Streak） ============= */
+.streak-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.streak-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.streak-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.streak-flame {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  background: linear-gradient(135deg, #FFD166, #FF9600);
+  box-shadow: 0 3px 0 var(--orange-dark);
+  flex-shrink: 0;
+}
+.streak-flame.dim {
+  background: linear-gradient(135deg, #E5E5E5, #CFCFCF);
+  box-shadow: 0 3px 0 #B5B5B5;
+  filter: grayscale(1);
+}
+.streak-num {
+  font-size: 30px; font-weight: 900; letter-spacing: -1.5px; line-height: 1;
+}
+.streak-num.zero { color: var(--text-faint); }
+.streak-unit {
+  font-size: 13px; font-weight: 800; color: var(--text-light); margin-top: 3px;
+}
+.streak-best {
+  text-align: right; font-size: 12px; font-weight: 800; color: var(--text-light); flex-shrink: 0;
+}
+.streak-best b {
+  display: block; font-size: 17px; color: var(--yellow-dark); font-weight: 900;
+}
+.streak-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.streak-day {
+  border-radius: 10px; padding: 8px 2px 7px; text-align: center; position: relative;
+  background: #F2F2F2; border: 2px solid transparent;
+}
+.streak-day-name {
+  font-size: 10px; font-weight: 800; color: var(--text-faint); margin-bottom: 4px;
+}
+.streak-day-icon { font-size: 19px; line-height: 1.1; }
+.streak-day-label {
+  font-size: 9px; font-weight: 800; color: var(--text-faint); margin-top: 3px;
+}
+.streak-day.done { background: linear-gradient(160deg, #FFD166, #FF9600); }
+.streak-day.done .streak-day-name,
+.streak-day.done .streak-day-label { color: #8A5200; }
+/* 今天还没打卡:绿色虚线待办 */
+.streak-day.today {
+  background: #fff; border-color: var(--green);
+}
+.streak-day.today .streak-day-name,
+.streak-day.today .streak-day-label { color: var(--green-dark); }
+.streak-day.today .streak-day-icon { opacity: .28; }
+.streak-day.today::after {
+  content: ''; position: absolute; inset: 2px; border-radius: 8px;
+  border: 2px dashed var(--green); opacity: .35;
+}
+/* 今天已打卡:橙色实心 + 蓝色外圈标出"今天" */
+.streak-day.today-done {
+  background: linear-gradient(160deg, #FFD166, #FF9600);
+  box-shadow: 0 0 0 2.5px var(--blue);
+}
+.streak-day.today-done .streak-day-icon { opacity: 1; }
+.streak-day.future { background: #F7F7F7; opacity: .55; }
+.streak-day.missed { background: #EFEFEF; }
+.streak-day.missed .streak-day-icon { filter: grayscale(1); opacity: .4; }
+.streak-hint {
+  margin-top: 13px; font-size: 12px; font-weight: 700; color: var(--text-light);
+  display: flex; align-items: center; gap: 6px;
+}
+.streak-hint.warn { color: var(--orange-dark); }
+.streak-hint.ok { color: var(--green-dark); }
+.streak-hint.tappable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 8px;
+  margin-left: -8px;
+  transition: background 0.2s;
+}
+.streak-hint.tappable:hover { background: var(--orange-light); }
+.streak-hint.tappable::after {
+  content: attr(data-go-earn);
+  font-weight: 900;
+  color: var(--orange-dark);
+  opacity: .85;
+}
+
 /* ============= 果果的小伙伴：原生 SVG 互动小狗 ============= */
 .pet-companion {
   --pet-size: 110px;
@@ -1345,6 +1449,14 @@ body {
   .action-card-name { font-size: 12px; line-height: 1.2; }
   .action-card-points { font-size: 13px; padding: 3px 10px; }
   .emoji-picker { grid-template-columns: repeat(5, 1fr); }
+  /* 打卡卡在窄屏下压缩 */
+  .streak-card { padding: 14px 12px; }
+  .streak-week { gap: 4px; }
+  .streak-day { padding: 7px 1px 6px; }
+  .streak-day-icon { font-size: 16px; }
+  .streak-day-label { font-size: 8px; }
+  .streak-num { font-size: 26px; }
+  .streak-flame { width: 40px; height: 40px; font-size: 22px; }
 }
 
 /* 横屏适配：手机/小平板横放时 */
@@ -1517,6 +1629,22 @@ body {
         <span class="pet-hint" id="petHint">点我，摸摸头</span>
       </div>
     </div>
+  </div>
+
+  <!-- ============ 每日打卡 ============ -->
+  <div class="streak-card" id="streakCard">
+    <div class="streak-top">
+      <div class="streak-main">
+        <div class="streak-flame dim" id="streakFlame">🔥</div>
+        <div>
+          <div class="streak-num zero" id="streakCount">0</div>
+          <div class="streak-unit">天连续打卡</div>
+        </div>
+      </div>
+      <div class="streak-best">最长纪录<b id="streakBest">—</b></div>
+    </div>
+    <div class="streak-week" id="streakWeek"></div>
+    <div class="streak-hint" id="streakHint" style="display:none;"></div>
   </div>
 
   <!-- ============ 目标横滚 ============ -->
@@ -2254,11 +2382,87 @@ function render() {
   updateGreeting();
 
   renderGoalsStrip();
+  renderStreak();
   renderEarnGrid();
   renderDeductGrid();
   renderGoalsList();
   renderHistory();
   renderRulesList();
+}
+
+// 每日打卡卡：连续天数 + 最长纪录 + 本周 7 天格子
+function renderStreak() {
+  const flameEl = document.getElementById('streakFlame');
+  const countEl = document.getElementById('streakCount');
+  const bestEl = document.getElementById('streakBest');
+  const weekEl = document.getElementById('streakWeek');
+  const hintEl = document.getElementById('streakHint');
+  if (!flameEl || !countEl || !bestEl || !weekEl || !hintEl) return;
+  if (typeof computeStreak !== 'function') return;
+
+  const s = computeStreak(state.history);
+  const active = s.current > 0;
+
+  flameEl.classList.toggle('dim', !active);
+  countEl.textContent = s.current;
+  countEl.classList.toggle('zero', !active);
+  bestEl.textContent = s.best > 0 ? s.best + ' 天' : '—';
+
+  // 本周 7 天(周一 → 周日)
+  const names = ['一', '二', '三', '四', '五', '六', '日'];
+  weekEl.innerHTML = s.week.map((key, i) => {
+    const earned = s.earnDays.has(key);
+    const isToday = key === s.today;
+    const isFuture = key > s.today; // YYYY-MM-DD 字典序即时间序
+    let cls = 'streak-day';
+    let icon = '🔥';
+    let label = '';
+    if (isFuture) {
+      cls += ' future'; icon = '·';
+    } else if (earned) {
+      cls += ' done'; label = '已打';
+      if (isToday) { cls += ' today-done'; label = '今天'; }
+    } else if (isToday) {
+      cls += ' today'; label = '今天';
+    } else {
+      cls += ' missed'; label = '未打';
+    }
+    return `<div class="${cls}">` +
+      `<div class="streak-day-name">${names[i]}</div>` +
+      `<div class="streak-day-icon">${icon}</div>` +
+      `<div class="streak-day-label">${label}</div>` +
+    `</div>`;
+  }).join('');
+
+  // 状态提示
+  let text = '';
+  let tone = '';
+  if (s.checkedToday) {
+    text = '✅ 今日已打卡，连续 ' + s.current + ' 天继续保持！';
+    tone = 'ok';
+  } else if (s.current > 0) {
+    text = '⏰ 今天还没打卡，加个分就能续上 ' + s.current + ' 天！';
+    tone = 'warn';
+  } else if (s.best > 0) {
+    text = '😢 昨天没打卡，连续断了。今天加分就能重新开始！';
+    tone = 'warn';
+  } else {
+    text = ''; // 还没开始打卡,不显示提示
+  }
+  hintEl.textContent = text;
+  hintEl.className = 'streak-hint' + (tone ? ' ' + tone : '');
+  hintEl.style.display = text ? '' : 'none';
+  // 待打卡时提示可点,直接跳到赚分页去加分
+  const canGo = !s.checkedToday;
+  hintEl.classList.toggle('tappable', canGo);
+  hintEl.setAttribute('role', canGo ? 'button' : '');
+  hintEl.setAttribute('tabindex', canGo ? '0' : '-1');
+  if (canGo) {
+    const label = s.current > 0 ? '去加分 →' : '';
+    hintEl.dataset.goEarn = label;
+  } else {
+    delete hintEl.dataset.goEarn;
+  }
 }
 
 function getLevel(p) {
@@ -3030,6 +3234,23 @@ document.getElementById('syncBadge').addEventListener('click', () => {
   }
 });
 document.getElementById('syncBannerRetry').addEventListener('click', retryApiLoad);
+// 打卡卡提示行:待打卡时点击跳到赚分页
+document.getElementById('streakHint').addEventListener('click', () => {
+  if (document.getElementById('streakHint').dataset.goEarn !== undefined) {
+    switchTab('earn');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+document.getElementById('streakHint').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    const h = document.getElementById('streakHint');
+    if (h.dataset.goEarn !== undefined) {
+      e.preventDefault();
+      switchTab('earn');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+});
 // 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
 apiLoadState();
 // 浏览器后退可能复用旧页面；重新取得在果树页消费后的余额与收成。
