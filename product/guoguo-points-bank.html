@@ -218,8 +218,8 @@ body {
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 26px;
-  background: linear-gradient(135deg, #FFD166, #FF9600);
-  box-shadow: 0 3px 0 var(--orange-dark);
+  background: linear-gradient(135deg, var(--green) 0%, #6FD906 100%);
+  box-shadow: 0 3px 0 var(--green-dark);
   flex-shrink: 0;
 }
 .streak-flame.dim {
@@ -256,9 +256,9 @@ body {
 .streak-day-label {
   font-size: 9px; font-weight: 800; color: var(--text-faint); margin-top: 3px;
 }
-.streak-day.done { background: linear-gradient(160deg, #FFD166, #FF9600); }
+.streak-day.done { background: linear-gradient(160deg, var(--green) 0%, #6FD906 100%); }
 .streak-day.done .streak-day-name,
-.streak-day.done .streak-day-label { color: #8A5200; }
+.streak-day.done .streak-day-label { color: #fff; }
 /* 今天还没加分:绿色虚线待办 */
 .streak-day.today {
   background: #fff; border-color: var(--green);
@@ -270,35 +270,15 @@ body {
   content: ''; position: absolute; inset: 2px; border-radius: 8px;
   border: 2px dashed var(--green); opacity: .35;
 }
-/* 今天已加分:橙色实心 + 蓝色外圈标出"今天" */
+/* 今天已加分:绿色实心 + 蓝色外圈标出"今天" */
 .streak-day.today-done {
-  background: linear-gradient(160deg, #FFD166, #FF9600);
+  background: linear-gradient(160deg, var(--green) 0%, #6FD906 100%);
   box-shadow: 0 0 0 2.5px var(--blue);
 }
 .streak-day.today-done .streak-day-icon { opacity: 1; }
 .streak-day.future { background: #F7F7F7; opacity: .55; }
 .streak-day.missed { background: #EFEFEF; }
 .streak-day.missed .streak-day-icon { filter: grayscale(1); opacity: .4; }
-.streak-hint {
-  margin-top: 13px; font-size: 12px; font-weight: 700; color: var(--text-light);
-  display: flex; align-items: center; gap: 6px;
-}
-.streak-hint.warn { color: var(--orange-dark); }
-.streak-hint.ok { color: var(--green-dark); }
-.streak-hint.tappable {
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 4px 8px;
-  margin-left: -8px;
-  transition: background 0.2s;
-}
-.streak-hint.tappable:hover { background: var(--orange-light); }
-.streak-hint.tappable::after {
-  content: attr(data-go-earn);
-  font-weight: 900;
-  color: var(--orange-dark);
-  opacity: .85;
-}
 
 /* ============= 果果的小伙伴：原生 SVG 互动小狗 ============= */
 .pet-companion {
@@ -1644,7 +1624,6 @@ body {
       <div class="streak-best">最长纪录<b id="streakBest">—</b></div>
     </div>
     <div class="streak-week" id="streakWeek"></div>
-    <div class="streak-hint" id="streakHint" style="display:none;"></div>
   </div>
 
   <!-- ============ 目标横滚 ============ -->
@@ -2396,8 +2375,7 @@ function renderStreak() {
   const countEl = document.getElementById('streakCount');
   const bestEl = document.getElementById('streakBest');
   const weekEl = document.getElementById('streakWeek');
-  const hintEl = document.getElementById('streakHint');
-  if (!flameEl || !countEl || !bestEl || !weekEl || !hintEl) return;
+  if (!flameEl || !countEl || !bestEl || !weekEl) return;
   if (typeof computeStreak !== 'function') return;
 
   const s = computeStreak(state.history);
@@ -2433,36 +2411,6 @@ function renderStreak() {
       `<div class="streak-day-label">${label}</div>` +
     `</div>`;
   }).join('');
-
-  // 状态提示
-  let text = '';
-  let tone = '';
-  if (s.earnedToday) {
-    text = '✅ 今天已加分，连续 ' + s.current + ' 天继续保持！';
-    tone = 'ok';
-  } else if (s.current > 0) {
-    text = '⏰ 今天还没加分，加个分就能续上 ' + s.current + ' 天！';
-    tone = 'warn';
-  } else if (s.best > 0) {
-    text = '😢 昨天没加分，连续断了。今天加分就能重新开始！';
-    tone = 'warn';
-  } else {
-    text = ''; // 还没有得分记录,不显示提示
-  }
-  hintEl.textContent = text;
-  hintEl.className = 'streak-hint' + (tone ? ' ' + tone : '');
-  hintEl.style.display = text ? '' : 'none';
-  // 今天还没加分时提示可点,直接跳到赚分页去加分
-  const canGo = !s.earnedToday;
-  hintEl.classList.toggle('tappable', canGo);
-  hintEl.setAttribute('role', canGo ? 'button' : '');
-  hintEl.setAttribute('tabindex', canGo ? '0' : '-1');
-  if (canGo) {
-    const label = s.current > 0 ? '去加分 →' : '';
-    hintEl.dataset.goEarn = label;
-  } else {
-    delete hintEl.dataset.goEarn;
-  }
 }
 
 function getLevel(p) {
@@ -3234,23 +3182,6 @@ document.getElementById('syncBadge').addEventListener('click', () => {
   }
 });
 document.getElementById('syncBannerRetry').addEventListener('click', retryApiLoad);
-// 连续加分卡提示行:今天还没加分时点击跳到赚分页
-document.getElementById('streakHint').addEventListener('click', () => {
-  if (document.getElementById('streakHint').dataset.goEarn !== undefined) {
-    switchTab('earn');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-});
-document.getElementById('streakHint').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    const h = document.getElementById('streakHint');
-    if (h.dataset.goEarn !== undefined) {
-      e.preventDefault();
-      switchTab('earn');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-});
 // 4) 后台从 API 拉取最新数据,合并覆盖后重渲染
 apiLoadState();
 // 浏览器后退可能复用旧页面；重新取得在果树页消费后的余额与收成。
