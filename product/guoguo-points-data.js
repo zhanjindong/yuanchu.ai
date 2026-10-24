@@ -265,9 +265,9 @@ function uid() {
 }
 
 /* =========================================================
- * 每日打卡（Streak）
+ * 连续加分（Streak）
  *
- * 规则：某天只要有净加分（delta > 0）就算当天打卡成功。
+ * 规则：某天只要有净加分（delta > 0）就算当天"有得分"。
  *   - 加分规则命中、手动调整「增加」都算
  *   - 扣分 / 清零 / 兑换 / 果树照料（消耗积分）都不算
  *
@@ -304,19 +304,25 @@ function streakWeekKeys(now) {
 let _streakCache = { sig: '', value: null };
 
 /**
- * 从历史记录算连续打卡天数。
+ * 从历史记录算连续加分天数。
  * @param {Array} history state.history
  * @param {number} now    当前时间戳（默认 Date.now）
- * @returns {{current:number, best:number, checkedToday:boolean,
+ * @returns {{current:number, best:number, earnedToday:boolean,
  *            today:string, week:Array, earnDays:Set<string>}}
  */
 function computeStreak(history, now = Date.now()) {
   const list = Array.isArray(history) ? history : [];
 
-  // 记忆化:历史只增不改(服务端强制),所以「长度 + 末条 id」足以判断内容是否变化;
-  // 再拼上「今天是哪天」,跨天自动失效重算。
+  // 记忆化:用「长度 + 内容指纹 + 今天是哪天」判断历史是否变化。
+  // 指纹只取影响结果的字段(delta>0 的 time),即使 id 重复也不会命中脏缓存。
   const last = list.length ? list[list.length - 1] : null;
-  const sig = list.length + '|' + (last && last.id ? last.id : '') + '|' + streakDayKey(now);
+  let fp = 0;
+  for (let i = 0; i < list.length; i++) {
+    const h = list[i];
+    const t = (h && typeof h.delta === 'number' && h.delta > 0 && typeof h.time === 'number') ? h.time : 0;
+    fp = (fp * 31 + t) % 2147483647; // 质数取模,全程整数运算不丢精度
+  }
+  const sig = list.length + '|' + (last && last.id ? last.id : '') + '|' + fp + '|' + streakDayKey(now);
   if (_streakCache.sig === sig) return _streakCache.value;
 
   // 每天的净加分次数
@@ -330,7 +336,7 @@ function computeStreak(history, now = Date.now()) {
   const today = streakDayKey(now);
   const yesterday = streakPrevKey(today);
 
-  // 当前连续：今天打过就从今天往前数；今天没打但昨天打过，从昨天往前数（今天待打卡，不算断）
+  // 当前连续：今天有加分就从今天往前数；今天没加但昨天加了，从昨天往前数（今天待加分，不算断）
   let current = 0;
   let cursor = earnDays.has(today) ? today : (earnDays.has(yesterday) ? yesterday : null);
   while (cursor && earnDays.has(cursor)) {
@@ -338,7 +344,7 @@ function computeStreak(history, now = Date.now()) {
     cursor = streakPrevKey(cursor);
   }
 
-  // 最长纪录：遍历所有打卡日，统计最长的连续段
+  // 最长纪录：遍历所有得分日，统计最长的连续段
   const sorted = [...earnDays].sort();
   let best = 0;
   let run = 0;
@@ -352,7 +358,7 @@ function computeStreak(history, now = Date.now()) {
   const value = {
     current,
     best,
-    checkedToday: earnDays.has(today),
+    earnedToday: earnDays.has(today),
     today,
     week: streakWeekKeys(now),
     earnDays,
