@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异质智能体协同进化 (Heterogeneous Agentic Coevolution) - 翻译</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yuanchu/style@1.0.8/dist/yuanchu.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .source-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .source-card h1 {
+            margin: 0 0 15px 0;
+            font-size: 1.8em;
+        }
+        .source-card .meta {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        .source-card .meta a {
+            color: #fff;
+            text-decoration: underline;
+        }
+        h1 { font-size: 1.8em; margin-top: 1.5em; }
+        h2 { font-size: 1.5em; margin-top: 1.5em; color: #1a1a1a; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
+        h3 { font-size: 1.25em; margin-top: 1.3em; color: #333; }
+        p { margin: 1em 0; text-align: justify; }
+        .abstract {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 1.5em 0;
+            font-size: 1.05em;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+        }
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        ul, ol { margin: 1em 0; padding-left: 2em; }
+        li { margin: 0.5em 0; }
+        blockquote {
+            margin: 1.5em 0;
+            padding: 15px 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #764ba2;
+            font-style: italic;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            font-size: 0.95em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; }
+        .section-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 200px;
+        }
+        .section-nav a {
+            display: block;
+            color: #666;
+            text-decoration: none;
+            padding: 5px 0;
+            font-size: 0.9em;
+        }
+        .section-nav a:hover { color: #667eea; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 768px) {
+            .section-nav { display: none; }
+            body { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="https://yuanchu.ai/tech/" class="back-link">← 返回技术频道</a>
+    
+    <div class="source-card">
+        <h1>异质智能体协同进化</h1>
+        <p><strong>原文标题</strong>：Heterogeneous Agentic Coevolution</p>
+        <p class="meta">
+            <strong>作者</strong>：Wenqian Ye, Ziwei Guan, Zi Yang, Shivani Modi, Cici Cong Wu, Yunlong He, Yuxin Chen, Zhengyu Zhang, Liang Luo, Venkatesh Ranganathan, Jianhui Sun, Yantao Yao, Wenlin Chen, Buyun Zhang, Ellie Dingqiao Wen, Henry Kautz, Aidong Zhang
+        </p>
+        <p class="meta">
+            <strong>来源</strong>：arXiv | 
+            <strong>发布日期</strong>：2026年10月11日 | 
+            <strong>原文链接</strong>：<a href="https://arxiv.org/abs/2610.16078" target="_blank">arXiv:2610.16078</a>
+        </p>
+    </div>
+
+    <div class="abstract">
+        <strong>摘要</strong>：自改进型 LLM 智能体的最新进展展示了推动自身智能发展的 AI 系统的潜力。然而，许多领域特定的应用依赖于具有强大领域专业知识的专业基础模型，这些模型仍然依赖于人工设计的改进。将递归自我改进扩展到这些模型提出了一个关键挑战：随着专家模型的改进，用于推进它的策略也必须适应。为了应对这一挑战，我们提出了异质智能体协同进化（HACE）框架，该框架通过双向学习将专业基础模型和 LLM 智能体联合进化。HACE 在三个具有挑战性的领域评估中表现出色，包括推荐系统、生物学中的蛋白质功能预测和材料发现中的晶体稳定性预测。
+    </div>
+
+    <h2 id="1">1 引言</h2>
+
+    <p>最近，大语言模型（LLM）智能体正在开始自动化模型开发背后的实验工作。智能体可以修改它们的实现、改进它们的交互框架，并修改生成进一步改进的程序。它们还可以继续学习在适应和探索期间收集的经验。这些进展表明，模型开发本身可以成为一个自主学习过程。将这一进展扩展到科学 AI 需要将专业基础模型的领域专业知识带入这一过程。</p>
+
+    <p>在科学 AI 中，专业基础模型通常通过大规模预训练学习可重用的领域知识。蛋白质语言模型从序列中学习生物学规律，而预训练的原子间势模型学习控制材料行为的能量和力。在推荐系统中，HSTU 和 Wukong 等架构将这种扩展方法扩展到大规模用户交互集合。这些模型获得了通常超过通用 LLM 智能体的领域专业知识，这是由于特定的设计。然而，它们仍然无法像 LLM 智能体那样自我进化。</p>
+
+    <p>一旦监督训练收敛，进一步训练无法产生改进，研究人员就必须手动识别有用的设计来改进专业基础模型，例如更好的特征工程或算法改进。</p>
+
+    <p>智能体系统的最新发展为自动化这一过程铺平了一条可行的道路。它们解释反馈、探索替代方案和修改可执行程序的能力，使它们能够影响另一个模型的学习方式。例如，Eureka 通过使用 LLM 为训练机器人策略自动设计奖励程序来展示这种可能性。然而，大多数自进化系统仍然依赖于参数保持不变的专有 LLM，而智能体代码和交互框架在进化。因此，在改进过程中收集的经验不会更新底层语言模型。对于专业基础模型，挑战在于 LLM 智能体模型能够随着专业模型的发展不断改进它。在初始模型上有效的干预在进一步训练后可能变得冗余。因此，学习解决初始模型弱点的智能体面临着随着这些弱点被解决而变化的任务。持续进步需要智能体在模型改进时不断学习。我们将这种机制称为<strong>双向学习</strong>。</p>
+
+    <p>为了缩小差距，我们提出了一个新框架——<strong>异质智能体协同进化（HACE）</strong>，它将专业基础模型（即专家）与一个异质 LLM 智能体共同进化，该智能体学习引导协同进化。关键思想是通过监督改进专家，同时在自适应课程下训练智能体使其不断推进它。智能体学习由经过当前专家验证的收益指导。智能体的探索反过来指导后续专家训练的经验选择。随着专家的改进，哪些智能体贡献是有用的发生了变化。随着智能体的改进，它改变了专家可用的学习机会。这种双向反馈循环将监督专家学习与基于策略的强化自我训练无缝连接。</p>
+
+    <p>我们需要确保这些模型以不断改进的方向进行交互和开发。智能体看到的内容以及哪些经验进入专家训练决定了任一模型可用的机会。因此，我们还在 HACE 中提出了一个<strong>进化交互框架</strong>，控制信息交换和训练经验选择。进化搜索通过其对任务性能和专家学习的影响来评估框架变化。更好的框架可以暴露当前模型尚未利用的机会，而模型更新会改变哪些框架设计仍然有效。</p>
+
+    <h2 id="2">2 相关工作</h2>
+
+    <h3 id="2-1">2.1 智能体与框架优化</h3>
+
+    <p>最近的工作使用执行反馈来改进智能体程序、交互框架和提出进一步改进的程序。其他方法通过参数更新来改进底层模型。强化自我训练从任务奖励选择的响应中学习，而自我适应和测试时学习使用生成的经验或任务反馈进行进一步训练。HACE 将框架搜索与专业基础模型和 LLM 智能体的参数学习连接起来。框架控制它们的交互和用于训练每个模型的经验。</p>
+
+    <h3 id="2-2">2.2 协同进化与双向学习</h3>
+
+    <p>协同进化可以追溯到生物学中相互作用种群之间的 reciprocal 进化响应。在机器学习中，许多方法将奖励程序、环境或优化程序的发展与它们指导的学习者联系起来。HACE 研究具有不同能力和学习信号模型之间的这种依赖关系。智能体探索可以改变哪些实例训练专业模型，而专业模型的预测反过来决定哪些智能体响应通过验证。</p>
+
+    <h3 id="2-3">2.3 智能体蒸馏</h3>
+
+    <p>智能体蒸馏将推理和工具使用从 LLM 智能体转移到更小的语言模型。MAD-OPD 从在学生当前轨迹上辩论的教师那里获得监督。这些方法在保持教师参数固定的同时更新学生。HACE 与这一工作方向不同，更进一步，其中一个整体领域性能较低的 LLM 智能体仍然可以改进专业基础模型。</p>
+
+    <h2 id="3">3 异质智能体协同进化</h2>
+
+    <p>在本节中，我们正式介绍异质智能体协同进化（HACE)，这是一个用于专业基础模型和 LLM 智能体之间双向自改进的框架。</p>
+
+    <h3 id="3-1">3.1 双向学习</h3>
+
+    <p>设 S 表示专家，A 表示智能体，H 表示框架。轮次 t=0,1,… 从 (S_t, H_t, A_t) 开始。我们通过修改档案中接受框架的父项来提出框架 H'。它的字段控制显示给智能体的任务信息和专家上下文、如何解释响应，以及哪些示例训练每个学习者。</p>
+
+    <p>在 H' 下，智能体接收从训练输入 x_i 和 S_t 的预测构建的提示，而不能访问其标签 y_i。我们使用与专家相同的任务约束来评估每个响应 τ 相对于 y_i。响应贡献为：</p>
+
+    <pre><code>r_i(τ) = q_i^A(τ) - q_i^S</code></pre>
+
+    <p>当响应预测有效、监督可评估且 r_i(τ) > 0 时，响应通过验证。即使智能体平均任务质量较低，仍然可以在个别实例上提供经过验证的响应。</p>
+
+    <h3 id="3-2">3.2 联合选择</h3>
+
+    <p>联合选择测试在框架下专家适应是否改善了联合预测。对于实例 i 视图中的候选 c，联合预测按以下方式排名：</p>
+
+    <pre><code>s_i(c) + λ a_i(c), λ ≥ 0</code></pre>
+
+    <p>当 ΔJ_t = J_{B_t}(S',H',A_t) - J_{B_t}(S_t,H_t,A_t) > 0 时，提议被接受。</p>
+
+    <h3 id="3-3">3.3 学习保证</h3>
+
+    <p>训练分布可能随模型更新和框架选择而变化。为了研究在变化分布下的学习，我们从理论上分析了接受曝光和最终专家在产生经验上的损失。</p>
+
+    <p><strong>定理 1（从演进经验中学习）</strong>：对于任何固定的 δ∈(0,1)，以至少 1-δ 的概率在学习过程上，每个最终专家 S_T∈F 同时满足：</p>
+
+    <pre><code>R_μ(S_T) ≤ U_T(v) + (L̂_T(S_T) + log(|F|/δ)) / ((1-e^{-1})v)</code></pre>
+
+    <p>该边界将到达有用的训练实例与学习和保留它们的信息分开。框架搜索、智能体探索和联合选择决定接受曝光。</p>
+
+    <h2 id="4">4 实验</h2>
+
+    <p>我们在三个具有挑战性的领域全面评估 HACE，包括推荐系统、生物学中的蛋白质功能预测和材料发现中的晶体稳定性预测。</p>
+
+    <h3 id="4-1">4.1 实验设置</h3>
+
+    <p>默认情况下，我们使用 Gemma4-E4B 作为 LLM 智能体。对于推荐任务，我们在 MovieLens 1M (ML-1M) 和四个 Amazon 类别上使用三个主流基础模型 SASRec、HSTU 和 Wukong 进行评估。对于蛋白质功能预测，我们在 CAFA 上使用冻结的 ESM-2 和 ProtT5-XL 主干。对于材料发现任务，我们在 WBM 上使用 CHGNet。</p>
+
+    <p>Base 表示在协同进化之前已经训练到收敛的初始专家。</p>
+
+    <h3 id="4-2">4.2 主要结果</h3>
+
+    <p><strong>推荐</strong>：HACE 在所有 15 种设置中实现了最高的平均 HR@10。与 Base 相比，相对增益范围从 2.9% 到 18.5%，平均为 12.1%。</p>
+
+    <p><strong>蛋白质功能预测</strong>：HACE 将 NDCG 从 0.6285 提高到 0.6745（使用 ESM-2），从 0.6241 提高到 0.6739（使用 ProtT5-XL）。</p>
+
+    <p><strong>材料发现</strong>：HACE 达到 0.6541，超过最强竞争平均值 0.0028。</p>
+
+    <h3 id="4-3">4.3 消融研究</h3>
+
+    <p>我们在三个领域进行消融研究。移除智能体优化在 Toys 上造成最大下降，从 0.0706 降至 0.0622。移除框架或专家优化在 CAFA 上分别将 NDCG 降低 0.0438 和 0.0435。结果表明所有设计组件都对框架做出正贡献。</p>
+
+    <h3 id="4-4">4.4 智能体与模型扩展</h3>
+
+    <p>HACE 使用所有四种 ESM-2 大小改进预测，从 35M 到 3B 参数。绝对 NDCG 增益保持在 0.0409 到 0.0460 之间。</p>
+
+    <h2 id="5">5 结论</h2>
+
+    <p>我们介绍了 HACE，一个用于专业基础模型和 LLM 智能体之间双向自改进的新框架。通过同时演进学习者和它们与更新框架的交互，HACE 使每个模型成为另一个的学习来源。我们的分析确定了从自适应选择的经验中学习的充分条件。在三个领域中的实验表明超越了最初收敛专家的不同架构的改进。这些结果表明异质 AI 模型可以相互支持发展。</p>
+
+    <hr>
+    <p style="text-align: center; color: #666; font-size: 0.9em;">
+        原文发表于 <a href="https://arxiv.org/abs/2610.16078">arXiv</a> (2026年10月11日)<br>
+        翻译发表于 <a href="https://yuanchu.ai/tech/">源触 AI 技术频道</a>
+    </p>
+</body>
+</html>
